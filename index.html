@@ -1,14 +1,66 @@
-<!doctype html>
-<html lang="en">
+
+<!DOCTYPE html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本旅行ガイド</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+    <header>
+        <h1>日本旅行ガイド</h1>
+        <nav>
+            <ul>
+                <li><a href="#destinations">目的地</a></li>
+                <li><a href="#tips">旅行のヒント</a></li>
+                <li><a href="#contact">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero">
+            <h2>日本の美しさを発見する</h2>
+            <p>息をのむような風景から活気に満ちた都市まで、日本にはすべてが揃っています。</p>
+        </section>
+
+        <section id="destinations">
+            <h2>人気の目的地</h2>
+            <div class="card-container">
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1570425895504-1b3484a0c84c?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="東京">
+                    <h3>東京</h3>
+                    <p>日本の賑やかな首都、伝統と現代性が融合した都市。</p>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="京都">
+                    <h3>京都</h3>
+                    <p>美しい寺院、庭園、そして伝統的な芸者で知られています。</p>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1577402855230-14161b47424f?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="大阪">
+                    <h3>大阪</h3>
+                    <p>素晴らしい屋台料理、活気のあるナイトライフ、そして大阪城で有名です。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tips">
+            <h2>旅行のヒント</h2>
+            <ul>
+                <li>JRパスを手に入れよう</li>
+                <li>現金を持ち歩こう</li>
+                <li>基本的な日本語のフレーズを学ぼう</li>
+                <li>礼儀正しく、現地の習慣を尊重しよう</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 日本旅行ガイド</p>
+    </footer>
+
+    <script src="main.js"></script>
 </body>
 </html>
