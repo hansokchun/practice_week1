@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         savePhotosToStorage();
         updateUI();
         document.body.style.cursor = 'default';
-        alert(`${newPhotos.length}개의 사진이 추가되었습니다.`);
+        alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
     });
     
     // 7. LocalStorage 관련 함수
