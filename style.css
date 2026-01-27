@@ -13,6 +13,7 @@ body, html {
     left: 0;
     bottom: 0;
     right: 360px;
+    transition: right 0.5s ease-in-out;
 }
 
 #sidebar {
@@ -29,7 +30,38 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    transition: width 0.5s ease-in-out;
 }
+
+/* 사이드바 확장 상태 */
+#sidebar.expanded {
+    width: 65vw; /* 화면 너비의 65% */
+}
+
+#collapse-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: rgba(0,0,0,0.1);
+    color: #333;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+    display: none; /* 평소엔 숨김 */
+    z-index: 10;
+}
+#sidebar.expanded #collapse-btn {
+    display: block; /* 확장시에만 보임 */
+}
+#collapse-btn:hover {
+    background: rgba(0,0,0,0.2);
+}
+
 
 #photo-viewer h2, #controls h2 {
     margin-top: 0;
@@ -42,13 +74,19 @@ body, html {
 
 #current-photo {
     width: 100%;
-    height: auto;
-    max-height: 280px;
+    height: 280px; /* 기본 높이 */
     object-fit: cover;
     border-radius: 8px;
     background-color: #e9e9e9;
     border: 1px solid #ddd;
     margin-bottom: 15px;
+    cursor: pointer;
+    transition: height 0.5s ease-in-out;
+}
+
+#sidebar.expanded #current-photo {
+    height: 70vh; /* 확장 시 높이 */
+    object-fit: contain; /* 전체 이미지가 보이도록 */
 }
 
 #photo-description {

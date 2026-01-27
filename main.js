@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     let photos = [];
-    const map = L.map('map').setView([36.2048, 138.2529], 5.5);
+    const mapContainer = document.getElementById('map');
+    const sidebar = document.getElementById('sidebar');
+    const map = L.map(mapContainer).setView([36.2048, 138.2529], 5.5);
     const markers = L.markerClusterGroup();
     let routeLine = null;
 
@@ -12,21 +14,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('download-btn');
     const photoUploadInput = document.getElementById('photo-upload');
     const clearPhotosBtn = document.getElementById('clear-photos');
+    const collapseBtn = document.getElementById('collapse-btn');
 
-    let currentObjectUrl = null;
-
-    // 1. 지도 타일 변경 (더 빠른 기본 OpenStreetMap 타일)
+    // 1. 지도 타일 설정
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // 2. 핵심 UI 업데이트 함수
+    // 2. 사이드바 확장/축소 함수
+    const originalSidebarWidth = '360px';
+    const expandedSidebarWidth = '65vw';
+
+    function expandSidebar() {
+        if (sidebar.classList.contains('expanded')) return;
+        sidebar.classList.add('expanded');
+        mapContainer.style.right = expandedSidebarWidth;
+        setTimeout(() => map.invalidateSize(), 250); // 애니메이션 중간에 맞춤
+    }
+
+    function collapseSidebar() {
+        if (!sidebar.classList.contains('expanded')) return;
+        sidebar.classList.remove('expanded');
+        mapContainer.style.right = originalSidebarWidth;
+        setTimeout(() => map.invalidateSize(), 250);
+    }
+    
+    // 3. 핵심 UI 업데이트 함수
     function updateUI() {
         displayPhotos();
         setupDateFilters();
     }
 
-    // 3. 사진 마커 생성 및 표시
+    // 4. 사진 마커 생성 및 표시
     function displayPhotos(filterDate = 'all') {
         markers.clearLayers();
         const filteredPhotos = photos.filter(p => filterDate === 'all' || p.date === filterDate);
@@ -36,17 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
             marker.on('click', () => {
                 photoViewerImg.src = photo.url;
                 photoViewerDesc.textContent = photo.description;
-                downloadBtn.href = photo.url; // Data URL은 바로 다운로드 가능
-                downloadBtn.download = `${photo.description.replace(/\s+/g, '_') || 'photo'}.jpg`;
+                downloadBtn.href = photo.url;
+                downloadBtn.download = `${photo.description.replace(/\\s+/g, '_') || 'photo'}.jpg`;
+                expandSidebar();
             });
             markers.addLayer(marker);
         });
         map.addLayer(markers);
     }
 
-    // 4. 날짜 필터 버튼 생성 및 이벤트 처리
+    // 5. 날짜 필터 버튼 생성
     function setupDateFilters() {
-        dateFiltersContainer.innerHTML = '<button class="filter-btn active" data-date="all">모든 날짜</button>'; // 초기화
+        dateFiltersContainer.innerHTML = '<button class="filter-btn active" data-date="all">모든 날짜</button>';
         const uniqueDates = [...new Set(photos.map(p => p.date))].sort();
         uniqueDates.forEach(date => {
             const btn = document.createElement('button');
@@ -57,11 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. 사진 업로드 처리
+    // 6. 사진 업로드 처리
     photoUploadInput.addEventListener('change', async (event) => {
         const files = event.target.files;
         if (!files.length) return;
-
+        
+        document.body.style.cursor = 'wait'; // 로딩 커서
         const photoPromises = Array.from(files).map(file => {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -81,11 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             description: exif.ImageDescription || file.name
                         });
                     } else {
-                        resolve(null); // 위치 정보 없는 사진은 무시
+                        resolve(null);
                     }
                 } catch (e) {
                     console.error('Error processing file:', file.name, e);
-                    reject(e);
+                    resolve(null); // 오류 발생 시 해당 파일만 무시
                 }
             });
         });
@@ -94,10 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
         photos.push(...newPhotos);
         savePhotosToStorage();
         updateUI();
+        document.body.style.cursor = 'default';
         alert(`${newPhotos.length}개의 사진이 추가되었습니다.`);
     });
     
-    // 6. LocalStorage 관련 함수
+    // 7. LocalStorage 관련 함수
     function savePhotosToStorage() {
         localStorage.setItem('myTravelPhotos', JSON.stringify(photos));
     }
@@ -110,20 +132,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // 7. 모든 사진 지우기
+    // 8. 모든 사진 지우기
     clearPhotosBtn.addEventListener('click', () => {
         if (confirm('정말로 모든 사진을 지우시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
             photos = [];
             localStorage.removeItem('myTravelPhotos');
             updateUI();
-            // 화면 초기화
             photoViewerImg.src = '';
             photoViewerDesc.textContent = '';
             downloadBtn.href = '#';
+            collapseSidebar();
         }
     });
 
-    // 8. 여행 경로 표시/숨기기
+    // 9. 여행 경로 표시/숨기기
     toggleRouteBtn.addEventListener('click', () => {
         if (routeLine && map.hasLayer(routeLine)) {
             map.removeLayer(routeLine);
@@ -143,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 9. 날짜 필터 위임 이벤트
+    // 10. 이벤트 리스너 연결
     dateFiltersContainer.addEventListener('click', (e) => {
         if (e.target.classList.contains('filter-btn')) {
             const selectedDate = e.target.dataset.date;
@@ -153,6 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 10. 초기화
+    photoViewerImg.addEventListener('click', expandSidebar);
+    collapseBtn.addEventListener('click', collapseSidebar);
+
+    // 11. 초기화
     loadPhotosFromStorage();
 });
