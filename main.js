@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentObjectUrl = null;
 
-    // 1. 지도 타일 변경 (한글 지도)
-    L.tileLayer('https://tiles.osm.kr/hot/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="http://www.flo.team/">FLO</a>'
+    // 1. 지도 타일 변경 (더 빠른 기본 OpenStreetMap 타일)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     // 2. 핵심 UI 업데이트 함수
