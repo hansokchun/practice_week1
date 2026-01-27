@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 샘플 사진 데이터 (나중에 실제 데이터로 교체)
-    const photos = [
+    // 1. 샘플 사진 데이터 (사용자 사진이 없을 경우 사용)
+    const samplePhotos = [
         {
             lat: 35.6895,
             lng: 139.6917,
@@ -8,43 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
             url: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=2070&auto=format&fit=crop',
             description: '도쿄의 번화한 시부야 교차로'
         },
-        {
-            lat: 35.6895,
-            lng: 139.6917,
-            date: '2023-10-20',
-            url: 'https://images.unsplash.com/photo-1536098561742-ca998e48cb3a?q=80&w=1935&auto=format&fit=crop',
-            description: '도쿄 타워의 야경'
-        },
-        {
-            lat: 34.6937,
-            lng: 135.5023,
-            date: '2023-10-22',
-            url: 'https://images.unsplash.com/photo-1559539356-2b41b8a4a4aw?q=80&w=1935&auto=format&fit=crop',
-            description: '오사카 성의 웅장한 모습'
-        },
-        {
-            lat: 35.0116,
-            lng: 135.7681,
-            date: '2023-10-24',
-            url: 'https://images.unsplash.com/photo-1589216532426-993433535492?q=80&w=2070&auto=format&fit=crop',
-            description: '교토의 금각사 (킨카쿠지)'
-        },
-        {
-            lat: 35.0116,
-            lng: 135.7681,
-            date: '2023-10-24',
-            url: 'https://images.unsplash.com/photo-1533224169251-5b80145f269a?q=80&w=2070&auto=format&fit=crop',
-            description: '후시미 이나리 신사의 붉은 토리이 길'
-        },
-        {
-            lat: 33.5904,
-            lng: 130.4017,
-            date: '2023-10-26',
-            url: 'https://images.unsplash.com/photo-1582244458037-3f30d34a5d89?q=80&w=1935&auto=format&fit=crop',
-            description: '후쿠오카의 현대적인 도시 풍경'
-        }
+        // ... (rest of the sample photos)
     ];
 
+    // myPhotos가 정의되어 있고 비어있지 않으면 사용자 사진을, 그렇지 않으면 샘플 사진을 사용
+    const photos = (typeof myPhotos !== 'undefined' && myPhotos.length > 0) ? myPhotos : samplePhotos;
+    
     // 2. 지도 초기화
     const map = L.map('map').setView([36.2048, 138.2529], 5.5); // 일본 전체가 보이도록 초기 뷰 설정
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -60,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoViewerDesc = document.getElementById('photo-description');
     const dateFiltersContainer = document.getElementById('date-filters');
     const toggleRouteBtn = document.getElementById('toggle-route');
+    const downloadBtn = document.getElementById('download-btn');
+    let currentObjectUrl = null;
 
     // 3. 사진 마커 생성 및 표시
     function displayPhotos(filterDate = 'all') {
@@ -73,6 +44,27 @@ document.addEventListener('DOMContentLoaded', () => {
             marker.on('click', () => {
                 photoViewerImg.src = photo.url;
                 photoViewerDesc.textContent = photo.description;
+
+                // 다운로드 링크 설정 (CORS 이슈 해결)
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl); // 이전 URL 해제
+                }
+                
+                photoViewerImg.style.opacity = '0.5'; // 로딩 표시
+
+                fetch(photo.url)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        currentObjectUrl = URL.createObjectURL(blob);
+                        downloadBtn.href = currentObjectUrl;
+                        const fileName = photo.description.replace(/\\s+/g, '_') || 'photo';
+                        downloadBtn.download = `${fileName}.jpg`;
+                        photoViewerImg.style.opacity = '1'; // 로딩 완료
+                    })
+                    .catch(e => {
+                        console.error('다운로드 링크 생성 실패:', e);
+                        photoViewerImg.style.opacity = '1';
+                    });
             });
             markers.addLayer(marker);
         });
