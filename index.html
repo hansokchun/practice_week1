@@ -1,108 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일본 여행 가이드</title>
+    <title>나의 일본 여행 앨범</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>일본 여행 가이드</h1>
-        <nav>
-            <ul>
-                <li><a href="#destinations">목적지</a></li>
-                <li><a href="#tips">여행 팁</a></li>
-                <li><a href="#contact">문의</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <section id="hero">
-            <h2>일본의 아름다움을 발견하세요</h2>
-            <p>숨 막히는 풍경부터 활기찬 도시까지, 일본에는 모든 것이 있습니다.</p>
-        </section>
-
-        <section id="destinations">
-            <h2>인기 여행지</h2>
-            <div class="card-container">
-                <div class="card">
-                    <img src="images/tokyo.jpg" alt="東京">
-                    <h3>도쿄</h3>
-                    <p>일본의 번화한 수도이자 전통과 현대가 어우러진 도시.</p>
-                </div>
-                <div class="card">
-            <img src="images/kyoto.jpg" alt="京都">
-                    <h3>교토</h3>
-                    <p>아름다운 사찰, 정원, 그리고 전통적인 게이샤로 유명합니다.</p>
-                </div>
-                <div class="card">
-<img src="images/osaka.jpg" alt="大阪">
-                    <h3>오사카</h3>
-                    <p>훌륭한 길거리 음식, 활기찬 밤문화, 그리고 오사카 성으로 유명합니다.</p>
-                </div>
-                <div class="card">
-<img src="images/fukuoka.jpg" alt="후쿠오카">
-                    <h3>후쿠오카</h3>
-                    <p>활기찬 음식 문화와 아름다운 해변으로 유명한 도시입니다.</p>
-                </div>
-                <div class="card">
-<img src="images/hiroshima.jpg" alt="히로시마">
-                    <h3>히로시마</h3>
-                    <p>역사적인 평화 기념 공원과 아름다운 이쓰쿠시마 신사로 유명합니다.</p>
-                </div>
-                <div class="card">
-                    <img src="images/sapporo.jpg" alt="삿포로">
-                    <h3>삿포로</h3>
-                    <p>눈 축제, 맛있는 라멘, 그리고 신선한 해산물로 유명합니다.</p>
-                </div>
-                <div class="card">
-                    <img src="images/nagoya.jpg" alt="나고야">
-                    <h3>나고야</h3>
-                    <p>일본의 중요한 산업 중심지이며, 나고야 성과 아쓰타 신궁이 있습니다.</p>
-                </div>
+    <div id="map"></div>
+    <div id="sidebar">
+        <div id="photo-viewer">
+            <h2>사진 보기</h2>
+            <img id="current-photo" src="" alt="선택된 사진">
+            <p id="photo-description"></p>
+        </div>
+        <div id="controls">
+            <h2>필터 및 옵션</h2>
+            <div id="date-filters">
+                <button class="filter-btn active" data-date="all">모든 날짜</button>
             </div>
-        </section>
+            <button id="toggle-route">여행 경로 보기</button>
+        </div>
+    </div>
 
-        <section id="my-destinations">
-            <h2>나만의 여행지</h2>
-            <div class="card-container">
-                <div class="card">
-                    <img src="images/otaru.jpg" alt="오타루">
-                    <h3>오타루</h3>
-                    <p>아름다운 운하와 유리 공예로 유명한 로맨틱한 도시입니다.</p>
-                </div>
-                <div class="card">
-                    <img src="images/beppu.jpg" alt="벳푸">
-                    <h3>벳푸</h3>
-                    <p>온천으로 유명한 도시로, 다양한 종류의 온천을 즐길 수 있습니다.</p>
-                </div>
-                <div class="card">
-                    <img src="images/nara.jpg" alt="나라">
-                    <h3>나라</h3>
-                    <p>사슴 공원과 거대한 불상이 있는 도다이지 절로 유명합니다.</p>
-                </div>
-            </div>
-        </section>
-        
-        <section id="tips">
-            <h2>여행 팁</h2>
-            <ul>
-                <li>JR 패스를 구매하세요</li>
-                <li>현금을 소지하세요</li>
-                <li>기본적인 일본어 문구를 배우세요</li>
-                <li>예의를 지키고 현지 관습을 존중하세요</li>
-            </ul>
-        </section>
-    </main>
-
-
-    <footer>
-        <p>&copy; 2024 일본 여행 가이드</p>
-    </footer>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
