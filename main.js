@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     let photos = [];
+    const dbName = 'JapanTripDB';
+    const storeName = 'photos';
+    const dbPromise = idb.openDB(dbName, 1, {
+        upgrade(db) {
+            db.createObjectStore(storeName, { autoIncrement: true });
+        },
+    });
+
     const mapContainer = document.getElementById('map');
     const sidebar = document.getElementById('sidebar');
     const map = L.map(mapContainer).setView([36.2048, 138.2529], 5.5);
@@ -29,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sidebar.classList.contains('expanded')) return;
         sidebar.classList.add('expanded');
         mapContainer.style.right = expandedSidebarWidth;
-        setTimeout(() => map.invalidateSize(), 250); // 애니메이션 중간에 맞춤
+        setTimeout(() => map.invalidateSize(), 250);
     }
 
     function collapseSidebar() {
@@ -77,14 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. 사진 업로드 처리
+    // 6. 사진 업로드 처리 (IndexedDB 사용)
     photoUploadInput.addEventListener('change', async (event) => {
         const files = event.target.files;
         if (!files.length) return;
 
         try {
-            document.body.style.cursor = 'wait'; // 로딩 커서
-
+            document.body.style.cursor = 'wait';
             const photoPromises = Array.from(files).map(file => {
                 return new Promise(async (resolve) => {
                     try {
@@ -108,15 +115,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } catch (e) {
                         console.error('Error processing file:', file.name, e);
-                        resolve(null); // 오류 발생 시 해당 파일만 무시
+                        resolve(null);
                     }
                 });
             });
 
             const newPhotos = (await Promise.all(photoPromises)).filter(p => p !== null);
-            photos.push(...newPhotos);
-            savePhotosToStorage();
-            updateUI();
+            if (newPhotos.length > 0) {
+                await savePhotosToDB(newPhotos);
+                photos.push(...newPhotos);
+                updateUI();
+            }
             
             alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
 
@@ -124,31 +133,37 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("An unexpected error occurred during photo upload:", error);
             alert("사진을 올리는 중 예상치 못한 오류가 발생했습니다. 개발자 콘솔을 확인해주세요.");
         } finally {
-            // 이 블록은 성공/실패 여부와 관계없이 항상 실행됩니다.
             document.body.style.cursor = 'default';
-            event.target.value = null; // 입력 필드 초기화
+            event.target.value = null;
         }
     });
     
-    // 7. LocalStorage 관련 함수
-    function savePhotosToStorage() {
-        localStorage.setItem('myTravelPhotos', JSON.stringify(photos));
+    // 7. IndexedDB 관련 함수
+    async function savePhotosToDB(newPhotos) {
+        const db = await dbPromise;
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        for (const photo of newPhotos) {
+            store.add(photo);
+        }
+        await tx.done;
     }
 
-    function loadPhotosFromStorage() {
-        const storedPhotos = localStorage.getItem('myTravelPhotos');
-        if (storedPhotos) {
-            photos = JSON.parse(storedPhotos);
-            updateUI();
-        }
+    async function loadPhotosFromDB() {
+        const db = await dbPromise;
+        photos = await db.getAll(storeName);
+        updateUI();
     }
     
-    // 8. 모든 사진 지우기
-    clearPhotosBtn.addEventListener('click', () => {
+    // 8. 모든 사진 지우기 (IndexedDB)
+    clearPhotosBtn.addEventListener('click', async () => {
         if (confirm('정말로 모든 사진을 지우시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+            const db = await dbPromise;
+            await db.clear(storeName);
+
             photos = [];
-            localStorage.removeItem('myTravelPhotos');
             updateUI();
+            
             photoViewerImg.src = '';
             photoViewerDesc.textContent = '';
             downloadBtn.href = '#';
@@ -189,6 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     photoViewerImg.addEventListener('click', expandSidebar);
     collapseBtn.addEventListener('click', collapseSidebar);
 
-    // 11. 초기화
-    loadPhotosFromStorage();
+    // 11. 초기화 (IndexedDB에서 데이터 로드)
+    loadPhotosFromDB();
 });
