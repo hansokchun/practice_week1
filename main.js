@@ -81,43 +81,53 @@ document.addEventListener('DOMContentLoaded', () => {
     photoUploadInput.addEventListener('change', async (event) => {
         const files = event.target.files;
         if (!files.length) return;
-        
-        document.body.style.cursor = 'wait'; // 로딩 커서
-        const photoPromises = Array.from(files).map(file => {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const exif = await exifr.parse(file);
-                    const dataUrl = await new Promise(r => {
-                        const reader = new FileReader();
-                        reader.onload = e => r(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
 
-                    if (exif && exif.latitude && exif.longitude) {
-                        resolve({
-                            lat: exif.latitude,
-                            lng: exif.longitude,
-                            date: (exif.DateTimeOriginal || exif.CreateDate)?.toISOString().split('T')[0] || '날짜 없음',
-                            url: dataUrl,
-                            description: exif.ImageDescription || file.name
+        try {
+            document.body.style.cursor = 'wait'; // 로딩 커서
+
+            const photoPromises = Array.from(files).map(file => {
+                return new Promise(async (resolve) => {
+                    try {
+                        const exif = await exifr.parse(file);
+                        const dataUrl = await new Promise(r => {
+                            const reader = new FileReader();
+                            reader.onload = e => r(e.target.result);
+                            reader.readAsDataURL(file);
                         });
-                    } else {
-                        resolve(null);
+
+                        if (exif && exif.latitude && exif.longitude) {
+                            resolve({
+                                lat: exif.latitude,
+                                lng: exif.longitude,
+                                date: (exif.DateTimeOriginal || exif.CreateDate)?.toISOString().split('T')[0] || '날짜 없음',
+                                url: dataUrl,
+                                description: exif.ImageDescription || file.name
+                            });
+                        } else {
+                            resolve(null);
+                        }
+                    } catch (e) {
+                        console.error('Error processing file:', file.name, e);
+                        resolve(null); // 오류 발생 시 해당 파일만 무시
                     }
-                } catch (e) {
-                    console.error('Error processing file:', file.name, e);
-                    resolve(null); // 오류 발생 시 해당 파일만 무시
-                }
+                });
             });
-        });
-        
-        const newPhotos = (await Promise.all(photoPromises)).filter(p => p !== null);
-        photos.push(...newPhotos);
-        savePhotosToStorage();
-        updateUI();
-        document.body.style.cursor = 'default';
-        alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
-        event.target.value = null; // 입력 필드 초기화
+
+            const newPhotos = (await Promise.all(photoPromises)).filter(p => p !== null);
+            photos.push(...newPhotos);
+            savePhotosToStorage();
+            updateUI();
+            
+            alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
+
+        } catch (error) {
+            console.error("An unexpected error occurred during photo upload:", error);
+            alert("사진을 올리는 중 예상치 못한 오류가 발생했습니다. 개발자 콘솔을 확인해주세요.");
+        } finally {
+            // 이 블록은 성공/실패 여부와 관계없이 항상 실행됩니다.
+            document.body.style.cursor = 'default';
+            event.target.value = null; // 입력 필드 초기화
+        }
     });
     
     // 7. LocalStorage 관련 함수
