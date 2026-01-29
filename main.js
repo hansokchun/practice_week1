@@ -1,11 +1,18 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Make the DOMContentLoaded listener async
     let photos = [];
     let sharedPhotos = []; // 공유된 사진을 저장할 배열
     const dbName = 'JapanTripDB';
-    const storeName = 'photos';
+    const photoStoreName = 'photos'; // Renamed for clarity
+    const sharedStoreName = 'sharedPhotos'; // New store name
+
     const dbPromise = idb.openDB(dbName, 1, {
         upgrade(db) {
-            db.createObjectStore(storeName, { autoIncrement: true });
+            if (!db.objectStoreNames.contains(photoStoreName)) {
+                db.createObjectStore(photoStoreName, { autoIncrement: true });
+            }
+            if (!db.objectStoreNames.contains(sharedStoreName)) {
+                db.createObjectStore(sharedStoreName, { keyPath: 'id' }); // Shared photos will have an 'id'
+            }
         },
     });
 
@@ -157,8 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7. IndexedDB 관련 함수
     async function savePhotosToDB(newPhotos) {
         const db = await dbPromise;
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
+        const tx = db.transaction(photoStoreName, 'readwrite');
+        const store = tx.objectStore(photoStoreName);
         for (const photo of newPhotos) {
             store.add(photo);
         }
@@ -167,15 +174,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadPhotosFromDB() {
         const db = await dbPromise;
-        photos = await db.getAll(storeName);
+        photos = await db.getAll(photoStoreName);
         updateUI();
+    }
+
+    async function saveSharedPhotosToDB(photo) {
+        const db = await dbPromise;
+        const tx = db.transaction(sharedStoreName, 'readwrite');
+        const store = tx.objectStore(sharedStoreName);
+        await store.put(photo); // Use put to add or update
+        await tx.done;
+    }
+
+    async function loadSharedPhotosFromDB() {
+        const db = await dbPromise;
+        sharedPhotos = await db.getAll(sharedStoreName);
+        // sharedPhotos 배열을 로드한 후, renderSharedPhotos()를 호출하여 UI를 초기화해야 할 수 있습니다.
+        // 하지만 초기 로드 시점에는 sharedPhotosContainer가 숨겨져 있으므로, 
+        // showSharedPhotosView()가 호출될 때 renderSharedPhotos()가 호출되도록 유지합니다.
     }
     
     // 8. 모든 사진 지우기 (IndexedDB)
     clearPhotosBtn.addEventListener('click', async () => {
         if (confirm('정말로 모든 사진을 지우시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
             const db = await dbPromise;
-            await db.clear(storeName);
+            await db.clear(photoStoreName);
 
             photos = [];
             updateUI();
@@ -228,6 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 11. 공유 사진 보기 렌더링
     function renderSharedPhotos() {
         sharedPhotosList.innerHTML = ''; // 목록 초기화
+        if (sharedPhotos.length === 0) {
+            sharedPhotosList.innerHTML = '<p style="text-align: center; color: #8c7b70;">아직 공유된 사진이 없습니다.</p>';
+            return;
+        }
         sharedPhotos.forEach(photo => {
             const item = document.createElement('div');
             item.className = 'shared-photo-item';
@@ -235,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${photo.url}" alt="${photo.description}">
                 <p>${photo.description}</p>
                 <div class="shared-photo-actions">
-                    <button class="like-btn" data-id="${photo.id}">${photo.liked ? '❤️' : '♡'} 좋아요 ${photo.likes}</button>
+                    <button class="like-btn ${photo.liked ? 'liked' : ''}" data-id="${photo.id}">${photo.liked ? '❤️' : '♡'} 좋아요 ${photo.likes}</button>
                 </div>
                 <div class="comments-container">
                     <ul class="comments-list">
@@ -267,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 13. 공유하기 버튼 이벤트
-    sharePhotoBtn.addEventListener('click', () => {
+    sharePhotoBtn.addEventListener('click', async () => { // Make async
         const currentUrl = photoViewerImg.src;
         if (!currentUrl) return;
 
@@ -286,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
             comments: []
         };
         sharedPhotos.push(newSharedPhoto);
+        await saveSharedPhotosToDB(newSharedPhoto); // Save to DB
         alert('사진이 공유되었습니다!');
         sharePhotoBtn.style.display = 'none';
     });
@@ -297,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backToMainBtn.addEventListener('click', showMainView);
 
     // 16. 좋아요 및 댓글 동적 이벤트 리스너 (이벤트 위임)
-    sharedPhotosList.addEventListener('click', (e) => {
+    sharedPhotosList.addEventListener('click', async (e) => { // Make async
         if (e.target.classList.contains('like-btn')) {
             const photoId = parseInt(e.target.dataset.id);
             const photo = sharedPhotos.find(p => p.id === photoId);
@@ -308,12 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     photo.likes++;
                 }
                 photo.liked = !photo.liked;
+                await saveSharedPhotosToDB(photo); // Save updated photo to DB
                 renderSharedPhotos(); // UI 다시 렌더링
             }
         }
     });
 
-    sharedPhotosList.addEventListener('submit', (e) => {
+    sharedPhotosList.addEventListener('submit', async (e) => { // Make async
         if (e.target.classList.contains('comment-form')) {
             e.preventDefault();
             const photoId = parseInt(e.target.dataset.id);
@@ -325,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (photo) {
                     photo.comments.push(commentText);
                     input.value = '';
+                    await saveSharedPhotosToDB(photo); // Save updated photo to DB
                     renderSharedPhotos(); // UI 다시 렌더링
                 }
             }
@@ -333,5 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // 17. 초기화 (IndexedDB에서 데이터 로드)
-    loadPhotosFromDB();
+    await loadPhotosFromDB(); // Wait for photos to load
+    await loadSharedPhotosFromDB(); // Load shared photos after regular photos
 });
