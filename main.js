@@ -1,17 +1,18 @@
-document.addEventListener('DOMContentLoaded', async () => { // Make the DOMContentLoaded listener async
+document.addEventListener('DOMContentLoaded', async () => {
     let photos = [];
-    let sharedPhotos = []; // 공유된 사진을 저장할 배열
+    let sharedPhotos = [];
+    let currentSelectedPhoto = null;
     const dbName = 'JapanTripDB';
-    const photoStoreName = 'photos'; // Renamed for clarity
-    const sharedStoreName = 'sharedPhotos'; // New store name
+    const photoStoreName = 'photos';
+    const sharedStoreName = 'sharedPhotos';
 
-    const dbPromise = idb.openDB(dbName, 1, {
+    const dbPromise = idb.openDB(dbName, 2, { // Incremented DB version
         upgrade(db) {
             if (!db.objectStoreNames.contains(photoStoreName)) {
                 db.createObjectStore(photoStoreName, { autoIncrement: true });
             }
             if (!db.objectStoreNames.contains(sharedStoreName)) {
-                db.createObjectStore(sharedStoreName, { keyPath: 'id' }); // Shared photos will have an 'id'
+                db.createObjectStore(sharedStoreName, { keyPath: 'id' });
             }
         },
     });
@@ -19,8 +20,17 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
     const mapContainer = document.getElementById('map');
     const sidebar = document.getElementById('sidebar');
     const map = L.map(mapContainer).setView([36.2048, 138.2529], 5.5);
-    const markers = L.markerClusterGroup();
+    const mainMarkers = L.markerClusterGroup();
+    const sharedMarkers = L.markerClusterGroup();
     let routeLine = null;
+
+    // --- Custom Icon ---
+    const heartIcon = L.divIcon({
+        className: 'heart-icon',
+        html: '❤️',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
 
     // UI 요소 참조
     const photoViewer = document.getElementById('photo-viewer');
@@ -33,69 +43,58 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
     const photoUploadInput = document.getElementById('photo-upload');
     const clearPhotosBtn = document.getElementById('clear-photos');
     const collapseBtn = document.getElementById('collapse-btn');
-
-    // 새로 추가된 UI 요소 참조
     const sharePhotoBtn = document.getElementById('share-photo-btn');
     const viewSharedPhotosBtn = document.getElementById('view-shared-photos-btn');
     const sharedPhotosContainer = document.getElementById('shared-photos-container');
     const backToMainBtn = document.getElementById('back-to-main-btn');
     const sharedPhotosList = document.getElementById('shared-photos-list');
 
-
-    // 1. 지도 타일 설정
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // 2. 사이드바 확장/축소 함수
-    const originalSidebarWidth = '360px';
-    const expandedSidebarWidth = '65vw';
-
     function expandSidebar() {
         if (sidebar.classList.contains('expanded')) return;
         sidebar.classList.add('expanded');
-        mapContainer.style.right = expandedSidebarWidth;
+        mapContainer.style.right = '65vw';
         setTimeout(() => map.invalidateSize(), 250);
     }
 
     function collapseSidebar() {
         if (!sidebar.classList.contains('expanded')) return;
         sidebar.classList.remove('expanded');
-        mapContainer.style.right = originalSidebarWidth;
+        mapContainer.style.right = '360px';
         setTimeout(() => map.invalidateSize(), 250);
-        sharePhotoBtn.style.display = 'none'; // 사이드바 축소 시 공유 버튼 숨기기
+        sharePhotoBtn.style.display = 'none';
+        currentSelectedPhoto = null;
     }
-    
-    // 3. 핵심 UI 업데이트 함수
+
     function updateUI() {
         displayPhotos();
         setupDateFilters();
     }
 
-    // 4. 사진 마커 생성 및 표시
     function displayPhotos(filterDate = 'all') {
-        markers.clearLayers();
+        mainMarkers.clearLayers();
         const filteredPhotos = photos.filter(p => filterDate === 'all' || p.date === filterDate);
 
         filteredPhotos.forEach(photo => {
-            const marker = L.marker([photo.lat, photo.lng]);
+            const marker = L.marker([photo.lat, photo.lng], { icon: heartIcon });
             marker.on('click', () => {
+                currentSelectedPhoto = photo;
                 photoViewerImg.src = photo.url;
                 photoViewerDesc.textContent = photo.description;
                 downloadBtn.href = photo.url;
                 downloadBtn.download = `${photo.description.replace(/\\s+/g, '_') || 'photo'}.jpg`;
-                
-                sharePhotoBtn.style.display = 'block'; // 마커 클릭 시 공유 버튼 표시
-                viewSharedPhotosBtn.style.display = 'none'; // 다른 사람 공유 보기 버튼 숨기기
-
+                sharePhotoBtn.style.display = 'block';
+                viewSharedPhotosBtn.style.display = 'none';
                 expandSidebar();
             });
-            markers.addLayer(marker);
+            mainMarkers.addLayer(marker);
         });
-        map.addLayer(markers);
+        map.addLayer(mainMarkers);
     }
 
-    // 5. 날짜 필터 버튼 생성
     function setupDateFilters() {
         dateFiltersContainer.innerHTML = '<button class="filter-btn active" data-date="all">모든 날짜</button>';
         const uniqueDates = [...new Set(photos.map(p => p.date))].sort();
@@ -108,67 +107,47 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
         });
     }
 
-    // 6. 사진 업로드 처리 (IndexedDB 사용)
     photoUploadInput.addEventListener('change', async (event) => {
         const files = event.target.files;
         if (!files.length) return;
-
-        try {
-            document.body.style.cursor = 'wait';
-            const photoPromises = Array.from(files).map(file => {
-                return new Promise(async (resolve) => {
-                    try {
-                        const exif = await exifr.parse(file);
-                        const dataUrl = await new Promise(r => {
-                            const reader = new FileReader();
-                            reader.onload = e => r(e.target.result);
-                            reader.readAsDataURL(file);
-                        });
-
-                        if (exif && exif.latitude && exif.longitude) {
-                            resolve({
-                                lat: exif.latitude,
-                                lng: exif.longitude,
-                                date: (exif.DateTimeOriginal || exif.CreateDate)?.toISOString().split('T')[0] || '날짜 없음',
-                                url: dataUrl,
-                                description: exif.ImageDescription || file.name
-                            });
-                        } else {
-                            resolve(null);
-                        }
-                    } catch (e) {
-                        console.error('Error processing file:', file.name, e);
-                        resolve(null);
-                    }
+        document.body.style.cursor = 'wait';
+        const photoPromises = Array.from(files).map(file => new Promise(async (resolve) => {
+            try {
+                const exif = await exifr.parse(file);
+                const dataUrl = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = e => r(e.target.result);
+                    reader.readAsDataURL(file);
                 });
-            });
-
-            const newPhotos = (await Promise.all(photoPromises)).filter(p => p !== null);
-            if (newPhotos.length > 0) {
-                await savePhotosToDB(newPhotos);
-                photos.push(...newPhotos);
-                updateUI();
+                if (exif && exif.latitude && exif.longitude) {
+                    resolve({
+                        lat: exif.latitude,
+                        lng: exif.longitude,
+                        date: (exif.DateTimeOriginal || exif.CreateDate)?.toISOString().split('T')[0] || '날짜 없음',
+                        url: dataUrl,
+                        description: exif.ImageDescription || file.name
+                    });
+                } else { resolve(null); }
+            } catch (e) {
+                console.error('Error processing file:', file.name, e);
+                resolve(null);
             }
-            
-            alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
-
-        } catch (error) {
-            console.error("An unexpected error occurred during photo upload:", error);
-            alert("사진을 올리는 중 예상치 못한 오류가 발생했습니다. 개발자 콘솔을 확인해주세요.");
-        } finally {
-            document.body.style.cursor = 'default';
-            event.target.value = null;
+        }));
+        const newPhotos = (await Promise.all(photoPromises)).filter(p => p !== null);
+        if (newPhotos.length > 0) {
+            await savePhotosToDB(newPhotos);
+            photos.push(...newPhotos);
+            updateUI();
         }
+        alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
+        document.body.style.cursor = 'default';
+        event.target.value = null;
     });
-    
-    // 7. IndexedDB 관련 함수
+
     async function savePhotosToDB(newPhotos) {
         const db = await dbPromise;
         const tx = db.transaction(photoStoreName, 'readwrite');
-        const store = tx.objectStore(photoStoreName);
-        for (const photo of newPhotos) {
-            store.add(photo);
-        }
+        await Promise.all(newPhotos.map(photo => tx.store.add(photo)));
         await tx.done;
     }
 
@@ -178,31 +157,22 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
         updateUI();
     }
 
-    async function saveSharedPhotosToDB(photo) {
+    async function saveSharedPhotoToDB(photo) {
         const db = await dbPromise;
-        const tx = db.transaction(sharedStoreName, 'readwrite');
-        const store = tx.objectStore(sharedStoreName);
-        await store.put(photo); // Use put to add or update
-        await tx.done;
+        await db.put(sharedStoreName, photo);
     }
 
     async function loadSharedPhotosFromDB() {
         const db = await dbPromise;
         sharedPhotos = await db.getAll(sharedStoreName);
-        // sharedPhotos 배열을 로드한 후, renderSharedPhotos()를 호출하여 UI를 초기화해야 할 수 있습니다.
-        // 하지만 초기 로드 시점에는 sharedPhotosContainer가 숨겨져 있으므로, 
-        // showSharedPhotosView()가 호출될 때 renderSharedPhotos()가 호출되도록 유지합니다.
     }
-    
-    // 8. 모든 사진 지우기 (IndexedDB)
+
     clearPhotosBtn.addEventListener('click', async () => {
         if (confirm('정말로 모든 사진을 지우시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
             const db = await dbPromise;
             await db.clear(photoStoreName);
-
             photos = [];
             updateUI();
-            
             photoViewerImg.src = '';
             photoViewerDesc.textContent = '';
             downloadBtn.href = '#';
@@ -210,47 +180,45 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
         }
     });
 
-    // 9. 여행 경로 표시/숨기기
     toggleRouteBtn.addEventListener('click', () => {
         if (routeLine && map.hasLayer(routeLine)) {
             map.removeLayer(routeLine);
             toggleRouteBtn.classList.remove('active');
-            toggleRouteBtn.textContent = '여행 경로 보기';
         } else {
-            if (photos.length < 2) {
-                alert('경로를 그리려면 2장 이상의 사진이 필요합니다.');
-                return;
-            }
+            if (photos.length < 2) return alert('경로를 그리려면 2장 이상의 사진이 필요합니다.');
             const routeCoords = photos.sort((a, b) => new Date(a.date) - new Date(b.date)).map(p => [p.lat, p.lng]);
-            routeLine = L.polyline(routeCoords, { color: 'blue', weight: 3 });
-            map.addLayer(routeLine);
+            routeLine = L.polyline(routeCoords, { color: 'blue', weight: 3 }).addTo(map);
             toggleRouteBtn.classList.add('active');
-            toggleRouteBtn.textContent = '여행 경로 숨기기';
             map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
         }
     });
 
-    // 10. 이벤트 리스너 연결
     dateFiltersContainer.addEventListener('click', (e) => {
         if (e.target.classList.contains('filter-btn')) {
-            const selectedDate = e.target.dataset.date;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            displayPhotos(selectedDate);
+            displayPhotos(e.target.dataset.date);
         }
     });
 
     photoViewerImg.addEventListener('click', expandSidebar);
     collapseBtn.addEventListener('click', () => {
         collapseSidebar();
-        viewSharedPhotosBtn.style.display = 'block'; // 사이드바 축소 시 다른 사람 공유 보기 버튼 다시 표시
+        viewSharedPhotosBtn.style.display = 'block';
     });
 
-    // --- 공유 기능 관련 로직 ---
+    function renderSharedMarkers() {
+        sharedMarkers.clearLayers();
+        sharedPhotos.forEach(photo => {
+            const marker = L.marker([photo.lat, photo.lng], { icon: heartIcon })
+                .bindPopup(`<b>${photo.description}</b>`);
+            photo.marker = marker; // Store marker reference
+            sharedMarkers.addLayer(marker);
+        });
+    }
 
-    // 11. 공유 사진 보기 렌더링
     function renderSharedPhotos() {
-        sharedPhotosList.innerHTML = ''; // 목록 초기화
+        sharedPhotosList.innerHTML = '';
         if (sharedPhotos.length === 0) {
             sharedPhotosList.innerHTML = '<p style="text-align: center; color: #8c7b70;">아직 공유된 사진이 없습니다.</p>';
             return;
@@ -258,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
         sharedPhotos.forEach(photo => {
             const item = document.createElement('div');
             item.className = 'shared-photo-item';
+            item.dataset.id = photo.id;
             item.innerHTML = `
                 <img src="${photo.url}" alt="${photo.description}">
                 <p>${photo.description}</p>
@@ -265,24 +234,23 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
                     <button class="like-btn ${photo.liked ? 'liked' : ''}" data-id="${photo.id}">${photo.liked ? '❤️' : '♡'} 좋아요 ${photo.likes}</button>
                 </div>
                 <div class="comments-container">
-                    <ul class="comments-list">
-                        ${photo.comments.map(comment => `<li>${comment}</li>`).join('')}
-                    </ul>
-                    <form class="comment-form" data-id="${photo.id}">
-                        <input type="text" placeholder="댓글 달기..." required>
-                        <button type="submit">등록</button>
-                    </form>
-                </div>
-            `;
+                    <ul class="comments-list">${photo.comments.map(c => `<li>${c}</li>`).join('')}</ul>
+                    <form class="comment-form" data-id="${photo.id}"><input type="text" placeholder="댓글 달기..." required><button type="submit">등록</button></form>
+                </div>`;
             sharedPhotosList.appendChild(item);
         });
     }
 
-    // 12. 뷰 전환 함수
     function showSharedPhotosView() {
         photoViewer.style.display = 'none';
         controls.style.display = 'none';
         sharedPhotosContainer.style.display = 'block';
+        map.removeLayer(mainMarkers);
+        renderSharedMarkers();
+        map.addLayer(sharedMarkers);
+        if (sharedPhotos.length > 0) {
+             map.fitBounds(sharedMarkers.getBounds(), { padding: [50, 50] });
+        }
         renderSharedPhotos();
     }
 
@@ -290,79 +258,79 @@ document.addEventListener('DOMContentLoaded', async () => { // Make the DOMConte
         photoViewer.style.display = 'block';
         controls.style.display = 'block';
         sharedPhotosContainer.style.display = 'none';
+        map.removeLayer(sharedMarkers);
+        map.addLayer(mainMarkers);
         viewSharedPhotosBtn.style.display = 'block';
+        if (photos.length > 0) {
+            map.fitBounds(mainMarkers.getBounds(), { padding: [50, 50] });
+        }
     }
 
-    // 13. 공유하기 버튼 이벤트
-    sharePhotoBtn.addEventListener('click', async () => { // Make async
-        const currentUrl = photoViewerImg.src;
-        if (!currentUrl) return;
-
-        // 이미 공유된 사진인지 확인
-        if (sharedPhotos.some(p => p.url === currentUrl)) {
+    sharePhotoBtn.addEventListener('click', async () => {
+        if (!currentSelectedPhoto) return;
+        if (sharedPhotos.some(p => p.url === currentSelectedPhoto.url)) {
             alert('이미 공유된 사진입니다.');
             return;
         }
-
         const newSharedPhoto = {
-            id: Date.now(), // 간단한 고유 ID 생성
-            url: currentUrl,
-            description: photoViewerDesc.textContent,
+            id: Date.now(),
+            url: currentSelectedPhoto.url,
+            description: currentSelectedPhoto.description,
+            lat: currentSelectedPhoto.lat,
+            lng: currentSelectedPhoto.lng,
             likes: 0,
             liked: false,
             comments: []
         };
         sharedPhotos.push(newSharedPhoto);
-        await saveSharedPhotosToDB(newSharedPhoto); // Save to DB
-        alert('사진이 공유되었습니다!');
+        await saveSharedPhotoToDB(newSharedPhoto);
         sharePhotoBtn.style.display = 'none';
+        currentSelectedPhoto = null;
+        showSharedPhotosView(); // Switch to shared view
     });
 
-    // 14. 다른 사람 공유 보기 버튼 이벤트
     viewSharedPhotosBtn.addEventListener('click', showSharedPhotosView);
-
-    // 15. 돌아가기 버튼 이벤트
     backToMainBtn.addEventListener('click', showMainView);
 
-    // 16. 좋아요 및 댓글 동적 이벤트 리스너 (이벤트 위임)
-    sharedPhotosList.addEventListener('click', async (e) => { // Make async
+    sharedPhotosList.addEventListener('click', async (e) => {
+        const photoId = parseInt(e.target.dataset.id);
         if (e.target.classList.contains('like-btn')) {
-            const photoId = parseInt(e.target.dataset.id);
             const photo = sharedPhotos.find(p => p.id === photoId);
             if (photo) {
-                if (photo.liked) {
-                    photo.likes--;
-                } else {
-                    photo.likes++;
-                }
+                photo.liked ? photo.likes-- : photo.likes++;
                 photo.liked = !photo.liked;
-                await saveSharedPhotosToDB(photo); // Save updated photo to DB
-                renderSharedPhotos(); // UI 다시 렌더링
+                await saveSharedPhotoToDB(photo);
+                renderSharedPhotos();
+            }
+        } else if (e.target.closest('.shared-photo-item')) {
+            const item = e.target.closest('.shared-photo-item');
+            const clickedId = parseInt(item.dataset.id);
+            const photo = sharedPhotos.find(p => p.id === clickedId);
+            if (photo && photo.marker) {
+                map.setView([photo.lat, photo.lng], 17);
+                photo.marker.openPopup();
             }
         }
     });
 
-    sharedPhotosList.addEventListener('submit', async (e) => { // Make async
+    sharedPhotosList.addEventListener('submit', async (e) => {
+        e.preventDefault();
         if (e.target.classList.contains('comment-form')) {
-            e.preventDefault();
             const photoId = parseInt(e.target.dataset.id);
             const input = e.target.querySelector('input');
             const commentText = input.value.trim();
-            
             if (commentText) {
                 const photo = sharedPhotos.find(p => p.id === photoId);
                 if (photo) {
                     photo.comments.push(commentText);
                     input.value = '';
-                    await saveSharedPhotosToDB(photo); // Save updated photo to DB
-                    renderSharedPhotos(); // UI 다시 렌더링
+                    await saveSharedPhotoToDB(photo);
+                    renderSharedPhotos();
                 }
             }
         }
     });
 
-
-    // 17. 초기화 (IndexedDB에서 데이터 로드)
-    await loadPhotosFromDB(); // Wait for photos to load
-    await loadSharedPhotosFromDB(); // Load shared photos after regular photos
+    await loadPhotosFromDB();
+    await loadSharedPhotosFromDB();
 });
