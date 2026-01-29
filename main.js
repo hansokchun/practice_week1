@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let photos = [];
+    let sharedPhotos = []; // 공유된 사진을 저장할 배열
     const dbName = 'JapanTripDB';
     const storeName = 'photos';
     const dbPromise = idb.openDB(dbName, 1, {
@@ -15,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let routeLine = null;
 
     // UI 요소 참조
+    const photoViewer = document.getElementById('photo-viewer');
+    const controls = document.getElementById('controls');
     const photoViewerImg = document.getElementById('current-photo');
     const photoViewerDesc = document.getElementById('photo-description');
     const dateFiltersContainer = document.getElementById('date-filters');
@@ -23,6 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoUploadInput = document.getElementById('photo-upload');
     const clearPhotosBtn = document.getElementById('clear-photos');
     const collapseBtn = document.getElementById('collapse-btn');
+
+    // 새로 추가된 UI 요소 참조
+    const sharePhotoBtn = document.getElementById('share-photo-btn');
+    const viewSharedPhotosBtn = document.getElementById('view-shared-photos-btn');
+    const sharedPhotosContainer = document.getElementById('shared-photos-container');
+    const backToMainBtn = document.getElementById('back-to-main-btn');
+    const sharedPhotosList = document.getElementById('shared-photos-list');
+
 
     // 1. 지도 타일 설정
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -45,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.remove('expanded');
         mapContainer.style.right = originalSidebarWidth;
         setTimeout(() => map.invalidateSize(), 250);
+        sharePhotoBtn.style.display = 'none'; // 사이드바 축소 시 공유 버튼 숨기기
     }
     
     // 3. 핵심 UI 업데이트 함수
@@ -65,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 photoViewerDesc.textContent = photo.description;
                 downloadBtn.href = photo.url;
                 downloadBtn.download = `${photo.description.replace(/\\s+/g, '_') || 'photo'}.jpg`;
+                
+                sharePhotoBtn.style.display = 'block'; // 마커 클릭 시 공유 버튼 표시
+                viewSharedPhotosBtn.style.display = 'none'; // 다른 사람 공유 보기 버튼 숨기기
+
                 expandSidebar();
             });
             markers.addLayer(marker);
@@ -202,8 +218,120 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     photoViewerImg.addEventListener('click', expandSidebar);
-    collapseBtn.addEventListener('click', collapseSidebar);
+    collapseBtn.addEventListener('click', () => {
+        collapseSidebar();
+        viewSharedPhotosBtn.style.display = 'block'; // 사이드바 축소 시 다른 사람 공유 보기 버튼 다시 표시
+    });
 
-    // 11. 초기화 (IndexedDB에서 데이터 로드)
+    // --- 공유 기능 관련 로직 ---
+
+    // 11. 공유 사진 보기 렌더링
+    function renderSharedPhotos() {
+        sharedPhotosList.innerHTML = ''; // 목록 초기화
+        sharedPhotos.forEach(photo => {
+            const item = document.createElement('div');
+            item.className = 'shared-photo-item';
+            item.innerHTML = `
+                <img src="${photo.url}" alt="${photo.description}">
+                <p>${photo.description}</p>
+                <div class="shared-photo-actions">
+                    <button class="like-btn" data-id="${photo.id}">${photo.liked ? '❤️' : '♡'} 좋아요 ${photo.likes}</button>
+                </div>
+                <div class="comments-container">
+                    <ul class="comments-list">
+                        ${photo.comments.map(comment => `<li>${comment}</li>`).join('')}
+                    </ul>
+                    <form class="comment-form" data-id="${photo.id}">
+                        <input type="text" placeholder="댓글 달기..." required>
+                        <button type="submit">등록</button>
+                    </form>
+                </div>
+            `;
+            sharedPhotosList.appendChild(item);
+        });
+    }
+
+    // 12. 뷰 전환 함수
+    function showSharedPhotosView() {
+        photoViewer.style.display = 'none';
+        controls.style.display = 'none';
+        sharedPhotosContainer.style.display = 'block';
+        renderSharedPhotos();
+    }
+
+    function showMainView() {
+        photoViewer.style.display = 'block';
+        controls.style.display = 'block';
+        sharedPhotosContainer.style.display = 'none';
+        viewSharedPhotosBtn.style.display = 'block';
+    }
+
+    // 13. 공유하기 버튼 이벤트
+    sharePhotoBtn.addEventListener('click', () => {
+        const currentUrl = photoViewerImg.src;
+        if (!currentUrl) return;
+
+        // 이미 공유된 사진인지 확인
+        if (sharedPhotos.some(p => p.url === currentUrl)) {
+            alert('이미 공유된 사진입니다.');
+            return;
+        }
+
+        const newSharedPhoto = {
+            id: Date.now(), // 간단한 고유 ID 생성
+            url: currentUrl,
+            description: photoViewerDesc.textContent,
+            likes: 0,
+            liked: false,
+            comments: []
+        };
+        sharedPhotos.push(newSharedPhoto);
+        alert('사진이 공유되었습니다!');
+        sharePhotoBtn.style.display = 'none';
+    });
+
+    // 14. 다른 사람 공유 보기 버튼 이벤트
+    viewSharedPhotosBtn.addEventListener('click', showSharedPhotosView);
+
+    // 15. 돌아가기 버튼 이벤트
+    backToMainBtn.addEventListener('click', showMainView);
+
+    // 16. 좋아요 및 댓글 동적 이벤트 리스너 (이벤트 위임)
+    sharedPhotosList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('like-btn')) {
+            const photoId = parseInt(e.target.dataset.id);
+            const photo = sharedPhotos.find(p => p.id === photoId);
+            if (photo) {
+                if (photo.liked) {
+                    photo.likes--;
+                } else {
+                    photo.likes++;
+                }
+                photo.liked = !photo.liked;
+                renderSharedPhotos(); // UI 다시 렌더링
+            }
+        }
+    });
+
+    sharedPhotosList.addEventListener('submit', (e) => {
+        if (e.target.classList.contains('comment-form')) {
+            e.preventDefault();
+            const photoId = parseInt(e.target.dataset.id);
+            const input = e.target.querySelector('input');
+            const commentText = input.value.trim();
+            
+            if (commentText) {
+                const photo = sharedPhotos.find(p => p.id === photoId);
+                if (photo) {
+                    photo.comments.push(commentText);
+                    input.value = '';
+                    renderSharedPhotos(); // UI 다시 렌더링
+                }
+            }
+        }
+    });
+
+
+    // 17. 초기화 (IndexedDB에서 데이터 로드)
     loadPhotosFromDB();
 });

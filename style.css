@@ -65,7 +65,7 @@ body, html {
     background: #e9e2c4;
 }
 
-#photo-viewer h2, #controls h2 {
+#photo-viewer h2, #controls h2, #shared-photos-container h2 {
     font-family: 'Nanum Pen Script', sans-serif;
     font-size: 2.5em;
     text-align: center;
@@ -181,4 +181,97 @@ body, html {
 }
 .button.danger:hover {
     background-color: #b8988a;
+}
+
+#share-photo-btn, #view-shared-photos-btn, #back-to-main-btn {
+    margin-top: 10px;
+}
+
+#shared-photos-list {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.shared-photo-item {
+    background: #fff;
+    border: 1px solid #dcd0c0;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.shared-photo-item img {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.shared-photo-item p {
+    font-family: 'Nanum Pen Script', sans-serif;
+    font-size: 1.4em;
+    margin: 0 0 10px 0;
+}
+
+.shared-photo-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.like-btn {
+    cursor: pointer;
+    background: none;
+    border: 1px solid #dcd0c0;
+    border-radius: 4px;
+    padding: 5px 10px;
+    transition: all 0.2s;
+}
+.like-btn.liked {
+    background: #e57373;
+    color: white;
+    border-color: #e57373;
+}
+.like-btn:hover {
+    background: #f9f6f0;
+}
+
+.comment-form {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.comment-form input {
+    flex-grow: 1;
+    border: 1px solid #dcd0c0;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.comment-form button {
+    padding: 8px 12px;
+    background: #8c7b70;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.comment-form button:hover {
+    background: #7a6a60;
+}
+
+.comments-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.comments-list li {
+    background: #f9f6f0;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 5px;
 }

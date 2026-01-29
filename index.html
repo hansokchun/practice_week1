@@ -18,6 +18,7 @@
             <img id="current-photo" src="" alt="선택된 사진">
             <p id="photo-description"></p>
             <a id="download-btn" class="button" href="#" download>사진 다운로드</a>
+            <button id="share-photo-btn" class="button" style="display: none;">공유하기</button>
         </div>
         <div id="controls">
             <h2>사진 관리</h2>
@@ -30,6 +31,12 @@
                 <button class="filter-btn active" data-date="all">모든 날짜</button>
             </div>
             <button id="toggle-route">여행 경로 보기</button>
+            <button id="view-shared-photos-btn" class="button">다른 사람 공유 보기</button>
+        </div>
+        <div id="shared-photos-container" style="display: none;">
+            <button id="back-to-main-btn" class="button">돌아가기</button>
+            <h2>공유된 사진들</h2>
+            <div id="shared-photos-list"></div>
         </div>
     </div>
 
