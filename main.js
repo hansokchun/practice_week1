@@ -59,17 +59,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sidebar.classList.contains('expanded')) return;
         sidebar.classList.remove('hidden');
         sidebar.classList.add('expanded');
-        mapContainer.classList.remove('full-width');
-        toggleSidebarBtn.classList.remove('hidden-state');
         toggleSidebarBtn.textContent = '▶';
-        setTimeout(() => map.invalidateSize(), 250);
+        animateMapResize();
     }
 
     function collapseSidebar() {
         if (!sidebar.classList.contains('expanded')) return;
         sidebar.classList.remove('expanded');
         toggleSidebarBtn.textContent = '◀';
-        setTimeout(() => map.invalidateSize(), 250);
+        animateMapResize();
         sharePhotoBtn.style.display = 'none';
         currentSelectedPhoto = null;
     }
@@ -79,15 +77,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isExpanded = sidebar.classList.contains('expanded');
         
         if (isHidden) {
-            mapContainer.classList.add('full-width');
-            toggleSidebarBtn.classList.add('hidden-state');
             toggleSidebarBtn.textContent = '▶';
         } else {
-            mapContainer.classList.remove('full-width');
-            toggleSidebarBtn.classList.remove('hidden-state');
             toggleSidebarBtn.textContent = isExpanded ? '▶' : '◀';
         }
-        setTimeout(() => map.invalidateSize(), 250);
+        animateMapResize();
+    }
+
+    // 애니메이션 시간(500ms) 동안 지도의 크기를 여러 번 업데이트하여 부드럽게 유지
+    function animateMapResize() {
+        const startTime = performance.now();
+        const duration = 550; // CSS transition(500ms)보다 약간 길게 설정
+
+        function step(currentTime) {
+            const elapsed = currentTime - startTime;
+            map.invalidateSize();
+            if (elapsed < duration) {
+                requestAnimationFrame(step);
+            }
+        }
+        requestAnimationFrame(step);
     }
 
     toggleSidebarBtn.addEventListener('click', toggleSidebar);
