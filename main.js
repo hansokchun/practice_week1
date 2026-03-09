@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentSelectedPhoto = null;
     let viewMode = 'my'; // 'my' or 'shared'
     let showOnlyLiked = false;
-    let gridMode = false;
+    let gridMode = true; // Default to Grid View
 
     const dbName = 'JapanTripDB';
     const photoStoreName = 'photos';
@@ -35,12 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     let routeLine = null;
 
-    // Elegant heart marker
+    // Elegant heart marker (Red for better visibility)
     const heartIcon = L.divIcon({ 
         className: 'heart-icon', 
-        html: '🖤', 
-        iconSize: [20, 20], 
-        iconAnchor: [10, 10] 
+        html: '❤️', 
+        iconSize: [30, 30], 
+        iconAnchor: [15, 15] 
     });
 
     // Configure Cluster with Spiderfy for overlapping points
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainPhotoContainer = document.getElementById('main-photo-container');
     const mainLikeBtn = document.getElementById('main-like-btn');
     const likeCountText = document.getElementById('like-count-text');
-    const photoDescription = document.getElementById('photo-description');
-    const postDate = document.getElementById('post-date');
+    const photoDescriptionText = document.getElementById('photo-description');
+    const postDateText = document.getElementById('post-date');
     const commentsList = document.getElementById('comments-list');
     const commentForm = document.getElementById('comment-form-elegant');
     const commentInput = document.getElementById('comment-input');
@@ -94,7 +94,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
 
     function toggleSidebar() {
-        sidebar.classList.toggle('hidden');
+        const isHidden = sidebar.classList.toggle('hidden');
+        toggleSidebarBtn.textContent = isHidden ? '▶' : '◀';
         animateMapResize();
     }
 
@@ -103,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sidebar.classList.add('expanded');
         exploreView.style.display = 'none';
         postView.style.display = 'flex';
+        toggleSidebarBtn.textContent = '◀';
         animateMapResize();
     }
 
@@ -111,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         postView.style.display = 'none';
         exploreView.style.display = 'flex';
         currentSelectedPhoto = null;
+        toggleSidebarBtn.textContent = '◀';
         animateMapResize();
     }
 
@@ -187,8 +190,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function selectPhoto(photo) {
         currentSelectedPhoto = photo;
         photoViewerImg.src = photo.url;
-        photoDescription.textContent = photo.description;
-        postDate.textContent = photo.date;
+        photoDescriptionText.textContent = photo.description;
+        postDateText.textContent = photo.date;
         downloadBtn.href = photo.url;
         
         mainLikeBtn.textContent = photo.liked ? '❤️' : '🤍';
@@ -356,12 +359,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (remainingPhotos.length === 0) {
             mapContainer.style.cursor = '';
             markers.options.interactive = true;
-            return;
+            // Re-enable individual markers interaction
+            markers.eachLayer(m => m.options.interactive = true);
+            return alert('All pins set.');
         }
         
         const pending = remainingPhotos.shift();
         mapContainer.style.cursor = 'crosshair';
         markers.options.interactive = false;
+        // Disable individual markers interaction to ensure map click works everywhere
+        markers.eachLayer(m => m.options.interactive = false);
         
         alert(`Click on the map to pin: "${pending.description}"`);
         
