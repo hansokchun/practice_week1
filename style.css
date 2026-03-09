@@ -20,6 +20,38 @@ body, html {
     transition: right 0.5s ease-in-out;
 }
 
+#map.full-width {
+    right: 0;
+}
+
+#toggle-sidebar-btn {
+    position: absolute;
+    top: 50%;
+    right: 360px;
+    transform: translateY(-50%);
+    z-index: 1000;
+    width: 25px;
+    height: 50px;
+    background-color: #f5f5dc;
+    border: 1px solid #dcd0c0;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    color: #5a4a42;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: right 0.5s ease-in-out;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
+#toggle-sidebar-btn.hidden-state {
+    right: 0;
+    border-right: 1px solid #dcd0c0;
+    border-radius: 8px 0 0 8px;
+}
+
 #sidebar {
     position: absolute;
     top: 0;
@@ -34,11 +66,19 @@ body, html {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
-    transition: width 0.5s ease-in-out;
+    transition: width 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+#sidebar.hidden {
+    transform: translateX(100%);
 }
 
 #sidebar.expanded {
     width: 65vw;
+}
+
+#sidebar.expanded ~ #toggle-sidebar-btn {
+    right: 65vw;
 }
 
 #collapse-btn {

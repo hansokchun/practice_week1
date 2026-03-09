@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const mapContainer = document.getElementById('map');
     const sidebar = document.getElementById('sidebar');
+    const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
     const map = L.map(mapContainer).setView([36.2048, 138.2529], 5.5);
     const mainMarkers = L.markerClusterGroup();
     const sharedMarkers = L.markerClusterGroup();
@@ -49,25 +50,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     const backToMainBtn = document.getElementById('back-to-main-btn');
     const sharedPhotosList = document.getElementById('shared-photos-list');
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // --- Google Maps Tiles (Korean Labels) ---
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', {
+        attribution: '&copy; <a href="https://www.google.com/maps">Google Maps</a>'
     }).addTo(map);
 
     function expandSidebar() {
         if (sidebar.classList.contains('expanded')) return;
+        sidebar.classList.remove('hidden');
         sidebar.classList.add('expanded');
-        mapContainer.style.right = '65vw';
+        mapContainer.classList.remove('full-width');
+        toggleSidebarBtn.classList.remove('hidden-state');
+        toggleSidebarBtn.textContent = '▶';
         setTimeout(() => map.invalidateSize(), 250);
     }
 
     function collapseSidebar() {
         if (!sidebar.classList.contains('expanded')) return;
         sidebar.classList.remove('expanded');
-        mapContainer.style.right = '360px';
+        toggleSidebarBtn.textContent = '◀';
         setTimeout(() => map.invalidateSize(), 250);
         sharePhotoBtn.style.display = 'none';
         currentSelectedPhoto = null;
     }
+
+    function toggleSidebar() {
+        const isHidden = sidebar.classList.toggle('hidden');
+        const isExpanded = sidebar.classList.contains('expanded');
+        
+        if (isHidden) {
+            mapContainer.classList.add('full-width');
+            toggleSidebarBtn.classList.add('hidden-state');
+            toggleSidebarBtn.textContent = '▶';
+        } else {
+            mapContainer.classList.remove('full-width');
+            toggleSidebarBtn.classList.remove('hidden-state');
+            toggleSidebarBtn.textContent = isExpanded ? '▶' : '◀';
+        }
+        setTimeout(() => map.invalidateSize(), 250);
+    }
+
+    toggleSidebarBtn.addEventListener('click', toggleSidebar);
 
     function updateUI() {
         displayPhotos();
