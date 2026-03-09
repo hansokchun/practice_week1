@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
+        btnDelete: document.getElementById('btn-delete'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
         detailDesc: document.getElementById('detail-description'),
@@ -222,6 +223,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     ui.btnBack.onclick = closeDetail;
+
+    ui.btnDelete.onclick = async () => {
+        if (!state.currentPhoto) return;
+        if (!confirm('Are you sure you want to delete this photo?')) return;
+        
+        const db = await dbPromise;
+        const storeName = state.viewMode === 'my' ? photoStore : sharedStore;
+        await db.delete(storeName, state.currentPhoto.id);
+        
+        if (state.viewMode === 'my') {
+            state.photos = state.photos.filter(p => p.id !== state.currentPhoto.id);
+        } else {
+            state.sharedPhotos = state.sharedPhotos.filter(p => p.id !== state.currentPhoto.id);
+        }
+        
+        closeDetail();
+        renderAll(state.activeDate);
+    };
 
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentPhoto) return;
