@@ -341,10 +341,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function startLocationPicker(remainingPhotos) {
-        if (remainingPhotos.length === 0) return alert('완료되었습니다.');
+        if (remainingPhotos.length === 0) {
+            mapContainer.style.cursor = '';
+            markers.options.interactive = true; // 마커 다시 활성화
+            return alert('완료되었습니다.');
+        }
+        
         const pending = remainingPhotos.shift();
         mapContainer.style.cursor = 'crosshair';
-        alert(`"${pending.description}"의 위치를 클릭해주세요.`);
+        markers.options.interactive = false; // 위치 지정 중에는 기존 마커 클릭 무시
+        
+        alert(`"${pending.description}"의 위치를 지도에서 클릭해주세요.\n(기존 마커가 있는 위치도 클릭 가능합니다.)`);
+        
         map.once('click', async (e) => {
             pending.lat = e.latlng.lat;
             pending.lng = e.latlng.lng;
