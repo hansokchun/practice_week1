@@ -25,7 +25,7 @@ body, html {
     position: absolute;
     top: 0;
     right: 0;
-    width: 360px;
+    width: 360px; /* 기본값 */
     height: 100%;
     background-color: #f5f5dc;
     border-left: 1px solid #dcd0c0;
@@ -39,10 +39,12 @@ body, html {
     z-index: 1001;
 }
 
+/* 1. 최소화 상태 (Hidden) */
 #sidebar.hidden {
     transform: translateX(100%);
 }
 
+/* 2. 확대 상태 (Expanded) */
 #sidebar.expanded {
     width: 65vw;
 }
@@ -70,8 +72,9 @@ body, html {
     box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
+/* 상태별 우선순위 적용 (Hidden이 최우선) */
 #sidebar.hidden ~ #toggle-sidebar-btn {
-    right: 0;
+    right: 0 !important;
     border-right: 1px solid #dcd0c0;
 }
 
@@ -81,7 +84,7 @@ body, html {
 
 /* 사이드바 상태에 따른 지도 위치 변경 */
 #sidebar.hidden ~ #map {
-    right: 0;
+    right: 0 !important;
 }
 
 #sidebar.expanded ~ #map {
@@ -138,7 +141,13 @@ body, html {
     box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
 
+/* 이미지 오류 방지: 사진이 없을 때는 숨김 처리 */
+#current-photo[src=""], #current-photo:not([src]) {
+    display: none;
+}
+
 #sidebar.expanded #current-photo {
+    display: block;
     height: 70vh;
     object-fit: contain;
 }

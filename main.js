@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function expandSidebar() {
         if (sidebar.classList.contains('expanded')) return;
-        sidebar.classList.remove('hidden');
+        sidebar.classList.remove('hidden'); // 확대 시 숨김 상태 해제
         sidebar.classList.add('expanded');
         toggleSidebarBtn.textContent = '▶';
         animateMapResize();
@@ -68,26 +68,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         sidebar.classList.remove('expanded');
         toggleSidebarBtn.textContent = '◀';
         animateMapResize();
-        sharePhotoBtn.style.display = 'none';
-        currentSelectedPhoto = null;
+        
+        // 확대 해제 시 사진 뷰어 상태 초기화 (이미지 오류 방지)
+        setTimeout(() => {
+            if (!sidebar.classList.contains('expanded')) {
+                photoViewerImg.src = '';
+                photoViewerDesc.textContent = '';
+                sharePhotoBtn.style.display = 'none';
+                currentSelectedPhoto = null;
+            }
+        }, 500);
     }
 
     function toggleSidebar() {
         const isHidden = sidebar.classList.toggle('hidden');
+        
+        // 사이드바를 숨길 때 확대 상태도 함께 해제하여 레이아웃 충돌 방지
+        if (isHidden && sidebar.classList.contains('expanded')) {
+            sidebar.classList.remove('expanded');
+        }
+        
+        updateToggleBtnText();
+        animateMapResize();
+    }
+
+    function updateToggleBtnText() {
+        const isHidden = sidebar.classList.contains('hidden');
         const isExpanded = sidebar.classList.contains('expanded');
         
         if (isHidden) {
             toggleSidebarBtn.textContent = '▶';
+        } else if (isExpanded) {
+            toggleSidebarBtn.textContent = '▶';
         } else {
-            toggleSidebarBtn.textContent = isExpanded ? '▶' : '◀';
+            toggleSidebarBtn.textContent = '◀';
         }
-        animateMapResize();
     }
+
+    // 지도 클릭 시 확대된 사이드바를 기본 크기로 복구
+    map.on('click', () => {
+        if (sidebar.classList.contains('expanded')) {
+            collapseSidebar();
+        }
+    });
 
     // 애니메이션 시간(500ms) 동안 지도의 크기를 여러 번 업데이트하여 부드럽게 유지
     function animateMapResize() {
         const startTime = performance.now();
-        const duration = 550; // CSS transition(500ms)보다 약간 길게 설정
+        const duration = 600; // CSS transition(500ms)보다 약간 길게 설정
 
         function step(currentTime) {
             const elapsed = currentTime - startTime;
