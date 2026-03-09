@@ -11,29 +11,42 @@
 </head>
 <body>
     <div id="sidebar">
-        <div id="photo-viewer">
+        <!-- 섹션 1: 사진 보기 -->
+        <div class="sidebar-section" id="section-view">
             <button id="collapse-btn" title="사이드바 축소">&times;</button>
             <h2>사진 보기</h2>
-            <img id="current-photo" src="" alt="선택된 사진">
+            <div id="main-photo-container">
+                <img id="current-photo" src="" alt="선택된 사진">
+                <button id="main-like-btn" title="좋아요">♡</button>
+            </div>
             <p id="photo-description"></p>
             <a id="download-btn" class="button" href="#" download>사진 다운로드</a>
             <button id="share-photo-btn" class="button" style="display: none;">공유하기</button>
         </div>
-        <div id="controls">
-            <h2>사진 관리</h2>
+
+        <!-- 섹션 2: 사진 등록 -->
+        <div class="sidebar-section" id="section-register">
+            <h2>사진 등록</h2>
             <label for="photo-upload" class="button">사진 올리기</label>
             <input type="file" id="photo-upload" multiple accept="image/jpeg, image/png">
-            <button id="clear-photos" class="button danger">모든 사진 지우기</button>
+            <button id="clear-photos" class="button danger">모든 내 사진 지우기</button>
+        </div>
+
+        <!-- 섹션 3: 사진 관리 -->
+        <div class="sidebar-section" id="section-manage">
+            <h2>사진 관리</h2>
+            <button id="toggle-view-mode" class="button">다른 사람 사진 보기</button>
+            <button id="view-liked-photos" class="button">좋아요 누른 사진 보기</button>
             <hr>
-            <h2>필터 및 옵션</h2>
             <div id="date-filters">
                 <button class="filter-btn active" data-date="all">모든 날짜</button>
             </div>
-            <button id="toggle-route">여행 경로 보기</button>
-            <button id="view-shared-photos-btn" class="button">다른 사람 공유 보기</button>
+            <button id="toggle-route" class="button">여행 경로 보기</button>
         </div>
+
+        <!-- 공유된 사진 리스트 (관리 섹션 내에서 상세 보기 시 사용) -->
         <div id="shared-photos-container" style="display: none;">
-            <button id="back-to-main-btn" class="button">돌아가기</button>
+            <button id="back-to-main-btn" class="button">목록 닫기</button>
             <h2>공유된 사진들</h2>
             <div id="shared-photos-list"></div>
         </div>

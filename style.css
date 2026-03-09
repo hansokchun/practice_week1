@@ -16,7 +16,7 @@ body, html {
     top: 0;
     left: 0;
     bottom: 0;
-    right: 360px; /* 기본값 */
+    right: 360px;
     transition: right 0.5s ease-in-out;
     z-index: 1;
 }
@@ -25,31 +25,37 @@ body, html {
     position: absolute;
     top: 0;
     right: 0;
-    width: 360px; /* 기본값 */
+    width: 360px;
     height: 100%;
     background-color: #f5f5dc;
     border-left: 1px solid #dcd0c0;
     box-shadow: -4px 0 12px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 0;
     box-sizing: border-box;
     overflow-y: auto;
     transition: width 0.5s ease-in-out, transform 0.5s ease-in-out;
     z-index: 1001;
 }
 
-/* 1. 최소화 상태 (Hidden) */
+.sidebar-section {
+    padding: 20px;
+    border-bottom: 1px dashed #dcd0c0;
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
 #sidebar.hidden {
     transform: translateX(100%);
 }
 
-/* 2. 확대 상태 (Expanded) */
 #sidebar.expanded {
     width: 65vw;
 }
 
-/* 사이드바 상태에 따른 토글 버튼 위치 변경 */
 #toggle-sidebar-btn {
     position: absolute;
     top: 50%;
@@ -72,7 +78,6 @@ body, html {
     box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
-/* 상태별 우선순위 적용 (Hidden이 최우선) */
 #sidebar.hidden ~ #toggle-sidebar-btn {
     right: 0 !important;
     border-right: 1px solid #dcd0c0;
@@ -82,7 +87,6 @@ body, html {
     right: 65vw;
 }
 
-/* 사이드바 상태에 따른 지도 위치 변경 */
 #sidebar.hidden ~ #map {
     right: 0 !important;
 }
@@ -111,77 +115,77 @@ body, html {
 #sidebar.expanded #collapse-btn {
     display: block;
 }
-#collapse-btn:hover {
-    background: #e9e2c4;
-}
 
-#photo-viewer h2, #controls h2, #shared-photos-container h2 {
+.sidebar-section h2 {
     font-family: 'Nanum Pen Script', sans-serif;
-    font-size: 2.5em;
+    font-size: 2em;
     text-align: center;
     margin-top: 0;
-    margin-bottom: 20px;
-    border-bottom: 1px dashed #dcd0c0;
-    padding-bottom: 15px;
+    margin-bottom: 15px;
     color: #8c7b70;
+}
+
+#main-photo-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
 #current-photo {
     width: 100%;
-    height: 280px;
+    height: 200px;
     object-fit: cover;
     border-radius: 4px;
-    background-color: #e9e9e9;
     border: 1px solid #dcd0c0;
-    margin-bottom: 15px;
+    background: #fff;
     cursor: pointer;
     transition: height 0.5s ease-in-out;
-    padding: 5px;
-    background: #fff;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    display: block;
 }
 
-/* 이미지 오류 방지: 사진이 없을 때는 숨김 처리 */
 #current-photo[src=""], #current-photo:not([src]) {
     display: none;
 }
 
 #sidebar.expanded #current-photo {
-    display: block;
-    height: 70vh;
+    height: 60vh;
     object-fit: contain;
 }
 
+#main-like-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    color: #e57373;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none;
+}
+
+#current-photo:not([src=""]) ~ #main-like-btn {
+    display: block;
+}
+
+#main-like-btn.liked {
+    background: #e57373;
+    color: white;
+}
+
 #photo-description {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-family: 'Nanum Pen Script', sans-serif;
     color: #5a4a42;
-    min-height: 40px;
-    background-color: transparent;
-    padding: 10px;
-    border-radius: 0;
-    border: 1px solid #dcd0c0;
-    line-height: 1.6;
+    min-height: 30px;
+    margin-bottom: 10px;
 }
 
-#controls {
-    margin-top: 25px;
-}
-
-#controls hr {
-    border: none;
-    border-top: 1px dashed #dcd0c0;
-    margin: 20px 0;
-}
-
-#date-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 15px;
-}
-
-.button, .filter-btn, #toggle-route {
+.button, .filter-btn {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -191,16 +195,18 @@ body, html {
     cursor: pointer;
     border-radius: 4px;
     text-align: center;
-    font-size: 1em;
-    font-weight: 500;
-    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+    font-size: 0.95em;
+    margin-bottom: 8px;
     color: #5a4a42;
-    font-family: 'Nanum Gothic', sans-serif;
 }
 
-.button:hover, .filter-btn:hover, #toggle-route:hover {
+.button:hover, .filter-btn:hover {
     background-color: #f9f6f0;
-    border-color: #c9bba8;
+}
+
+.button.danger {
+    background-color: #c9a99b;
+    color: white;
 }
 
 #photo-upload {
@@ -210,132 +216,29 @@ body, html {
 .filter-btn.active {
     background-color: #8c7b70;
     color: white;
-    border-color: #8c7b70;
 }
 
-#toggle-route.active {
-    background-color: #8c7b70;
-    color: white;
-    border-color: #8c7b70;
+#date-filters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
 }
 
-#download-btn {
-    text-decoration: none;
-    color: white;
-    background-color: #8c7b70;
-    margin-top: 15px;
-}
-#download-btn:hover {
-    background-color: #7a6a60;
-}
-
-.button.danger {
-    background-color: #c9a99b;
-    color: white;
-    border-color: #c9a99b;
-    margin-top: 10px;
-}
-.button.danger:hover {
-    background-color: #b8988a;
-}
-
-#share-photo-btn, #view-shared-photos-btn, #back-to-main-btn {
-    margin-top: 10px;
-}
-
-#shared-photos-list {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+#shared-photos-container {
+    padding: 20px;
+    background: #fff;
 }
 
 .shared-photo-item {
-    background: #fff;
-    border: 1px solid #dcd0c0;
-    border-radius: 4px;
-    padding: 15px;
-    cursor: pointer;
-}
-
-.shared-photo-item:hover {
-    border-color: #c9bba8;
-    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
 }
 
 .shared-photo-item img {
     width: 100%;
     border-radius: 4px;
-    margin-bottom: 10px;
-}
-
-.shared-photo-item p {
-    font-family: 'Nanum Pen Script', sans-serif;
-    font-size: 1.4em;
-    margin: 0 0 10px 0;
-}
-
-.shared-photo-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.like-btn {
-    cursor: pointer;
-    background: none;
-    border: 1px solid #dcd0c0;
-    border-radius: 4px;
-    padding: 5px 10px;
-    transition: all 0.2s;
-}
-.like-btn.liked {
-    background: #e57373;
-    color: white;
-    border-color: #e57373;
-}
-.like-btn:hover {
-    background: #f9f6f0;
-}
-
-.comment-form {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-}
-
-.comment-form input {
-    flex-grow: 1;
-    border: 1px solid #dcd0c0;
-    padding: 8px;
-    border-radius: 4px;
-}
-
-.comment-form button {
-    padding: 8px 12px;
-    background: #8c7b70;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.comment-form button:hover {
-    background: #7a6a60;
-}
-
-.comments-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 0.9em;
-}
-
-.comments-list li {
-    background: #f9f6f0;
-    padding: 8px;
-    border-radius: 4px;
-    margin-top: 5px;
 }
 
 .heart-icon {
