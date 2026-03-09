@@ -71,7 +71,26 @@ body, html {
     padding: 40px 32px 20px;
     display: flex; justify-content: space-between; align-items: center;
 }
-.logo { font-family: var(--serif-font); font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+.logo { 
+    font-family: var(--serif-font); 
+    font-size: 34px; 
+    font-weight: 900; 
+    margin: 0; 
+    letter-spacing: -1.5px; 
+    color: var(--accent-color);
+    position: relative;
+    display: inline-block;
+}
+.logo::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    right: -8px;
+    width: 6px;
+    height: 6px;
+    background-color: #3b82f6; /* Blue accent dot to match the pins */
+    border-radius: 50%;
+}
 .btn-post { 
     font-size: 13px; font-weight: 700; text-transform: uppercase; 
     color: #fff; background: var(--accent-color); 
