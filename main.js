@@ -35,14 +35,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnMyFeed: document.getElementById('btn-my-feed'),
         btnSharedFeed: document.getElementById('btn-shared-feed'),
         btnFilterLiked: document.getElementById('filter-liked'),
-        btnViewMap: document.getElementById('btn-view-map'),
-        btnViewGrid: document.getElementById('btn-view-grid'),
-        btnReset: document.getElementById('btn-reset'),
         uploadInput: document.getElementById('upload-input'),
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
-        btnShrink: document.getElementById('btn-shrink'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
         detailDesc: document.getElementById('detail-description'),
@@ -97,9 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Toggle UI states
-        ui.grid.style.display = state.gridMode ? 'grid' : 'none';
-        ui.btnViewGrid.classList.toggle('active', state.gridMode);
-        ui.btnViewMap.classList.toggle('active', !state.gridMode);
+        ui.grid.style.display = 'grid';
         ui.btnMyFeed.classList.toggle('active', state.viewMode === 'my');
         ui.btnSharedFeed.classList.toggle('active', state.viewMode === 'shared');
         ui.btnFilterLiked.classList.toggle('active', state.showOnlyLiked);
@@ -195,8 +189,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); };
     ui.btnSharedFeed.onclick = () => { state.viewMode = 'shared'; state.showOnlyLiked = false; renderAll(); };
     ui.btnFilterLiked.onclick = () => { state.showOnlyLiked = !state.showOnlyLiked; renderAll(state.activeDate); };
-    ui.btnViewGrid.onclick = () => { state.gridMode = true; renderAll(state.activeDate); };
-    ui.btnViewMap.onclick = () => { state.gridMode = false; renderAll(state.activeDate); };
 
     ui.dateChips.onclick = (e) => {
         if (e.target.classList.contains('chip')) {
@@ -205,7 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     ui.btnBack.onclick = closeDetail;
-    ui.btnShrink.onclick = closeDetail;
 
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentPhoto) return;
@@ -263,13 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             startLocationPicker(list);
         });
     }
-
-    ui.btnReset.onclick = async () => {
-        if (confirm('Delete everything?')) {
-            const db = await dbPromise; await db.clear(photoStore);
-            state.photos = []; renderAll();
-        }
-    };
 
     syncData();
 });
