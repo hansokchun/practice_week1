@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sidebar = document.getElementById('sidebar');
     const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
     
-    // Max Zoom increased to 21 for ultra-precise positioning
     const map = L.map(mapContainer, {
         zoomControl: false,
         maxZoom: 21
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     let routeLine = null;
 
-    // Elegant heart marker (Red for better visibility)
     const heartIcon = L.divIcon({ 
         className: 'heart-icon', 
         html: '❤️', 
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         iconAnchor: [15, 15] 
     });
 
-    // Configure Cluster with Spiderfy for overlapping points
     const markers = L.markerClusterGroup({
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: false,
@@ -58,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // UI Refs
     const exploreView = document.getElementById('explore-view');
     const postView = document.getElementById('post-view');
     
@@ -129,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleSidebarBtn.addEventListener('click', toggleSidebar);
     backToExploreBtn.addEventListener('click', showExploreView);
     collapseBtn.addEventListener('click', () => {
-        sidebar.classList.remove('expanded');
+        sidebar.classList.toggle('expanded');
         animateMapResize();
     });
 
@@ -189,8 +185,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function selectPhoto(photo) {
         currentSelectedPhoto = photo;
+        
+        // Ensure photo is visible and source is set correctly
+        photoViewerImg.style.display = 'block';
         photoViewerImg.src = photo.url;
-        photoDescriptionText.textContent = photo.description;
+        
+        photoDescriptionText.textContent = photo.description || 'No description provided.';
         postDateText.textContent = photo.date;
         downloadBtn.href = photo.url;
         
@@ -359,7 +359,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (remainingPhotos.length === 0) {
             mapContainer.style.cursor = '';
             markers.options.interactive = true;
-            // Re-enable individual markers interaction
             markers.eachLayer(m => m.options.interactive = true);
             return alert('All pins set.');
         }
@@ -367,7 +366,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pending = remainingPhotos.shift();
         mapContainer.style.cursor = 'crosshair';
         markers.options.interactive = false;
-        // Disable individual markers interaction to ensure map click works everywhere
         markers.eachLayer(m => m.options.interactive = false);
         
         alert(`Click on the map to pin: "${pending.description}"`);

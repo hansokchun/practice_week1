@@ -239,18 +239,24 @@ body, html {
 #main-photo-container {
     width: 100%;
     background-color: #f0f0f0;
-    min-height: 300px;
+    min-height: 400px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
+    overflow: hidden;
 }
 
 #current-photo {
     width: 100%;
-    max-height: 70vh;
+    height: auto;
+    max-height: none;
     object-fit: contain;
     display: block;
+}
+
+#sidebar.expanded #current-photo {
+    max-height: 80vh;
 }
 
 .post-body-elegant {
