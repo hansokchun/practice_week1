@@ -23,35 +23,57 @@ body, html {
 #splash-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 10000;
-    display: flex; align-items: center; justify-content: center;
-    background: url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+    display: flex; align-items: flex-end; justify-content: flex-start; /* Move content to bottom-left */
+    background: #000;
     transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), visibility 1.2s;
+    overflow: hidden;
 }
 
 #splash-screen.hidden {
     opacity: 0; visibility: hidden;
 }
 
+/* Background Slider */
+.splash-bg-slider {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+}
+
+.slider-track {
+    display: flex; width: calc(100vw * 7); height: 100%;
+    animation: backgroundSlide 60s linear infinite; /* Slow continuous slide */
+}
+
+.slide {
+    width: 100vw; height: 100%;
+    background-size: cover; background-position: center;
+}
+
+@keyframes backgroundSlide {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-100vw * 6)); }
+}
+
 .splash-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4); /* Dark overlay for readability */
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%);
     z-index: 1;
 }
 
 .splash-content {
-    position: relative; z-index: 2; text-align: center; color: #fff;
+    position: relative; z-index: 2; text-align: left; color: #fff;
+    padding: 80px;
     animation: fadeInScale 1.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .splash-logo {
     font-family: var(--serif-font); font-size: 80px; font-weight: 900;
-    margin-bottom: 10px; letter-spacing: -3px;
+    margin-bottom: 5px; letter-spacing: -3px;
     text-shadow: 0 4px 30px rgba(0,0,0,0.3);
 }
 
 .splash-tagline {
     font-family: var(--serif-font); font-style: italic; font-size: 20px;
-    margin-bottom: 60px; opacity: 0.9;
+    margin-bottom: 40px; opacity: 0.9;
 }
 
 .splash-start-btn {
