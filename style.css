@@ -88,7 +88,7 @@ body, html {
     right: -8px;
     width: 6px;
     height: 6px;
-    background-color: #3b82f6; /* Blue accent dot to match the pins */
+    background-color: var(--accent-color); /* Black accent dot to match the minimalist theme */
     border-radius: 50%;
 }
 .btn-post { 
