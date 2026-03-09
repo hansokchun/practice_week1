@@ -46,8 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 3. MAP SETUP
-    const map = L.map('map', { zoomControl: false, maxZoom: 21 }).setView([36.2048, 138.2529], 6);
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { attribution: 'Google Maps' }).addTo(map);
+    const map = L.map('map', { zoomControl: false, maxZoom: 19 }).setView([36.2048, 138.2529], 6);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 
+        attribution: 'Google Maps',
+        maxZoom: 19
+    }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     const heartIcon = L.divIcon({ className: 'heart-icon', html: '❤️', iconSize: [30, 30], iconAnchor: [15, 15] });
