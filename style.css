@@ -19,6 +19,61 @@ body, html {
     overflow: hidden;
 }
 
+/* 0. SPLASH SCREEN SECTION */
+#splash-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    background: url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?q=80&w=2070&auto=format&fit=crop') no-repeat center center/cover;
+    transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), visibility 1.2s;
+}
+
+#splash-screen.hidden {
+    opacity: 0; visibility: hidden;
+}
+
+.splash-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4); /* Dark overlay for readability */
+    z-index: 1;
+}
+
+.splash-content {
+    position: relative; z-index: 2; text-align: center; color: #fff;
+    animation: fadeInScale 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.splash-logo {
+    font-family: var(--serif-font); font-size: 80px; font-weight: 900;
+    margin-bottom: 10px; letter-spacing: -3px;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+
+.splash-tagline {
+    font-family: var(--serif-font); font-style: italic; font-size: 20px;
+    margin-bottom: 60px; opacity: 0.9;
+}
+
+.splash-start-btn {
+    background: #fff; color: #1a1a1a; border: none;
+    padding: 16px 48px; font-family: var(--sans-font); font-size: 14px;
+    font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+    border-radius: 50px; cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.splash-start-btn:hover {
+    background: #1a1a1a; color: #fff;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 #app { display: flex; height: 100%; position: relative; }
 
 /* 1. MAP SECTION */

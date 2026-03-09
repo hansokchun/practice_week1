@@ -229,6 +229,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 5. EVENT HANDLERS
+    const splash = document.getElementById('splash-screen');
+    const btnStart = document.getElementById('btn-start');
+    if (btnStart) {
+        btnStart.onclick = () => {
+            splash.classList.add('hidden');
+        };
+    }
+
     ui.toggleBtn.onclick = () => {
         const isHidden = ui.sidebar.classList.contains('hidden');
         if (isHidden) {
