@@ -133,8 +133,18 @@ body, html {
 .sidebar-footer { padding: 32px; text-align: left; }
 .danger-link { background: none; border: none; color: var(--danger-color); font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; padding: 0; }
 
-.cluster-icon { background: var(--accent-color); color: #fff; border-radius: 50%; text-align: center; line-height: 32px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-.map-icon { font-size: 28px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; }
+.cluster-icon { 
+    background: var(--accent-color); 
+    color: #fff; 
+    border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 2px solid #fff;
+}
+.map-icon { cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.icon-liked { font-size: 28px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.map-icon svg { filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2)); }
 
 .floating-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 100px; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10; }
 .floating-heart.animate { opacity: 0.9; transform: translate(-50%, -50%) scale(1.2); }
