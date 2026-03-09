@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateToggleButtons() {
-        toggleViewModeBtn.textContent = (viewMode === 'my') ? '다른 사람 사진 보기' : '내 사진 보기';
+        toggleViewModeBtn.textContent = (viewMode === 'my') ? '전체 피드 보기' : '내 피드 보기';
         viewLikedPhotosBtn.classList.toggle('active', showOnlyLiked);
     }
 
