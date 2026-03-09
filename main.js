@@ -139,11 +139,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    let isPickingLocation = false;
+    let pendingPhoto = null;
+
     photoUploadInput.addEventListener('change', async (event) => {
         const files = event.target.files;
         if (!files.length) return;
         document.body.style.cursor = 'wait';
-        const photoPromises = Array.from(files).map(file => new Promise(async (resolve) => {
+        
+        const newPhotos = [];
+        const photosWithoutGps = [];
+
+        for (const file of Array.from(files)) {
             try {
                 const exif = await exifr.parse(file);
                 const dataUrl = await new Promise(r => {
@@ -151,30 +158,77 @@ document.addEventListener('DOMContentLoaded', async () => {
                     reader.onload = e => r(e.target.result);
                     reader.readAsDataURL(file);
                 });
-                if (exif && exif.latitude && exif.longitude) {
-                    resolve({
-                        lat: exif.latitude,
-                        lng: exif.longitude,
-                        date: (exif.DateTimeOriginal || exif.CreateDate)?.toISOString().split('T')[0] || '날짜 없음',
-                        url: dataUrl,
-                        description: exif.ImageDescription || file.name
-                    });
-                } else { resolve(null); }
+
+                const photoData = {
+                    url: dataUrl,
+                    date: (exif?.DateTimeOriginal || exif?.CreateDate)?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+                    description: exif?.ImageDescription || file.name,
+                    lat: exif?.latitude,
+                    lng: exif?.longitude
+                };
+
+                if (photoData.lat && photoData.lng) {
+                    newPhotos.push(photoData);
+                } else {
+                    photosWithoutGps.push(photoData);
+                }
             } catch (e) {
                 console.error('Error processing file:', file.name, e);
-                resolve(null);
             }
-        }));
-        const newPhotos = (await Promise.all(photoPromises)).filter(p => p !== null);
+        }
+
         if (newPhotos.length > 0) {
             await savePhotosToDB(newPhotos);
             photos.push(...newPhotos);
             updateUI();
         }
-        alert(`총 ${files.length}개의 사진 중 GPS 정보가 확인된 ${newPhotos.length}개의 사진을 추가했습니다.`);
+
         document.body.style.cursor = 'default';
         event.target.value = null;
+
+        if (photosWithoutGps.length > 0) {
+            if (confirm(`위치 정보가 없는 사진이 ${photosWithoutGps.length}장 있습니다. 지도에서 직접 위치를 지정하여 등록하시겠습니까?\n(확인을 누른 후 지도를 클릭해주세요.)`)) {
+                // 첫 번째 사진부터 위치 지정 시작
+                startLocationPicker(photosWithoutGps);
+            } else {
+                alert(`${newPhotos.length}개의 사진만 추가되었습니다.`);
+            }
+        } else if (newPhotos.length > 0) {
+            alert(`총 ${newPhotos.length}개의 사진을 추가했습니다.`);
+        }
     });
+
+    function startLocationPicker(remainingPhotos) {
+        if (remainingPhotos.length === 0) {
+            isPickingLocation = false;
+            mapContainer.style.cursor = '';
+            alert('모든 사진의 위치 지정이 완료되었습니다.');
+            return;
+        }
+
+        isPickingLocation = true;
+        pendingPhoto = remainingPhotos.shift();
+        const nextPhotos = remainingPhotos;
+
+        mapContainer.style.cursor = 'crosshair';
+        alert(`[위치 지정 모드] "${pendingPhoto.description}" 사진의 위치를 지도에서 클릭해주세요.`);
+
+        // 기존 클릭 이벤트 제거 후 새로 등록 (한 번만 실행)
+        map.once('click', async (e) => {
+            if (!isPickingLocation || !pendingPhoto) return;
+
+            const { lat, lng } = e.latlng;
+            pendingPhoto.lat = lat;
+            pendingPhoto.lng = lng;
+
+            await savePhotosToDB([pendingPhoto]);
+            photos.push(pendingPhoto);
+            updateUI();
+
+            // 다음 사진이 있다면 계속 진행
+            startLocationPicker(nextPhotos);
+        });
+    }
 
     async function savePhotosToDB(newPhotos) {
         const db = await dbPromise;
