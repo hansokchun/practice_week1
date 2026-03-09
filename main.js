@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         viewMode: 'my', // 'my' or 'shared'
         showOnlyLiked: false,
         gridMode: true,
-        isPathActive: false,
-        activeDate: 'all'
+        activeDate: 'all',
+        currentPhoto: null
     };
 
     const dbName = 'TravelgramDB';
@@ -28,15 +28,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         grid: document.getElementById('grid-container'),
         dateChips: document.getElementById('date-chips'),
         
+        panelExplore: document.getElementById('panel-explore'),
+        panelDetail: document.getElementById('panel-detail'),
+
         // Buttons
         btnMyFeed: document.getElementById('btn-my-feed'),
         btnSharedFeed: document.getElementById('btn-shared-feed'),
         btnFilterLiked: document.getElementById('filter-liked'),
-        btnTogglePath: document.getElementById('btn-path'),
         btnViewMap: document.getElementById('btn-view-map'),
         btnViewGrid: document.getElementById('btn-view-grid'),
         btnReset: document.getElementById('btn-reset'),
-        uploadInput: document.getElementById('upload-input')
+        uploadInput: document.getElementById('upload-input'),
+
+        // Detail Panel UI
+        btnBack: document.getElementById('btn-back'),
+        btnShrink: document.getElementById('btn-shrink'),
+        detailImg: document.getElementById('detail-image'),
+        detailDate: document.getElementById('detail-date'),
+        detailDesc: document.getElementById('detail-description'),
+        detailLikeBtn: document.getElementById('detail-like-btn')
     };
 
     // 3. MAP SETUP
@@ -50,7 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showCoverageOnHover: false,
         iconCreateFunction: (c) => L.divIcon({ html: `<span>${c.getChildCount()}</span>`, className: 'cluster-icon', iconSize: [32, 32] })
     });
-    let pathLine = null;
 
     // 4. CORE LOGIC
     async function syncData() {
@@ -66,21 +75,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             .filter(p => !state.showOnlyLiked || p.liked)
             .filter(p => filterDate === 'all' || p.date === filterDate);
 
-        // Map Render (Removed Click Handler)
+        // Map Render
         clusterGroup.clearLayers();
         targetList.forEach(p => {
             const m = L.marker([p.lat, p.lng], { icon: heartIcon });
+            m.on('click', () => {
+                showDetail(p);
+            });
             clusterGroup.addLayer(m);
         });
         map.addLayer(clusterGroup);
 
-        // Grid Render (Removed Click Handler)
+        // Grid Render
         ui.grid.innerHTML = '';
         targetList.forEach(p => {
             const item = document.createElement('div');
             item.className = 'grid-item';
             item.innerHTML = `<img src="${p.url}" loading="lazy">`;
-            item.onclick = () => { map.setView([p.lat, p.lng], 18); };
+            item.onclick = () => { showDetail(p); };
             ui.grid.appendChild(item);
         });
 
@@ -94,6 +106,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         renderDateChips();
     }
+
+    function showDetail(p) {
+        state.currentPhoto = p;
+        ui.detailImg.src = p.url;
+        ui.detailDate.textContent = p.date;
+        ui.detailDesc.textContent = p.description;
+        ui.detailLikeBtn.textContent = p.liked ? '❤️' : '🤍';
+
+        ui.sidebar.classList.remove('hidden');
+        ui.sidebar.classList.add('expanded');
+        ui.panelExplore.classList.remove('active');
+        ui.panelDetail.classList.add('active');
+        ui.toggleBtn.textContent = '◀';
+        
+        map.setView([p.lat, p.lng], 18);
+        refreshMapSize();
+    }
+
+    function closeDetail() {
+        ui.sidebar.classList.remove('expanded');
+        ui.panelExplore.classList.add('active');
+        ui.panelDetail.classList.remove('active');
+        state.currentPhoto = null;
+        refreshMapSize();
+    }
+
+    function minimizeSidebar() {
+        ui.sidebar.classList.add('hidden');
+        ui.sidebar.classList.remove('expanded');
+        ui.toggleBtn.textContent = '▶';
+        refreshMapSize();
+    }
+
+    function restoreSidebar() {
+        ui.sidebar.classList.remove('hidden');
+        ui.sidebar.classList.remove('expanded');
+        ui.toggleBtn.textContent = '◀';
+        ui.panelExplore.classList.add('active');
+        ui.panelDetail.classList.remove('active');
+        refreshMapSize();
+    }
+
+    // MAP CLICK HANDLER for state management
+    map.on('click', (e) => {
+        // If sidebar is expanded, retract it.
+        if (ui.sidebar.classList.contains('expanded')) {
+            closeDetail();
+        } 
+        // If sidebar is in original size (not expanded, not hidden), minimize it.
+        else if (!ui.sidebar.classList.contains('hidden')) {
+            minimizeSidebar();
+        }
+    });
 
     function renderDateChips() {
         const list = state.viewMode === 'my' ? state.photos : state.sharedPhotos;
@@ -110,9 +175,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 5. EVENT HANDLERS
     ui.toggleBtn.onclick = () => {
-        const isHidden = ui.sidebar.classList.toggle('hidden');
-        ui.toggleBtn.textContent = isHidden ? '▶' : '◀';
-        refreshMapSize();
+        const isHidden = ui.sidebar.classList.contains('hidden');
+        if (isHidden) {
+            restoreSidebar();
+        } else {
+            minimizeSidebar();
+        }
     };
 
     function refreshMapSize() {
@@ -136,16 +204,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    ui.btnTogglePath.onclick = () => {
-        state.isPathActive = !state.isPathActive;
-        ui.btnTogglePath.classList.toggle('active', state.isPathActive);
-        if (state.isPathActive) {
-            const list = state.viewMode === 'my' ? state.photos : state.sharedPhotos;
-            if (list.length < 2) return alert('2+ photos needed.');
-            const coords = [...list].sort((a,b) => new Date(a.date) - new Date(b.date)).map(p => [p.lat, p.lng]);
-            pathLine = L.polyline(coords, { color: '#1a1a1a', weight: 2, dashArray: '5, 10', opacity: 0.6 }).addTo(map);
-            map.fitBounds(pathLine.getBounds(), { padding: [50,50] });
-        } else if (pathLine) { map.removeLayer(pathLine); }
+    ui.btnBack.onclick = closeDetail;
+    ui.btnShrink.onclick = closeDetail;
+
+    ui.detailLikeBtn.onclick = async () => {
+        if (!state.currentPhoto) return;
+        state.currentPhoto.liked = !state.currentPhoto.liked;
+        const db = await dbPromise;
+        const store = state.viewMode === 'my' ? photoStore : sharedStore;
+        await db.put(store, state.currentPhoto);
+        ui.detailLikeBtn.textContent = state.currentPhoto.liked ? '❤️' : '🤍';
+        renderAll(state.activeDate);
     };
 
     ui.uploadInput.onchange = async (e) => {

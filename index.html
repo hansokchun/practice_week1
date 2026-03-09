@@ -16,12 +16,6 @@
 </head>
 <body>
     <div id="app">
-        <!-- Main Interactive Map -->
-        <div id="map-container">
-            <div id="map"></div>
-            <button id="sidebar-toggle" class="map-overlay-btn">◀</button>
-        </div>
-
         <!-- Sidebar Content -->
         <aside id="sidebar">
             <!-- 1. FEED EXPLORE PANEL -->
@@ -40,7 +34,6 @@
                 <div class="filter-bar">
                     <div class="scroll-wrapper">
                         <button id="filter-liked" class="chip">Liked</button>
-                        <button id="btn-path" class="chip">Path</button>
                         <div id="date-chips" class="chip-group">
                             <button class="chip active" data-date="all">All Dates</button>
                         </div>
@@ -60,7 +53,38 @@
                     <button id="btn-reset" class="danger-link">Reset Library</button>
                 </footer>
             </section>
+
+            <!-- 2. STORY DETAIL PANEL -->
+            <section id="panel-detail" class="panel">
+                <header class="detail-header">
+                    <button id="btn-back" class="icon-btn">Back</button>
+                    <button id="btn-shrink" class="icon-btn">Shrink</button>
+                    <div class="actions">
+                        <button id="detail-like-btn" class="like-btn">❤️</button>
+                    </div>
+                </header>
+                
+                <div class="story-viewer">
+                    <div class="image-stage">
+                        <img id="detail-image" src="" alt="Detail View">
+                    </div>
+                    
+                    <div class="story-content">
+                        <div class="meta">
+                            <span id="detail-date" class="date-text">March 14, 2024</span>
+                        </div>
+                        <h2 id="detail-description" class="story-title">Moment in Tokyo</h2>
+                        <hr class="serif-hr">
+                    </div>
+                </div>
+            </section>
         </aside>
+
+        <!-- Main Interactive Map -->
+        <div id="map-container">
+            <div id="map"></div>
+            <button id="sidebar-toggle" class="map-overlay-btn">◀</button>
+        </div>
     </div>
 
     <!-- Scripts -->
