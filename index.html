@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travelgram</title>
+    <title>Travelgram | Storytelling</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,86 +20,79 @@
             <!-- 메인 탐색 뷰 (기본 상태) -->
             <div id="explore-view" class="view-panel active">
                 <div class="sidebar-header">
-                    <h2>트래블 피드</h2>
-                    <label for="photo-upload" class="upload-btn" title="새 포스트 작성">+</label>
+                    <h1 class="brand-logo">Travelgram</h1>
+                    <label for="photo-upload" class="upload-btn-elegant" title="새 포스트 작성">Post a Story</label>
                     <input type="file" id="photo-upload" multiple accept="image/jpeg, image/png" style="display:none;">
                 </div>
 
-                <div class="tabs">
-                    <button id="toggle-view-mode" class="tab-btn active">내 피드</button>
-                    <button id="toggle-shared-mode" class="tab-btn">둘러보기</button>
+                <div class="tabs-elegant">
+                    <button id="toggle-view-mode" class="tab-btn-elegant active">My Stories</button>
+                    <button id="toggle-shared-mode" class="tab-btn-elegant">Community</button>
                 </div>
 
-                <div class="quick-filters scroll-x">
-                    <button id="view-liked-photos" class="filter-chip">🤍 관심 항목</button>
-                    <button id="toggle-route" class="filter-chip">📍 경로 보기</button>
+                <div class="filter-section">
+                    <div class="quick-filters scroll-x">
+                        <button id="view-liked-photos" class="filter-chip-elegant">Liked</button>
+                        <button id="toggle-route" class="filter-chip-elegant">Path</button>
+                    </div>
+                    <div id="date-filters" class="quick-filters scroll-x">
+                        <button class="filter-chip-elegant active" data-date="all">All Dates</button>
+                    </div>
                 </div>
 
-                <div id="date-filters" class="quick-filters scroll-x">
-                    <button class="filter-chip active" data-date="all">전체 일정</button>
+                <div class="view-toggle-elegant">
+                    <button id="btn-map-view" class="view-mode-btn-elegant active">Map</button>
+                    <button id="btn-grid-view" class="view-mode-btn-elegant">Grid</button>
                 </div>
 
-                <div class="view-toggle">
-                    <button id="btn-map-view" class="view-mode-btn active">지도 뷰</button>
-                    <button id="btn-grid-view" class="view-mode-btn">그리드 뷰</button>
-                </div>
-
-                <div id="gallery-grid" class="image-grid" style="display: none;">
+                <div id="gallery-grid" class="image-grid-elegant" style="display: none;">
                     <!-- 갤러리 이미지가 동적으로 들어갑니다 -->
                 </div>
 
                 <div class="sidebar-footer">
-                     <button id="clear-photos" class="text-btn text-danger">내 데이터 전체 삭제</button>
+                     <button id="clear-photos" class="text-btn-elegant">Clear My Data</button>
                 </div>
             </div>
 
             <!-- 포스트 상세 뷰 (확대 상태) -->
             <div id="post-view" class="view-panel" style="display: none;">
-                <div class="post-header-top">
-                    <button id="back-to-explore" class="icon-btn">←</button>
-                    <span class="header-title">포스트</span>
-                    <button id="collapse-btn" class="icon-btn" title="지도 확대">⛶</button>
+                <div class="post-header-elegant">
+                    <button id="back-to-explore" class="back-btn">Back to Explore</button>
+                    <button id="collapse-btn" class="fullscreen-btn">Full Map</button>
                 </div>
                 
-                <div class="post-user-info">
-                    <div class="avatar"></div>
-                    <div class="user-meta">
-                        <span class="username" id="post-author">MyTravel_Diary</span>
-                        <span class="post-location" id="post-date"></span>
+                <div class="post-editorial-content">
+                    <div id="main-photo-container">
+                        <img id="current-photo" src="" alt="사진">
+                        <div class="heart-animation" id="heart-anim">❤️</div>
                     </div>
-                </div>
 
-                <div id="main-photo-container">
-                    <img id="current-photo" src="" alt="사진">
-                    <div class="heart-animation" id="heart-anim">❤️</div>
-                </div>
+                    <div class="post-body-elegant">
+                        <div class="post-meta-elegant">
+                            <span id="post-date" class="date-serif"></span>
+                            <div class="post-actions-elegant">
+                                <button id="main-like-btn" class="like-btn-elegant">🤍</button>
+                                <a id="download-btn" class="save-btn-elegant" href="#" download>Save Image</a>
+                            </div>
+                        </div>
+                        
+                        <h2 id="photo-description" class="description-serif"></h2>
+                        <div class="likes-info">
+                            <span id="like-count-text">0</span> likes from the community
+                        </div>
 
-                <div class="post-actions">
-                    <div class="action-left">
-                        <button id="main-like-btn" class="icon-btn like-btn">🤍</button>
-                        <button id="focus-comment-btn" class="icon-btn">💬</button>
-                        <button id="share-photo-btn" class="icon-btn" style="display: none;">📤</button>
+                        <div class="divider-elegant"></div>
+
+                        <div class="comments-section-elegant">
+                            <h3>Reflections</h3>
+                            <ul id="comments-list"></ul>
+                        </div>
                     </div>
-                    <div class="action-right">
-                        <a id="download-btn" class="icon-btn" href="#" download title="저장">💾</a>
-                    </div>
-                </div>
-
-                <div class="post-content">
-                    <p class="likes-count"><span id="like-count-text">0</span>명이 좋아합니다</p>
-                    <p class="description"><span class="username-bold" id="post-author-desc">MyTravel_Diary</span> <span id="photo-description"></span></p>
-                </div>
-
-                <div class="comments-section">
-                    <ul id="comments-list"></ul>
                 </div>
                 
-                <form id="comment-form">
-                    <div class="comment-input-wrapper">
-                        <div class="avatar small"></div>
-                        <input type="text" id="comment-input" placeholder="댓글 달기..." required autocomplete="off">
-                        <button type="submit" class="text-btn">게시</button>
-                    </div>
+                <form id="comment-form-elegant">
+                    <input type="text" id="comment-input" placeholder="Share your thoughts..." required autocomplete="off">
+                    <button type="submit">Post</button>
                 </form>
             </div>
         </div>

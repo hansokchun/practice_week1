@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sharedStoreName = 'sharedPhotos';
 
     const dbPromise = idb.openDB(dbName, 3, {
-        upgrade(db, oldVersion) {
+        upgrade(db) {
             if (!db.objectStoreNames.contains(photoStoreName)) {
                 db.createObjectStore(photoStoreName, { keyPath: 'id', autoIncrement: true });
             }
@@ -24,15 +24,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mapContainer = document.getElementById('map');
     const sidebar = document.getElementById('sidebar');
     const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
-    const map = L.map(mapContainer, {zoomControl: false}).setView([36.2048, 138.2529], 5.5);
+    
+    // Max Zoom increased to 21 for ultra-precise positioning
+    const map = L.map(mapContainer, {
+        zoomControl: false,
+        maxZoom: 21
+    }).setView([36.2048, 138.2529], 5.5);
+    
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     
     let routeLine = null;
 
-    const heartIcon = L.divIcon({ className: 'heart-icon', html: '❤️', iconSize: [24, 24], iconAnchor: [12, 12] });
+    // Elegant heart marker
+    const heartIcon = L.divIcon({ 
+        className: 'heart-icon', 
+        html: '🖤', 
+        iconSize: [20, 20], 
+        iconAnchor: [10, 10] 
+    });
+
+    // Configure Cluster with Spiderfy for overlapping points
     const markers = L.markerClusterGroup({
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        maxClusterRadius: 40,
         iconCreateFunction: function(cluster) {
-            return L.divIcon({ html: `<b>${cluster.getChildCount()}</b>`, className: 'cluster-icon', iconSize: L.point(32, 32) });
+            return L.divIcon({ 
+                html: `<span>${cluster.getChildCount()}</span>`, 
+                className: 'cluster-icon', 
+                iconSize: L.point(32, 32) 
+            });
         }
     });
 
@@ -57,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const photoDescription = document.getElementById('photo-description');
     const postDate = document.getElementById('post-date');
     const commentsList = document.getElementById('comments-list');
-    const commentForm = document.getElementById('comment-form');
+    const commentForm = document.getElementById('comment-form-elegant');
     const commentInput = document.getElementById('comment-input');
     const heartAnim = document.getElementById('heart-anim');
     const downloadBtn = document.getElementById('download-btn');
@@ -65,7 +87,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clearPhotosBtn = document.getElementById('clear-photos');
     const toggleRouteBtn = document.getElementById('toggle-route');
 
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { attribution: 'Google Maps' }).addTo(map);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 
+        attribution: 'Google Maps',
+        maxNativeZoom: 20,
+        maxZoom: 21
+    }).addTo(map);
 
     function toggleSidebar() {
         sidebar.classList.toggle('hidden');
@@ -92,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const start = performance.now();
         function step(now) {
             map.invalidateSize();
-            if (now - start < 450) requestAnimationFrame(step);
+            if (now - start < 500) requestAnimationFrame(step);
         }
         requestAnimationFrame(step);
     }
@@ -115,7 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const db = await dbPromise;
         photos = await db.getAll(photoStoreName);
         sharedPhotos = await db.getAll(sharedStoreName);
-        // Ensure properties exist
         photos.forEach(p => { if(!p.comments) p.comments = []; p.likes = p.likes || (p.liked ? 1 : 0); });
         sharedPhotos.forEach(p => { if(!p.comments) p.comments = []; p.likes = p.likes || (p.liked ? 1 : 0); });
         updateUI();
@@ -126,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (showOnlyLiked) targetList = targetList.filter(p => p.liked);
         const filtered = targetList.filter(p => filterDate === 'all' || p.date === filterDate);
 
-        // Update Markers
         markers.clearLayers();
         filtered.forEach(photo => {
             const marker = L.marker([photo.lat, photo.lng], { icon: heartIcon });
@@ -138,14 +162,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         map.addLayer(markers);
 
-        // Update Gallery
         galleryGrid.innerHTML = '';
         filtered.forEach(photo => {
             const div = document.createElement('div');
-            div.className = `grid-item ${photo.liked ? 'liked' : ''}`;
+            div.className = `grid-item`;
             div.innerHTML = `<img src="${photo.url}" loading="lazy">`;
             div.onclick = () => {
-                map.setView([photo.lat, photo.lng], 16);
+                map.setView([photo.lat, photo.lng], 18);
                 selectPhoto(photo);
                 expandSidebarForPost();
             };
@@ -158,11 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggleSharedModeBtn.classList.toggle('active', viewMode === 'shared');
         viewLikedPhotosBtn.classList.toggle('active', showOnlyLiked);
 
-        if(gridMode) {
-            galleryGrid.style.display = 'grid';
-        } else {
-            galleryGrid.style.display = 'none';
-        }
+        galleryGrid.style.display = gridMode ? 'grid' : 'none';
     }
 
     function selectPhoto(photo) {
@@ -171,11 +190,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         photoDescription.textContent = photo.description;
         postDate.textContent = photo.date;
         downloadBtn.href = photo.url;
-        downloadBtn.download = `photo_${photo.date}.jpg`;
         
         mainLikeBtn.textContent = photo.liked ? '❤️' : '🤍';
-        mainLikeBtn.classList.toggle('liked', photo.liked);
-        likeCountText.textContent = photo.likes || (photo.liked ? 1 : 0);
+        likeCountText.textContent = photo.likes || 0;
         
         renderComments();
     }
@@ -185,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(!currentSelectedPhoto || !currentSelectedPhoto.comments) return;
         currentSelectedPhoto.comments.forEach(c => {
             const li = document.createElement('li');
-            li.innerHTML = `<span class="comment-user">User</span> <span>${c}</span>`;
+            li.textContent = c;
             commentsList.appendChild(li);
         });
         commentsList.scrollTop = commentsList.scrollHeight;
@@ -194,10 +211,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function toggleLike() {
         if (!currentSelectedPhoto) return;
         currentSelectedPhoto.liked = !currentSelectedPhoto.liked;
-        currentSelectedPhoto.likes = currentSelectedPhoto.liked ? Math.max((currentSelectedPhoto.likes||0)+1, 1) : Math.max((currentSelectedPhoto.likes||1)-1, 0);
+        currentSelectedPhoto.likes = currentSelectedPhoto.liked ? (currentSelectedPhoto.likes||0)+1 : Math.max((currentSelectedPhoto.likes||1)-1, 0);
         
         mainLikeBtn.textContent = currentSelectedPhoto.liked ? '❤️' : '🤍';
-        mainLikeBtn.classList.toggle('liked', currentSelectedPhoto.liked);
         likeCountText.textContent = currentSelectedPhoto.likes;
         
         if(currentSelectedPhoto.liked) {
@@ -208,14 +224,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const storeName = viewMode === 'my' ? photoStoreName : sharedStoreName;
         const db = await dbPromise;
         await db.put(storeName, currentSelectedPhoto);
-        
-        // Refresh grid icons if needed without full re-render
-        if(gridMode || showOnlyLiked) updateUI(); 
+        if(showOnlyLiked) updateUI(); 
     }
 
     mainLikeBtn.addEventListener('click', toggleLike);
     
-    // Double click image to like (Instagram style)
     let lastClick = 0;
     mainPhotoContainer.addEventListener('click', (e) => {
         const now = new Date().getTime();
@@ -231,7 +244,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(!currentSelectedPhoto.comments) currentSelectedPhoto.comments = [];
             currentSelectedPhoto.comments.push(text);
             commentInput.value = '';
-            
             const storeName = viewMode === 'my' ? photoStoreName : sharedStoreName;
             const db = await dbPromise;
             await db.put(storeName, currentSelectedPhoto);
@@ -249,10 +261,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setupDateFilters() {
         const targetList = viewMode === 'my' ? photos : sharedPhotos;
         const uniqueDates = [...new Set(targetList.map(p => p.date))].sort((a,b)=>b.localeCompare(a));
-        dateFiltersContainer.innerHTML = '<button class="filter-chip active" data-date="all">전체 일정</button>';
+        dateFiltersContainer.innerHTML = '<button class="filter-chip-elegant active" data-date="all">All Dates</button>';
         uniqueDates.forEach(date => {
             const btn = document.createElement('button');
-            btn.className = 'filter-chip';
+            btn.className = 'filter-chip-elegant';
             btn.dataset.date = date;
             btn.textContent = date;
             dateFiltersContainer.appendChild(btn);
@@ -260,8 +272,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     dateFiltersContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('filter-chip')) {
-            document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+        if (e.target.classList.contains('filter-chip-elegant')) {
+            document.querySelectorAll('.filter-chip-elegant').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             updateUI(e.target.dataset.date);
         }
@@ -273,9 +285,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             toggleRouteBtn.classList.remove('active');
         } else {
             const currentPhotos = viewMode === 'my' ? photos : sharedPhotos;
-            if (currentPhotos.length < 2) return alert('경로를 그리려면 2장 이상의 사진이 필요합니다.');
+            if (currentPhotos.length < 2) return alert('At least 2 photos needed for a path.');
             const routeCoords = currentPhotos.sort((a, b) => new Date(a.date) - new Date(b.date)).map(p => [p.lat, p.lng]);
-            routeLine = L.polyline(routeCoords, { color: '#0095F6', weight: 4, opacity: 0.8 }).addTo(map);
+            routeLine = L.polyline(routeCoords, { color: '#1a1a1a', weight: 2, opacity: 0.6, dashArray: '5, 10' }).addTo(map);
             toggleRouteBtn.classList.add('active');
             map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
         }
@@ -324,7 +336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.body.style.cursor = 'default';
         if (photosWithoutGps.length > 0) {
-            if (confirm(`위치 정보가 없는 사진이 ${photosWithoutGps.length}장 있습니다. 직접 지정하시겠습니까?`)) {
+            if (confirm(`${photosWithoutGps.length} photos have no GPS. Pin them on the map?`)) {
                 startLocationPicker(photosWithoutGps);
             }
         }
@@ -343,15 +355,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     function startLocationPicker(remainingPhotos) {
         if (remainingPhotos.length === 0) {
             mapContainer.style.cursor = '';
-            markers.options.interactive = true; // 마커 다시 활성화
-            return alert('완료되었습니다.');
+            markers.options.interactive = true;
+            return;
         }
         
         const pending = remainingPhotos.shift();
         mapContainer.style.cursor = 'crosshair';
-        markers.options.interactive = false; // 위치 지정 중에는 기존 마커 클릭 무시
+        markers.options.interactive = false;
         
-        alert(`"${pending.description}"의 위치를 지도에서 클릭해주세요.\n(기존 마커가 있는 위치도 클릭 가능합니다.)`);
+        alert(`Click on the map to pin: "${pending.description}"`);
         
         map.once('click', async (e) => {
             pending.lat = e.latlng.lat;
@@ -364,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     clearPhotosBtn.addEventListener('click', async () => {
-        if (confirm('정말로 모든 내 데이터를 지우시겠습니까?')) {
+        if (confirm('Permanently delete all your stories?')) {
             const db = await dbPromise;
             await db.clear(photoStoreName);
             photos = [];
@@ -372,22 +384,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateUI();
         }
     });
-    
-    // Custom style for clustering to fit new UI
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .cluster-icon {
-            background: rgba(237, 73, 86, 0.95);
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 32px;
-            box-shadow: 0 4px 12px rgba(237, 73, 86, 0.4);
-            font-family: Pretendard, sans-serif;
-            font-size: 14px;
-        }
-    `;
-    document.head.appendChild(style);
 
     loadData();
 });
