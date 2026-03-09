@@ -55,7 +55,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     const icons = {
-        liked: L.divIcon({ className: 'map-icon icon-liked', html: '❤️', iconSize: [30, 30], iconAnchor: [15, 15] }),
+        liked: L.divIcon({ 
+            className: 'map-icon icon-liked', 
+            html: `<svg viewBox="0 0 24 24" width="30" height="30" fill="var(--danger-color)" stroke="var(--danger-color)" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`, 
+            iconSize: [30, 30], iconAnchor: [15, 15] 
+        }),
         my: L.divIcon({ 
             className: 'map-icon icon-my', 
             html: `<svg viewBox="0 0 24 24" width="30" height="30" fill="#3b82f6"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`, 
