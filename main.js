@@ -1,392 +1,289 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    let photos = [];
-    let sharedPhotos = [];
-    let currentSelectedPhoto = null;
-    let viewMode = 'my'; // 'my' or 'shared'
-    let showOnlyLiked = false;
-    let gridMode = true; // Default to Grid View
+    // 1. STATE MANAGEMENT
+    let state = {
+        photos: [],
+        sharedPhotos: [],
+        currentSelected: null,
+        viewMode: 'my', // 'my' or 'shared'
+        showOnlyLiked: false,
+        gridMode: true,
+        isPathActive: false
+    };
 
-    const dbName = 'JapanTripDB';
-    const photoStoreName = 'photos';
-    const sharedStoreName = 'sharedPhotos';
+    const dbName = 'TravelgramDB';
+    const photoStore = 'photos';
+    const sharedStore = 'shared';
 
-    const dbPromise = idb.openDB(dbName, 3, {
+    const dbPromise = idb.openDB(dbName, 4, {
         upgrade(db) {
-            if (!db.objectStoreNames.contains(photoStoreName)) {
-                db.createObjectStore(photoStoreName, { keyPath: 'id', autoIncrement: true });
-            }
-            if (!db.objectStoreNames.contains(sharedStoreName)) {
-                db.createObjectStore(sharedStoreName, { keyPath: 'id' });
-            }
+            if (!db.objectStoreNames.contains(photoStore)) db.createObjectStore(photoStore, { keyPath: 'id', autoIncrement: true });
+            if (!db.objectStoreNames.contains(sharedStore)) db.createObjectStore(sharedStore, { keyPath: 'id' });
         },
     });
 
-    const mapContainer = document.getElementById('map');
-    const sidebar = document.getElementById('sidebar');
-    const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
-    
-    const map = L.map(mapContainer, {
-        zoomControl: false,
-        maxZoom: 21
-    }).setView([36.2048, 138.2529], 5.5);
-    
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    
-    let routeLine = null;
-
-    const heartIcon = L.divIcon({ 
-        className: 'heart-icon', 
-        html: '❤️', 
-        iconSize: [30, 30], 
-        iconAnchor: [15, 15] 
-    });
-
-    const markers = L.markerClusterGroup({
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        maxClusterRadius: 40,
-        iconCreateFunction: function(cluster) {
-            return L.divIcon({ 
-                html: `<span>${cluster.getChildCount()}</span>`, 
-                className: 'cluster-icon', 
-                iconSize: L.point(32, 32) 
-            });
-        }
-    });
-
-    const exploreView = document.getElementById('explore-view');
-    const postView = document.getElementById('post-view');
-    
-    const toggleViewModeBtn = document.getElementById('toggle-view-mode');
-    const toggleSharedModeBtn = document.getElementById('toggle-shared-mode');
-    const viewLikedPhotosBtn = document.getElementById('view-liked-photos');
-    const dateFiltersContainer = document.getElementById('date-filters');
-    const btnMapView = document.getElementById('btn-map-view');
-    const btnGridView = document.getElementById('btn-grid-view');
-    const galleryGrid = document.getElementById('gallery-grid');
-    
-    const backToExploreBtn = document.getElementById('back-to-explore');
-    const collapseBtn = document.getElementById('collapse-btn');
-    const photoViewerImg = document.getElementById('current-photo');
-    const mainPhotoContainer = document.getElementById('main-photo-container');
-    const mainLikeBtn = document.getElementById('main-like-btn');
-    const likeCountText = document.getElementById('like-count-text');
-    const photoDescriptionText = document.getElementById('photo-description');
-    const postDateText = document.getElementById('post-date');
-    const commentsList = document.getElementById('comments-list');
-    const commentForm = document.getElementById('comment-form-elegant');
-    const commentInput = document.getElementById('comment-input');
-    const heartAnim = document.getElementById('heart-anim');
-    const downloadBtn = document.getElementById('download-btn');
-    const photoUploadInput = document.getElementById('photo-upload');
-    const clearPhotosBtn = document.getElementById('clear-photos');
-    const toggleRouteBtn = document.getElementById('toggle-route');
-
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 
-        attribution: 'Google Maps',
-        maxNativeZoom: 20,
-        maxZoom: 21
-    }).addTo(map);
-
-    function toggleSidebar() {
-        const isHidden = sidebar.classList.toggle('hidden');
-        toggleSidebarBtn.textContent = isHidden ? '▶' : '◀';
-        animateMapResize();
-    }
-
-    function expandSidebarForPost() {
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('expanded');
-        exploreView.style.display = 'none';
-        postView.style.display = 'flex';
-        toggleSidebarBtn.textContent = '◀';
-        animateMapResize();
-    }
-
-    function showExploreView() {
-        sidebar.classList.remove('expanded');
-        postView.style.display = 'none';
-        exploreView.style.display = 'flex';
-        currentSelectedPhoto = null;
-        toggleSidebarBtn.textContent = '◀';
-        animateMapResize();
-    }
-
-    function animateMapResize() {
-        const start = performance.now();
-        function step(now) {
-            map.invalidateSize();
-            if (now - start < 500) requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-    }
-
-    toggleSidebarBtn.addEventListener('click', toggleSidebar);
-    backToExploreBtn.addEventListener('click', showExploreView);
-    collapseBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('expanded');
-        animateMapResize();
-    });
-
-    map.on('click', () => {
-        if (postView.style.display === 'flex' && sidebar.classList.contains('expanded')) {
-            sidebar.classList.remove('expanded');
-            animateMapResize();
-        }
-    });
-
-    async function loadData() {
-        const db = await dbPromise;
-        photos = await db.getAll(photoStoreName);
-        sharedPhotos = await db.getAll(sharedStoreName);
-        photos.forEach(p => { if(!p.comments) p.comments = []; p.likes = p.likes || (p.liked ? 1 : 0); });
-        sharedPhotos.forEach(p => { if(!p.comments) p.comments = []; p.likes = p.likes || (p.liked ? 1 : 0); });
-        updateUI();
-    }
-
-    function updateUI(filterDate = 'all') {
-        let targetList = viewMode === 'my' ? photos : sharedPhotos;
-        if (showOnlyLiked) targetList = targetList.filter(p => p.liked);
-        const filtered = targetList.filter(p => filterDate === 'all' || p.date === filterDate);
-
-        // CLEAR markers and grid before rendering to prevent duplication
-        markers.clearLayers();
-        galleryGrid.innerHTML = '';
-
-        filtered.forEach(photo => {
-            const marker = L.marker([photo.lat, photo.lng], { icon: heartIcon });
-            marker.on('click', () => {
-                selectPhoto(photo);
-                expandSidebarForPost();
-            });
-            markers.addLayer(marker);
-
-            const div = document.createElement('div');
-            div.className = `grid-item`;
-            div.innerHTML = `<img src="${photo.url}" loading="lazy">`;
-            div.onclick = () => {
-                map.setView([photo.lat, photo.lng], 18);
-                selectPhoto(photo);
-                expandSidebarForPost();
-            };
-            galleryGrid.appendChild(div);
-        });
-        map.addLayer(markers);
-
-        setupDateFilters();
+    // 2. UI REFERENCES
+    const ui = {
+        sidebar: document.getElementById('sidebar'),
+        toggleBtn: document.getElementById('sidebar-toggle'),
+        panelExplore: document.getElementById('panel-explore'),
+        panelDetail: document.getElementById('panel-detail'),
+        grid: document.getElementById('grid-container'),
+        dateChips: document.getElementById('date-chips'),
         
-        toggleViewModeBtn.classList.toggle('active', viewMode === 'my');
-        toggleSharedModeBtn.classList.toggle('active', viewMode === 'shared');
-        viewLikedPhotosBtn.classList.toggle('active', showOnlyLiked);
+        // Detail UI
+        detailImg: document.getElementById('detail-image'),
+        detailTitle: document.getElementById('detail-title'),
+        detailDate: document.getElementById('detail-date'),
+        detailLikes: document.getElementById('detail-likes'),
+        commentList: document.getElementById('comment-list'),
+        commentForm: document.getElementById('comment-form'),
+        commentInput: document.getElementById('comment-input'),
+        btnLike: document.getElementById('btn-like'),
+        btnDownload: document.getElementById('btn-download'),
+        bigHeart: document.getElementById('big-heart'),
+        
+        // Buttons
+        btnMyFeed: document.getElementById('btn-my-feed'),
+        btnSharedFeed: document.getElementById('btn-shared-feed'),
+        btnFilterLiked: document.getElementById('filter-liked'),
+        btnTogglePath: document.getElementById('btn-path'),
+        btnViewMap: document.getElementById('btn-view-map'),
+        btnViewGrid: document.getElementById('btn-view-grid'),
+        btnBack: document.getElementById('btn-back'),
+        btnExpand: document.getElementById('btn-expand'),
+        btnReset: document.getElementById('btn-reset'),
+        uploadInput: document.getElementById('upload-input')
+    };
 
-        galleryGrid.style.display = gridMode ? 'grid' : 'none';
+    // 3. MAP SETUP
+    const map = L.map('map', { zoomControl: false, maxZoom: 21 }).setView([36.2048, 138.2529], 6);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { attribution: 'Google Maps' }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    const heartIcon = L.divIcon({ className: 'heart-icon', html: '❤️', iconSize: [30, 30], iconAnchor: [15, 15] });
+    const clusterGroup = L.markerClusterGroup({ 
+        spiderfyOnMaxZoom: true, 
+        showCoverageOnHover: false,
+        iconCreateFunction: (c) => L.divIcon({ html: `<span>${c.getChildCount()}</span>`, className: 'cluster-icon', iconSize: [32, 32] })
+    });
+    let pathLine = null;
+
+    // 4. CORE LOGIC
+    async function syncData() {
+        const db = await dbPromise;
+        state.photos = await db.getAll(photoStore);
+        state.sharedPhotos = await db.getAll(sharedStore);
+        renderAll();
     }
 
-    function selectPhoto(photo) {
-        currentSelectedPhoto = photo;
-        photoViewerImg.style.display = 'block';
-        photoViewerImg.src = photo.url;
-        photoDescriptionText.textContent = photo.description || 'No description provided.';
-        postDateText.textContent = photo.date;
-        downloadBtn.href = photo.url;
-        mainLikeBtn.textContent = photo.liked ? '❤️' : '🤍';
-        likeCountText.textContent = photo.likes || 0;
+    function renderAll(filterDate = 'all') {
+        const targetList = (state.viewMode === 'my' ? state.photos : state.sharedPhotos)
+            .filter(p => !state.showOnlyLiked || p.liked)
+            .filter(p => filterDate === 'all' || p.date === filterDate);
+
+        // Map Render
+        clusterGroup.clearLayers();
+        targetList.forEach(p => {
+            const m = L.marker([p.lat, p.lng], { icon: heartIcon });
+            m.on('click', () => { selectStory(p); openDetail(); });
+            clusterGroup.addLayer(m);
+        });
+        map.addLayer(clusterGroup);
+
+        // Grid Render
+        ui.grid.innerHTML = '';
+        targetList.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'grid-item';
+            item.innerHTML = `<img src="${p.url}" loading="lazy">`;
+            item.onclick = () => { map.setView([p.lat, p.lng], 18); selectStory(p); openDetail(); };
+            ui.grid.appendChild(item);
+        });
+
+        // Toggle UI states
+        ui.grid.style.display = state.gridMode ? 'grid' : 'none';
+        ui.btnViewGrid.classList.toggle('active', state.gridMode);
+        ui.btnViewMap.classList.toggle('active', !state.gridMode);
+        ui.btnMyFeed.classList.toggle('active', state.viewMode === 'my');
+        ui.btnSharedFeed.classList.toggle('active', state.viewMode === 'shared');
+        ui.btnFilterLiked.classList.toggle('active', state.showOnlyLiked);
+        
+        renderDateChips();
+    }
+
+    function renderDateChips() {
+        const list = state.viewMode === 'my' ? state.photos : state.sharedPhotos;
+        const dates = [...new Set(list.map(p => p.date))].sort((a,b) => b.localeCompare(a));
+        ui.dateChips.innerHTML = `<button class="chip ${state.activeDate === 'all' ? 'active' : ''}" data-date="all">All Dates</button>`;
+        dates.forEach(d => {
+            const btn = document.createElement('button');
+            btn.className = `chip ${state.activeDate === d ? 'active' : ''}`;
+            btn.dataset.date = d;
+            btn.textContent = d;
+            ui.dateChips.appendChild(btn);
+        });
+    }
+
+    function selectStory(story) {
+        state.currentSelected = story;
+        ui.detailImg.src = story.url;
+        ui.detailTitle.textContent = story.description || 'A moment captured.';
+        ui.detailDate.textContent = story.date;
+        ui.detailLikes.textContent = story.likes || 0;
+        ui.btnDownload.href = story.url;
+        ui.btnLike.textContent = story.liked ? '❤️' : '🤍';
         renderComments();
     }
 
     function renderComments() {
-        commentsList.innerHTML = '';
-        if(!currentSelectedPhoto || !currentSelectedPhoto.comments) return;
-        currentSelectedPhoto.comments.forEach(c => {
-            const li = document.createElement('li');
-            li.textContent = c;
-            commentsList.appendChild(li);
-        });
-        commentsList.scrollTop = commentsList.scrollHeight;
-    }
-
-    async function toggleLike() {
-        if (!currentSelectedPhoto) return;
-        currentSelectedPhoto.liked = !currentSelectedPhoto.liked;
-        currentSelectedPhoto.likes = currentSelectedPhoto.liked ? (currentSelectedPhoto.likes||0)+1 : Math.max((currentSelectedPhoto.likes||1)-1, 0);
-        
-        mainLikeBtn.textContent = currentSelectedPhoto.liked ? '❤️' : '🤍';
-        likeCountText.textContent = currentSelectedPhoto.likes;
-        
-        if(currentSelectedPhoto.liked) {
-            heartAnim.classList.add('animate');
-            setTimeout(() => heartAnim.classList.remove('animate'), 600);
+        ui.commentList.innerHTML = '';
+        if (state.currentSelected.comments) {
+            state.currentSelected.comments.forEach(c => {
+                const li = document.createElement('li');
+                li.textContent = c;
+                ui.commentList.appendChild(li);
+            });
         }
-
-        const storeName = viewMode === 'my' ? photoStoreName : sharedStoreName;
-        const db = await dbPromise;
-        await db.put(storeName, currentSelectedPhoto);
-        
-        // Use a more surgical update for liked status in grid if needed
-        // but for now, full updateUI is safe since we clear correctly.
-        if(showOnlyLiked) updateUI(); 
     }
 
-    mainLikeBtn.addEventListener('click', toggleLike);
-    
-    let lastClick = 0;
-    mainPhotoContainer.addEventListener('click', (e) => {
-        const now = new Date().getTime();
-        if (now - lastClick < 300) { toggleLike(); lastClick = 0; }
-        else { lastClick = now; }
-    });
+    // 5. EVENT HANDLERS
+    ui.toggleBtn.onclick = () => {
+        const isHidden = ui.sidebar.classList.toggle('hidden');
+        ui.toggleBtn.textContent = isHidden ? '▶' : '◀';
+        refreshMapSize();
+    };
 
-    commentForm.addEventListener('submit', async (e) => {
+    function openDetail() {
+        ui.panelExplore.classList.remove('active');
+        ui.panelDetail.classList.add('active');
+        ui.sidebar.classList.add('expanded');
+        refreshMapSize();
+    }
+
+    function closeDetail() {
+        ui.panelDetail.classList.remove('active');
+        ui.panelExplore.classList.add('active');
+        ui.sidebar.classList.remove('expanded');
+        state.currentSelected = null;
+        refreshMapSize();
+    }
+
+    ui.btnBack.onclick = closeDetail;
+    ui.btnExpand.onclick = () => { ui.sidebar.classList.toggle('expanded'); refreshMapSize(); };
+
+    function refreshMapSize() {
+        const start = performance.now();
+        const step = (now) => {
+            map.invalidateSize();
+            if (now - start < 500) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }
+
+    ui.btnLike.onclick = async () => {
+        const s = state.currentSelected;
+        s.liked = !s.liked;
+        s.likes = s.liked ? (s.likes || 0) + 1 : Math.max(0, (s.likes || 1) - 1);
+        ui.btnLike.textContent = s.liked ? '❤️' : '🤍';
+        ui.detailLikes.textContent = s.likes;
+        if (s.liked) { ui.bigHeart.classList.add('animate'); setTimeout(() => ui.bigHeart.classList.remove('animate'), 600); }
+        
+        const db = await dbPromise;
+        await db.put(state.viewMode === 'my' ? photoStore : sharedStore, s);
+        if (state.showOnlyLiked) renderAll(state.activeDate);
+    };
+
+    ui.commentForm.onsubmit = async (e) => {
         e.preventDefault();
-        if (!currentSelectedPhoto) return;
-        const text = commentInput.value.trim();
+        const text = ui.commentInput.value.trim();
         if (text) {
-            if(!currentSelectedPhoto.comments) currentSelectedPhoto.comments = [];
-            currentSelectedPhoto.comments.push(text);
-            commentInput.value = '';
-            const storeName = viewMode === 'my' ? photoStoreName : sharedStoreName;
+            if (!state.currentSelected.comments) state.currentSelected.comments = [];
+            state.currentSelected.comments.push(text);
+            ui.commentInput.value = '';
             const db = await dbPromise;
-            await db.put(storeName, currentSelectedPhoto);
+            await db.put(state.viewMode === 'my' ? photoStore : sharedStore, state.currentSelected);
             renderComments();
         }
-    });
+    };
 
-    toggleViewModeBtn.addEventListener('click', () => { viewMode = 'my'; showOnlyLiked = false; updateUI(); });
-    toggleSharedModeBtn.addEventListener('click', () => { viewMode = 'shared'; showOnlyLiked = false; updateUI(); });
-    viewLikedPhotosBtn.addEventListener('click', () => { showOnlyLiked = !showOnlyLiked; updateUI(); });
+    ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); };
+    ui.btnSharedFeed.onclick = () => { state.viewMode = 'shared'; state.showOnlyLiked = false; renderAll(); };
+    ui.btnFilterLiked.onclick = () => { state.showOnlyLiked = !state.showOnlyLiked; renderAll(state.activeDate); };
+    ui.btnViewGrid.onclick = () => { state.gridMode = true; renderAll(state.activeDate); };
+    ui.btnViewMap.onclick = () => { state.gridMode = false; renderAll(state.activeDate); };
 
-    btnMapView.addEventListener('click', () => { gridMode = false; btnMapView.classList.add('active'); btnGridView.classList.remove('active'); updateUI(); });
-    btnGridView.addEventListener('click', () => { gridMode = true; btnGridView.classList.add('active'); btnMapView.classList.remove('active'); updateUI(); });
-
-    function setupDateFilters() {
-        const targetList = viewMode === 'my' ? photos : sharedPhotos;
-        const uniqueDates = [...new Set(targetList.map(p => p.date))].sort((a,b)=>b.localeCompare(a));
-        dateFiltersContainer.innerHTML = '<button class="filter-chip-elegant active" data-date="all">All Dates</button>';
-        uniqueDates.forEach(date => {
-            const btn = document.createElement('button');
-            btn.className = 'filter-chip-elegant';
-            btn.dataset.date = date;
-            btn.textContent = date;
-            dateFiltersContainer.appendChild(btn);
-        });
-    }
-
-    dateFiltersContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('filter-chip-elegant')) {
-            document.querySelectorAll('.filter-chip-elegant').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            updateUI(e.target.dataset.date);
+    ui.dateChips.onclick = (e) => {
+        if (e.target.classList.contains('chip')) {
+            state.activeDate = e.target.dataset.date;
+            renderAll(state.activeDate);
         }
-    });
+    };
 
-    toggleRouteBtn.addEventListener('click', () => {
-        if (routeLine && map.hasLayer(routeLine)) {
-            map.removeLayer(routeLine);
-            toggleRouteBtn.classList.remove('active');
-        } else {
-            const currentPhotos = viewMode === 'my' ? photos : sharedPhotos;
-            if (currentPhotos.length < 2) return alert('At least 2 photos needed for a path.');
-            const routeCoords = currentPhotos.sort((a, b) => new Date(a.date) - new Date(b.date)).map(p => [p.lat, p.lng]);
-            routeLine = L.polyline(routeCoords, { color: '#1a1a1a', weight: 2, opacity: 0.6, dashArray: '5, 10' }).addTo(map);
-            toggleRouteBtn.classList.add('active');
-            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-        }
-    });
+    ui.btnTogglePath.onclick = () => {
+        state.isPathActive = !state.isPathActive;
+        ui.btnTogglePath.classList.toggle('active', state.isPathActive);
+        if (state.isPathActive) {
+            const list = state.viewMode === 'my' ? state.photos : state.sharedPhotos;
+            if (list.length < 2) return alert('2+ photos needed.');
+            const coords = [...list].sort((a,b) => new Date(a.date) - new Date(b.date)).map(p => [p.lat, p.lng]);
+            pathLine = L.polyline(coords, { color: '#1a1a1a', weight: 2, dashArray: '5, 10', opacity: 0.6 }).addTo(map);
+            map.fitBounds(pathLine.getBounds(), { padding: [50,50] });
+        } else if (pathLine) { map.removeLayer(pathLine); }
+    };
 
-    photoUploadInput.addEventListener('change', async (event) => {
-        const files = event.target.files;
+    ui.uploadInput.onchange = async (e) => {
+        const files = e.target.files;
         if (!files.length) return;
-        document.body.style.cursor = 'wait';
-        
         const newPhotos = [];
-        const photosWithoutGps = [];
-
-        for (const file of Array.from(files)) {
-            try {
-                const exif = await exifr.parse(file);
-                const dataUrl = await new Promise(r => {
-                    const reader = new FileReader();
-                    reader.onload = e => r(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-
-                const photoData = {
-                    id: Date.now() + Math.random(),
-                    url: dataUrl,
-                    date: (exif?.DateTimeOriginal || exif?.CreateDate)?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-                    description: exif?.ImageDescription || file.name,
-                    lat: exif?.latitude,
-                    lng: exif?.longitude,
-                    liked: false,
-                    likes: 0,
-                    comments: []
-                };
-
-                if (photoData.lat && photoData.lng) newPhotos.push(photoData);
-                else photosWithoutGps.push(photoData);
-            } catch (e) { console.error(e); }
+        const noGps = [];
+        for (const f of Array.from(files)) {
+            const exif = await exifr.parse(f);
+            const url = await new Promise(r => { const reader = new FileReader(); reader.onload = ev => r(reader.result); reader.readAsDataURL(f); });
+            const data = { 
+                id: Date.now() + Math.random(), 
+                url, 
+                date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                description: exif?.ImageDescription || f.name, 
+                lat: exif?.latitude, lng: exif?.longitude, 
+                liked: false, likes: 0, comments: [] 
+            };
+            if (data.lat) newPhotos.push(data); else noGps.push(data);
         }
-
-        if (newPhotos.length > 0) {
-            await savePhotosToDB(newPhotos);
-            photos.push(...newPhotos);
-            viewMode = 'my';
-            updateUI();
+        if (newPhotos.length) { 
+            const db = await dbPromise;
+            const tx = db.transaction(photoStore, 'readwrite');
+            for(const p of newPhotos) await tx.store.put(p);
+            await tx.done;
+            state.photos.push(...newPhotos);
+            state.viewMode = 'my'; renderAll();
         }
+        if (noGps.length) { if(confirm(`${noGps.length} photos lack GPS. Pin them?`)) startLocationPicker(noGps); }
+        ui.uploadInput.value = '';
+    };
 
-        document.body.style.cursor = 'default';
-        if (photosWithoutGps.length > 0) {
-            if (confirm(`${photosWithoutGps.length} photos have no GPS. Pin them on the map?`)) {
-                startLocationPicker(photosWithoutGps);
-            }
-        }
-        event.target.value = null;
-    });
-
-    async function savePhotosToDB(newPhotos) {
-        const db = await dbPromise;
-        const tx = db.transaction(photoStoreName, 'readwrite');
-        for (const p of newPhotos) {
-            await tx.store.put(p);
-        }
-        await tx.done;
-    }
-
-    function startLocationPicker(remainingPhotos) {
-        if (remainingPhotos.length === 0) {
-            mapContainer.style.cursor = '';
-            markers.options.interactive = true;
-            markers.eachLayer(m => m.options.interactive = true);
-            return alert('All pins set.');
-        }
-        
-        const pending = remainingPhotos.shift();
-        mapContainer.style.cursor = 'crosshair';
-        markers.options.interactive = false;
-        markers.eachLayer(m => m.options.interactive = false);
-        
-        alert(`Click on the map to pin: "${pending.description}"`);
-        
+    function startLocationPicker(list) {
+        if (!list.length) return alert('Finished.');
+        const p = list.shift();
+        ui.sidebar.classList.add('hidden'); // Hide sidebar to focus on map
+        alert(`Click map to pin: ${p.description}`);
+        clusterGroup.eachLayer(m => m.options.interactive = false); // Global disable
         map.once('click', async (e) => {
-            pending.lat = e.latlng.lat;
-            pending.lng = e.latlng.lng;
-            await savePhotosToDB([pending]);
-            photos.push(pending);
-            updateUI();
-            startLocationPicker(remainingPhotos);
+            p.lat = e.latlng.lat; p.lng = e.latlng.lng;
+            const db = await dbPromise; await db.put(photoStore, p);
+            state.photos.push(p);
+            ui.sidebar.classList.remove('hidden');
+            clusterGroup.eachLayer(m => m.options.interactive = true);
+            renderAll();
+            startLocationPicker(list);
         });
     }
 
-    clearPhotosBtn.addEventListener('click', async () => {
-        if (confirm('Permanently delete all your stories?')) {
-            const db = await dbPromise;
-            await db.clear(photoStoreName);
-            photos = [];
-            showExploreView();
-            updateUI();
+    ui.btnReset.onclick = async () => {
+        if (confirm('Delete everything?')) {
+            const db = await dbPromise; await db.clear(photoStore);
+            state.photos = []; closeDetail(); renderAll();
         }
-    });
+    };
 
-    loadData();
+    syncData();
 });

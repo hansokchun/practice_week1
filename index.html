@@ -3,102 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travelgram | Storytelling</title>
+    <title>Travelgram | Premium Storytelling</title>
+    
+    <!-- External Resources -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app-container">
-        <div id="map"></div>
-        <button id="toggle-sidebar-btn" title="메뉴 열기/닫기">◀</button>
-        
-        <div id="sidebar">
-            <!-- 메인 탐색 뷰 (기본 상태) -->
-            <div id="explore-view" class="view-panel active">
-                <div class="sidebar-header">
-                    <h1 class="brand-logo">Travelgram</h1>
-                    <label for="photo-upload" class="upload-btn-elegant" title="새 포스트 작성">Post a Story</label>
-                    <input type="file" id="photo-upload" multiple accept="image/jpeg, image/png" style="display:none;">
-                </div>
+    <div id="app">
+        <!-- Main Interactive Map -->
+        <div id="map-container">
+            <div id="map"></div>
+            <button id="sidebar-toggle" class="map-overlay-btn">◀</button>
+        </div>
 
-                <div class="tabs-elegant">
-                    <button id="toggle-view-mode" class="tab-btn-elegant active">My Stories</button>
-                    <button id="toggle-shared-mode" class="tab-btn-elegant">Community</button>
-                </div>
+        <!-- Sidebar Content -->
+        <aside id="sidebar">
+            <!-- 1. FEED EXPLORE PANEL -->
+            <section id="panel-explore" class="panel active">
+                <header class="sidebar-header">
+                    <h1 class="logo">Travelgram</h1>
+                    <label for="upload-input" class="btn-post">Post a Story</label>
+                    <input type="file" id="upload-input" multiple accept="image/jpeg, image/png" style="display:none;">
+                </header>
 
-                <div class="filter-section">
-                    <div class="quick-filters scroll-x">
-                        <button id="view-liked-photos" class="filter-chip-elegant">Liked</button>
-                        <button id="toggle-route" class="filter-chip-elegant">Path</button>
+                <nav class="feed-nav">
+                    <button id="btn-my-feed" class="nav-link active">My Stories</button>
+                    <button id="btn-shared-feed" class="nav-link">Community</button>
+                </nav>
+
+                <div class="filter-bar">
+                    <div class="scroll-wrapper">
+                        <button id="filter-liked" class="chip">Liked</button>
+                        <button id="btn-path" class="chip">Path</button>
+                        <div id="date-chips" class="chip-group">
+                            <button class="chip active" data-date="all">All Dates</button>
+                        </div>
                     </div>
-                    <div id="date-filters" class="quick-filters scroll-x">
-                        <button class="filter-chip-elegant active" data-date="all">All Dates</button>
-                    </div>
                 </div>
 
-                <div class="view-toggle-elegant">
-                    <button id="btn-map-view" class="view-mode-btn-elegant active">Map</button>
-                    <button id="btn-grid-view" class="view-mode-btn-elegant">Grid</button>
+                <div class="view-switcher">
+                    <button id="btn-view-map" class="switch-btn active">Map View</button>
+                    <button id="btn-view-grid" class="switch-btn">Grid View</button>
                 </div>
 
-                <div id="gallery-grid" class="image-grid-elegant" style="display: none;">
-                    <!-- 갤러리 이미지가 동적으로 들어갑니다 -->
+                <div id="grid-container" class="story-grid">
+                    <!-- Dynamic Grid Items -->
                 </div>
 
-                <div class="sidebar-footer">
-                     <button id="clear-photos" class="text-btn-elegant">Clear My Data</button>
-                </div>
-            </div>
+                <footer class="sidebar-footer">
+                    <button id="btn-reset" class="danger-link">Reset Library</button>
+                </footer>
+            </section>
 
-            <!-- 포스트 상세 뷰 (확대 상태) -->
-            <div id="post-view" class="view-panel" style="display: none;">
-                <div class="post-header-elegant">
-                    <button id="back-to-explore" class="back-btn">Back to Explore</button>
-                    <button id="collapse-btn" class="fullscreen-btn">Full Map</button>
-                </div>
-                
-                <div class="post-editorial-content">
-                    <div id="main-photo-container">
-                        <img id="current-photo" src="" alt="사진">
-                        <div class="heart-animation" id="heart-anim">❤️</div>
+            <!-- 2. STORY DETAIL PANEL -->
+            <section id="panel-detail" class="panel">
+                <header class="detail-header">
+                    <button id="btn-back" class="icon-btn">← Back</button>
+                    <button id="btn-expand" class="icon-btn">Expand Map</button>
+                </header>
+
+                <article class="story-viewer">
+                    <div class="image-stage">
+                        <img id="detail-image" src="" alt="">
+                        <div id="big-heart" class="floating-heart">❤️</div>
                     </div>
 
-                    <div class="post-body-elegant">
-                        <div class="post-meta-elegant">
-                            <span id="post-date" class="date-serif"></span>
-                            <div class="post-actions-elegant">
-                                <button id="main-like-btn" class="like-btn-elegant">🤍</button>
-                                <a id="download-btn" class="save-btn-elegant" href="#" download>Save Image</a>
+                    <div class="story-content">
+                        <div class="meta">
+                            <time id="detail-date" class="date-text"></time>
+                            <div class="actions">
+                                <button id="btn-like" class="like-btn">🤍</button>
+                                <a id="btn-download" href="#" download class="save-btn">Save</a>
                             </div>
                         </div>
                         
-                        <h2 id="photo-description" class="description-serif"></h2>
-                        <div class="likes-info">
-                            <span id="like-count-text">0</span> likes from the community
-                        </div>
+                        <h2 id="detail-title" class="story-title"></h2>
+                        <p class="stats"><span id="detail-likes">0</span> community appreciations</p>
 
-                        <div class="divider-elegant"></div>
+                        <hr class="serif-hr">
 
-                        <div class="comments-section-elegant">
+                        <div class="reflections">
                             <h3>Reflections</h3>
-                            <ul id="comments-list"></ul>
+                            <ul id="comment-list" class="comment-items"></ul>
                         </div>
                     </div>
-                </div>
-                
-                <form id="comment-form-elegant">
-                    <input type="text" id="comment-input" placeholder="Share your thoughts..." required autocomplete="off">
-                    <button type="submit">Post</button>
+                </article>
+
+                <form id="comment-form" class="comment-box">
+                    <input type="text" id="comment-input" placeholder="Add a reflection..." required autocomplete="off">
+                    <button type="submit">Send</button>
                 </form>
-            </div>
-        </div>
+            </section>
+        </aside>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
