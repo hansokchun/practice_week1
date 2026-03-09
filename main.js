@@ -45,8 +45,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnDelete: document.getElementById('btn-delete'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
-        detailDesc: document.getElementById('detail-description'),
-        detailLikeBtn: document.getElementById('detail-like-btn')
+        editTitle: document.getElementById('edit-title'),
+        editDesc: document.getElementById('edit-desc'),
+        detailLikeBtn: document.getElementById('detail-like-btn'),
+        btnSaveEdit: document.getElementById('btn-save-edit')
     };
 
     // 3. MAP SETUP
@@ -163,7 +165,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
-        ui.detailDesc.textContent = p.description;
+        ui.editTitle.value = p.title || '';
+        ui.editDesc.value = p.description || '';
         ui.detailLikeBtn.classList.toggle('active', !!p.liked);
 
         ui.sidebar.classList.remove('hidden');
@@ -266,6 +269,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ui.btnBack.onclick = closeDetail;
 
+    ui.btnSaveEdit.onclick = async () => {
+        if (!state.currentPhoto) return;
+        
+        state.currentPhoto.title = ui.editTitle.value;
+        state.currentPhoto.description = ui.editDesc.value;
+        
+        const db = await dbPromise;
+        const storeName = state.viewMode === 'my' ? photoStore : sharedStore;
+        await db.put(storeName, state.currentPhoto);
+        
+        // Show a brief feedback
+        const btn = ui.btnSaveEdit;
+        const originalText = btn.querySelector('span').textContent;
+        btn.querySelector('span').textContent = 'Saved!';
+        setTimeout(() => { btn.querySelector('span').textContent = originalText; }, 2000);
+        
+        renderAll(state.activeDate);
+    };
+
     ui.btnDelete.onclick = async () => {
         if (!state.currentPhoto) return;
         if (!confirm('Are you sure you want to delete this photo?')) return;
@@ -306,7 +328,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 id: Date.now() + Math.random(), 
                 url, 
                 date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                description: exif?.ImageDescription || f.name, 
+                title: exif?.ImageDescription || f.name,
+                description: '', 
                 lat: exif?.latitude, lng: exif?.longitude, 
                 liked: false, likes: 0, comments: [] 
             };
