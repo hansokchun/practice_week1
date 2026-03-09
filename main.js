@@ -5,9 +5,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         sharedPhotos: [],
         viewMode: 'my', // 'my' or 'shared'
         showOnlyLiked: false,
-        gridMode: true,
         activeDate: 'all',
-        currentPhoto: null
+        currentPhoto: null,
+        searchQuery: '',
+        isDenseGrid: false
     };
 
     const dbName = 'TravelgramDB';
@@ -36,6 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnSharedFeed: document.getElementById('btn-shared-feed'),
         btnFilterLiked: document.getElementById('filter-liked'),
         uploadInput: document.getElementById('upload-input'),
+        searchInput: document.getElementById('search-input'),
+        btnGridDensity: document.getElementById('btn-grid-density'),
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
@@ -95,7 +98,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isMyView = state.viewMode === 'my';
         const targetList = (isMyView ? state.photos : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || p.liked)
-            .filter(p => filterDate === 'all' || p.date === filterDate);
+            .filter(p => filterDate === 'all' || p.date === filterDate)
+            .filter(p => !state.searchQuery || p.description.toLowerCase().includes(state.searchQuery.toLowerCase()));
 
         // Map Render
         clusterGroup.clearLayers();
@@ -112,18 +116,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         map.addLayer(clusterGroup);
 
-        // Grid Render
+        // Group photos by date
+        const groups = targetList.reduce((acc, p) => {
+            if (!acc[p.date]) acc[p.date] = [];
+            acc[p.date].push(p);
+            return acc;
+        }, {});
+        const sortedDates = Object.keys(groups).sort((a,b) => b.localeCompare(a));
+
         ui.grid.innerHTML = '';
-        targetList.forEach(p => {
-            const item = document.createElement('div');
-            item.className = 'grid-item';
-            item.innerHTML = `<img src="${p.url}" loading="lazy">`;
-            item.onclick = () => { showDetail(p); };
-            ui.grid.appendChild(item);
-        });
+        ui.grid.classList.toggle('dense', state.isDenseGrid);
+
+        if (sortedDates.length === 0) {
+            ui.grid.innerHTML = `<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No stories found.</div>`;
+        } else {
+            sortedDates.forEach(date => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'grid-group';
+                groupEl.innerHTML = `<div class="grid-date-header">${date}</div>`;
+                
+                const container = document.createElement('div');
+                container.className = 'grid-items-container';
+                
+                groups[date].forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'grid-item';
+                    item.innerHTML = `<img src="${p.url}" loading="lazy">`;
+                    item.onclick = () => { showDetail(p); };
+                    container.appendChild(item);
+                });
+                
+                groupEl.appendChild(container);
+                ui.grid.appendChild(groupEl);
+            });
+        }
 
         // Toggle UI states
-        ui.grid.style.display = 'grid';
         ui.btnMyFeed.classList.toggle('active', state.viewMode === 'my');
         ui.btnSharedFeed.classList.toggle('active', state.viewMode === 'shared');
         ui.btnFilterLiked.classList.toggle('active', state.showOnlyLiked);
@@ -219,6 +247,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); };
     ui.btnSharedFeed.onclick = () => { state.viewMode = 'shared'; state.showOnlyLiked = false; renderAll(); };
     ui.btnFilterLiked.onclick = () => { state.showOnlyLiked = !state.showOnlyLiked; renderAll(state.activeDate); };
+
+    ui.searchInput.oninput = (e) => {
+        state.searchQuery = e.target.value;
+        renderAll(state.activeDate);
+    };
+
+    ui.btnGridDensity.onclick = () => {
+        state.isDenseGrid = !state.isDenseGrid;
+        renderAll(state.activeDate);
+    };
 
     ui.dateChips.onclick = (e) => {
         if (e.target.classList.contains('chip')) {
