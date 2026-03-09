@@ -150,7 +150,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (showOnlyLiked) targetList = targetList.filter(p => p.liked);
         const filtered = targetList.filter(p => filterDate === 'all' || p.date === filterDate);
 
+        // CLEAR markers and grid before rendering to prevent duplication
         markers.clearLayers();
+        galleryGrid.innerHTML = '';
+
         filtered.forEach(photo => {
             const marker = L.marker([photo.lat, photo.lng], { icon: heartIcon });
             marker.on('click', () => {
@@ -158,11 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 expandSidebarForPost();
             });
             markers.addLayer(marker);
-        });
-        map.addLayer(markers);
 
-        galleryGrid.innerHTML = '';
-        filtered.forEach(photo => {
             const div = document.createElement('div');
             div.className = `grid-item`;
             div.innerHTML = `<img src="${photo.url}" loading="lazy">`;
@@ -173,6 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
             galleryGrid.appendChild(div);
         });
+        map.addLayer(markers);
 
         setupDateFilters();
         
@@ -185,18 +185,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function selectPhoto(photo) {
         currentSelectedPhoto = photo;
-        
-        // Ensure photo is visible and source is set correctly
         photoViewerImg.style.display = 'block';
         photoViewerImg.src = photo.url;
-        
         photoDescriptionText.textContent = photo.description || 'No description provided.';
         postDateText.textContent = photo.date;
         downloadBtn.href = photo.url;
-        
         mainLikeBtn.textContent = photo.liked ? '❤️' : '🤍';
         likeCountText.textContent = photo.likes || 0;
-        
         renderComments();
     }
 
@@ -227,6 +222,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const storeName = viewMode === 'my' ? photoStoreName : sharedStoreName;
         const db = await dbPromise;
         await db.put(storeName, currentSelectedPhoto);
+        
+        // Use a more surgical update for liked status in grid if needed
+        // but for now, full updateUI is safe since we clear correctly.
         if(showOnlyLiked) updateUI(); 
     }
 
