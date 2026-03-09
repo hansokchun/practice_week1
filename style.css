@@ -69,10 +69,17 @@ body, html {
 /* Explore Panel UI */
 .sidebar-header {
     padding: 40px 32px 20px;
-    display: flex; justify-content: space-between; align-items: baseline;
+    display: flex; justify-content: space-between; align-items: center;
 }
 .logo { font-family: var(--serif-font); font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -1px; }
-.btn-post { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--accent-color); border-bottom: 2px solid var(--accent-color); cursor: pointer; padding-bottom: 2px; }
+.btn-post { 
+    font-size: 13px; font-weight: 700; text-transform: uppercase; 
+    color: #fff; background: var(--accent-color); 
+    padding: 10px 20px; border-radius: 4px; 
+    cursor: pointer; transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.btn-post:hover { background: #333; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
 .feed-nav { padding: 0 32px; display: flex; gap: 24px; margin-bottom: 20px; }
 .nav-link { background: none; border: none; font-family: var(--serif-font); font-size: 18px; color: var(--text-muted); cursor: pointer; padding: 0; transition: color 0.3s; }
