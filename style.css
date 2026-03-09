@@ -103,10 +103,26 @@ body, html {
 .grid-item:hover img { transform: scale(1.05); }
 
 /* Detail Panel UI */
-.detail-header { padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-.detail-actions-right { display: flex; gap: 16px; align-items: center; }
-.icon-btn { background: none; border: none; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; color: var(--text-muted); }
-.icon-btn.danger { color: var(--danger-color); }
+.detail-header { 
+    padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; 
+    border-bottom: 1px solid var(--border-color); 
+    background: #fff;
+}
+.detail-actions-right { display: flex; gap: 20px; align-items: center; }
+
+.icon-btn { 
+    background: none; border: none; font-size: 13px; font-weight: 600; 
+    text-transform: uppercase; cursor: pointer; color: var(--text-main); 
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px; transition: color 0.2s, opacity 0.2s;
+}
+.icon-btn:hover { color: var(--text-muted); }
+.icon-btn.danger { color: var(--text-muted); }
+.icon-btn.danger:hover { color: var(--danger-color); }
+
+.icon-btn.like-toggle { color: var(--text-main); }
+.icon-btn.like-toggle.active { color: var(--danger-color); }
+.icon-btn.like-toggle.active svg { fill: var(--danger-color); stroke: var(--danger-color); }
 
 .story-viewer { flex: 1; overflow-y: auto; }
 .image-stage { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; position: relative; min-height: 350px; }

@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
         ui.detailDesc.textContent = p.description;
-        ui.detailLikeBtn.textContent = p.liked ? '❤️' : '🤍';
+        ui.detailLikeBtn.classList.toggle('active', !!p.liked);
 
         ui.sidebar.classList.remove('hidden');
         ui.sidebar.classList.add('expanded');
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const db = await dbPromise;
         const store = state.viewMode === 'my' ? photoStore : sharedStore;
         await db.put(store, state.currentPhoto);
-        ui.detailLikeBtn.textContent = state.currentPhoto.liked ? '❤️' : '🤍';
+        ui.detailLikeBtn.classList.toggle('active', state.currentPhoto.liked);
         renderAll(state.activeDate);
     };
 
