@@ -53,7 +53,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    const heartIcon = L.divIcon({ className: 'heart-icon', html: '❤️', iconSize: [30, 30], iconAnchor: [15, 15] });
+    const icons = {
+        liked: L.divIcon({ className: 'map-icon icon-liked', html: '❤️', iconSize: [30, 30], iconAnchor: [15, 15] }),
+        my: L.divIcon({ className: 'map-icon icon-my', html: '📸', iconSize: [30, 30], iconAnchor: [15, 15] }),
+        shared: L.divIcon({ className: 'map-icon icon-shared', html: '🖼️', iconSize: [30, 30], iconAnchor: [15, 15] })
+    };
+
     const clusterGroup = L.markerClusterGroup({ 
         spiderfyOnMaxZoom: true, 
         showCoverageOnHover: false,
@@ -70,14 +75,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
-        const targetList = (state.viewMode === 'my' ? state.photos : state.sharedPhotos)
+        const isMyView = state.viewMode === 'my';
+        const targetList = (isMyView ? state.photos : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || p.liked)
             .filter(p => filterDate === 'all' || p.date === filterDate);
 
         // Map Render
         clusterGroup.clearLayers();
         targetList.forEach(p => {
-            const m = L.marker([p.lat, p.lng], { icon: heartIcon });
+            let icon = icons.liked;
+            if (!p.liked) {
+                icon = isMyView ? icons.my : icons.shared;
+            }
+            const m = L.marker([p.lat, p.lng], { icon: icon });
             m.on('click', () => {
                 showDetail(p);
             });
