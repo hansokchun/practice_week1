@@ -3,58 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 일본 여행 앨범</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <title>Travelgram</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="sidebar">
-        <!-- 섹션 1: 포스트 정보 -->
-        <div class="sidebar-section" id="section-view">
-            <button id="collapse-btn" title="사이드바 축소">&times;</button>
-            <h2>포스트 상세</h2>
-            <div id="main-photo-container">
-                <img id="current-photo" src="" alt="선택된 사진">
-                <button id="main-like-btn" title="좋아요">♡</button>
+    <div id="app-container">
+        <div id="map"></div>
+        <button id="toggle-sidebar-btn" title="메뉴 열기/닫기">◀</button>
+        
+        <div id="sidebar">
+            <!-- 메인 탐색 뷰 (기본 상태) -->
+            <div id="explore-view" class="view-panel active">
+                <div class="sidebar-header">
+                    <h2>트래블 피드</h2>
+                    <label for="photo-upload" class="upload-btn" title="새 포스트 작성">+</label>
+                    <input type="file" id="photo-upload" multiple accept="image/jpeg, image/png" style="display:none;">
+                </div>
+
+                <div class="tabs">
+                    <button id="toggle-view-mode" class="tab-btn active">내 피드</button>
+                    <button id="toggle-shared-mode" class="tab-btn">둘러보기</button>
+                </div>
+
+                <div class="quick-filters scroll-x">
+                    <button id="view-liked-photos" class="filter-chip">🤍 관심 항목</button>
+                    <button id="toggle-route" class="filter-chip">📍 경로 보기</button>
+                </div>
+
+                <div id="date-filters" class="quick-filters scroll-x">
+                    <button class="filter-chip active" data-date="all">전체 일정</button>
+                </div>
+
+                <div class="view-toggle">
+                    <button id="btn-map-view" class="view-mode-btn active">지도 뷰</button>
+                    <button id="btn-grid-view" class="view-mode-btn">그리드 뷰</button>
+                </div>
+
+                <div id="gallery-grid" class="image-grid" style="display: none;">
+                    <!-- 갤러리 이미지가 동적으로 들어갑니다 -->
+                </div>
+
+                <div class="sidebar-footer">
+                     <button id="clear-photos" class="text-btn text-danger">내 데이터 전체 삭제</button>
+                </div>
             </div>
-            <p id="photo-description"></p>
-            <a id="download-btn" class="button" href="#" download>이미지 저장</a>
-            <button id="share-photo-btn" class="button" style="display: none;">친구에게 공유</button>
-        </div>
 
-        <!-- 섹션 2: 새 추억 기록 -->
-        <div class="sidebar-section" id="section-register">
-            <h2>새 포스팅</h2>
-            <label for="photo-upload" class="button primary">사진 업로드</label>
-            <input type="file" id="photo-upload" multiple accept="image/jpeg, image/png">
-            <button id="clear-photos" class="button danger">내 데이터 초기화</button>
-        </div>
+            <!-- 포스트 상세 뷰 (확대 상태) -->
+            <div id="post-view" class="view-panel" style="display: none;">
+                <div class="post-header-top">
+                    <button id="back-to-explore" class="icon-btn">←</button>
+                    <span class="header-title">포스트</span>
+                    <button id="collapse-btn" class="icon-btn" title="지도 확대">⛶</button>
+                </div>
+                
+                <div class="post-user-info">
+                    <div class="avatar"></div>
+                    <div class="user-meta">
+                        <span class="username" id="post-author">MyTravel_Diary</span>
+                        <span class="post-location" id="post-date"></span>
+                    </div>
+                </div>
 
-        <!-- 섹션 3: 피드 탐색 -->
-        <div class="sidebar-section" id="section-manage">
-            <h2>피드 둘러보기</h2>
-            <button id="toggle-view-mode" class="button">전체 피드 보기</button>
-            <button id="view-liked-photos" class="button">관심 포스트</button>
-            <hr>
-            <div id="date-filters">
-                <button class="filter-btn active" data-date="all">전체</button>
+                <div id="main-photo-container">
+                    <img id="current-photo" src="" alt="사진">
+                    <div class="heart-animation" id="heart-anim">❤️</div>
+                </div>
+
+                <div class="post-actions">
+                    <div class="action-left">
+                        <button id="main-like-btn" class="icon-btn like-btn">🤍</button>
+                        <button id="focus-comment-btn" class="icon-btn">💬</button>
+                        <button id="share-photo-btn" class="icon-btn" style="display: none;">📤</button>
+                    </div>
+                    <div class="action-right">
+                        <a id="download-btn" class="icon-btn" href="#" download title="저장">💾</a>
+                    </div>
+                </div>
+
+                <div class="post-content">
+                    <p class="likes-count"><span id="like-count-text">0</span>명이 좋아합니다</p>
+                    <p class="description"><span class="username-bold" id="post-author-desc">MyTravel_Diary</span> <span id="photo-description"></span></p>
+                </div>
+
+                <div class="comments-section">
+                    <ul id="comments-list"></ul>
+                </div>
+                
+                <form id="comment-form">
+                    <div class="comment-input-wrapper">
+                        <div class="avatar small"></div>
+                        <input type="text" id="comment-input" placeholder="댓글 달기..." required autocomplete="off">
+                        <button type="submit" class="text-btn">게시</button>
+                    </div>
+                </form>
             </div>
-            <button id="toggle-route" class="button">트래블 로드</button>
-        </div>
-
-        <!-- 공유된 사진 리스트 (관리 섹션 내에서 상세 보기 시 사용) -->
-        <div id="shared-photos-container" style="display: none;">
-            <button id="back-to-main-btn" class="button">탐색으로 돌아가기</button>
-            <h2>공유된 추억들</h2>
-            <div id="shared-photos-list"></div>
         </div>
     </div>
-    <button id="toggle-sidebar-btn" title="사이드바 열기/닫기">◀</button>
-    <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
