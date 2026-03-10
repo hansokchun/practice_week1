@@ -429,4 +429,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     syncData();
+
+    // 6. BOTTOM SHEET RESIZING (Mobile)
+    const dragHandle = document.getElementById('drag-handle');
+    let isDragging = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    const onDragStart = (e) => {
+        if (window.innerWidth > 768) return;
+        isDragging = true;
+        startY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
+        startHeight = ui.sidebar.getBoundingClientRect().height;
+        ui.sidebar.style.transition = 'none'; // Disable transition during drag
+        document.body.style.cursor = 'grabbing';
+    };
+
+    const onDragMove = (e) => {
+        if (!isDragging) return;
+        const currentY = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
+        const dy = startY - currentY;
+        const newHeight = startHeight + dy;
+        
+        // Limit height between 10% and 100% of viewport
+        const minH = window.innerHeight * 0.1;
+        const maxH = window.innerHeight;
+        
+        if (newHeight >= minH && newHeight <= maxH) {
+            ui.sidebar.style.height = `${newHeight}px`;
+            refreshMapSize();
+        }
+    };
+
+    const onDragEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        ui.sidebar.style.transition = ''; // Restore transition
+        document.body.style.cursor = '';
+
+        const currentHeight = ui.sidebar.getBoundingClientRect().height;
+        const vh = window.innerHeight;
+
+        // Snap to nearest state
+        if (currentHeight > vh * 0.8) {
+            ui.sidebar.style.height = '100vh';
+            ui.sidebar.classList.add('expanded');
+        } else if (currentHeight > vh * 0.4) {
+            ui.sidebar.style.height = '60vh';
+            ui.sidebar.classList.remove('expanded');
+        } else {
+            ui.sidebar.style.height = '15vh';
+            ui.sidebar.classList.remove('expanded');
+        }
+        refreshMapSize();
+    };
+
+    dragHandle.addEventListener('mousedown', onDragStart);
+    dragHandle.addEventListener('touchstart', onDragStart, { passive: true });
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('touchmove', onDragMove, { passive: false });
+    window.addEventListener('mouseup', onDragEnd);
+    window.addEventListener('touchend', onDragEnd);
 });
