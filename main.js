@@ -11,17 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         isDenseGrid: false
     };
 
-    const dbName = 'TravelgramDB';
-    const photoStore = 'photos';
-    const sharedStore = 'shared';
-
-    const dbPromise = idb.openDB(dbName, 4, {
-        upgrade(db) {
-            if (!db.objectStoreNames.contains(photoStore)) db.createObjectStore(photoStore, { keyPath: 'id', autoIncrement: true });
-            if (!db.objectStoreNames.contains(sharedStore)) db.createObjectStore(sharedStore, { keyPath: 'id' });
-        },
-    });
-
     // 2. UI REFERENCES
     const ui = {
         sidebar: document.getElementById('sidebar'),
@@ -103,10 +92,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function syncData() {
-        const db = await dbPromise;
-        state.photos = await db.getAll(photoStore);
-        state.sharedPhotos = await db.getAll(sharedStore);
-        renderAll();
+        try {
+            const response = await fetch('/api/photos');
+            if (!response.ok) throw new Error("API Connection failed");
+            const data = await response.json();
+            // Convert D1 integer liked to boolean
+            state.photos = data.map(p => ({ ...p, liked: !!p.liked }));
+            renderAll();
+        } catch (e) {
+            console.error("Cloud Sync Error:", e);
+            showToast("Cloud connection required. Check dashboard bindings.", "warning");
+        }
     }
 
     function renderAll(filterDate = 'all') {
@@ -293,47 +289,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
-        
         state.currentPhoto.title = ui.editTitle.value;
         state.currentPhoto.description = ui.editDesc.value;
         
-        const db = await dbPromise;
-        const storeName = state.viewMode === 'my' ? photoStore : sharedStore;
-        await db.put(storeName, state.currentPhoto);
-        
-        // Show a brief feedback
-        const btn = ui.btnSaveEdit;
-        const originalText = btn.querySelector('span').textContent;
-        btn.querySelector('span').textContent = 'Saved!';
-        setTimeout(() => { btn.querySelector('span').textContent = originalText; }, 2000);
-        
-        renderAll(state.activeDate);
+        try {
+            await fetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
+            const btn = ui.btnSaveEdit;
+            const originalText = btn.querySelector('span').textContent;
+            btn.querySelector('span').textContent = 'Cloud Saved!';
+            setTimeout(() => { btn.querySelector('span').textContent = originalText; }, 2000);
+            renderAll(state.activeDate);
+        } catch (e) {
+            showToast("Cloud Save Failed", "warning");
+        }
     };
 
     ui.btnDelete.onclick = async () => {
         if (!state.currentPhoto) return;
-        if (!confirm('Are you sure you want to delete this photo?')) return;
-        
-        const db = await dbPromise;
-        const storeName = state.viewMode === 'my' ? photoStore : sharedStore;
-        await db.delete(storeName, state.currentPhoto.id);
-        
-        if (state.viewMode === 'my') {
+        if (!confirm('Are you sure?')) return;
+        try {
+            await fetch(`/api/photos?id=${state.currentPhoto.id}`, { method: 'DELETE' });
             state.photos = state.photos.filter(p => p.id !== state.currentPhoto.id);
-        } else {
-            state.sharedPhotos = state.sharedPhotos.filter(p => p.id !== state.currentPhoto.id);
+            closeDetail();
+            renderAll(state.activeDate);
+            showToast("Deleted from cloud", "info");
+        } catch (e) {
+            showToast("Delete Failed", "warning");
         }
-        
-        closeDetail();
-        renderAll(state.activeDate);
     };
 
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.liked = !state.currentPhoto.liked;
-        const db = await dbPromise;
-        const store = state.viewMode === 'my' ? photoStore : sharedStore;
-        await db.put(store, state.currentPhoto);
+        await fetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
         ui.detailLikeBtn.classList.toggle('active', state.currentPhoto.liked);
         renderAll(state.activeDate);
     };
@@ -341,89 +329,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
-        
-        showToast(`${files.length} photos processing...`, 'info');
-        
+        showToast("Uploading to cloud...", "info");
         const newPhotos = [];
         const noGps = [];
-        
         for (const f of Array.from(files)) {
-            try {
-                const exif = await exifr.parse(f);
-                const url = await new Promise(r => { 
-                    const reader = new FileReader(); 
-                    reader.onload = ev => r(reader.result); 
-                    reader.readAsDataURL(f); 
-                });
-                
-                const data = { 
-                    id: Date.now() + Math.random(), 
-                    url, 
-                    date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                    title: exif?.ImageDescription || f.name,
-                    description: '', 
-                    lat: exif?.latitude, lng: exif?.longitude, 
-                    liked: false, likes: 0, comments: [] 
-                };
-                
-                if (data.lat) {
-                    newPhotos.push(data);
-                } else {
-                    noGps.push(data);
-                }
-            } catch (err) {
-                console.error("EXIF Error:", err);
-            }
+            const exif = await exifr.parse(f);
+            const url = await new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(rd.result); rd.readAsDataURL(f); });
+            const data = { 
+                id: Date.now() + Math.random(), url, date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                title: f.name, description: '', lat: exif?.latitude, lng: exif?.longitude, liked: false
+            };
+            if (data.lat) newPhotos.push(data); else noGps.push(data);
         }
-
-        if (newPhotos.length) { 
-            const db = await dbPromise;
-            const tx = db.transaction(photoStore, 'readwrite');
-            for(const p of newPhotos) await tx.store.put(p);
-            await tx.done;
-            state.photos.push(...newPhotos);
-            state.viewMode = 'my'; 
-            renderAll();
-            showToast(`${newPhotos.length} stories added to map!`, 'success');
+        for (const p of newPhotos) {
+            await fetch('/api/photos', { method: 'POST', body: JSON.stringify(p) });
         }
-        
-        if (noGps.length) { 
-            showToast(`${noGps.length} photos lack GPS data. Please pin them on the map.`, 'warning');
-            startLocationPicker(noGps);
-        }
-        
+        state.photos.push(...newPhotos);
+        renderAll();
+        if (noGps.length) { showToast("GPS Missing. Pin them.", "warning"); startLocationPicker(noGps); }
         ui.uploadInput.value = '';
     };
 
     function startLocationPicker(list) {
-        if (!list.length) {
-            document.body.classList.remove('picking-location');
-            showToast("All locations set!", 'success');
-            return;
-        }
-        
+        if (!list.length) { document.body.classList.remove('picking-location'); showToast("Saved!", "success"); return; }
         const p = list.shift();
-        const guide = document.getElementById('map-picker-guide');
         const guideThumb = document.getElementById('guide-thumb');
-        
         document.body.classList.add('picking-location');
         guideThumb.src = p.url;
-        
-        // Disable other map interactions temporarily
         clusterGroup.eachLayer(m => m.options.interactive = false);
-        
         map.once('click', async (e) => {
-            p.lat = e.latlng.lat; 
-            p.lng = e.latlng.lng;
-            
-            const db = await dbPromise; 
-            await db.put(photoStore, p);
+            p.lat = e.latlng.lat; p.lng = e.latlng.lng;
+            await fetch('/api/photos', { method: 'POST', body: JSON.stringify(p) });
             state.photos.push(p);
-            
             clusterGroup.eachLayer(m => m.options.interactive = true);
             renderAll();
-            
-            // Continue with next photo if any
             startLocationPicker(list);
         });
     }
@@ -441,25 +380,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         isDragging = true;
         startY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
         startHeight = ui.sidebar.getBoundingClientRect().height;
-        
-        // Remove snap classes and transitions during manual drag
         ui.sidebar.style.transition = 'none';
         ui.sidebar.classList.remove('expanded');
-        
         document.body.style.cursor = 'grabbing';
     };
 
     const onDragMove = (e) => {
         if (!isDragging) return;
-        if (e.cancelable) e.preventDefault(); // Prevent page scroll
-        
+        if (e.cancelable) e.preventDefault();
         const currentY = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
         const dy = startY - currentY;
         const newHeight = startHeight + dy;
-        
         const minH = window.innerHeight * 0.15;
         const maxH = window.innerHeight;
-        
         if (newHeight >= minH && newHeight <= maxH) {
             ui.sidebar.style.height = `${newHeight}px`;
             refreshMapSize();
@@ -469,13 +402,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const onDragEnd = () => {
         if (!isDragging) return;
         isDragging = false;
-        ui.sidebar.style.transition = ''; 
+        ui.sidebar.style.transition = '';
         document.body.style.cursor = '';
-
         const currentHeight = ui.sidebar.getBoundingClientRect().height;
         const vh = window.innerHeight;
-
-        // Snapping logic
         if (currentHeight > vh * 0.85) {
             ui.sidebar.style.height = '100vh';
             ui.sidebar.classList.add('expanded');
