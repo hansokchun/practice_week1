@@ -316,63 +316,97 @@ body, html {
 
 /* --- Mobile Responsive Design --- */
 @media (max-width: 768px) {
-    /* 1. General Layout */
+    #app { 
+        flex-direction: column; 
+        height: 100vh; 
+        overflow: hidden;
+    }
+
+    /* 1. Vertical Split Layout */
     #map-container {
-        right: 0 !important; /* Map always takes full width on mobile */
+        position: relative !important;
+        height: 40vh !important; /* Map takes top 40% */
+        width: 100% !important;
+        right: 0 !important;
+        order: 1;
+        flex-shrink: 0;
     }
 
     #sidebar {
+        position: relative !important;
+        height: 60vh !important; /* Sidebar takes bottom 60% */
         width: 100% !important;
-        max-width: none;
-        height: 100%;
-        transform: translateX(100%);
-        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        right: 0 !important;
+        top: 0 !important;
+        transform: none !important; /* No sliding in/out by default */
+        order: 2;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
     }
 
+    /* Detail View expands to full screen on mobile */
     #sidebar.expanded {
-        width: 100% !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        z-index: 2000;
+        transform: none !important;
     }
 
-    #sidebar.hidden {
-        transform: translateX(100%);
-    }
-
-    /* Active state (when sidebar is visible) */
-    #sidebar:not(.hidden) {
-        transform: translateX(0);
+    /* Hide desktop-style toggle on mobile */
+    .map-overlay-btn {
+        display: none !important;
     }
 
     /* 2. Splash Screen for Mobile */
     .splash-logo {
-        font-size: 56px;
+        font-size: 48px;
         letter-spacing: -2px;
     }
 
     .splash-content {
-        padding: 40px;
+        padding: 30px;
     }
 
     .splash-tagline {
-        font-size: 16px;
-        margin-bottom: 30px;
+        font-size: 14px;
+        margin-bottom: 24px;
     }
 
-    /* 3. Panel Adjustments */
+    .splash-start-btn {
+        padding: 12px 32px;
+        font-size: 12px;
+    }
+
+    /* 3. Panel Spacing & Typography */
     .sidebar-header {
-        padding: 30px 20px 15px;
+        padding: 20px 20px 10px;
     }
 
     .logo {
-        font-size: 28px;
+        font-size: 26px;
+    }
+
+    .btn-post {
+        padding: 8px 16px;
+        font-size: 11px;
     }
 
     .feed-nav {
         padding: 0 20px;
         gap: 16px;
+        margin-bottom: 15px;
+    }
+
+    .nav-link {
+        font-size: 16px;
     }
 
     .filter-bar {
         padding: 0 20px;
+        margin-bottom: 15px;
     }
 
     .view-switcher-tools {
@@ -383,49 +417,57 @@ body, html {
         padding: 0 20px 30px;
     }
 
-    /* Grid layout for small screens */
     .grid-items-container {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px;
     }
 
+    .grid-date-header {
+        padding: 8px 0;
+        font-size: 13px;
+    }
+
     /* 4. Detail View Mobile */
     .detail-header {
-        padding: 15px 20px;
+        padding: 12px 20px;
     }
 
     .story-content {
-        padding: 30px 20px;
+        padding: 24px 20px;
     }
 
     .title-input {
-        font-size: 26px;
+        font-size: 24px;
+        margin-bottom: 12px;
     }
 
     .image-stage {
-        min-height: 250px;
+        min-height: 200px;
     }
 
-    /* 5. UI Elements */
-    .map-overlay-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        right: 20px;
-        top: auto;
-        bottom: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border: none;
-        background: var(--accent-color);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    #detail-image {
+        max-height: 50vh;
     }
 
+    /* 5. Map UI on Mobile */
     #map-picker-guide {
-        width: 90%;
-        padding: 10px 15px;
+        width: 85%;
+        padding: 8px 12px;
+        top: 15px;
+    }
+
+    #map-picker-guide img {
+        width: 35px;
+        height: 35px;
+    }
+
+    #map-picker-guide .guide-text {
+        font-size: 13px;
+    }
+
+    .leaflet-bottom.leaflet-right {
+        bottom: 10px;
+        right: 10px;
     }
 }
 
