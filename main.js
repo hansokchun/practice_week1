@@ -95,7 +95,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function syncData() {
         try {
             const response = await fetch('/api/photos');
-            if (!response.ok) throw new Error("API Connection failed");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
             const data = await response.json();
             
             // Map data and normalize booleans
@@ -106,13 +109,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }));
             
             state.photos = cloudPhotos;
-            // Community only shows photos where shared is true
             state.sharedPhotos = cloudPhotos.filter(p => p.shared); 
             
             renderAll();
         } catch (e) {
             console.error("Cloud Sync Error:", e);
-            showToast("Cloud connection required.", "warning");
+            showToast(`Cloud Error: ${e.message}`, "warning");
         }
     }
 
