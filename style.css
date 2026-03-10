@@ -314,6 +314,121 @@ body, html {
 .floating-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 100px; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10; }
 .floating-heart.animate { opacity: 0.9; transform: translate(-50%, -50%) scale(1.2); }
 
+/* --- Mobile Responsive Design --- */
+@media (max-width: 768px) {
+    /* 1. General Layout */
+    #map-container {
+        right: 0 !important; /* Map always takes full width on mobile */
+    }
+
+    #sidebar {
+        width: 100% !important;
+        max-width: none;
+        height: 100%;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    #sidebar.expanded {
+        width: 100% !important;
+    }
+
+    #sidebar.hidden {
+        transform: translateX(100%);
+    }
+
+    /* Active state (when sidebar is visible) */
+    #sidebar:not(.hidden) {
+        transform: translateX(0);
+    }
+
+    /* 2. Splash Screen for Mobile */
+    .splash-logo {
+        font-size: 56px;
+        letter-spacing: -2px;
+    }
+
+    .splash-content {
+        padding: 40px;
+    }
+
+    .splash-tagline {
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    /* 3. Panel Adjustments */
+    .sidebar-header {
+        padding: 30px 20px 15px;
+    }
+
+    .logo {
+        font-size: 28px;
+    }
+
+    .feed-nav {
+        padding: 0 20px;
+        gap: 16px;
+    }
+
+    .filter-bar {
+        padding: 0 20px;
+    }
+
+    .view-switcher-tools {
+        padding: 0 20px 15px;
+    }
+
+    .story-grid {
+        padding: 0 20px 30px;
+    }
+
+    /* Grid layout for small screens */
+    .grid-items-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px;
+    }
+
+    /* 4. Detail View Mobile */
+    .detail-header {
+        padding: 15px 20px;
+    }
+
+    .story-content {
+        padding: 30px 20px;
+    }
+
+    .title-input {
+        font-size: 26px;
+    }
+
+    .image-stage {
+        min-height: 250px;
+    }
+
+    /* 5. UI Elements */
+    .map-overlay-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        right: 20px;
+        top: auto;
+        bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border: none;
+        background: var(--accent-color);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #map-picker-guide {
+        width: 90%;
+        padding: 10px 15px;
+    }
+}
+
 /* --- Notification Toast --- */
 .toast-container {
     position: fixed;
