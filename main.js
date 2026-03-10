@@ -97,7 +97,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error("API Connection failed");
             const data = await response.json();
             // Convert D1 integer liked to boolean
-            state.photos = data.map(p => ({ ...p, liked: !!p.liked }));
+            const cloudPhotos = data.map(p => ({ ...p, liked: !!p.liked }));
+            
+            // For now, since there's no login, "My Stories" and "Community" both show all cloud data
+            state.photos = cloudPhotos;
+            state.sharedPhotos = cloudPhotos; 
+            
             renderAll();
         } catch (e) {
             console.error("Cloud Sync Error:", e);
