@@ -116,13 +116,25 @@
                 </div>
             </section>
         </aside>
+<!-- Main Interactive Map -->
+<div id="map-container">
+    <div id="map"></div>
+    <button id="sidebar-toggle" class="map-overlay-btn">◀</button>
 
-        <!-- Main Interactive Map -->
-        <div id="map-container">
-            <div id="map"></div>
-            <button id="sidebar-toggle" class="map-overlay-btn">◀</button>
+    <!-- Map Picker Guide (Shown when pinning location) -->
+    <div id="map-picker-guide">
+        <img id="guide-thumb" src="" alt="Thumbnail">
+        <div class="guide-content">
+            <div class="guide-text">Select location for this photo</div>
+            <div class="guide-sub">Click on the map to place the marker</div>
         </div>
     </div>
+</div>
+
+<!-- Notification Toasts -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Scripts -->
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

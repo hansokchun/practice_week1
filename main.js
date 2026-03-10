@@ -88,6 +88,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 4. CORE LOGIC
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 400);
+        }, 3000);
+    }
+
     async function syncData() {
         const db = await dbPromise;
         state.photos = await db.getAll(photoStore);
@@ -327,47 +341,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
+        
+        showToast(`${files.length} photos processing...`, 'info');
+        
         const newPhotos = [];
         const noGps = [];
+        
         for (const f of Array.from(files)) {
-            const exif = await exifr.parse(f);
-            const url = await new Promise(r => { const reader = new FileReader(); reader.onload = ev => r(reader.result); reader.readAsDataURL(f); });
-            const data = { 
-                id: Date.now() + Math.random(), 
-                url, 
-                date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                title: exif?.ImageDescription || f.name,
-                description: '', 
-                lat: exif?.latitude, lng: exif?.longitude, 
-                liked: false, likes: 0, comments: [] 
-            };
-            if (data.lat) newPhotos.push(data); else noGps.push(data);
+            try {
+                const exif = await exifr.parse(f);
+                const url = await new Promise(r => { 
+                    const reader = new FileReader(); 
+                    reader.onload = ev => r(reader.result); 
+                    reader.readAsDataURL(f); 
+                });
+                
+                const data = { 
+                    id: Date.now() + Math.random(), 
+                    url, 
+                    date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                    title: exif?.ImageDescription || f.name,
+                    description: '', 
+                    lat: exif?.latitude, lng: exif?.longitude, 
+                    liked: false, likes: 0, comments: [] 
+                };
+                
+                if (data.lat) {
+                    newPhotos.push(data);
+                } else {
+                    noGps.push(data);
+                }
+            } catch (err) {
+                console.error("EXIF Error:", err);
+            }
         }
+
         if (newPhotos.length) { 
             const db = await dbPromise;
             const tx = db.transaction(photoStore, 'readwrite');
             for(const p of newPhotos) await tx.store.put(p);
             await tx.done;
             state.photos.push(...newPhotos);
-            state.viewMode = 'my'; renderAll();
+            state.viewMode = 'my'; 
+            renderAll();
+            showToast(`${newPhotos.length} stories added to map!`, 'success');
         }
-        if (noGps.length) { if(confirm(`${noGps.length} photos lack GPS. Pin them?`)) startLocationPicker(noGps); }
+        
+        if (noGps.length) { 
+            showToast(`${noGps.length} photos lack GPS data. Please pin them on the map.`, 'warning');
+            startLocationPicker(noGps);
+        }
+        
         ui.uploadInput.value = '';
     };
 
     function startLocationPicker(list) {
-        if (!list.length) return alert('Finished.');
+        if (!list.length) {
+            document.body.classList.remove('picking-location');
+            showToast("All locations set!", 'success');
+            return;
+        }
+        
         const p = list.shift();
-        ui.sidebar.classList.add('hidden');
-        alert(`Click map to pin: ${p.description}`);
+        const guide = document.getElementById('map-picker-guide');
+        const guideThumb = document.getElementById('guide-thumb');
+        
+        document.body.classList.add('picking-location');
+        guideThumb.src = p.url;
+        
+        // Disable other map interactions temporarily
         clusterGroup.eachLayer(m => m.options.interactive = false);
+        
         map.once('click', async (e) => {
-            p.lat = e.latlng.lat; p.lng = e.latlng.lng;
-            const db = await dbPromise; await db.put(photoStore, p);
+            p.lat = e.latlng.lat; 
+            p.lng = e.latlng.lng;
+            
+            const db = await dbPromise; 
+            await db.put(photoStore, p);
             state.photos.push(p);
-            ui.sidebar.classList.remove('hidden');
+            
             clusterGroup.eachLayer(m => m.options.interactive = true);
             renderAll();
+            
+            // Continue with next photo if any
             startLocationPicker(list);
         });
     }
