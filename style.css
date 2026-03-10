@@ -116,7 +116,9 @@ body, html {
     border-right: none; border-radius: 8px 0 0 8px;
     cursor: pointer; z-index: 1000;
     color: var(--text-muted);
-/* Sidebar Section */
+}
+
+/* 2. SIDEBAR SECTION */
 #sidebar {
     position: absolute; top: 0; right: 0;
     width: 450px; height: 100%;
@@ -128,20 +130,7 @@ body, html {
     display: flex; flex-direction: column;
 }
 
-.drag-handle {
-    display: none; /* Hidden on desktop */
-    width: 40px; height: 5px;
-    background: #ccc;
-    border-radius: 10px;
-    margin: 10px auto 5px;
-    flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-    .drag-handle { display: block; }
-}
-...
-/* --- Notification Toast --- */
+/* States */
 #sidebar.hidden { transform: translateX(100%); }
 #sidebar.expanded { width: 55vw; max-width: 900px; }
 
