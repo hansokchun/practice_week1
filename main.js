@@ -429,4 +429,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     syncData();
+
+    // 6. TOUCH GESTURES FOR MOBILE (Drag down to close)
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    ui.sidebar.addEventListener('touchstart', (e) => {
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    ui.sidebar.addEventListener('touchend', (e) => {
+        touchEndY = e.changedTouches[0].screenY;
+        handleGesture();
+    }, { passive: true });
+
+    function handleGesture() {
+        const dragDistance = touchEndY - touchStartY;
+        const threshold = 100; // Minimum drag distance to trigger close
+
+        // If dragged down
+        if (dragDistance > threshold) {
+            if (ui.sidebar.classList.contains('expanded')) {
+                closeDetail();
+            } else if (window.innerWidth <= 768 && !ui.sidebar.classList.contains('hidden')) {
+                // On mobile feed view, maybe minimize? 
+                // Currently sidebar is order 2, let's keep it visible but maybe provide a way to peek map
+                // For now, let's just use it for the expanded (detail) view which covers everything.
+            }
+        }
+    }
 });
