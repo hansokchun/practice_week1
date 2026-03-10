@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editTitle: document.getElementById('edit-title'),
         editDesc: document.getElementById('edit-desc'),
         detailLikeBtn: document.getElementById('detail-like-btn'),
+        detailShareBtn: document.getElementById('detail-share-btn'),
         btnSaveEdit: document.getElementById('btn-save-edit')
     };
 
@@ -96,17 +97,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch('/api/photos');
             if (!response.ok) throw new Error("API Connection failed");
             const data = await response.json();
-            // Convert D1 integer liked to boolean
-            const cloudPhotos = data.map(p => ({ ...p, liked: !!p.liked }));
             
-            // For now, since there's no login, "My Stories" and "Community" both show all cloud data
+            // Map data and normalize booleans
+            const cloudPhotos = data.map(p => ({ 
+                ...p, 
+                liked: !!p.liked, 
+                shared: !!p.shared 
+            }));
+            
             state.photos = cloudPhotos;
-            state.sharedPhotos = cloudPhotos; 
+            // Community only shows photos where shared is true
+            state.sharedPhotos = cloudPhotos.filter(p => p.shared); 
             
             renderAll();
         } catch (e) {
             console.error("Cloud Sync Error:", e);
-            showToast("Cloud connection required. Check dashboard bindings.", "warning");
+            showToast("Cloud connection required.", "warning");
         }
     }
 
@@ -116,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const targetList = (isMyView ? state.photos : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || p.liked)
             .filter(p => filterDate === 'all' || p.date === filterDate)
-            .filter(p => !state.searchQuery || p.description.toLowerCase().includes(state.searchQuery.toLowerCase()));
+            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
         // Map Render
         clusterGroup.clearLayers();
@@ -168,7 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Toggle UI states
         ui.btnMyFeed.classList.toggle('active', state.viewMode === 'my');
         ui.btnSharedFeed.classList.toggle('active', state.viewMode === 'shared');
         ui.btnFilterLiked.classList.toggle('active', state.showOnlyLiked);
@@ -183,6 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.editTitle.value = p.title || '';
         ui.editDesc.value = p.description || '';
         ui.detailLikeBtn.classList.toggle('active', !!p.liked);
+        ui.detailShareBtn.classList.toggle('active', !!p.shared);
 
         ui.sidebar.classList.remove('hidden');
         ui.sidebar.classList.add('expanded');
@@ -218,16 +224,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         refreshMapSize();
     }
 
-    // MAP CLICK HANDLER for state management
-    map.on('click', (e) => {
-        // If sidebar is expanded, retract it.
-        if (ui.sidebar.classList.contains('expanded')) {
-            closeDetail();
-        } 
-        // If sidebar is in original size (not expanded, not hidden), minimize it.
-        else if (!ui.sidebar.classList.contains('hidden')) {
-            minimizeSidebar();
-        }
+    map.on('click', () => {
+        if (ui.sidebar.classList.contains('expanded')) closeDetail();
+        else if (!ui.sidebar.classList.contains('hidden')) minimizeSidebar();
     });
 
     function renderDateChips() {
@@ -246,19 +245,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 5. EVENT HANDLERS
     const splash = document.getElementById('splash-screen');
     const btnStart = document.getElementById('btn-start');
-    if (btnStart) {
-        btnStart.onclick = () => {
-            splash.classList.add('hidden');
-        };
-    }
+    if (btnStart) btnStart.onclick = () => splash.classList.add('hidden');
 
     ui.toggleBtn.onclick = () => {
-        const isHidden = ui.sidebar.classList.contains('hidden');
-        if (isHidden) {
-            restoreSidebar();
-        } else {
-            minimizeSidebar();
-        }
+        if (ui.sidebar.classList.contains('hidden')) restoreSidebar();
+        else minimizeSidebar();
     };
 
     function refreshMapSize() {
@@ -285,9 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     ui.dateChips.onclick = (e) => {
-        if (e.target.classList.contains('chip')) {
-            renderAll(e.target.dataset.date);
-        }
+        if (e.target.classList.contains('chip')) renderAll(e.target.dataset.date);
     };
 
     ui.btnBack.onclick = closeDetail;
@@ -296,14 +285,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.title = ui.editTitle.value;
         state.currentPhoto.description = ui.editDesc.value;
-        
         try {
             await fetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
             const btn = ui.btnSaveEdit;
             const originalText = btn.querySelector('span').textContent;
             btn.querySelector('span').textContent = 'Cloud Saved!';
             setTimeout(() => { btn.querySelector('span').textContent = originalText; }, 2000);
-            renderAll(state.activeDate);
+            syncData();
         } catch (e) {
             showToast("Cloud Save Failed", "warning");
         }
@@ -314,9 +302,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirm('Are you sure?')) return;
         try {
             await fetch(`/api/photos?id=${state.currentPhoto.id}`, { method: 'DELETE' });
-            state.photos = state.photos.filter(p => p.id !== state.currentPhoto.id);
             closeDetail();
-            renderAll(state.activeDate);
+            syncData();
             showToast("Deleted from cloud", "info");
         } catch (e) {
             showToast("Delete Failed", "warning");
@@ -331,27 +318,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderAll(state.activeDate);
     };
 
+    ui.detailShareBtn.onclick = async () => {
+        if (!state.currentPhoto) return;
+        state.currentPhoto.shared = !state.currentPhoto.shared;
+        await fetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
+        ui.detailShareBtn.classList.toggle('active', state.currentPhoto.shared);
+        showToast(state.currentPhoto.shared ? "Shared to Community" : "Removed from Community", "success");
+        syncData();
+    };
+
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
         showToast("Uploading to cloud...", "info");
-        const newPhotos = [];
-        const noGps = [];
         for (const f of Array.from(files)) {
             const exif = await exifr.parse(f);
             const url = await new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(rd.result); rd.readAsDataURL(f); });
             const data = { 
                 id: Date.now() + Math.random(), url, date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                title: f.name, description: '', lat: exif?.latitude, lng: exif?.longitude, liked: false
+                title: f.name, description: '', lat: exif?.latitude, lng: exif?.longitude, liked: false, shared: false
             };
-            if (data.lat) newPhotos.push(data); else noGps.push(data);
+            await fetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
         }
-        for (const p of newPhotos) {
-            await fetch('/api/photos', { method: 'POST', body: JSON.stringify(p) });
-        }
-        state.photos.push(...newPhotos);
-        renderAll();
-        if (noGps.length) { showToast("GPS Missing. Pin them.", "warning"); startLocationPicker(noGps); }
+        syncData();
         ui.uploadInput.value = '';
     };
 
@@ -365,9 +354,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         map.once('click', async (e) => {
             p.lat = e.latlng.lat; p.lng = e.latlng.lng;
             await fetch('/api/photos', { method: 'POST', body: JSON.stringify(p) });
-            state.photos.push(p);
             clusterGroup.eachLayer(m => m.options.interactive = true);
-            renderAll();
+            syncData();
             startLocationPicker(list);
         });
     }
@@ -408,7 +396,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!isDragging) return;
         isDragging = false;
         ui.sidebar.style.transition = '';
-        document.body.style.cursor = '';
         const currentHeight = ui.sidebar.getBoundingClientRect().height;
         const vh = window.innerHeight;
         if (currentHeight > vh * 0.85) {

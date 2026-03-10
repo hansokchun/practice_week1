@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     try {
         const photo = await request.json();
         await env.DB.prepare(
-            "INSERT OR REPLACE INTO photos (id, url, date, title, description, lat, lng, liked) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT OR REPLACE INTO photos (id, url, date, title, description, lat, lng, liked, shared) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         ).bind(
             photo.id.toString(),
             photo.url,
@@ -24,7 +24,8 @@ export async function onRequestPost(context) {
             photo.description,
             photo.lat,
             photo.lng,
-            photo.liked ? 1 : 0
+            photo.liked ? 1 : 0,
+            photo.shared ? 1 : 0
         ).run();
         
         return new Response(JSON.stringify({ success: true }), {

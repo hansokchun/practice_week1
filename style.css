@@ -162,6 +162,8 @@ body, html {
 .detail-actions-right { display: flex; gap: 20px; align-items: center; }
 .icon-btn { background: none; border: none; font-size: 13px; font-weight: 600; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .icon-btn.like-toggle.active svg { fill: var(--danger-color); stroke: var(--danger-color); }
+.icon-btn.share-toggle.active { color: #3b82f6; }
+.icon-btn.share-toggle.active svg { stroke: #3b82f6; }
 
 .story-viewer { flex: 1; overflow-y: auto; }
 .image-stage { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; min-height: 350px; }
