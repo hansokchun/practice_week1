@@ -441,18 +441,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         isDragging = true;
         startY = e.type === 'mousedown' ? e.pageY : e.touches[0].pageY;
         startHeight = ui.sidebar.getBoundingClientRect().height;
-        ui.sidebar.style.transition = 'none'; // Disable transition during drag
+        
+        // Remove snap classes and transitions during manual drag
+        ui.sidebar.style.transition = 'none';
+        ui.sidebar.classList.remove('expanded');
+        
         document.body.style.cursor = 'grabbing';
     };
 
     const onDragMove = (e) => {
         if (!isDragging) return;
+        if (e.cancelable) e.preventDefault(); // Prevent page scroll
+        
         const currentY = e.type === 'mousemove' ? e.pageY : e.touches[0].pageY;
         const dy = startY - currentY;
         const newHeight = startHeight + dy;
         
-        // Limit height between 10% and 100% of viewport
-        const minH = window.innerHeight * 0.1;
+        const minH = window.innerHeight * 0.15;
         const maxH = window.innerHeight;
         
         if (newHeight >= minH && newHeight <= maxH) {
@@ -464,22 +469,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const onDragEnd = () => {
         if (!isDragging) return;
         isDragging = false;
-        ui.sidebar.style.transition = ''; // Restore transition
+        ui.sidebar.style.transition = ''; 
         document.body.style.cursor = '';
 
         const currentHeight = ui.sidebar.getBoundingClientRect().height;
         const vh = window.innerHeight;
 
-        // Snap to nearest state
-        if (currentHeight > vh * 0.8) {
+        // Snapping logic
+        if (currentHeight > vh * 0.85) {
             ui.sidebar.style.height = '100vh';
             ui.sidebar.classList.add('expanded');
-        } else if (currentHeight > vh * 0.4) {
+        } else if (currentHeight > vh * 0.35) {
             ui.sidebar.style.height = '60vh';
-            ui.sidebar.classList.remove('expanded');
         } else {
             ui.sidebar.style.height = '15vh';
-            ui.sidebar.classList.remove('expanded');
         }
         refreshMapSize();
     };
