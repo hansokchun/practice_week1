@@ -1,5 +1,11 @@
 export async function onRequestGet(context) {
     const { env } = context;
+    if (!env.DB) {
+        return new Response(JSON.stringify({ error: "D1 database binding 'DB' is missing. Please check your Cloudflare Pages configuration." }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+        });
+    }
     try {
         const { results } = await env.DB.prepare("SELECT * FROM photos").all();
         return new Response(JSON.stringify(results), {
@@ -12,6 +18,12 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
     const { env, request } = context;
+    if (!env.DB) {
+        return new Response(JSON.stringify({ error: "D1 database binding 'DB' is missing. Please check your Cloudflare Pages configuration." }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+        });
+    }
     try {
         const photo = await request.json();
         await env.DB.prepare(
@@ -38,6 +50,12 @@ export async function onRequestPost(context) {
 
 export async function onRequestDelete(context) {
     const { env, request } = context;
+    if (!env.DB) {
+        return new Response(JSON.stringify({ error: "D1 database binding 'DB' is missing. Please check your Cloudflare Pages configuration." }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+        });
+    }
     try {
         const url = new URL(request.url);
         const id = url.searchParams.get("id");
