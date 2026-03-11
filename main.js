@@ -242,12 +242,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadComments(photoId) {
-        ui.commentsList.innerHTML = '';
+        ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">Loading comments...</p>';
         try {
             const res = await fetch(`/api/photos?photo_id=${photoId}`);
             const comments = await res.json();
+            ui.commentsList.innerHTML = '';
             if (!Array.isArray(comments) || comments.length === 0) {
-                ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">No comments yet. Be the first!</p>';
+                ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted); padding: 10px;">No comments yet. Be the first!</p>';
             } else {
                 comments.forEach(c => {
                     const el = document.createElement('div');
@@ -261,28 +262,51 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (e) {
             console.error("Comment Load Error:", e);
+            ui.commentsList.innerHTML = '';
         }
     }
 
-    ui.btnSendComment.onclick = async () => {
+    // --- Comment Posting Logic ---
+    const handlePostComment = async () => {
         const text = ui.commentInput.value.trim();
         if (!text || !state.currentPhoto) return;
         
+        const originalText = ui.btnSendComment.textContent;
+        ui.btnSendComment.textContent = '...';
+        ui.btnSendComment.disabled = true;
+
         try {
             const res = await fetch('/api/photos', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     type: 'comment',
                     photo_id: state.currentPhoto.id.toString(),
                     text: text
                 })
             });
+            
             if (res.ok) {
                 ui.commentInput.value = '';
                 await loadComments(state.currentPhoto.id);
+                showToast("Comment posted!", "success");
             }
         } catch (e) {
+            console.error(e);
             showToast("Failed to post comment", "warning");
+        } finally {
+            ui.btnSendComment.textContent = originalText;
+            ui.btnSendComment.disabled = false;
+        }
+    };
+
+    ui.btnSendComment.onclick = handlePostComment;
+    
+    // Support Enter Key
+    ui.commentInput.onkeydown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handlePostComment();
         }
     };
 
