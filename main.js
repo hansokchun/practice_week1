@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let state = {
         photos: [],
         sharedPhotos: [],
+        myPhotoIds: JSON.parse(localStorage.getItem('my_uploaded_photos') || '[]'),
         viewMode: 'my', // 'my' or 'shared'
         showOnlyLiked: false,
         activeDate: 'all',
@@ -131,7 +132,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
         const isMyView = state.viewMode === 'my';
-        const targetList = (isMyView ? state.photos : state.sharedPhotos)
+        
+        // Filter: My Stories (only IDs uploaded from here) vs Shared (everyone's shared)
+        const targetList = (isMyView 
+            ? state.photos.filter(p => state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id))) 
+            : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || p.liked)
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
@@ -247,7 +252,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     function renderDateChips() {
-        const list = state.viewMode === 'my' ? state.photos : state.sharedPhotos;
+        const isMyView = state.viewMode === 'my';
+        const list = isMyView 
+            ? state.photos.filter(p => state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id))) 
+            : state.sharedPhotos;
+            
         const dates = [...new Set(list.map(p => p.date))].sort((a,b) => b.localeCompare(a));
         ui.dateChips.innerHTML = `<button class="chip ${state.activeDate === 'all' ? 'active' : ''}" data-date="all">All Dates</button>`;
         dates.forEach(d => {
@@ -319,6 +328,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirm('Are you sure?')) return;
         try {
             await fetch(`/api/photos?id=${state.currentPhoto.id}`, { method: 'DELETE' });
+            
+            // Remove from my list if deleted
+            state.myPhotoIds = state.myPhotoIds.filter(id => id != state.currentPhoto.id);
+            localStorage.setItem('my_uploaded_photos', JSON.stringify(state.myPhotoIds));
+            
             closeDetail();
             syncData();
             showToast("Deleted from cloud", "info");
@@ -370,8 +384,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     rd.readAsDataURL(f); 
                 });
                 
+                const newId = Date.now() + Math.random();
                 const data = { 
-                    id: Date.now() + Math.random(), 
+                    id: newId, 
                     url, 
                     date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
                     title: f.name, 
@@ -381,6 +396,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     liked: false, 
                     shared: false
                 };
+
+                // Remember this ID as mine
+                state.myPhotoIds.push(newId);
+                localStorage.setItem('my_uploaded_photos', JSON.stringify(state.myPhotoIds));
 
                 if (!data.lat || !data.lng) {
                     pendingPhotos.push(data);
