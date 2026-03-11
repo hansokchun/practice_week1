@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
         btnDelete: document.getElementById('btn-delete'),
+        btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
         editTitle: document.getElementById('edit-title'),
@@ -112,6 +113,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             state.sharedPhotos = cloudPhotos.filter(p => p.shared); 
             
             renderAll();
+
+            // Check for deep link (URL hash)
+            const hashId = window.location.hash.slice(1);
+            if (hashId) {
+                const linkedPhoto = state.photos.find(p => p.id == hashId);
+                if (linkedPhoto) {
+                    setTimeout(() => showDetail(linkedPhoto), 500);
+                }
+            }
         } catch (e) {
             console.error("Cloud Sync Error:", e);
             showToast(`Cloud Error: ${e.message}`, "warning");
@@ -200,6 +210,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         map.setView([p.lat, p.lng], 18);
         refreshMapSize();
+
+        // Update URL hash for sharing
+        window.history.replaceState(null, null, `#${p.id}`);
     }
 
     function closeDetail() {
@@ -208,6 +221,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.panelDetail.classList.remove('active');
         state.currentPhoto = null;
         refreshMapSize();
+        // Remove hash
+        window.history.replaceState(null, null, window.location.pathname);
     }
 
     function minimizeSidebar() {
@@ -312,6 +327,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    ui.btnCopyLink.onclick = () => {
+        if (!state.currentPhoto) return;
+        const shareUrl = `${window.location.origin}${window.location.pathname}#${state.currentPhoto.id}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast("Direct link copied!", "success");
+        }).catch(() => {
+            showToast("Failed to copy link", "warning");
+        });
+    };
+
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.liked = !state.currentPhoto.liked;
@@ -328,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast(state.currentPhoto.shared ? "Shared to Community" : "Removed from Community", "success");
         syncData();
     };
-
+...
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
