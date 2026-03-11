@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast(state.currentPhoto.shared ? "Shared to Community" : "Removed from Community", "success");
         syncData();
     };
-...
+
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
