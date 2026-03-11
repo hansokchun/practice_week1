@@ -242,12 +242,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadComments(photoId) {
-        ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">Loading comments...</p>';
+        ui.commentsList.innerHTML = '';
         try {
             const res = await fetch(`/api/photos?photo_id=${photoId}`);
             const comments = await res.json();
-            ui.commentsList.innerHTML = '';
-            if (comments.length === 0) {
+            if (!Array.isArray(comments) || comments.length === 0) {
                 ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">No comments yet. Be the first!</p>';
             } else {
                 comments.forEach(c => {
@@ -261,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         } catch (e) {
-            ui.commentsList.innerHTML = 'Error loading comments.';
+            console.error("Comment Load Error:", e);
         }
     }
 
@@ -270,7 +269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!text || !state.currentPhoto) return;
         
         try {
-            await fetch('/api/photos', {
+            const res = await fetch('/api/photos', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'comment',
@@ -278,8 +277,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     text: text
                 })
             });
-            ui.commentInput.value = '';
-            loadComments(state.currentPhoto.id);
+            if (res.ok) {
+                ui.commentInput.value = '';
+                await loadComments(state.currentPhoto.id);
+            }
         } catch (e) {
             showToast("Failed to post comment", "warning");
         }
