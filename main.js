@@ -329,25 +329,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncData();
     };
 
+    // Helper: Resize Image before upload
+    async function compressImage(file, maxWidth = 800) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7)); // 70% quality
+                };
+            };
+        });
+    }
+
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
         
         const pendingPhotos = [];
-        showToast("Processing photos...", "info");
+        showToast("Optimizing & Uploading...", "info");
         
         for (const f of Array.from(files)) {
             try {
                 const exif = await exifr.parse(f);
-                const url = await new Promise(r => { 
-                    const rd = new FileReader(); 
-                    rd.onload = ev => r(rd.result); 
-                    rd.readAsDataURL(f); 
-                });
+                // Resize image here!
+                const compressedUrl = await compressImage(f);
                 
                 const data = { 
                     id: Date.now() + Math.random(), 
-                    url, 
+                    url: compressedUrl, 
                     date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
                     title: f.name, 
                     description: '', 
@@ -360,10 +383,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!data.lat || !data.lng) {
                     pendingPhotos.push(data);
                 } else {
-                    await fetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
+                    const res = await fetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
+                    if (!res.ok) throw new Error(await res.text());
                 }
             } catch (err) {
                 console.error("Upload error:", err);
+                showToast(`Upload failed: ${err.message}`, "warning");
             }
         }
         
