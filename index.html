@@ -117,10 +117,21 @@
                     <div class="story-content">
                         <div class="meta">
                             <span id="detail-date" class="date-text">March 14, 2024</span>
+                            <span id="like-count-badge" class="like-badge">0 likes</span>
                         </div>
                         <input type="text" id="edit-title" class="title-input" placeholder="Untitled Story">
                         <textarea id="edit-desc" class="desc-input" placeholder="Add more details about this moment..."></textarea>
                         <hr class="serif-hr">
+                        
+                        <!-- NEW: Comments Section -->
+                        <div class="comments-section">
+                            <h3>Comments</h3>
+                            <div id="comments-list" class="comments-list"></div>
+                            <div class="comment-input-group">
+                                <input type="text" id="comment-input" placeholder="Write a comment...">
+                                <button id="btn-send-comment">Post</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

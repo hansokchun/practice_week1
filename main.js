@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         photos: [],
         sharedPhotos: [],
         myPhotoIds: JSON.parse(localStorage.getItem('my_uploaded_photos') || '[]'),
+        myLikedIds: JSON.parse(localStorage.getItem('my_liked_photos') || '[]'),
         viewMode: 'my', // 'my' or 'shared'
         showOnlyLiked: false,
         activeDate: 'all',
@@ -40,7 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         editDesc: document.getElementById('edit-desc'),
         detailLikeBtn: document.getElementById('detail-like-btn'),
         detailShareBtn: document.getElementById('detail-share-btn'),
-        btnSaveEdit: document.getElementById('btn-save-edit')
+        btnSaveEdit: document.getElementById('btn-save-edit'),
+        likeCountBadge: document.getElementById('like-count-badge'),
+
+        // Comments
+        commentsList: document.getElementById('comments-list'),
+        commentInput: document.getElementById('comment-input'),
+        btnSendComment: document.getElementById('btn-send-comment')
     };
 
     // 3. MAP SETUP
@@ -103,10 +110,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Map data and normalize booleans
+            // Map data and normalize values
             const cloudPhotos = data.map(p => ({ 
                 ...p, 
-                liked: !!p.liked, 
+                liked: Number(p.liked || 0), 
                 shared: !!p.shared 
             }));
             
@@ -133,21 +140,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.activeDate = filterDate;
         const isMyView = state.viewMode === 'my';
         
-        // Filter: My Stories (only IDs uploaded from here) vs Shared (everyone's shared)
         const targetList = (isMyView 
             ? state.photos.filter(p => state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id))) 
             : state.sharedPhotos)
-            .filter(p => !state.showOnlyLiked || p.liked)
+            .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
         // Map Render
         clusterGroup.clearLayers();
         targetList.forEach(p => {
-            let icon = icons.liked;
-            if (!p.liked) {
-                icon = isMyView ? icons.my : icons.shared;
-            }
+            const isLikedByMe = state.myLikedIds.includes(p.id.toString());
+            const icon = isLikedByMe ? icons.liked : (isMyView ? icons.my : icons.shared);
             const m = L.marker([p.lat, p.lng], { icon: icon });
             m.on('click', () => {
                 showDetail(p);
@@ -198,13 +202,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderDateChips();
     }
 
-    function showDetail(p) {
+    async function showDetail(p) {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
         ui.editTitle.value = p.title || '';
         ui.editDesc.value = p.description || '';
-        ui.detailLikeBtn.classList.toggle('active', !!p.liked);
+        ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
+        
+        const isMyPhoto = state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id));
+        const isLikedByMe = state.myLikedIds.includes(p.id.toString());
+
+        // UI Permission Check
+        ui.btnSaveEdit.style.display = isMyPhoto ? 'flex' : 'none';
+        ui.btnDelete.style.display = isMyPhoto ? 'flex' : 'none';
+        ui.detailShareBtn.style.display = isMyPhoto ? 'flex' : 'none';
+        ui.editTitle.disabled = !isMyPhoto;
+        ui.editDesc.disabled = !isMyPhoto;
+
+        ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
         ui.detailShareBtn.classList.toggle('active', !!p.shared);
 
         ui.sidebar.classList.remove('hidden');
@@ -216,9 +232,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         map.setView([p.lat, p.lng], 18);
         refreshMapSize();
 
-        // Update URL hash for sharing
+        // Update URL hash
         window.history.replaceState(null, null, `#${p.id}`);
+
+        // Load Comments
+        loadComments(p.id);
     }
+
+    async function loadComments(photoId) {
+        ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">Loading comments...</p>';
+        try {
+            const res = await fetch(`/api/photos?photo_id=${photoId}`);
+            const comments = await res.json();
+            ui.commentsList.innerHTML = '';
+            if (comments.length === 0) {
+                ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">No comments yet. Be the first!</p>';
+            } else {
+                comments.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = 'comment-item';
+                    el.innerHTML = `
+                        <div>${c.text}</div>
+                        <span class="comment-date">${new Date(c.date).toLocaleString()}</span>
+                    `;
+                    ui.commentsList.appendChild(el);
+                });
+            }
+        } catch (e) {
+            ui.commentsList.innerHTML = 'Error loading comments.';
+        }
+    }
+
+    ui.btnSendComment.onclick = async () => {
+        const text = ui.commentInput.value.trim();
+        if (!text || !state.currentPhoto) return;
+        
+        try {
+            await fetch('/api/photos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    type: 'comment',
+                    photo_id: state.currentPhoto.id.toString(),
+                    text: text
+                })
+            });
+            ui.commentInput.value = '';
+            loadComments(state.currentPhoto.id);
+        } catch (e) {
+            showToast("Failed to post comment", "warning");
+        }
+    };
 
     function closeDetail() {
         ui.sidebar.classList.remove('expanded');
@@ -226,7 +289,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.panelDetail.classList.remove('active');
         state.currentPhoto = null;
         refreshMapSize();
-        // Remove hash
         window.history.replaceState(null, null, window.location.pathname);
     }
 
@@ -328,11 +390,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirm('Are you sure?')) return;
         try {
             await fetch(`/api/photos?id=${state.currentPhoto.id}`, { method: 'DELETE' });
-            
-            // Remove from my list if deleted
             state.myPhotoIds = state.myPhotoIds.filter(id => id != state.currentPhoto.id);
             localStorage.setItem('my_uploaded_photos', JSON.stringify(state.myPhotoIds));
-            
             closeDetail();
             syncData();
             showToast("Deleted from cloud", "info");
@@ -353,9 +412,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentPhoto) return;
-        state.currentPhoto.liked = !state.currentPhoto.liked;
+        const photoId = state.currentPhoto.id.toString();
+        const isLiked = state.myLikedIds.includes(photoId);
+        
+        // Update local state (1 like per person)
+        if (isLiked) {
+            state.myLikedIds = state.myLikedIds.filter(id => id !== photoId);
+            state.currentPhoto.liked = Math.max(0, (state.currentPhoto.liked || 0) - 1);
+        } else {
+            state.myLikedIds.push(photoId);
+            state.currentPhoto.liked = (state.currentPhoto.liked || 0) + 1;
+        }
+        localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
+
+        // Save to server
         await fetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
-        ui.detailLikeBtn.classList.toggle('active', state.currentPhoto.liked);
+        
+        ui.detailLikeBtn.classList.toggle('active', !isLiked);
+        ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
         renderAll(state.activeDate);
     };
 
@@ -386,19 +460,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const newId = Date.now() + Math.random();
                 const data = { 
-                    id: newId, 
-                    url, 
-                    date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                    title: f.name, 
-                    description: '', 
-                    lat: exif?.latitude, 
-                    lng: exif?.longitude, 
-                    liked: false, 
-                    shared: false
+                    id: newId, url, date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                    title: f.name, description: '', lat: exif?.latitude, lng: exif?.longitude, liked: 0, shared: false
                 };
 
-                // Remember this ID as mine
-                state.myPhotoIds.push(newId);
+                state.myPhotoIds.push(newId.toString());
                 localStorage.setItem('my_uploaded_photos', JSON.stringify(state.myPhotoIds));
 
                 if (!data.lat || !data.lng) {
@@ -406,9 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     await fetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
                 }
-            } catch (err) {
-                console.error("Upload error:", err);
-            }
+            } catch (err) { console.error(err); }
         }
         
         if (pendingPhotos.length > 0) {
@@ -439,7 +503,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     syncData();
 
-    // 6. BOTTOM SHEET RESIZING (Mobile)
+    // BOTTOM SHEET RESIZING (Mobile)
     const dragHandle = document.getElementById('drag-handle');
     let isDragging = false;
     let startY = 0;
