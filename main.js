@@ -332,17 +332,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
-        showToast("Uploading to cloud...", "info");
+        
+        const pendingPhotos = [];
+        showToast("Processing photos...", "info");
+        
         for (const f of Array.from(files)) {
-            const exif = await exifr.parse(f);
-            const url = await new Promise(r => { const rd = new FileReader(); rd.onload = ev => r(rd.result); rd.readAsDataURL(f); });
-            const data = { 
-                id: Date.now() + Math.random(), url, date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                title: f.name, description: '', lat: exif?.latitude, lng: exif?.longitude, liked: false, shared: false
-            };
-            await fetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
+            try {
+                const exif = await exifr.parse(f);
+                const url = await new Promise(r => { 
+                    const rd = new FileReader(); 
+                    rd.onload = ev => r(rd.result); 
+                    rd.readAsDataURL(f); 
+                });
+                
+                const data = { 
+                    id: Date.now() + Math.random(), 
+                    url, 
+                    date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                    title: f.name, 
+                    description: '', 
+                    lat: exif?.latitude, 
+                    lng: exif?.longitude, 
+                    liked: false, 
+                    shared: false
+                };
+
+                if (!data.lat || !data.lng) {
+                    pendingPhotos.push(data);
+                } else {
+                    await fetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+            }
         }
-        syncData();
+        
+        if (pendingPhotos.length > 0) {
+            showToast(`${pendingPhotos.length} photos need location. Click on the map!`, "info");
+            startLocationPicker(pendingPhotos);
+        } else {
+            showToast("Upload complete!", "success");
+            syncData();
+        }
         ui.uploadInput.value = '';
     };
 
