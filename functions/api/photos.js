@@ -24,26 +24,27 @@ export async function onRequestPost(context) {
 
     try {
         const photo = await request.json();
+        let finalUrl = photo.url;
+
+        // 1. 만약 사진 데이터가 Base64(신규 업로드)라면 R2에 저장
+        if (photo.url.startsWith('data:')) {
+            const base64Data = photo.url.split(',')[1];
+            const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+            const fileName = `${photo.id}.jpg`;
+            
+            await env.MY_BUCKET.put(fileName, binaryData, {
+                httpMetadata: { contentType: 'image/jpeg' }
+            });
+            
+            finalUrl = `https://pub-16b2eb5e4ff2442eb3f9e48c634e2912.r2.dev/${fileName}`;
+        }
         
-        // 1. Base64 데이터를 바이너리로 변환
-        const base64Data = photo.url.split(',')[1];
-        const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-        
-        // 2. R2 버킷에 파일 저장
-        const fileName = `${photo.id}.jpg`;
-        await env.MY_BUCKET.put(fileName, binaryData, {
-            httpMetadata: { contentType: 'image/jpeg' }
-        });
-        
-        // 3. R2 공개 URL 생성 (사용자가 알려준 주소 사용)
-        const publicUrl = `https://pub-16b2eb5e4ff2442eb3f9e48c634e2912.r2.dev/${fileName}`;
-        
-        // 4. D1 데이터베이스에는 '공개 URL'을 저장
+        // 2. D1 데이터베이스 업데이트 (공유 상태 포함)
         await env.DB.prepare(
             "INSERT OR REPLACE INTO photos (id, url, date, title, description, lat, lng, liked, shared) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         ).bind(
             photo.id.toString(),
-            publicUrl, // 원본 base64 대신 R2 주소 저장!
+            finalUrl,
             photo.date,
             photo.title,
             photo.description,
@@ -53,7 +54,7 @@ export async function onRequestPost(context) {
             photo.shared ? 1 : 0
         ).run();
         
-        return new Response(JSON.stringify({ success: true, url: publicUrl }), {
+        return new Response(JSON.stringify({ success: true, url: finalUrl }), {
             headers: { "Content-Type": "application/json" }
         });
     } catch (e) {
@@ -68,12 +69,10 @@ export async function onRequestDelete(context) {
         const id = url.searchParams.get("id");
         if (!id) return new Response("ID required", { status: 400 });
         
-        // 1. D1에서 정보 삭제 전 파일명 확인 (선택사항이지만 깔끔하게 관리하려면 R2에서도 지울 수 있습니다)
-        // 여기서는 간단하게 D1에서만 삭제하도록 하겠습니다.
         await env.DB.prepare("DELETE FROM photos WHERE id = ?").bind(id).run();
-        
-        // 2. R2 파일도 삭제 (파일명은 id.jpg 형식)
-        await env.MY_BUCKET.delete(`${id}.jpg`);
+        try {
+            await env.MY_BUCKET.delete(`${id}.jpg`);
+        } catch (e) {} // 파일이 없어도 에러 무시
         
         return new Response(JSON.stringify({ success: true }));
     } catch (e) {
