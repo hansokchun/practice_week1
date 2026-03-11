@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
         btnDelete: document.getElementById('btn-delete'),
+        btnEditLocation: document.getElementById('btn-edit-location'),
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
@@ -216,6 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // UI Permission Check
         ui.btnSaveEdit.style.display = isMyPhoto ? 'flex' : 'none';
         ui.btnDelete.style.display = isMyPhoto ? 'flex' : 'none';
+        ui.btnEditLocation.style.display = isMyPhoto ? 'flex' : 'none';
         ui.detailShareBtn.style.display = isMyPhoto ? 'flex' : 'none';
         ui.editTitle.disabled = !isMyPhoto;
         ui.editDesc.disabled = !isMyPhoto;
@@ -369,6 +371,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ui.btnBack.onclick = closeDetail;
 
+    ui.btnEditLocation.onclick = () => {
+        if (!state.currentPhoto) return;
+        showToast("Click on the map to set a new location", "info");
+        startLocationPicker([state.currentPhoto]);
+    };
+
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.title = ui.editTitle.value;
@@ -415,7 +423,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const photoId = state.currentPhoto.id.toString();
         const isLiked = state.myLikedIds.includes(photoId);
         
-        // Update local state (1 like per person)
         if (isLiked) {
             state.myLikedIds = state.myLikedIds.filter(id => id !== photoId);
             state.currentPhoto.liked = Math.max(0, (state.currentPhoto.liked || 0) - 1);
@@ -425,7 +432,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
 
-        // Save to server
         await fetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
         
         ui.detailLikeBtn.classList.toggle('active', !isLiked);
@@ -496,6 +502,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             p.lat = e.latlng.lat; p.lng = e.latlng.lng;
             await fetch('/api/photos', { method: 'POST', body: JSON.stringify(p) });
             clusterGroup.eachLayer(m => m.options.interactive = true);
+            document.body.classList.remove('picking-location');
             syncData();
             startLocationPicker(list);
         });
@@ -503,7 +510,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     syncData();
 
-    // BOTTOM SHEET RESIZING (Mobile)
     const dragHandle = document.getElementById('drag-handle');
     let isDragging = false;
     let startY = 0;
