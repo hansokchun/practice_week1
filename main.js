@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnBack: document.getElementById('btn-back'),
         btnDelete: document.getElementById('btn-delete'),
         btnEditLocation: document.getElementById('btn-edit-location'),
+        btnStreetView: document.getElementById('btn-street-view'),
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
@@ -266,7 +267,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- Comment Posting Logic ---
     const handlePostComment = async () => {
         const text = ui.commentInput.value.trim();
         if (!text || !state.currentPhoto) return;
@@ -302,7 +302,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ui.btnSendComment.onclick = handlePostComment;
     
-    // Support Enter Key
     ui.commentInput.onkeydown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -400,6 +399,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!state.currentPhoto) return;
         showToast("Click on the map to set a new location", "info");
         startLocationPicker([state.currentPhoto]);
+    };
+
+    ui.btnStreetView.onclick = () => {
+        if (!state.currentPhoto) return;
+        const { lat, lng } = state.currentPhoto;
+        const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
+        window.open(streetViewUrl, '_blank');
     };
 
     ui.btnSaveEdit.onclick = async () => {
