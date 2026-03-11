@@ -162,8 +162,53 @@ body, html {
 .detail-actions-right { display: flex; gap: 20px; align-items: center; }
 .icon-btn { background: none; border: none; font-size: 13px; font-weight: 600; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .icon-btn.like-toggle.active svg { fill: var(--danger-color); stroke: var(--danger-color); }
-.icon-btn.share-toggle.active { color: #3b82f6; }
-.icon-btn.share-toggle.active svg { stroke: #3b82f6; }
+/* Redesigned Share Button */
+.share-toggle {
+    background: rgba(115, 115, 115, 0.1);
+    color: var(--text-muted);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+}
+
+.share-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+.share-toggle.active {
+    background: #ecfdf5; /* Light green bg */
+    color: #059669;      /* Dark green text */
+    border-color: #10b981;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+}
+
+.share-toggle.active svg {
+    stroke: #059669;
+}
+
+.share-toggle.active::after {
+    content: "Shared";
+}
+
+.share-toggle:not(.active)::after {
+    content: "Private";
+}
+
+.share-toggle:hover {
+    transform: translateY(-1px);
+    background: rgba(115, 115, 115, 0.2);
+}
+
+.share-toggle.active:hover {
+    background: #d1fae5;
+}
 
 .story-viewer { flex: 1; overflow-y: auto; }
 .image-stage { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; min-height: 350px; }
