@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnBack: document.getElementById('btn-back'),
         btnDelete: document.getElementById('btn-delete'),
         btnEditLocation: document.getElementById('btn-edit-location'),
+        btnStreetView: document.getElementById('btn-street-view'),
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
@@ -48,7 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Comments
         commentsList: document.getElementById('comments-list'),
         commentInput: document.getElementById('comment-input'),
-        btnSendComment: document.getElementById('btn-send-comment')
+        btnSendComment: document.getElementById('btn-send-comment'),
+
+        // Street View Overlay
+        streetViewOverlay: document.getElementById('street-view-overlay'),
+        streetViewFrame: document.getElementById('street-view-frame'),
+        btnCloseStreetView: document.getElementById('btn-close-street-view')
     };
 
     // 3. MAP SETUP
