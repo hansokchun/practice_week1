@@ -49,7 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Comments
         commentsList: document.getElementById('comments-list'),
         commentInput: document.getElementById('comment-input'),
-        btnSendComment: document.getElementById('btn-send-comment')
+        btnSendComment: document.getElementById('btn-send-comment'),
+
+        // Street View Overlay
+        streetViewOverlay: document.getElementById('street-view-overlay'),
+        streetViewFrame: document.getElementById('street-view-frame'),
+        btnCloseStreetView: document.getElementById('btn-close-street-view')
     };
 
     // 3. MAP SETUP
@@ -439,8 +444,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnStreetView.onclick = () => {
         if (!state.currentPhoto) return;
         const { lat, lng } = state.currentPhoto;
+        // Open Street View in the overlay frame
         const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
-        window.open(streetViewUrl, '_blank');
+        ui.streetViewFrame.src = streetViewUrl;
+        ui.streetViewOverlay.classList.add('active');
+    };
+
+    ui.btnCloseStreetView.onclick = () => {
+        ui.streetViewOverlay.classList.remove('active');
+        ui.streetViewFrame.src = ''; // Stop the frame
     };
 
     ui.btnSaveEdit.onclick = async () => {
