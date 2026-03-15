@@ -4,9 +4,13 @@ export async function onRequestGet(context) {
     const photoId = url.searchParams.get("photo_id");
 
     try {
+        if (!env.DB) throw new Error("DB binding missing");
+
         // 특정 사진의 댓글 가져오기
         if (photoId) {
-            const { results } = await env.DB.prepare("SELECT * FROM comments WHERE photo_id = ? ORDER BY date DESC").bind(photoId.toString()).all();
+            const { results } = await env.DB.prepare("SELECT * FROM comments WHERE photo_id = ? ORDER BY date DESC")
+                .bind(photoId.toString())
+                .all();
             return new Response(JSON.stringify(results || []), { 
                 headers: { "Content-Type": "application/json" } 
             });
@@ -18,8 +22,11 @@ export async function onRequestGet(context) {
             headers: { "Content-Type": "application/json" } 
         });
     } catch (e) {
-        // 테이블이 없는 경우 등을 대비해 빈 배열 반환 (에러 문구 노출 방지)
-        return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+        console.error("DB Error:", e.message);
+        return new Response(JSON.stringify({ error: e.message, results: [] }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" } 
+        });
     }
 }
 
@@ -32,8 +39,12 @@ export async function onRequestPost(context) {
 
         // 1. 댓글 저장 요청 처리
         if (data.type === 'comment') {
+            if (!data.photo_id || !data.text) {
+                return new Response(JSON.stringify({ error: "Missing photo_id or text" }), { status: 400 });
+            }
             await env.DB.prepare("INSERT INTO comments (photo_id, text, date) VALUES (?, ?, ?)")
-                .bind(data.photo_id.toString(), data.text, new Date().toISOString()).run();
+                .bind(data.photo_id.toString(), data.text, new Date().toISOString())
+                .run();
             return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -41,7 +52,7 @@ export async function onRequestPost(context) {
         const photo = data;
         let finalUrl = photo.url;
         
-        if (photo.url.startsWith('data:')) {
+        if (photo.url && photo.url.startsWith('data:')) {
             const fileName = `${photo.id}.jpg`;
             await env.MY_BUCKET.put(fileName, Uint8Array.from(atob(photo.url.split(',')[1]), c => c.charCodeAt(0)), {
                 httpMetadata: { contentType: 'image/jpeg' }
@@ -58,7 +69,11 @@ export async function onRequestPost(context) {
 
         return new Response(JSON.stringify({ success: true, url: finalUrl }), { headers: { "Content-Type": "application/json" } });
     } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+        console.error("Post Error:", e.message);
+        return new Response(JSON.stringify({ error: e.message }), { 
+            status: 500,
+            headers: { "Content-Type": "application/json" } 
+        });
     }
 }
 

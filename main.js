@@ -82,9 +82,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         spiderfyOnMaxZoom: true, 
         showCoverageOnHover: false,
         iconCreateFunction: (c) => L.divIcon({ 
-            html: `<span>${c.getChildCount()}</span>`, 
-            className: 'cluster-icon', 
-            iconSize: [36, 36] 
+            html: `
+                <div class="custom-cluster-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span class="cluster-count">${c.getChildCount()}</span>
+                </div>
+            `, 
+            className: 'cluster-wrapper', 
+            iconSize: [44, 44] 
         })
     });
 
@@ -141,19 +150,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
         const isMyView = state.viewMode === 'my';
+        const currentZoom = map.getZoom();
         
-        const targetList = (isMyView 
+        // 1. 사이드바 그리드용 리스트 (현재 탭에 따라 필터링 유지)
+        const gridList = (isMyView 
             ? state.photos.filter(p => state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id))) 
             : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
-        // Map Render
+        // 2. 지도 표시용 리스트 (내 사진 + 공유된 모든 사진 통합)
+        const mapList = state.photos.filter(p => {
+            const isMyPhoto = state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id));
+            const isShared = !!p.shared;
+            return isMyPhoto || isShared; // 내 사진이거나 공유된 사진이면 지도에 표시
+        })
+        .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
+        .filter(p => filterDate === 'all' || p.date === filterDate)
+        .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
+
+        // 지도 렌더링
         clusterGroup.clearLayers();
-        targetList.forEach(p => {
+        mapList.forEach(p => {
+            const isMyPhoto = state.myPhotoIds.includes(p.id.toString()) || state.myPhotoIds.includes(Number(p.id));
             const isLikedByMe = state.myLikedIds.includes(p.id.toString());
-            const icon = isLikedByMe ? icons.liked : (isMyView ? icons.my : icons.shared);
+            
+            // 개별 마커로 보일 때의 아이콘 설정
+            const icon = isLikedByMe ? icons.liked : (isMyPhoto ? icons.my : icons.shared);
             const m = L.marker([p.lat, p.lng], { icon: icon });
             m.on('click', () => {
                 showDetail(p);
@@ -162,8 +186,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         map.addLayer(clusterGroup);
 
-        // Group photos by date
-        const groups = targetList.reduce((acc, p) => {
+        // 그리드 렌더링 (그리드용 리스트 사용)
+        const groups = gridList.reduce((acc, p) => {
             if (!acc[p.date]) acc[p.date] = [];
             acc[p.date].push(p);
             return acc;
@@ -243,12 +267,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadComments(photoId) {
+        if (!photoId) return;
         ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">Loading comments...</p>';
         try {
             const res = await fetch(`/api/photos?photo_id=${photoId}`);
-            const comments = await res.json();
+            const data = await res.json();
+            
             ui.commentsList.innerHTML = '';
-            if (!Array.isArray(comments) || comments.length === 0) {
+            
+            // 응답이 배열인지 확인 (백엔드 에러 시 {error, results} 형태로 올 수 있음)
+            const comments = Array.isArray(data) ? data : (data.results || []);
+            
+            if (comments.length === 0) {
                 ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted); padding: 10px;">No comments yet. Be the first!</p>';
             } else {
                 comments.forEach(c => {
@@ -263,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (e) {
             console.error("Comment Load Error:", e);
-            ui.commentsList.innerHTML = '';
+            ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--danger-color); padding: 10px;">Failed to load comments.</p>';
         }
     }
 
@@ -271,6 +301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const text = ui.commentInput.value.trim();
         if (!text || !state.currentPhoto) return;
         
+        const photoId = state.currentPhoto.id.toString();
         const originalText = ui.btnSendComment.textContent;
         ui.btnSendComment.textContent = '...';
         ui.btnSendComment.disabled = true;
@@ -281,19 +312,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     type: 'comment',
-                    photo_id: state.currentPhoto.id.toString(),
+                    photo_id: photoId,
                     text: text
                 })
             });
             
-            if (res.ok) {
+            const result = await res.json();
+            
+            if (res.ok && result.success) {
                 ui.commentInput.value = '';
-                await loadComments(state.currentPhoto.id);
+                await loadComments(photoId);
                 showToast("Comment posted!", "success");
+            } else {
+                throw new Error(result.error || "Failed to post");
             }
         } catch (e) {
             console.error(e);
-            showToast("Failed to post comment", "warning");
+            showToast(`Error: ${e.message}`, "warning");
         } finally {
             ui.btnSendComment.textContent = originalText;
             ui.btnSendComment.disabled = false;

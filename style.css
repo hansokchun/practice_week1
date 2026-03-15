@@ -253,6 +253,58 @@ body, html {
     #sidebar.expanded { height: 100vh; border-radius: 0; }
 }
 
+/* --- Map Cluster Icons --- */
+.cluster-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-cluster-icon {
+    width: 44px;
+    height: 44px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--accent-color);
+    position: relative;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-cluster-icon:hover {
+    transform: scale(1.1);
+}
+
+.custom-cluster-icon svg {
+    width: 22px;
+    height: 22px;
+    color: var(--accent-color);
+    margin-bottom: -2px;
+}
+
+.cluster-count {
+    font-size: 10px;
+    font-weight: 800;
+    color: white;
+    background: var(--accent-color);
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
 /* --- Notification Toast --- */
 .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10001; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 .toast { background: rgba(26, 26, 26, 0.95); color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); animation: toastIn 0.4s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: auto; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px); }
