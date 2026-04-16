@@ -11,8 +11,8 @@
     --sans-font: 'Pretendard', sans-serif;
 }
 
-body, html, #root, #app {
-    margin: 0; padding: 0; height: 100%; width: 100%;
+body, html {
+    margin: 0; padding: 0; height: 100%;
     font-family: var(--sans-font);
     background-color: var(--bg-color);
     color: var(--text-main);

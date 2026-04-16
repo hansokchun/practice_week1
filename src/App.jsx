@@ -5,18 +5,6 @@ import 'leaflet.markercluster';
 import 'leaflet/dist/leaflet.css';
 import exifr from 'exifr';
 
-// Fix Leaflet default icon issues
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerIconRetina from 'leaflet/dist/images/marker-icon-2x.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIconRetina,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
 // --- Icons Setup ---
 const icons = {
   liked: L.divIcon({ 
@@ -298,10 +286,10 @@ function App() {
         <MapContainer center={[36.2048, 138.2529]} zoom={6} zoomControl={false} id="map">
           <TileLayer url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko" attribution="Google Maps" />
           <ZoomControl position="bottomright" />
-          {mapPhotos.filter(p => p.lat && p.lng).map(p => (
+          {mapPhotos.map(p => (
             <Marker 
               key={p.id} 
-              position={[Number(p.lat), Number(p.lng)]} 
+              position={[p.lat, p.lng]} 
               icon={myLikedIds.includes(p.id.toString()) ? icons.liked : (myPhotoIds.includes(p.id.toString()) ? icons.my : icons.shared)}
               eventHandlers={{ click: () => handleShowDetail(p) }}
             />
