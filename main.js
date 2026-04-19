@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // ═══════════════════════════════════════════════════
     // 1. SUPABASE AUTH & SPLASH GUARD
+    // ═══════════════════════════════════════════════════
     const currentUser = await getCurrentUser();
     const splash = document.getElementById('splash-screen');
     
@@ -33,7 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
+    // ═══════════════════════════════════════════════════
     // 2. STATE MANAGEMENT
+    // ═══════════════════════════════════════════════════
     let state = {
         photos: [],
         sharedPhotos: [],
@@ -44,10 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPhoto: null,
         searchQuery: '',
         isDenseGrid: false,
-        currentUser: currentUser // 저장
+        currentUser: currentUser
     };
 
-    // 2. UI REFERENCES
+    // ═══════════════════════════════════════════════════
+    // 3. UI REFERENCES
+    // ═══════════════════════════════════════════════════
     const ui = {
         sidebar: document.getElementById('sidebar'),
         toggleBtn: document.getElementById('sidebar-toggle'),
@@ -91,7 +97,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnCloseStreetView: document.getElementById('btn-close-street-view')
     };
 
-    // 3. MAP SETUP
+    // ═══════════════════════════════════════════════════
+    // 4. MAP SETUP
+    // ═══════════════════════════════════════════════════
     const map = L.map('map', { zoomControl: false, maxZoom: 19 }).setView([36.2048, 138.2529], 6);
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 
         attribution: 'Google Maps',
@@ -136,7 +144,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     });
 
-    // 4. CORE LOGIC
+    // ═══════════════════════════════════════════════════
+    // 5. CORE LOGIC — Supabase 직접 통신
+    // ═══════════════════════════════════════════════════
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -151,16 +161,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 3000);
     }
 
+    // 데이터 동기화: Supabase에서 직접 사진 데이터를 가져옴
     async function syncData() {
         try {
-            const response = await authFetch('/api/photos');
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP ${response.status}`);
-            }
-            const data = await response.json();
+            const { data, error } = await fetchPhotos();
+            if (error) throw error;
             
-            // Map data and normalize values
+            // 데이터 정규화
             const cloudPhotos = data.map(p => ({ 
                 ...p, 
                 liked: Number(p.liked || 0), 
@@ -172,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             renderAll();
 
-            // Check for deep link (URL hash)
+            // 딥 링크 확인 (URL 해시)
             const hashId = window.location.hash.slice(1);
             if (hashId) {
                 const linkedPhoto = state.photos.find(p => p.id == hashId);
@@ -181,17 +188,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         } catch (e) {
-            console.error("Cloud Sync Error:", e);
-            showToast(`Cloud Error: ${e.message}`, "warning");
+            console.error("Sync Error:", e);
+            showToast(`Sync Error: ${e.message}`, "warning");
         }
     }
 
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
         const isMyView = state.viewMode === 'my';
-        const currentZoom = map.getZoom();
         
-        // 1. 사이드바 그리드용 리스트 (현재 탭에 따라 필터링 유지)
+        // 1. 사이드바 그리드용 리스트
         const gridList = (isMyView 
             ? state.photos.filter(p => p.owner_id === state.currentUser.id) 
             : state.sharedPhotos)
@@ -199,11 +205,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
-        // 2. 지도 표시용 리스트 (내 사진 + 공유된 모든 사진 통합)
+        // 2. 지도 표시용 리스트 (내 사진 + 공유된 모든 사진)
         const mapList = state.photos.filter(p => {
             const isMyPhoto = p.owner_id === state.currentUser.id;
             const isShared = !!p.shared;
-            return isMyPhoto || isShared; // 내 사진이거나 공유된 사진이면 지도에 표시
+            return isMyPhoto || isShared;
         })
         .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
         .filter(p => filterDate === 'all' || p.date === filterDate)
@@ -215,7 +221,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isMyPhoto = p.owner_id === state.currentUser.id;
             const isLikedByMe = state.myLikedIds.includes(p.id.toString());
             
-            // 개별 마커로 보일 때의 아이콘 설정
             const icon = isLikedByMe ? icons.liked : (isMyPhoto ? icons.my : icons.shared);
             const m = L.marker([p.lat, p.lng], { icon: icon });
             m.on('click', () => {
@@ -225,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         map.addLayer(clusterGroup);
 
-        // 그리드 렌더링 (그리드용 리스트 사용)
+        // 그리드 렌더링
         const groups = gridList.reduce((acc, p) => {
             if (!acc[p.date]) acc[p.date] = [];
             acc[p.date].push(p);
@@ -278,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isMyPhoto = p.owner_id === state.currentUser.id;
         const isLikedByMe = state.myLikedIds.includes(p.id.toString());
 
-        // UI Permission Check
+        // UI 권한 분기
         ui.btnSaveEdit.style.display = isMyPhoto ? 'flex' : 'none';
         ui.btnDelete.style.display = isMyPhoto ? 'flex' : 'none';
         ui.btnEditLocation.style.display = isMyPhoto ? 'flex' : 'none';
@@ -298,29 +303,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         map.setView([p.lat, p.lng], 18);
         refreshMapSize();
 
-        // Update URL hash
         window.history.replaceState(null, null, `#${p.id}`);
 
-        // Load Comments
+        // 댓글 로드
         loadComments(p.id);
     }
 
+    // 댓글 조회: Supabase DB에서 직접
     async function loadComments(photoId) {
         if (!photoId) return;
         ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted)">Loading comments...</p>';
         try {
-            const res = await authFetch(`/api/photos?photo_id=${photoId}`);
-            const data = await res.json();
+            const { data, error } = await fetchComments(photoId);
+            if (error) throw error;
             
             ui.commentsList.innerHTML = '';
             
-            // 응답이 배열인지 확인 (백엔드 에러 시 {error, results} 형태로 올 수 있음)
-            const comments = Array.isArray(data) ? data : (data.results || []);
-            
-            if (comments.length === 0) {
+            if (data.length === 0) {
                 ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted); padding: 10px;">No comments yet. Be the first!</p>';
             } else {
-                comments.forEach(c => {
+                data.forEach(c => {
                     const el = document.createElement('div');
                     el.className = 'comment-item';
                     el.innerHTML = `
@@ -336,6 +338,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // 댓글 작성: Supabase DB에 직접 삽입
     const handlePostComment = async () => {
         const text = ui.commentInput.value.trim();
         if (!text || !state.currentPhoto) return;
@@ -346,25 +349,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.btnSendComment.disabled = true;
 
         try {
-            const res = await authFetch('/api/photos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type: 'comment',
-                    photo_id: photoId,
-                    text: text
-                })
-            });
-            
-            const result = await res.json();
-            
-            if (res.ok && result.success) {
-                ui.commentInput.value = '';
-                await loadComments(photoId);
-                showToast("Comment posted!", "success");
-            } else {
-                throw new Error(result.error || "Failed to post");
-            }
+            const { error } = await postComment(photoId, text, state.currentUser.id);
+            if (error) throw error;
+
+            ui.commentInput.value = '';
+            await loadComments(photoId);
+            showToast("Comment posted!", "success");
         } catch (e) {
             console.error(e);
             showToast(`Error: ${e.message}`, "warning");
@@ -430,7 +420,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 5. EVENT HANDLERS
+    // ═══════════════════════════════════════════════════
+    // 6. EVENT HANDLERS
+    // ═══════════════════════════════════════════════════
     ui.toggleBtn.onclick = () => {
         if (ui.sidebar.classList.contains('hidden')) restoreSidebar();
         else minimizeSidebar();
@@ -474,7 +466,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnStreetView.onclick = () => {
         if (!state.currentPhoto) return;
         const { lat, lng } = state.currentPhoto;
-        // Open Street View in the overlay frame
         const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
         ui.streetViewFrame.src = streetViewUrl;
         ui.streetViewOverlay.classList.add('active');
@@ -482,15 +473,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ui.btnCloseStreetView.onclick = () => {
         ui.streetViewOverlay.classList.remove('active');
-        ui.streetViewFrame.src = ''; // Stop the frame
+        ui.streetViewFrame.src = '';
     };
 
+    // 제목/설명 저장: Supabase DB에 직접 upsert
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.title = ui.editTitle.value;
         state.currentPhoto.description = ui.editDesc.value;
         try {
-            await authFetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
+            const { error } = await upsertPhoto(state.currentPhoto);
+            if (error) throw error;
             const btn = ui.btnSaveEdit;
             const originalText = btn.querySelector('span').textContent;
             btn.querySelector('span').textContent = 'Cloud Saved!';
@@ -501,11 +494,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // 삭제: Supabase DB + Storage에서 직접 삭제
     ui.btnDelete.onclick = async () => {
         if (!state.currentPhoto) return;
         if (!confirm('Are you sure?')) return;
         try {
-            await authFetch(`/api/photos?id=${state.currentPhoto.id}`, { method: 'DELETE' });
+            const { error } = await deletePhoto(state.currentPhoto.id);
+            if (error) throw error;
             closeDetail();
             syncData();
             showToast("Deleted from cloud", "info");
@@ -524,6 +519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
+    // 좋아요: Supabase DB에 직접 upsert
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentPhoto) return;
         const photoId = state.currentPhoto.id.toString();
@@ -538,22 +534,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
 
-        await authFetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
+        const { error } = await upsertPhoto(state.currentPhoto);
+        if (error) console.error('Like sync failed:', error);
         
         ui.detailLikeBtn.classList.toggle('active', !isLiked);
         ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
         renderAll(state.activeDate);
     };
 
+    // 공유 토글: Supabase DB에 직접 upsert
     ui.detailShareBtn.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.shared = !state.currentPhoto.shared;
-        await authFetch('/api/photos', { method: 'POST', body: JSON.stringify(state.currentPhoto) });
+        const { error } = await upsertPhoto(state.currentPhoto);
+        if (error) {
+            state.currentPhoto.shared = !state.currentPhoto.shared; // 롤백
+            showToast("Share failed", "warning");
+            return;
+        }
         ui.detailShareBtn.classList.toggle('active', state.currentPhoto.shared);
         showToast(state.currentPhoto.shared ? "Shared to Community" : "Removed from Community", "success");
         syncData();
     };
 
+    // 사진 업로드: Supabase Storage에 파일 올린 뒤 → DB에 메타데이터 저장
     ui.uploadInput.onchange = async (e) => {
         const files = e.target.files;
         if (!files.length) return;
@@ -564,25 +568,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (const f of Array.from(files)) {
             try {
                 const exif = await exifr.parse(f);
+                // 원본 파일을 그대로 Supabase Storage에 올릴 것이므로 File 객체 보존
                 const url = await new Promise(r => { 
                     const rd = new FileReader(); 
-                    rd.onload = ev => r(rd.result); 
+                    rd.onload = () => r(rd.result); 
                     rd.readAsDataURL(f); 
                 });
                 
-                const newId = Date.now() + Math.random();
-                const data = { 
-                    id: newId, url, date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                    title: f.name, description: '', lat: exif?.latitude, lng: exif?.longitude, liked: 0, shared: false,
-                    owner_id: state.currentUser.id
+                const newId = Date.now().toString() + Math.floor(Math.random() * 10000);
+                const photoData = { 
+                    id: newId,
+                    date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                    title: f.name, 
+                    description: '', 
+                    lat: exif?.latitude, 
+                    lng: exif?.longitude, 
+                    liked: 0, 
+                    shared: false,
+                    owner_id: state.currentUser.id,
+                    // 원본 File 객체와 dataUrl을 임시 보관 (업로드 시 사용)
+                    _file: f,
+                    _dataUrl: url
                 };
 
-                if (!data.lat || !data.lng) {
-                    pendingPhotos.push(data);
+                if (!photoData.lat || !photoData.lng) {
+                    // GPS 없는 사진: 위치 수동 지정 대기열에 추가
+                    pendingPhotos.push(photoData);
                 } else {
-                    await authFetch('/api/photos', { method: 'POST', body: JSON.stringify(data) });
+                    // GPS 있는 사진: 즉시 업로드
+                    await uploadAndSavePhoto(photoData);
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error(err); 
+                showToast(`Photo processing error: ${err.message}`, "warning");
+            }
         }
         
         if (pendingPhotos.length > 0) {
@@ -595,25 +614,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.uploadInput.value = '';
     };
 
+    /**
+     * 사진을 Storage에 업로드하고 DB에 메타데이터를 저장하는 2단계 함수
+     * 왜 분리: Storage 업로드와 DB 저장을 분리하면, 한쪽이 실패해도 디버깅이 쉬움
+     */
+    async function uploadAndSavePhoto(photoData) {
+        // 1단계: Supabase Storage에 이미지 파일 업로드
+        const file = photoData._file || dataUrlToFile(photoData._dataUrl, `${photoData.id}.jpg`);
+        const { url: publicUrl, error: uploadError } = await uploadImage(file, photoData.id);
+        
+        if (uploadError) {
+            showToast(`Upload failed: ${uploadError.message}`, "warning");
+            throw uploadError;
+        }
+
+        // 2단계: Supabase DB에 사진 메타데이터 저장 (Storage URL 포함)
+        const dbPhoto = {
+            id: photoData.id,
+            url: publicUrl,
+            date: photoData.date,
+            title: photoData.title,
+            description: photoData.description,
+            lat: photoData.lat,
+            lng: photoData.lng,
+            liked: photoData.liked,
+            shared: photoData.shared,
+            owner_id: photoData.owner_id
+        };
+        
+        const { error: dbError } = await upsertPhoto(dbPhoto);
+        if (dbError) {
+            showToast(`Save failed: ${dbError.message}`, "warning");
+            throw dbError;
+        }
+    }
+
     function startLocationPicker(list) {
-        if (!list.length) { document.body.classList.remove('picking-location'); showToast("Saved!", "success"); return; }
+        if (!list.length) { document.body.classList.remove('picking-location'); showToast("Saved!", "success"); syncData(); return; }
         const p = list.shift();
         const guideThumb = document.getElementById('guide-thumb');
         document.body.classList.add('picking-location');
-        guideThumb.src = p.url;
+        guideThumb.src = p._dataUrl || p.url;
         clusterGroup.eachLayer(m => m.options.interactive = false);
         map.once('click', async (e) => {
             p.lat = e.latlng.lat; p.lng = e.latlng.lng;
-            await authFetch('/api/photos', { method: 'POST', body: JSON.stringify(p) });
+            try {
+                await uploadAndSavePhoto(p);
+            } catch (err) {
+                console.error('Location pick upload failed:', err);
+            }
             clusterGroup.eachLayer(m => m.options.interactive = true);
             document.body.classList.remove('picking-location');
-            syncData();
             startLocationPicker(list);
         });
     }
 
+    // ═══════════════════════════════════════════════════
+    // 7. 앱 초기화 — 데이터 로드
+    // ═══════════════════════════════════════════════════
     syncData();
 
+    // ═══════════════════════════════════════════════════
+    // 8. MOBILE DRAG HANDLE
+    // ═══════════════════════════════════════════════════
     const dragHandle = document.getElementById('drag-handle');
     let isDragging = false;
     let startY = 0;
