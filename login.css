@@ -1,0 +1,242 @@
+/* login.css */
+:root {
+    --primary-font: 'Pretendard', sans-serif;
+    --serif-font: 'Playfair Display', serif;
+    --accent-color: #3b82f6; /* Blue for login */
+    --accent-hover: #2563eb;
+    --bg-dark: #0f172a;
+    --text-light: #f8fafc;
+    --text-muted: #94a3b8;
+    --danger-color: #ef4444;
+    --success-color: #10b981;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    margin: 0;
+    font-family: var(--primary-font);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    overflow: hidden;
+}
+
+/* 1. 배경 슬라이더 (글래스모피즘 분위기 연출용) */
+.login-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.slider-track {
+    display: flex;
+    width: 600vw; /* 5 slides + 1 clone */
+    height: 100%;
+    animation: slideBg 40s linear infinite;
+}
+
+.slide {
+    width: 100vw; height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+@keyframes slideBg {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-500vw); }
+}
+
+.login-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6); /* 어두운 오버레이 */
+    backdrop-filter: blur(8px); /* 블러 처리로 카드 강조 */
+    z-index: 1;
+}
+
+/* 2. 로그인 카드 컨테이너 */
+.login-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: fadeUp 0.6s ease-out;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 3. 브랜딩 */
+.login-brand { text-align: center; margin-bottom: 30px; }
+
+.logo {
+    font-family: var(--serif-font);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.tagline {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* 4. 로그인/회원가입 탭 */
+.auth-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.auth-tab.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 5. 폼 요소 */
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+}
+
+.form-group input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+.form-group input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 6. 메시지 영역 */
+.auth-message {
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 16px;
+    padding: 10px;
+    border-radius: 6px;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.auth-message.visible { display: block; opacity: 1; }
+.auth-message.error { background: rgba(239, 68, 68, 0.1); color: var(--danger-color); border: 1px solid rgba(239, 68, 68, 0.2); }
+.auth-message.success { background: rgba(16, 185, 129, 0.1); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.2); }
+
+/* 7. 버튼 (Submit, Social) */
+.btn-submit {
+    width: 100%;
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+    margin-top: 8px;
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+
+.btn-submit:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-submit:active:not(:disabled) { transform: scale(0.98); }
+.btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.divider {
+    display: flex; align-items: center;
+    text-align: center;
+    margin: 24px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.divider::before, .divider::after {
+    content: ''; flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider::before { margin-right: 10px; }
+.divider::after { margin-left: 10px; }
+
+.btn-social {
+    width: 100%;
+    background: #fff;
+    color: #333;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: transform 0.1s;
+}
+
+.btn-social:hover:not(:disabled) { background: #f8f9fa; }
+.btn-social:active:not(:disabled) { transform: scale(0.98); }
+.btn-social svg { width: 18px; height: 18px; }
+
+/* 로딩 스피너 */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
