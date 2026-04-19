@@ -17,31 +17,51 @@ function decodeBase64Url(str) {
     return bytes;
 }
 
-// JWT 검증 (외부 모듈 없이 Web Crypto API 사용)
-async function verifyJWT(token, secret) {
+// JWT 퍼블릭 키 인메모리 캐싱 (Isolate 라이프사이클 동안 유지)
+let cachedKey = null;
+
+async function getPublicKey(header) {
+    if (cachedKey) return cachedKey;
+    
+    // 사용자님의 Supabase 퍼블릭 JWKS 엔드포인트에서 동적으로 키를 가져옵니다.
+    const res = await fetch('https://pqczcponriukilrtpbdl.supabase.co/auth/v1/.well-known/jwks.json');
+    if (!res.ok) throw new Error('Failed to fetch JWKS');
+    const data = await res.json();
+    
+    const jwk = data.keys.find(k => k.kid === header.kid) || data.keys[0];
+    if (!jwk) throw new Error('Valid public key not found from Supabase');
+    
+    let importAlgo;
+    if (jwk.kty === 'EC') { // ES256 (최신 Supabase 기본값)
+        importAlgo = { name: 'ECDSA', namedCurve: jwk.crv || 'P-256' };
+    } else if (jwk.kty === 'RSA') { // RS256
+        importAlgo = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } };
+    } else {
+        throw new Error('Unsupported key type');
+    }
+
+    cachedKey = await crypto.subtle.importKey('jwk', jwk, importAlgo, false, ['verify']);
+    return cachedKey;
+}
+
+// JWT 검증 (최신 ES256/RS256 지원)
+async function verifyJWT(token) {
     try {
         const parts = token.split('.');
         if (parts.length !== 3) throw new Error('Invalid token format');
 
-        const headerBytes = new TextEncoder().encode(parts[0]);
-        const payloadBytes = new TextEncoder().encode(parts[1]);
+        // 헤더 디코딩 (알고리즘 및 kid 확인)
+        const header = JSON.parse(new TextDecoder().decode(decodeBase64Url(parts[0])));
         const signatureBytes = decodeBase64Url(parts[2]);
         const dataToSign = new TextEncoder().encode(parts[0] + '.' + parts[1]);
 
-        const key = await crypto.subtle.importKey(
-            'raw',
-            new TextEncoder().encode(secret),
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['verify']
-        );
+        const key = await getPublicKey(header);
 
-        const isValid = await crypto.subtle.verify(
-            'HMAC',
-            key,
-            signatureBytes,
-            dataToSign
-        );
+        let verifyAlgo;
+        if (key.algorithm.name === 'ECDSA') verifyAlgo = { name: 'ECDSA', hash: { name: 'SHA-256' } };
+        else if (key.algorithm.name === 'RSASSA-PKCS1-v1_5') verifyAlgo = { name: 'RSASSA-PKCS1-v1_5' };
+
+        const isValid = await crypto.subtle.verify(verifyAlgo, key, signatureBytes, dataToSign);
 
         if (!isValid) throw new Error('Invalid signature');
 
@@ -57,24 +77,15 @@ async function verifyJWT(token, secret) {
 }
 
 export async function onRequest(context) {
-    const { request, env, next, data } = context;
+    const { request, next, data } = context;
 
     const authHeader = request.headers.get('Authorization');
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7);
-        const secret = env.SUPABASE_JWT_SECRET;
-
-        // 시크릿 키가 설정되지 않았다면 보안상 에러 반환
-        if (!secret) {
-            return new Response(JSON.stringify({ error: "Server Configuration Error: Missing JWT Secret" }), { 
-                status: 500,
-                headers: { "Content-Type": "application/json" }
-            });
-        }
 
         try {
-            const payload = await verifyJWT(token, secret);
+            const payload = await verifyJWT(token);
             // 토큰이 올바르면 하위 로직(photos.js)에서 유저정보를 쓸 수 있게 전달
             data.userId = payload.sub;
         } catch (e) {
