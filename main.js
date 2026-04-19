@@ -101,8 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 4. MAP SETUP
     // ═══════════════════════════════════════════════════
     const map = L.map('map', { zoomControl: false, maxZoom: 19 }).setView([36.2048, 138.2529], 6);
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 
-        attribution: 'Google Maps',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { 
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
         maxZoom: 19
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
