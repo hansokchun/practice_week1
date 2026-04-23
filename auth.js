@@ -204,11 +204,10 @@ async function postComment(photoId, text, authorId) {
  * 이미지를 Supabase Storage에 업로드하고 공개 URL을 반환
  * 왜 별도 함수: 업로드(Storage) → DB 저장(upsertPhoto) 2단계로 분리
  */
-async function uploadImage(file, photoId) {
+async function uploadImage(file, fileName) {
     try {
         const sb = getSupabase();
-        const fileName = `${photoId}.jpg`;
-
+        
         const { error } = await sb.storage
             .from('photos')
             .upload(fileName, file, {

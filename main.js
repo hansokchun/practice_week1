@@ -107,23 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    const icons = {
-        liked: L.divIcon({ 
-            className: 'map-icon icon-liked', 
-            html: `<svg viewBox="0 0 24 24" width="30" height="30" fill="var(--danger-color)" stroke="var(--danger-color)" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`, 
-            iconSize: [30, 30], iconAnchor: [15, 15] 
-        }),
-        my: L.divIcon({ 
-            className: 'map-icon icon-my', 
-            html: `<svg viewBox="0 0 24 24" width="30" height="30" fill="#3b82f6"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`, 
-            iconSize: [30, 30], iconAnchor: [15, 30] 
-        }),
-        shared: L.divIcon({ 
-            className: 'map-icon icon-shared', 
-            html: `<svg viewBox="0 0 24 24" width="30" height="30" fill="#737373"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`, 
-            iconSize: [30, 30], iconAnchor: [15, 30] 
-        })
-    };
+    // 맵 마커 아이콘 생성은 renderAll 내부 동적 썸네일 아이콘 로직으로 대체되었음
 
     const clusterGroup = L.markerClusterGroup({ 
         spiderfyOnMaxZoom: true, 
@@ -218,11 +202,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 지도 렌더링
         clusterGroup.clearLayers();
         mapList.forEach(p => {
-            const isMyPhoto = p.owner_id === state.currentUser.id;
             const isLikedByMe = state.myLikedIds.includes(p.id.toString());
             
-            const icon = isLikedByMe ? icons.liked : (isMyPhoto ? icons.my : icons.shared);
-            const m = L.marker([p.lat, p.lng], { icon: icon });
+            // 기존 url 이 _detail.jpg 로 끝난다면 교체, 아니라면 그대로 유지
+            const microUrl = p.url ? p.url.replace('_detail.jpg', '_micro.jpg') : '';
+            const pinImg = microUrl || p.url;
+            
+            const photoIcon = L.divIcon({
+                className: `map-photo-pin ${isLikedByMe ? 'liked' : ''}`,
+                html: `<div class="pin-img-wrapper"><img src="${pinImg}" alt="pin"/></div>`,
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+
+            const m = L.marker([p.lat, p.lng], { icon: photoIcon });
             m.on('click', () => {
                 showDetail(p);
             });
@@ -255,7 +248,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 groups[date].forEach(p => {
                     const item = document.createElement('div');
                     item.className = 'grid-item';
-                    item.innerHTML = `<img src="${p.url}" loading="lazy">`;
+                    
+                    const gridUrl = p.url ? p.url.replace('_detail.jpg', '_grid.jpg') : '';
+                    
+                    item.innerHTML = `<img src="${gridUrl || p.url}" loading="lazy">`;
                     item.onclick = () => { showDetail(p); };
                     container.appendChild(item);
                 });
@@ -615,23 +611,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /**
+     * 이미지 압축 유틸리티 (Canvas 사용)
+     */
+    async function compressImage(file, maxWidth, quality = 0.8) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    }, 'image/jpeg', quality);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /**
      * 사진을 Storage에 업로드하고 DB에 메타데이터를 저장하는 2단계 함수
-     * 왜 분리: Storage 업로드와 DB 저장을 분리하면, 한쪽이 실패해도 디버깅이 쉬움
      */
     async function uploadAndSavePhoto(photoData) {
-        // 1단계: Supabase Storage에 이미지 파일 업로드
         const file = photoData._file || dataUrlToFile(photoData._dataUrl, `${photoData.id}.jpg`);
-        const { url: publicUrl, error: uploadError } = await uploadImage(file, photoData.id);
         
-        if (uploadError) {
+        showToast("Compressing photo (3 versions)...", "info");
+        
+        // 1단계: 브라우저 내부에서 HTML5 Canvas를 활용하여 3단계 사이즈 압축 병렬 처리
+        const [microFile, gridFile, detailFile] = await Promise.all([
+            compressImage(file, 100, 0.6),   // 맵 핀 (10KB 내외 목표)
+            compressImage(file, 400, 0.7),   // 그리드 피드 (50KB 내외 목표)
+            compressImage(file, 1200, 0.8)   // 상세 화면 (300KB 내외 목표)
+        ]);
+        
+        showToast("Uploading chunks to Storage...", "info");
+        
+        // 2단계: 3장의 사진을 각각 Supabase Storage에 병렬 업로드
+        const [microReq, gridReq, detailReq] = await Promise.all([
+            uploadImage(microFile, `${photoData.id}_micro.jpg`),
+            uploadImage(gridFile, `${photoData.id}_grid.jpg`),
+            uploadImage(detailFile, `${photoData.id}_detail.jpg`)
+        ]);
+
+        if (microReq.error || gridReq.error || detailReq.error) {
+            const uploadError = microReq.error || gridReq.error || detailReq.error;
             showToast(`Upload failed: ${uploadError.message}`, "warning");
             throw uploadError;
         }
 
-        // 2단계: Supabase DB에 사진 메타데이터 저장 (Storage URL 포함)
+        // 3단계: Supabase DB에 메타데이터 저장 (가장 큰 detail 원본의 URL을 메인으로 저장)
         const dbPhoto = {
             id: photoData.id,
-            url: publicUrl,
+            url: detailReq.url,
             date: photoData.date,
             title: photoData.title,
             description: photoData.description,
