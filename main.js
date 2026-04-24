@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 demoGender.classList.add('hidden'); 
             }
             
-            btnEditDemo.textContent = hasDemo ? '수정' : '나이/성별 설정';
+            if (btnEditDemo) btnEditDemo.textContent = hasDemo ? '수정' : '나이/성별 설정';
             demoDisplay.classList.remove('hidden');
             demoEdit.classList.add('hidden');
         };
