@@ -693,7 +693,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
 
         const { error } = await toggleLikePhoto(photoId, !isLiked);
-        if (error) console.error('Like sync failed (RPC):', error);
+        if (error) {
+            console.error('Like sync failed (RPC):', error);
+            showToast("좋아요 반영 실패! Supabase에서 SQL을 실행했는지 확인해주세요.", "warning");
+            // 로컬 상태 롤백
+            if (isLiked) {
+                state.myLikedIds.push(photoId);
+                state.currentPhoto.liked = (state.currentPhoto.liked || 0) + 1;
+            } else {
+                state.myLikedIds = state.myLikedIds.filter(id => id !== photoId);
+                state.currentPhoto.liked = Math.max(0, (state.currentPhoto.liked || 0) - 1);
+            }
+            localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
+            ui.detailLikeBtn.classList.toggle('active', isLiked);
+            ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
+            return;
+        }
         
         ui.detailLikeBtn.classList.toggle('active', !isLiked);
         ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
