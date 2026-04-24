@@ -25,14 +25,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userMenu = document.getElementById('user-menu');
     const userAvatar = document.getElementById('user-avatar');
     const btnLogout = document.getElementById('btn-logout');
+    const profilePopup = document.getElementById('profile-popup');
+    
     if (userMenu && userAvatar && currentUser.email) {
         userMenu.style.display = 'flex';
-        userAvatar.textContent = currentUser.email.substring(0, 2).toUpperCase();
+        const userInitial = currentUser.email.substring(0, 2).toUpperCase();
+        userAvatar.textContent = userInitial;
         
-        btnLogout.onclick = async () => {
-            await signOut();
-            window.location.href = '/login.html';
+        // 프로필 팝업 정보 채우기
+        const profileEmail = document.getElementById('profile-email');
+        const profileId = document.getElementById('profile-id');
+        const profileAvatarLg = document.getElementById('profile-popup-avatar');
+        
+        if (profileAvatarLg) profileAvatarLg.textContent = userInitial;
+        if (profileEmail) profileEmail.textContent = currentUser.email;
+        if (profileId) profileId.textContent = `ID: ${currentUser.id.substring(0, 8)}...`;
+        
+        // 팝업 토글 이벤트
+        userAvatar.style.cursor = 'pointer';
+        userAvatar.onclick = (e) => {
+            e.stopPropagation();
+            if (profilePopup) {
+                profilePopup.classList.toggle('hidden');
+                
+                // 팝업 열릴 때 통계 업데이트
+                if (!profilePopup.classList.contains('hidden') && typeof state !== 'undefined') {
+                    const profileStoryCount = document.getElementById('profile-story-count');
+                    const profileLikeCount = document.getElementById('profile-like-count');
+                    
+                    const myStories = state.photos.filter(p => p.owner_id === currentUser.id).length;
+                    const myLikes = state.myLikedIds.length;
+                    
+                    if (profileStoryCount) profileStoryCount.textContent = myStories;
+                    if (profileLikeCount) profileLikeCount.textContent = myLikes;
+                }
+            }
         };
+
+        // 외부 클릭시 팝업 닫기
+        document.addEventListener('click', (e) => {
+            if (profilePopup && !profilePopup.classList.contains('hidden') && !userMenu.contains(e.target)) {
+                profilePopup.classList.add('hidden');
+            }
+        });
+        
+        if (btnLogout) {
+            btnLogout.onclick = async () => {
+                await signOut();
+                window.location.href = '/login.html';
+            };
+        }
     }
 
     // ═══════════════════════════════════════════════════

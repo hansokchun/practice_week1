@@ -165,6 +165,120 @@ body, html {
     background: rgba(237, 73, 86, 0.08);
 }
 
+/* 프로필 팝업 스타일 */
+.profile-popup {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 280px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    z-index: 2000;
+    overflow: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform-origin: top right;
+}
+
+.profile-popup.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95);
+}
+
+.profile-header {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-avatar-large {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-info p {
+    margin: 0;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-stats {
+    display: flex;
+    padding: 16px 24px;
+    gap: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.profile-actions {
+    padding: 12px;
+}
+
+.btn-logout-full {
+    width: 100%;
+    background: #fee2e2;
+    color: var(--danger-color);
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+.btn-logout-full:hover {
+    background: #fca5a5;
+}
+
 .feed-nav { padding: 0 32px; display: flex; gap: 24px; margin-bottom: 20px; }
 .nav-link { background: none; border: none; font-family: var(--serif-font); font-size: 18px; color: var(--text-muted); cursor: pointer; }
 .nav-link.active { color: var(--accent-color); font-weight: 700; text-decoration: underline; text-underline-offset: 8px; }
