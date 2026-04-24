@@ -35,82 +35,111 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 프로필 팝업 정보 채우기
         const profileEmail = document.getElementById('profile-email');
         const profileId = document.getElementById('profile-id');
+        const profileNickname = document.getElementById('profile-nickname');
+        const profileEmailSub = document.getElementById('profile-email-sub');
         const profileAvatarLg = document.getElementById('profile-popup-avatar');
         
-        if (profileAvatarLg) profileAvatarLg.textContent = userInitial;
-        if (profileEmail) profileEmail.textContent = currentUser.email;
-        if (profileId) profileId.textContent = `ID: ${currentUser.id.substring(0, 8)}...`;
+        // 뷰 전환 관련 DOM
+        const profileMainView = document.getElementById('profile-main-view');
+        const profileDetailView = document.getElementById('profile-detail-view');
+        const btnViewInfo = document.getElementById('btn-view-info');
+        const btnBackProfile = document.getElementById('btn-back-profile');
         
-        // 데모그래픽(나이/성별) 관리
+        // 데모그래픽(상세정보/수정) 관련 DOM
         const demoDisplay = document.getElementById('demo-display');
         const demoEdit = document.getElementById('demo-edit');
+        const demoEmail = document.getElementById('demo-email');
         const demoAge = document.getElementById('demo-age');
         const demoGender = document.getElementById('demo-gender');
+        const inputNickname = document.getElementById('input-nickname');
         const inputAge = document.getElementById('input-age');
         const inputGender = document.getElementById('input-gender');
         const btnEditDemo = document.getElementById('btn-edit-demo');
         const btnSaveDemo = document.getElementById('btn-save-demo');
         const btnCancelDemo = document.getElementById('btn-cancel-demo');
 
+        let nickname = (currentUser.user_metadata && currentUser.user_metadata.nickname) || '';
         let age = (currentUser.user_metadata && currentUser.user_metadata.age) || '';
         let gender = (currentUser.user_metadata && currentUser.user_metadata.gender) || '';
 
-        const renderDemographics = () => {
-            if (!demoDisplay) return;
-            let hasDemo = false;
+        const renderProfileUI = () => {
+            // 메인 뷰 정보
+            if (profileAvatarLg) profileAvatarLg.textContent = userInitial;
+            if (profileNickname) profileNickname.textContent = nickname || currentUser.email;
+            if (profileEmailSub) profileEmailSub.textContent = nickname ? currentUser.email : `ID: ${currentUser.id.substring(0, 8)}`;
+            
+            // 상세 뷰 정보
+            if (demoEmail) demoEmail.textContent = currentUser.email;
             
             if (age) { 
                 const ageLabel = inputAge ? Array.from(inputAge.options).find(o => o.value === age)?.text || age : age;
-                demoAge.textContent = ageLabel; 
-                demoAge.classList.remove('hidden'); 
-                hasDemo = true; 
+                if (demoAge) { demoAge.textContent = ageLabel; demoAge.style.color = 'var(--text-main)'; }
             } else { 
-                demoAge.classList.add('hidden'); 
+                if (demoAge) { demoAge.textContent = '미입력'; demoAge.style.color = 'var(--text-muted)'; }
             }
             
             if (gender) { 
                 const genderLabel = inputGender ? Array.from(inputGender.options).find(o => o.value === gender)?.text || gender : gender;
-                demoGender.textContent = genderLabel; 
-                demoGender.classList.remove('hidden'); 
-                hasDemo = true;
+                if (demoGender) { demoGender.textContent = genderLabel; demoGender.style.color = 'var(--text-main)'; }
             } else { 
-                demoGender.classList.add('hidden'); 
+                if (demoGender) { demoGender.textContent = '미입력'; demoGender.style.color = 'var(--text-muted)'; }
             }
             
-            if (btnEditDemo) btnEditDemo.textContent = hasDemo ? '수정' : '나이/성별 설정';
-            demoDisplay.classList.remove('hidden');
-            demoEdit.classList.add('hidden');
+            if (demoDisplay && demoEdit) {
+                demoDisplay.classList.remove('hidden');
+                demoEdit.classList.add('hidden');
+            }
         };
-        renderDemographics();
+        renderProfileUI();
+
+        // 뷰 전환 이벤트
+        if (btnViewInfo) {
+            btnViewInfo.onclick = (e) => {
+                e.stopPropagation();
+                if (profileMainView) profileMainView.classList.add('hidden');
+                if (profileDetailView) profileDetailView.classList.remove('hidden');
+                renderProfileUI();
+            };
+        }
+
+        if (btnBackProfile) {
+            btnBackProfile.onclick = (e) => {
+                e.stopPropagation();
+                if (profileDetailView) profileDetailView.classList.add('hidden');
+                if (profileMainView) profileMainView.classList.remove('hidden');
+            };
+        }
 
         if (btnEditDemo) {
             btnEditDemo.onclick = (e) => {
                 e.stopPropagation();
-                demoDisplay.classList.add('hidden');
-                demoEdit.classList.remove('hidden');
-                inputAge.value = age;
-                inputGender.value = gender;
+                if (demoDisplay) demoDisplay.classList.add('hidden');
+                if (demoEdit) demoEdit.classList.remove('hidden');
+                if (inputNickname) inputNickname.value = nickname;
+                if (inputAge) inputAge.value = age;
+                if (inputGender) inputGender.value = gender;
             };
         }
 
         if (btnCancelDemo) {
             btnCancelDemo.onclick = (e) => {
                 e.stopPropagation();
-                renderDemographics();
+                renderProfileUI();
             };
         }
 
         if (btnSaveDemo) {
             btnSaveDemo.onclick = async (e) => {
                 e.stopPropagation();
-                const newAge = inputAge.value;
-                const newGender = inputGender.value;
+                const newNickname = inputNickname ? inputNickname.value.trim() : '';
+                const newAge = inputAge ? inputAge.value : '';
+                const newGender = inputGender ? inputGender.value : '';
                 
                 const originalText = btnSaveDemo.textContent;
                 btnSaveDemo.textContent = '...';
                 btnSaveDemo.disabled = true;
 
-                const { user, error } = await updateUserMetadata({ age: newAge, gender: newGender });
+                const { user, error } = await updateUserMetadata({ nickname: newNickname, age: newAge, gender: newGender });
                 
                 btnSaveDemo.textContent = originalText;
                 btnSaveDemo.disabled = false;
@@ -119,9 +148,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.error('Update failed:', error);
                 } else {
                     currentUser.user_metadata = user.user_metadata;
+                    nickname = newNickname;
                     age = newAge;
                     gender = newGender;
-                    renderDemographics();
+                    renderProfileUI();
                 }
             };
         }

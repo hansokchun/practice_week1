@@ -61,59 +61,81 @@
                             
                             <!-- 프로필 팝업 -->
                             <div id="profile-popup" class="profile-popup hidden">
-                                <div class="profile-header">
-                                    <div id="profile-popup-avatar" class="profile-avatar-large"></div>
-                                    <div class="profile-info">
-                                        <h3 id="profile-email">email@example.com</h3>
-                                        <p id="profile-id" class="text-muted">ID: ...</p>
-                                    </div>
-                                </div>
-                                <div class="profile-stats">
-                                    <div class="stat-item">
-                                        <span id="profile-story-count" class="stat-value">0</span>
-                                        <span class="stat-label">Stories</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span id="profile-like-count" class="stat-value">0</span>
-                                        <span class="stat-label">Liked</span>
-                                    </div>
-                                </div>
-                                <div class="profile-demographics">
-                                    <div class="demo-display" id="demo-display">
-                                        <div class="demo-tags">
-                                            <span id="demo-age" class="demo-tag hidden"></span>
-                                            <span id="demo-gender" class="demo-tag hidden"></span>
-                                        </div>
-                                        <button id="btn-edit-demo" class="btn-text-small">나이/성별 설정</button>
-                                    </div>
-                                    <div class="demo-edit hidden" id="demo-edit">
-                                        <div class="demo-inputs">
-                                            <select id="input-age" class="demo-select">
-                                                <option value="">연령대</option>
-                                                <option value="10s">10대</option>
-                                                <option value="20s">20대</option>
-                                                <option value="30s">30대</option>
-                                                <option value="40s">40대</option>
-                                                <option value="50+">50대 이상</option>
-                                            </select>
-                                            <select id="input-gender" class="demo-select">
-                                                <option value="">성별</option>
-                                                <option value="M">남성</option>
-                                                <option value="F">여성</option>
-                                                <option value="U">비공개</option>
-                                            </select>
-                                        </div>
-                                        <div class="demo-actions">
-                                            <button id="btn-save-demo" class="btn-save-small">저장</button>
-                                            <button id="btn-cancel-demo" class="btn-cancel-small">취소</button>
+                                <!-- 1. 메인 뷰 -->
+                                <div id="profile-main-view">
+                                    <div class="profile-header">
+                                        <div id="profile-popup-avatar" class="profile-avatar-large"></div>
+                                        <div class="profile-info">
+                                            <h3 id="profile-nickname"></h3>
+                                            <p id="profile-email-sub" class="text-muted"></p>
                                         </div>
                                     </div>
+                                    <div class="profile-stats">
+                                        <div class="stat-item">
+                                            <span id="profile-story-count" class="stat-value">0</span>
+                                            <span class="stat-label">Stories</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span id="profile-like-count" class="stat-value">0</span>
+                                            <span class="stat-label">Liked</span>
+                                        </div>
+                                    </div>
+                                    <div class="profile-actions">
+                                        <button id="btn-view-info" class="btn-action-outline">프로필 정보보기</button>
+                                        <button id="btn-logout" class="btn-logout-full" title="로그아웃">
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                            로그아웃
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="profile-actions">
-                                    <button id="btn-logout" class="btn-logout-full" title="로그아웃">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                                        로그아웃
-                                    </button>
+
+                                <!-- 2. 상세 정보 및 수정 뷰 -->
+                                <div id="profile-detail-view" class="hidden">
+                                    <div class="detail-header-bar">
+                                        <button id="btn-back-profile" class="btn-icon-small">◀</button>
+                                        <h4>프로필 정보</h4>
+                                        <div style="width:24px;"></div>
+                                    </div>
+                                    <div class="detail-body">
+                                        <!-- 조회 모드 -->
+                                        <div id="demo-display">
+                                            <div class="info-row"><span class="info-label">이메일</span><span id="demo-email" class="info-val"></span></div>
+                                            <div class="info-row"><span class="info-label">나이</span><span id="demo-age" class="info-val">미입력</span></div>
+                                            <div class="info-row"><span class="info-label">성별</span><span id="demo-gender" class="info-val">미입력</span></div>
+                                            <button id="btn-edit-demo" class="btn-action-fill" style="width:100%; margin-top:16px;">수정하기</button>
+                                        </div>
+                                        <!-- 수정 모드 -->
+                                        <div id="demo-edit" class="hidden">
+                                            <div class="edit-group">
+                                                <label class="info-label">닉네임</label>
+                                                <input type="text" id="input-nickname" class="demo-input" placeholder="닉네임 입력">
+                                            </div>
+                                            <div class="edit-group">
+                                                <label class="info-label">연령대</label>
+                                                <select id="input-age" class="demo-select">
+                                                    <option value="">선택안함</option>
+                                                    <option value="10s">10대</option>
+                                                    <option value="20s">20대</option>
+                                                    <option value="30s">30대</option>
+                                                    <option value="40s">40대</option>
+                                                    <option value="50+">50대 이상</option>
+                                                </select>
+                                            </div>
+                                            <div class="edit-group">
+                                                <label class="info-label">성별</label>
+                                                <select id="input-gender" class="demo-select">
+                                                    <option value="">선택안함</option>
+                                                    <option value="M">남성</option>
+                                                    <option value="F">여성</option>
+                                                    <option value="U">비공개</option>
+                                                </select>
+                                            </div>
+                                            <div class="demo-actions">
+                                                <button id="btn-cancel-demo" class="btn-cancel-small">취소</button>
+                                                <button id="btn-save-demo" class="btn-save-small">저장</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
