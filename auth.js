@@ -147,6 +147,22 @@ async function upsertPhoto(photo) {
 }
 
 /**
+ * 사진 좋아요 증감 (RPC 호출)
+ * RLS(본인만 수정 가능)를 우회하여 다른 사람의 사진 좋아요 수를 안전하게 처리합니다.
+ */
+async function toggleLikePhoto(photoId, isLiking) {
+    try {
+        const sb = getSupabase();
+        const rpcName = isLiking ? 'increment_like' : 'decrement_like';
+        const { error } = await sb.rpc(rpcName, { target_photo_id: photoId.toString() });
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
+    }
+}
+
+/**
  * 사진 삭제
  * RLS 정책으로 본인 사진만 DELETE 가능
  * 관련 댓글은 ON DELETE CASCADE로 DB가 자동 삭제

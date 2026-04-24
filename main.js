@@ -692,8 +692,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
 
-        const { error } = await upsertPhoto(state.currentPhoto);
-        if (error) console.error('Like sync failed:', error);
+        const { error } = await toggleLikePhoto(photoId, !isLiked);
+        if (error) console.error('Like sync failed (RPC):', error);
         
         ui.detailLikeBtn.classList.toggle('active', !isLiked);
         ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
