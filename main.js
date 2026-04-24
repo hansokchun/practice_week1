@@ -41,6 +41,98 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (profileEmail) profileEmail.textContent = currentUser.email;
         if (profileId) profileId.textContent = `ID: ${currentUser.id.substring(0, 8)}...`;
         
+        // 데모그래픽(나이/성별) 관리
+        const demoDisplay = document.getElementById('demo-display');
+        const demoEdit = document.getElementById('demo-edit');
+        const demoAge = document.getElementById('demo-age');
+        const demoGender = document.getElementById('demo-gender');
+        const inputAge = document.getElementById('input-age');
+        const inputGender = document.getElementById('input-gender');
+        const btnEditDemo = document.getElementById('btn-edit-demo');
+        const btnSaveDemo = document.getElementById('btn-save-demo');
+        const btnCancelDemo = document.getElementById('btn-cancel-demo');
+
+        let age = (currentUser.user_metadata && currentUser.user_metadata.age) || '';
+        let gender = (currentUser.user_metadata && currentUser.user_metadata.gender) || '';
+
+        const renderDemographics = () => {
+            if (!demoDisplay) return;
+            let hasDemo = false;
+            
+            if (age) { 
+                const ageLabel = inputAge ? Array.from(inputAge.options).find(o => o.value === age)?.text || age : age;
+                demoAge.textContent = ageLabel; 
+                demoAge.classList.remove('hidden'); 
+                hasDemo = true; 
+            } else { 
+                demoAge.classList.add('hidden'); 
+            }
+            
+            if (gender) { 
+                const genderLabel = inputGender ? Array.from(inputGender.options).find(o => o.value === gender)?.text || gender : gender;
+                demoGender.textContent = genderLabel; 
+                demoGender.classList.remove('hidden'); 
+                hasDemo = true;
+            } else { 
+                demoGender.classList.add('hidden'); 
+            }
+            
+            btnEditDemo.textContent = hasDemo ? '수정' : '나이/성별 설정';
+            demoDisplay.classList.remove('hidden');
+            demoEdit.classList.add('hidden');
+        };
+        renderDemographics();
+
+        if (btnEditDemo) {
+            btnEditDemo.onclick = (e) => {
+                e.stopPropagation();
+                demoDisplay.classList.add('hidden');
+                demoEdit.classList.remove('hidden');
+                inputAge.value = age;
+                inputGender.value = gender;
+            };
+        }
+
+        if (btnCancelDemo) {
+            btnCancelDemo.onclick = (e) => {
+                e.stopPropagation();
+                renderDemographics();
+            };
+        }
+
+        if (btnSaveDemo) {
+            btnSaveDemo.onclick = async (e) => {
+                e.stopPropagation();
+                const newAge = inputAge.value;
+                const newGender = inputGender.value;
+                
+                const originalText = btnSaveDemo.textContent;
+                btnSaveDemo.textContent = '...';
+                btnSaveDemo.disabled = true;
+
+                const { user, error } = await updateUserMetadata({ age: newAge, gender: newGender });
+                
+                btnSaveDemo.textContent = originalText;
+                btnSaveDemo.disabled = false;
+
+                if (error) {
+                    console.error('Update failed:', error);
+                } else {
+                    currentUser.user_metadata = user.user_metadata;
+                    age = newAge;
+                    gender = newGender;
+                    renderDemographics();
+                }
+            };
+        }
+        
+        // 팝업 안에서 클릭시 닫히지 않도록 막기 (select 조작시 등)
+        if (profilePopup) {
+            profilePopup.onclick = (e) => {
+                e.stopPropagation();
+            };
+        }
+        
         // 팝업 토글 이벤트
         userAvatar.style.cursor = 'pointer';
         userAvatar.onclick = (e) => {

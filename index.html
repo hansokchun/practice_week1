@@ -78,6 +78,37 @@
                                         <span class="stat-label">Liked</span>
                                     </div>
                                 </div>
+                                <div class="profile-demographics">
+                                    <div class="demo-display" id="demo-display">
+                                        <div class="demo-tags">
+                                            <span id="demo-age" class="demo-tag hidden"></span>
+                                            <span id="demo-gender" class="demo-tag hidden"></span>
+                                        </div>
+                                        <button id="btn-edit-demo" class="btn-text-small">나이/성별 설정</button>
+                                    </div>
+                                    <div class="demo-edit hidden" id="demo-edit">
+                                        <div class="demo-inputs">
+                                            <select id="input-age" class="demo-select">
+                                                <option value="">연령대</option>
+                                                <option value="10s">10대</option>
+                                                <option value="20s">20대</option>
+                                                <option value="30s">30대</option>
+                                                <option value="40s">40대</option>
+                                                <option value="50+">50대 이상</option>
+                                            </select>
+                                            <select id="input-gender" class="demo-select">
+                                                <option value="">성별</option>
+                                                <option value="M">남성</option>
+                                                <option value="F">여성</option>
+                                                <option value="U">비공개</option>
+                                            </select>
+                                        </div>
+                                        <div class="demo-actions">
+                                            <button id="btn-save-demo" class="btn-save-small">저장</button>
+                                            <button id="btn-cancel-demo" class="btn-cancel-small">취소</button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="profile-actions">
                                     <button id="btn-logout" class="btn-logout-full" title="로그아웃">
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>

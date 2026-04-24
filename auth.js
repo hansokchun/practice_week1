@@ -82,6 +82,19 @@ async function getCurrentUser() {
     }
 }
 
+async function updateUserMetadata(metadata) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb.auth.updateUser({
+            data: metadata
+        });
+        if (error) throw error;
+        return { user: data.user, error: null };
+    } catch (error) {
+        return { user: null, error };
+    }
+}
+
 // ═══════════════════════════════════════════════════
 //  2. 데이터베이스 (DB) — 사진 CRUD + 댓글
 // ═══════════════════════════════════════════════════
