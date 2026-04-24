@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
-        editTitle: document.getElementById('edit-title'),
+        detailDate: document.getElementById('detail-date'),
         editDesc: document.getElementById('edit-desc'),
         detailLikeBtn: document.getElementById('detail-like-btn'),
         detailShareBtn: document.getElementById('detail-share-btn'),
@@ -436,15 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
-        
-        let displayTitle = p.title || '';
-        if (/\.(jpg|jpeg|png|gif|heic|webp|bmp)$/i.test(displayTitle)) {
-            displayTitle = '';
-        }
-        ui.editTitle.value = displayTitle;
-        
         const isMyPhoto = p.owner_id === state.currentUser.id;
-        ui.editTitle.style.display = (!displayTitle && !isMyPhoto) ? 'none' : 'block';
         
         ui.editDesc.value = p.description || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
@@ -456,7 +448,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.btnDelete.style.display = isMyPhoto ? 'flex' : 'none';
         ui.btnEditLocation.style.display = isMyPhoto ? 'flex' : 'none';
         ui.detailShareBtn.style.display = isMyPhoto ? 'flex' : 'none';
-        ui.editTitle.disabled = !isMyPhoto;
         ui.editDesc.disabled = !isMyPhoto;
 
         ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
@@ -647,7 +638,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 제목/설명 저장: Supabase DB에 직접 upsert
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
-        state.currentPhoto.title = ui.editTitle.value;
         state.currentPhoto.description = ui.editDesc.value;
         try {
             const { error } = await upsertPhoto(state.currentPhoto);
