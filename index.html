@@ -211,21 +211,11 @@
                     
                     <div class="story-content">
                         <div class="meta">
-                            <div class="meta-row-1" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                                <span id="detail-date" class="date-text">March 14, 2024</span>
-                                <span id="like-count-badge" class="like-badge">0 likes</span>
-                            </div>
-                            <div class="meta-row-2" style="margin-top:4px;">
-                                <span id="detail-owner" class="owner-text" style="font-size:12px; color:var(--text-main); font-weight:600;">Uploaded by: Unknown</span>
-                            </div>
+                            <span id="detail-date" class="date-text">March 14, 2024</span>
+                            <span id="like-count-badge" class="like-badge">0 likes</span>
                         </div>
-                        <input type="text" id="edit-title" class="title-input" placeholder="Untitled Story" style="display:none;"> <!-- 파일명 숨김 처리용, 필요시 title-input을 사용할 수 있도록 display만 제어 -->
+                        <input type="text" id="edit-title" class="title-input" placeholder="Untitled Story">
                         <textarea id="edit-desc" class="desc-input" placeholder="Add more details about this moment..."></textarea>
-                        
-                        <div id="detail-exif" class="exif-data" style="font-size:11px; color:var(--text-muted); background:#f5f5f5; padding:8px; border-radius:6px; margin-bottom:16px; font-family:monospace; display:none;">
-                            <!-- EXIF will be injected here -->
-                        </div>
-                        
                         <hr class="serif-hr">
                         
                         <!-- NEW: Comments Section -->

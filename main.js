@@ -436,44 +436,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
-        
-        // 사진의 이름(파일명)을 기본으로 보여주지 않기 위해 title 값이 없으면 빈 문자열 처리
         ui.editTitle.value = p.title || '';
-        ui.editTitle.style.display = (!p.title && p.owner_id !== state.currentUser.id) ? 'none' : 'block';
-        
         ui.editDesc.value = p.description || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
         
         const isMyPhoto = p.owner_id === state.currentUser.id;
         const isLikedByMe = state.myLikedIds.includes(p.id.toString());
-        
-        // 누가 올렸는지 알 수 있게 처리
-        const ownerText = isMyPhoto ? (nickname || state.currentUser.email) : `User_${p.owner_id.substring(0, 6)}`;
-        const detailOwner = document.getElementById('detail-owner');
-        if (detailOwner) detailOwner.textContent = `Uploaded by: ${ownerText}`;
-        
-        // EXIF 데이터 추출 및 표시
-        const detailExif = document.getElementById('detail-exif');
-        if (detailExif) {
-            detailExif.style.display = 'none';
-            detailExif.textContent = '';
-            exifr.parse(p.url).then(exif => {
-                if (exif) {
-                    const parts = [];
-                    if (exif.Make || exif.Model) parts.push(`📷 ${exif.Make || ''} ${exif.Model || ''}`.trim());
-                    if (exif.FNumber) parts.push(`ƒ/${exif.FNumber}`);
-                    if (exif.ExposureTime) parts.push(`1/${Math.round(1/exif.ExposureTime)}s`);
-                    if (exif.ISO) parts.push(`ISO ${exif.ISO}`);
-                    
-                    if (parts.length > 0) {
-                        detailExif.textContent = parts.join(' • ');
-                        detailExif.style.display = 'block';
-                    }
-                }
-            }).catch(e => {
-                console.log("EXIF parse skipped or failed.");
-            });
-        }
 
         // UI 권한 분기
         ui.btnSaveEdit.style.display = isMyPhoto ? 'flex' : 'none';
@@ -771,7 +739,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const photoData = { 
                     id: newId,
                     date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                    title: '', // 사진의 이름은 기본적으로 안 보이게 처리 (파일명 제외)
+                    title: f.name, 
                     description: '', 
                     lat: exif?.latitude, 
                     lng: exif?.longitude, 
@@ -847,13 +815,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         showToast("Compressing photo (3 versions)...", "info");
         
-        // 1단계: 브라우저 내부에서 HTML5 Canvas를 활용하여 맵 핀과 그리드용 이미지만 압축
-        // 원본 사진은 EXIF 보존을 위해 압축하지 않고 그대로 업로드
-        const [microFile, gridFile] = await Promise.all([
+        // 1단계: 브라우저 내부에서 HTML5 Canvas를 활용하여 3단계 사이즈 압축 병렬 처리
+        const [microFile, gridFile, detailFile] = await Promise.all([
             compressImage(file, 100, 0.6),   // 맵 핀 (10KB 내외 목표)
-            compressImage(file, 400, 0.7)    // 그리드 피드 (50KB 내외 목표)
+            compressImage(file, 400, 0.7),   // 그리드 피드 (50KB 내외 목표)
+            compressImage(file, 1200, 0.8)   // 상세 화면 (300KB 내외 목표)
         ]);
-        const detailFile = file; // 원본 유지 (EXIF 보존)
         
         showToast("Uploading chunks to Storage...", "info");
         
