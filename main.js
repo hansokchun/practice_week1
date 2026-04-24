@@ -436,11 +436,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
-        ui.editTitle.value = p.title || '';
+        
+        let displayTitle = p.title || '';
+        if (/\.(jpg|jpeg|png|gif|heic|webp|bmp)$/i.test(displayTitle)) {
+            displayTitle = '';
+        }
+        ui.editTitle.value = displayTitle;
+        
+        const isMyPhoto = p.owner_id === state.currentUser.id;
+        ui.editTitle.style.display = (!displayTitle && !isMyPhoto) ? 'none' : 'block';
+        
         ui.editDesc.value = p.description || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
         
-        const isMyPhoto = p.owner_id === state.currentUser.id;
         const isLikedByMe = state.myLikedIds.includes(p.id.toString());
 
         // UI 권한 분기
@@ -739,7 +747,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const photoData = { 
                     id: newId,
                     date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
-                    title: f.name, 
+                    title: '', 
                     description: '', 
                     lat: exif?.latitude, 
                     lng: exif?.longitude, 
