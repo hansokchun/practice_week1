@@ -396,42 +396,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         map.addLayer(clusterGroup);
 
-        // 그리드 렌더링
-        const groups = gridList.reduce((acc, p) => {
-            if (!acc[p.date]) acc[p.date] = [];
-            acc[p.date].push(p);
-            return acc;
-        }, {});
-        const sortedDates = Object.keys(groups).sort((a,b) => b.localeCompare(a));
+        // 그리드 렌더링 (날짜 그룹핑 없이 최신순으로 플랫하게)
+        gridList.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at));
 
         ui.grid.innerHTML = '';
         ui.grid.classList.toggle('dense', state.isDenseGrid);
 
-        if (sortedDates.length === 0) {
+        if (gridList.length === 0) {
             ui.grid.innerHTML = `<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No stories found.</div>`;
         } else {
-            sortedDates.forEach(date => {
-                const groupEl = document.createElement('div');
-                groupEl.className = 'grid-group';
-                groupEl.innerHTML = `<div class="grid-date-header">${date}</div>`;
+            const container = document.createElement('div');
+            container.className = 'grid-items-container';
+            
+            gridList.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
                 
-                const container = document.createElement('div');
-                container.className = 'grid-items-container';
+                const gridUrl = p.url ? p.url.replace('_detail.jpg', '_grid.jpg') : '';
                 
-                groups[date].forEach(p => {
-                    const item = document.createElement('div');
-                    item.className = 'grid-item';
-                    
-                    const gridUrl = p.url ? p.url.replace('_detail.jpg', '_grid.jpg') : '';
-                    
-                    item.innerHTML = `<img src="${gridUrl || p.url}" loading="lazy">`;
-                    item.onclick = () => { showDetail(p); };
-                    container.appendChild(item);
-                });
-                
-                groupEl.appendChild(container);
-                ui.grid.appendChild(groupEl);
+                item.innerHTML = `<img src="${gridUrl || p.url}" loading="lazy">`;
+                item.onclick = () => { showDetail(p); };
+                container.appendChild(item);
             });
+            
+            ui.grid.appendChild(container);
         }
 
         ui.btnMyFeed.classList.toggle('active', state.viewMode === 'my');
@@ -576,20 +564,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     function renderDateChips() {
-        const isMyView = state.viewMode === 'my';
-        const list = isMyView 
-            ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
-            : state.sharedPhotos;
-            
-        const dates = [...new Set(list.map(p => p.date))].sort((a,b) => b.localeCompare(a));
-        ui.dateChips.innerHTML = `<button class="chip ${state.activeDate === 'all' ? 'active' : ''}" data-date="all">All Dates</button>`;
-        dates.forEach(d => {
-            const btn = document.createElement('button');
-            btn.className = `chip ${state.activeDate === d ? 'active' : ''}`;
-            btn.dataset.date = d;
-            btn.textContent = d;
-            ui.dateChips.appendChild(btn);
-        });
+        ui.dateChips.style.display = 'none'; // Hide date chips completely
     }
 
     // ═══════════════════════════════════════════════════
