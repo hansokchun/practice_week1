@@ -248,7 +248,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnBack: document.getElementById('btn-back'),
         btnDelete: document.getElementById('btn-delete'),
         btnEditLocation: document.getElementById('btn-edit-location'),
-        btnStreetView: document.getElementById('btn-street-view'),
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
@@ -616,14 +615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         startLocationPicker([state.currentPhoto]);
     };
 
-    ui.btnStreetView.onclick = () => {
-        if (!state.currentPhoto) return;
-        const { lat, lng } = state.currentPhoto;
-        const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
-        // Google Maps blocks iframe embedding without a specific Embed API key (X-Frame-Options: SAMEORIGIN).
-        // Therefore, we open it in a new tab.
-        window.open(streetViewUrl, '_blank');
-    };
+
 
     // 제목/설명 저장: Supabase DB에 직접 upsert
     ui.btnSaveEdit.onclick = async () => {
