@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travelgram | Sign In</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <link rel="icon" href="images/logo.png?v=2" type="image/png">
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
-    <div class="login-bg">
-        <div class="slider-track">
-            <div class="slide" style="background-image: url('images/main_bg1.jpg')"></div>
-            <div class="slide" style="background-image: url('images/main_bg2.jpg')"></div>
-            <div class="slide" style="background-image: url('images/main_bg3.jpg')"></div>
-            <div class="slide" style="background-image: url('images/main_bg4.jpg')"></div>
-            <div class="slide" style="background-image: url('images/main_bg5.jpg')"></div>
-            <div class="slide" style="background-image: url('images/main_bg1.jpg')"></div>
-        </div>
-    </div>
+    <div id="login-map" class="login-bg"></div>
     <div class="login-overlay"></div>
 
     <div class="login-container">
@@ -159,6 +151,30 @@
                 }
             };
         });
+    </script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        // 백그라운드 지도 초기화 (메인 화면과 동일한 구글 맵 유지)
+        const map = L.map('login-map', {
+            zoomControl: false,
+            attributionControl: false,
+            dragging: false,
+            touchZoom: false,
+            doubleClickZoom: false,
+            scrollWheelZoom: false,
+            boxZoom: false,
+            keyboard: false
+        }).setView([37.5665, 126.9780], 13); // 서울 중심 좌표
+
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', {
+            maxZoom: 19
+        }).addTo(map);
+
+        // 약간의 부드러운 패닝 애니메이션 효과 (옵션)
+        setInterval(() => {
+            map.panBy([1, 0], { animate: true, duration: 1 });
+        }, 1000);
     </script>
 </body>
 </html>

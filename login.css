@@ -25,30 +25,12 @@ body {
     overflow: hidden;
 }
 
-/* 1. 배경 슬라이더 (글래스모피즘 분위기 연출용) */
+/* 1. 백그라운드 맵 (글래스모피즘 분위기 연출용) */
 .login-bg {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: 0;
     overflow: hidden;
-}
-
-.slider-track {
-    display: flex;
-    width: 600vw; /* 5 slides + 1 clone */
-    height: 100%;
-    animation: slideBg 40s linear infinite;
-}
-
-.slide {
-    width: 100vw; height: 100%;
-    background-size: cover;
-    background-position: center;
-}
-
-@keyframes slideBg {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-500vw); }
 }
 
 .login-overlay {
