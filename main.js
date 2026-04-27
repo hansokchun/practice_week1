@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
+        detailCoordinates: document.querySelector('#detail-coordinates span'),
         detailTitleText: document.getElementById('detail-title-text'),
         editTitleInput: document.getElementById('edit-title-input'),
         viewModeContainer: document.getElementById('view-mode-container'),
@@ -442,6 +443,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
+        if (p.lat && p.lng) {
+            ui.detailCoordinates.textContent = `${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}`;
+        } else {
+            ui.detailCoordinates.textContent = '위치 정보 없음';
+        }
         const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
         if (p.description) {
