@@ -444,7 +444,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.detailDate.textContent = p.date;
         const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
-        ui.detailTitleText.textContent = p.description || '제목 없는 추억';
+        if (p.description) {
+            ui.detailTitleText.textContent = p.description;
+            ui.detailTitleText.style.display = 'block';
+        } else {
+            ui.detailTitleText.textContent = '';
+            ui.detailTitleText.style.display = 'none';
+        }
         ui.editTitleInput.value = p.description || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
         
@@ -651,7 +657,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.querySelector('span').textContent = 'Cloud Saved!';
             
             // View 모드로 전환
-            ui.detailTitleText.textContent = state.currentPhoto.description || '제목 없는 추억';
+            if (state.currentPhoto.description) {
+                ui.detailTitleText.textContent = state.currentPhoto.description;
+                ui.detailTitleText.style.display = 'block';
+            } else {
+                ui.detailTitleText.textContent = '';
+                ui.detailTitleText.style.display = 'none';
+            }
             ui.viewModeContainer.classList.remove('hidden');
             ui.editModeContainer.classList.add('hidden');
             ui.btnEditLocation.style.display = 'none';
