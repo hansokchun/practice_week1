@@ -256,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editTitleInput: document.getElementById('edit-title-input'),
         editLatInput: document.getElementById('edit-lat-input'),
         editLngInput: document.getElementById('edit-lng-input'),
+        authorAvatar: document.getElementById('author-avatar'),
         authorName: document.getElementById('author-name'),
         viewModeContainer: document.getElementById('view-mode-container'),
         editModeContainer: document.getElementById('edit-mode-container'),
@@ -456,6 +457,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 작성자 표시 로직
         const authorNameText = isMyPhoto ? (state.currentUser.user_metadata?.nickname || '나') : 'User ' + p.owner_id.substring(0,4);
         ui.authorName.textContent = authorNameText;
+        ui.authorAvatar.textContent = authorNameText.charAt(0).toUpperCase();
+        let hash = 0;
+        for (let i = 0; i < p.owner_id.length; i++) hash = p.owner_id.charCodeAt(i) + ((hash << 5) - hash);
+        ui.authorAvatar.style.backgroundColor = `hsl(${Math.abs(hash) % 360}, 60%, 50%)`;
 
         if (p.description) {
             ui.detailTitleText.textContent = p.description;
@@ -531,15 +536,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data.forEach(c => {
                     const el = document.createElement('div');
                     el.className = 'comment-item';
-                    const nickname = (state.currentUser && c.author_id === state.currentUser.id) 
-                                     ? (state.currentUser.user_metadata?.nickname || '나') 
-                                     : ('User ' + c.author_id.substring(0,4));
                     el.innerHTML = `
-                        <div class="comment-header">
-                            <span class="comment-author">${nickname}</span>
-                            <span class="comment-date">${new Date(c.date).toLocaleString()}</span>
-                        </div>
-                        <div class="comment-text">${c.text}</div>
+                        <div>${c.text}</div>
+                        <span class="comment-date">${new Date(c.date).toLocaleString()}</span>
                     `;
                     ui.commentsList.appendChild(el);
                 });
