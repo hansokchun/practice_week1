@@ -25,7 +25,9 @@ body, html {
 #profile-detail-view.hidden,
 #demo-display.hidden,
 #demo-edit.hidden,
-#login-modal-overlay.hidden {
+#login-modal-overlay.hidden,
+#edit-mode-container.hidden,
+#view-mode-container.hidden {
     display: none !important;
 }
 
