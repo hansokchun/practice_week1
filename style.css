@@ -20,6 +20,15 @@ body, html {
     touch-action: none;
 }
 
+/* Utility Classes */
+#profile-main-view.hidden,
+#profile-detail-view.hidden,
+#demo-display.hidden,
+#demo-edit.hidden,
+#login-modal-overlay.hidden {
+    display: none !important;
+}
+
 /* 0. SPLASH SCREEN SECTION */
 #splash-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
