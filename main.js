@@ -254,6 +254,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         detailCoordinates: document.querySelector('#detail-coordinates span'),
         detailTitleText: document.getElementById('detail-title-text'),
         editTitleInput: document.getElementById('edit-title-input'),
+        editLatInput: document.getElementById('edit-lat-input'),
+        editLngInput: document.getElementById('edit-lng-input'),
+        authorAvatar: document.getElementById('author-avatar'),
+        authorName: document.getElementById('author-name'),
         viewModeContainer: document.getElementById('view-mode-container'),
         editModeContainer: document.getElementById('edit-mode-container'),
         btnToggleEdit: document.getElementById('btn-toggle-edit'),
@@ -450,6 +454,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
+        // 작성자 표시 로직
+        const authorNameText = isMyPhoto ? (state.currentUser.user_metadata?.nickname || '나') : 'User ' + p.owner_id.substring(0,4);
+        ui.authorName.textContent = authorNameText;
+        ui.authorAvatar.textContent = authorNameText.charAt(0).toUpperCase();
+        let hash = 0;
+        for (let i = 0; i < p.owner_id.length; i++) hash = p.owner_id.charCodeAt(i) + ((hash << 5) - hash);
+        ui.authorAvatar.style.backgroundColor = `hsl(${Math.abs(hash) % 360}, 60%, 50%)`;
+
         if (p.description) {
             ui.detailTitleText.textContent = p.description;
             ui.detailTitleText.style.display = 'block';
@@ -458,6 +470,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.detailTitleText.style.display = 'none';
         }
         ui.editTitleInput.value = p.description || '';
+        ui.editLatInput.value = p.lat || '';
+        ui.editLngInput.value = p.lng || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
         
         const isLikedByMe = state.myLikedIds.includes(p.id.toString());
@@ -484,6 +498,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.editModeContainer.classList.add('hidden');
             ui.btnEditLocation.style.display = 'none';
             ui.editTitleInput.value = p.description || '';
+            ui.editLatInput.value = p.lat || '';
+            ui.editLngInput.value = p.lng || '';
         };
 
         ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
@@ -651,10 +667,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // 제목/설명 저장: Supabase DB에 직접 upsert
+    // 제목/설명/좌표 저장: Supabase DB에 직접 upsert
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.description = ui.editTitleInput.value;
+        const latVal = parseFloat(ui.editLatInput.value);
+        const lngVal = parseFloat(ui.editLngInput.value);
+        if (!isNaN(latVal) && !isNaN(lngVal)) {
+            state.currentPhoto.lat = latVal;
+            state.currentPhoto.lng = lngVal;
+        }
+
         try {
             const { error } = await upsertPhoto(state.currentPhoto);
             if (error) throw error;
@@ -670,6 +693,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ui.detailTitleText.textContent = '';
                 ui.detailTitleText.style.display = 'none';
             }
+            if (state.currentPhoto.lat && state.currentPhoto.lng) {
+                ui.detailCoordinates.textContent = `${state.currentPhoto.lat.toFixed(4)}, ${state.currentPhoto.lng.toFixed(4)}`;
+            }
+
             ui.viewModeContainer.classList.remove('hidden');
             ui.editModeContainer.classList.add('hidden');
             ui.btnEditLocation.style.display = 'none';

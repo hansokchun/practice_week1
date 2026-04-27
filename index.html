@@ -206,6 +206,12 @@
                     </div>
                     
                     <div class="story-content">
+                        <!-- Author Display -->
+                        <div id="author-info" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                            <div id="author-avatar" style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;"></div>
+                            <span id="author-name" style="font-size: 14px; font-weight: 500;">Unknown User</span>
+                        </div>
+
                         <!-- Title Display (Read Mode) -->
                         <div id="view-mode-container">
                             <h2 id="detail-title-text" class="title-display" style="margin: 0 0 8px; font-family: var(--serif-font); font-size: 28px;"></h2>
@@ -215,6 +221,10 @@
                         <!-- Edit Controls (Edit Mode) -->
                         <div id="edit-mode-container" class="hidden" style="margin-bottom: 20px;">
                             <input type="text" id="edit-title-input" class="title-input" placeholder="사진 제목을 입력하세요..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-size: 16px; font-family: var(--sans-font); margin-bottom: 12px;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <input type="number" id="edit-lat-input" step="any" placeholder="Latitude (위도)" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
+                                <input type="number" id="edit-lng-input" step="any" placeholder="Longitude (경도)" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
+                            </div>
                             <div style="display: flex; gap: 8px;">
                                 <button id="btn-save-edit" class="btn-action-fill"><span>저장</span></button>
                                 <button id="btn-cancel-edit" class="btn-cancel-small">취소</button>
