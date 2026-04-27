@@ -620,13 +620,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!state.currentPhoto) return;
         const { lat, lng } = state.currentPhoto;
         const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
-        ui.streetViewFrame.src = streetViewUrl;
-        ui.streetViewOverlay.classList.add('active');
-    };
-
-    ui.btnCloseStreetView.onclick = () => {
-        ui.streetViewOverlay.classList.remove('active');
-        ui.streetViewFrame.src = '';
+        // Google Maps blocks iframe embedding without a specific Embed API key (X-Frame-Options: SAMEORIGIN).
+        // Therefore, we open it in a new tab.
+        window.open(streetViewUrl, '_blank');
     };
 
     // 제목/설명 저장: Supabase DB에 직접 upsert
