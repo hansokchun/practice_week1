@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 2. 지도 표시용 리스트 (내 사진 + 공유된 모든 사진)
         const mapList = state.photos.filter(p => {
-            const isMyPhoto = p.owner_id === state.currentUser.id;
+            const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
             const isShared = !!p.shared;
             return isMyPhoto || isShared;
         })
