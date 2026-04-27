@@ -251,8 +251,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
-        detailDate: document.getElementById('detail-date'),
-        editDesc: document.getElementById('edit-desc'),
+        detailTitleText: document.getElementById('detail-title-text'),
+        editTitleInput: document.getElementById('edit-title-input'),
+        viewModeContainer: document.getElementById('view-mode-container'),
+        editModeContainer: document.getElementById('edit-mode-container'),
+        btnToggleEdit: document.getElementById('btn-toggle-edit'),
+        btnCancelEdit: document.getElementById('btn-cancel-edit'),
         detailLikeBtn: document.getElementById('detail-like-btn'),
         detailShareBtn: document.getElementById('detail-share-btn'),
         btnSaveEdit: document.getElementById('btn-save-edit'),
@@ -440,17 +444,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.detailDate.textContent = p.date;
         const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
-        ui.editDesc.value = p.description || '';
+        ui.detailTitleText.textContent = p.description || '제목 없는 추억';
+        ui.editTitleInput.value = p.description || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
         
         const isLikedByMe = state.myLikedIds.includes(p.id.toString());
 
         // UI 권한 분기
-        ui.btnSaveEdit.style.display = isMyPhoto ? 'flex' : 'none';
         ui.btnDelete.style.display = isMyPhoto ? 'flex' : 'none';
-        ui.btnEditLocation.style.display = isMyPhoto ? 'flex' : 'none';
         ui.detailShareBtn.style.display = isMyPhoto ? 'flex' : 'none';
-        ui.editDesc.disabled = !isMyPhoto;
+        
+        // 초기 상태: View 모드 (수정 모드 아님)
+        ui.viewModeContainer.classList.remove('hidden');
+        ui.editModeContainer.classList.add('hidden');
+        ui.btnToggleEdit.style.display = isMyPhoto ? 'inline-block' : 'none';
+        ui.btnEditLocation.style.display = 'none'; // 수정 모드에서만 보이게 변경할 수도 있지만, 일단 hidden
+
+        ui.btnToggleEdit.onclick = () => {
+            ui.viewModeContainer.classList.add('hidden');
+            ui.editModeContainer.classList.remove('hidden');
+            ui.btnEditLocation.style.display = 'flex'; // 수정 모드일때만 위치변경 버튼 노출
+            ui.editTitleInput.focus();
+        };
+
+        ui.btnCancelEdit.onclick = () => {
+            ui.viewModeContainer.classList.remove('hidden');
+            ui.editModeContainer.classList.add('hidden');
+            ui.btnEditLocation.style.display = 'none';
+            ui.editTitleInput.value = p.description || '';
+        };
 
         ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
         ui.detailShareBtn.classList.toggle('active', !!p.shared);
@@ -620,13 +642,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 제목/설명 저장: Supabase DB에 직접 upsert
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
-        state.currentPhoto.description = ui.editDesc.value;
+        state.currentPhoto.description = ui.editTitleInput.value;
         try {
             const { error } = await upsertPhoto(state.currentPhoto);
             if (error) throw error;
             const btn = ui.btnSaveEdit;
             const originalText = btn.querySelector('span').textContent;
             btn.querySelector('span').textContent = 'Cloud Saved!';
+            
+            // View 모드로 전환
+            ui.detailTitleText.textContent = state.currentPhoto.description || '제목 없는 추억';
+            ui.viewModeContainer.classList.remove('hidden');
+            ui.editModeContainer.classList.add('hidden');
+            ui.btnEditLocation.style.display = 'none';
+
             setTimeout(() => { btn.querySelector('span').textContent = originalText; }, 2000);
             syncData();
         } catch (e) {
