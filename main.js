@@ -273,10 +273,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ═══════════════════════════════════════════════════
     // 4. MAP SETUP
     // ═══════════════════════════════════════════════════
-    const map = L.map('map', { zoomControl: false, maxZoom: 19 }).setView([36.2048, 138.2529], 6);
+    const map = L.map('map', { 
+        zoomControl: false, 
+        maxZoom: 19, 
+        minZoom: 5 // 축소 한계치 설정 (너무 작게 축소되지 않도록)
+    }).setView([36.5, 127.5], 5); // 대한민국, 일본, 중국 일부가 보이는 시점과 줌 레벨
+
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 
         attribution: 'Google Maps',
-        maxZoom: 19
+        maxZoom: 19,
+        minZoom: 5
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
