@@ -5,29 +5,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentUser = await getCurrentUser();
     const splash = document.getElementById('splash-screen');
     
-    // 로그인되지 않은 사용자: 스플래시 화면만 띄우고 앱 초기화 중단
-    if (!currentUser) {
-        if (splash) {
-            const btnStart = document.getElementById('btn-start');
-            if (btnStart) {
-                btnStart.onclick = () => {
-                    window.location.href = '/login.html';
-                };
-            }
+    // Get Started 버튼 클릭 시 스플래시 화면 숨김 (로그인 여부 무관하게 앱 진입)
+    if (splash) {
+        const btnStart = document.getElementById('btn-start');
+        if (btnStart) {
+            btnStart.onclick = () => {
+                splash.style.display = 'none';
+            };
         }
-        return; 
     }
 
-    // 로그인된 사용자: 스플래시 화면 즉시 숨김
-    if (splash) splash.style.display = 'none';
-
-    // 유저 UI 적용
     const userMenu = document.getElementById('user-menu');
     const userAvatar = document.getElementById('user-avatar');
+    const btnLoginSidebar = document.getElementById('btn-login-sidebar');
+    const btnPostLabel = document.getElementById('btn-post-label');
+    
+    if (!currentUser) {
+        // 비로그인 상태: 로그인 버튼 표시, 프로필 및 포스트 버튼 숨김
+        if (btnLoginSidebar) btnLoginSidebar.style.display = 'inline-block';
+        if (btnPostLabel) btnPostLabel.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'none';
+    } else {
+        // 로그인된 사용자: 스플래시 화면 즉시 숨기고 유저 메뉴 표시
+        if (splash) splash.style.display = 'none';
+        if (btnLoginSidebar) btnLoginSidebar.style.display = 'none';
+
+    } // end else
+
+    // 유저 UI 적용
     const btnLogout = document.getElementById('btn-logout');
     const profilePopup = document.getElementById('profile-popup');
     
-    if (userMenu && userAvatar && currentUser.email) {
+    if (userMenu && userAvatar && currentUser && currentUser.email) {
         userMenu.style.display = 'flex';
         const userInitial = currentUser.email.substring(0, 2).toUpperCase();
         userAvatar.textContent = userInitial;
@@ -347,7 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // 1. 사이드바 그리드용 리스트
         const gridList = (isMyView 
-            ? state.photos.filter(p => p.owner_id === state.currentUser.id) 
+            ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
             : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
             .filter(p => filterDate === 'all' || p.date === filterDate)
@@ -436,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentPhoto = p;
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
-        const isMyPhoto = p.owner_id === state.currentUser.id;
+        const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
         ui.editDesc.value = p.description || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
@@ -499,6 +508,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 댓글 작성: Supabase DB에 직접 삽입
     const handlePostComment = async () => {
+        if (!state.currentUser) {
+            showToast("로그인이 필요합니다.", "warning");
+            return;
+        }
         const text = ui.commentInput.value.trim();
         if (!text || !state.currentPhoto) return;
         
@@ -565,7 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderDateChips() {
         const isMyView = state.viewMode === 'my';
         const list = isMyView 
-            ? state.photos.filter(p => p.owner_id === state.currentUser.id) 
+            ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
             : state.sharedPhotos;
             
         const dates = [...new Set(list.map(p => p.date))].sort((a,b) => b.localeCompare(a));
@@ -679,6 +692,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 좋아요: Supabase DB에 직접 upsert
     ui.detailLikeBtn.onclick = async () => {
+        if (!state.currentUser) {
+            showToast("로그인이 필요합니다.", "warning");
+            return;
+        }
         if (!state.currentPhoto) return;
         const photoId = state.currentPhoto.id.toString();
         const isLiked = state.myLikedIds.includes(photoId);
@@ -717,6 +734,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 공유 토글: Supabase DB에 직접 upsert
     ui.detailShareBtn.onclick = async () => {
+        if (!state.currentUser) {
+            showToast("로그인이 필요합니다.", "warning");
+            return;
+        }
         if (!state.currentPhoto) return;
         state.currentPhoto.shared = !state.currentPhoto.shared;
         const { error } = await upsertPhoto(state.currentPhoto);

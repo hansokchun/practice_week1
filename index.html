@@ -51,10 +51,11 @@
                 <header class="sidebar-header">
                     <h1 class="logo">Travelgram</h1>
                     <div class="header-actions">
-                        <label for="upload-input" class="btn-post">Post a Story</label>
+                        <label for="upload-input" class="btn-post" id="btn-post-label">Post a Story</label>
                         <input type="file" id="upload-input" multiple accept="image/jpeg, image/png" style="display:none;">
+                        <a href="/login.html" id="btn-login-sidebar" class="btn-post" style="display: none; text-decoration: none; text-align: center;">로그인</a>
                         <!-- 유저 프로필/로그아웃 영역 -->
-                        <div id="user-menu" class="user-menu" style="position: relative;">
+                        <div id="user-menu" class="user-menu" style="position: relative; display: none;">
                             <div id="user-avatar" class="user-avatar" title="내 계정">
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             </div>
