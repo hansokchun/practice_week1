@@ -207,6 +207,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
+                // DB에 닉네임 업데이트 시도 (중복일 경우 이 구간에서 멈춤)
+                if (newNickname !== nickname) {
+                    const { error: dbError } = await updateNicknameInDB(currentUser.id, newNickname);
+                    if (dbError) {
+                        btnSaveDemo.textContent = originalText;
+                        btnSaveDemo.disabled = false;
+                        if (dbError.code === '23505') { // 고유 제약 조건 위반 (UNIQUE)
+                            showToast("이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해 주세요.", "warning");
+                        } else {
+                            showToast("닉네임 변경 중 오류가 발생했습니다.", "warning");
+                            console.error(dbError);
+                        }
+                        return; // 진행 중단 
+                    }
+                }
+
                 const { user, error } = await updateUserMetadata({ 
                     nickname: newNickname, 
                     age: newAge, 

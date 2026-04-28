@@ -95,6 +95,17 @@ async function updateUserMetadata(metadata) {
     }
 }
 
+async function updateNicknameInDB(userId, newNickname) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.from('profiles').upsert({ id: userId, nickname: newNickname });
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
+    }
+}
+
 // ═══════════════════════════════════════════════════
 //  2. 데이터베이스 (DB) — 사진 CRUD + 댓글
 // ═══════════════════════════════════════════════════
