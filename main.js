@@ -1115,13 +1115,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
+    function hideLoginModal() {
+        if (!loginModal) return;
+        loginModal.classList.remove('active');
+        setTimeout(() => {
+            loginModal.classList.add('hidden');
+        }, 300); // Wait for transition
+    }
+
     if (btnCloseLogin && loginModal) {
-        btnCloseLogin.onclick = () => {
-            loginModal.classList.remove('active');
-            setTimeout(() => {
-                loginModal.classList.add('hidden');
-            }, 300); // Wait for transition
-        };
+        btnCloseLogin.onclick = hideLoginModal;
+        
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                hideLoginModal();
+            }
+        });
     }
 
     function showAuthMessage(text, type = 'error') {
