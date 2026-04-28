@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         profilePageStoryCount: document.getElementById('profile-page-story-count'),
         profilePageLikeCount: document.getElementById('profile-page-like-count'),
         profileGalleryGrid: document.getElementById('profile-gallery-grid'),
+        profileGallerySort: document.getElementById('profile-gallery-sort'),
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
@@ -792,10 +793,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.profilePageAvatar.style.justifyContent = 'center';
         }
 
-        // Render Gallery
-        if (ui.profileGalleryGrid) {
-            ui.profileGalleryGrid.innerHTML = '';
-            userPhotos.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at)).forEach(p => {
+        // Render Gallery function
+        const renderGallery = () => {
+            if (ui.profileGalleryGrid) {
+                ui.profileGalleryGrid.innerHTML = '';
+                
+                let sortedPhotos = [...userPhotos];
+                if (state.profileSortMode === 'likes') {
+                    sortedPhotos.sort((a, b) => (b.liked || 0) - (a.liked || 0) || b.date.localeCompare(a.date));
+                } else {
+                    sortedPhotos.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at));
+                }
+
+                sortedPhotos.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'profile-gallery-item';
                 item.innerHTML = `<img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />`;
@@ -804,6 +814,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
                 ui.profileGalleryGrid.appendChild(item);
             });
+        }
+        };
+
+        renderGallery();
+
+        if (ui.profileGallerySort) {
+            ui.profileGallerySort.value = state.profileSortMode;
+            ui.profileGallerySort.onchange = (e) => {
+                state.profileSortMode = e.target.value;
+                renderGallery();
+            };
         }
 
         // Switch panels

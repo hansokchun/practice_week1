@@ -285,6 +285,12 @@
                             <div><strong id="profile-page-like-count" style="color: var(--text-main); font-size: 16px;">0</strong> Likes</div>
                         </div>
                     </div>
+                    <div class="profile-gallery-filter" style="display: flex; justify-content: flex-end; padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: #fff;">
+                        <select id="profile-gallery-sort" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border-color); outline: none; font-size: 13px; color: var(--text-main); cursor: pointer; background: #fafafa;">
+                            <option value="latest">최신순</option>
+                            <option value="likes">좋아요순</option>
+                        </select>
+                    </div>
                     <div id="profile-gallery-grid" class="profile-gallery" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px;">
                         <!-- Photos will be inserted here -->
                     </div>
