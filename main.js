@@ -794,17 +794,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 사진 업로드: Supabase Storage에 파일 올린 뒤 → DB에 메타데이터 저장
-    ui.uploadInput.onchange = async (e) => {
-        const files = e.target.files;
-        if (!files.length) return;
+    ui.uploadInput.onchange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            processFiles(e.target.files);
+        }
+        ui.uploadInput.value = '';
+    };
+
+    // --- Drag and Drop Feature ---
+    const dropZone = document.getElementById('drop-zone');
+    let dragCounter = 0;
+
+    window.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+        dropZone.classList.remove('hidden');
+        dropZone.classList.add('active');
+    });
+
+    window.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    window.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter === 0) {
+            dropZone.classList.remove('active');
+            setTimeout(() => { if(dragCounter === 0) dropZone.classList.add('hidden'); }, 300);
+        }
+    });
+
+    window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        dropZone.classList.remove('active');
+        setTimeout(() => dropZone.classList.add('hidden'), 300);
         
+        if (!state.currentUser) {
+            showToast("로그인이 필요합니다.", "warning");
+            return;
+        }
+        
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            processFiles(e.dataTransfer.files);
+        }
+    });
+
+    async function processFiles(files) {
         const pendingPhotos = [];
         showToast("Processing photos...", "info");
         
         for (const f of Array.from(files)) {
+            // Check if file is an image
+            if (!f.type.startsWith('image/')) {
+                showToast(`Skipped ${f.name} - Not an image`, "warning");
+                continue;
+            }
+
             try {
                 const exif = await exifr.parse(f);
-                // 원본 파일을 그대로 Supabase Storage에 올릴 것이므로 File 객체 보존
                 const url = await new Promise(r => { 
                     const rd = new FileReader(); 
                     rd.onload = () => r(rd.result); 
@@ -822,16 +871,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     liked: 0, 
                     shared: false,
                     owner_id: state.currentUser.id,
-                    // 원본 File 객체와 dataUrl을 임시 보관 (업로드 시 사용)
                     _file: f,
                     _dataUrl: url
                 };
 
                 if (!photoData.lat || !photoData.lng) {
-                    // GPS 없는 사진: 위치 수동 지정 대기열에 추가
                     pendingPhotos.push(photoData);
                 } else {
-                    // GPS 있는 사진: 즉시 업로드
                     await uploadAndSavePhoto(photoData);
                 }
             } catch (err) { 
@@ -847,8 +893,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showToast("Upload complete!", "success");
             syncData();
         }
-        ui.uploadInput.value = '';
-    };
+    }
 
     /**
      * 이미지 압축 유틸리티 (Canvas 사용)
