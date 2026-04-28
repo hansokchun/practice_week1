@@ -463,6 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function showDetail(p) {
+        state.detailReturnTo = (ui.panelUserProfile && ui.panelUserProfile.classList.contains('active')) ? 'profile' : 'explore';
         state.currentPhoto = p;
 
         // Hide all other markers and show only this one
@@ -639,9 +640,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function closeDetail() {
         ui.sidebar.classList.remove('expanded');
-        ui.panelExplore.classList.add('active');
         ui.panelDetail.classList.remove('active');
         state.currentPhoto = null;
+        
+        if (state.detailReturnTo === 'profile') {
+            if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active');
+        } else {
+            ui.panelExplore.classList.add('active');
+        }
         
         // Remove the temporary single marker and restore all clusters
         if (state.currentMarker) {
@@ -697,6 +703,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.openProfilePage = (userId, nickname) => {
+        state.profileReturnTo = ui.panelDetail.classList.contains('active') ? 'detail' : 'explore';
+        state.profileReturnToPhoto = state.currentPhoto;
+
         state.viewMode = 'user';
         state.targetUserId = userId;
 
@@ -748,8 +757,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             state.viewMode = 'shared';
             state.targetUserId = null;
             if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
-            ui.panelExplore.classList.add('active');
-            renderAll();
+            
+            if (state.profileReturnTo === 'detail' && state.profileReturnToPhoto) {
+                showDetail(state.profileReturnToPhoto);
+            } else {
+                ui.panelExplore.classList.add('active');
+                renderAll();
+            }
         };
     }
 
