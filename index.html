@@ -259,6 +259,31 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 3. USER PROFILE PANEL -->
+            <section id="panel-user-profile" class="panel">
+                <header class="detail-header" style="padding: 16px 24px;">
+                    <button id="btn-back-profile-feed" class="icon-btn">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        Back
+                    </button>
+                    <div style="font-weight: 600; font-size: 16px;" id="profile-page-title">Profile</div>
+                    <div style="width: 60px;"></div>
+                </header>
+                <div class="profile-page-content" style="overflow-y: auto; height: calc(100vh - 65px);">
+                    <div class="profile-page-header" style="padding: 30px 20px; text-align: center; border-bottom: 1px solid var(--border-color);">
+                        <div id="profile-page-avatar" class="profile-avatar-large" style="margin: 0 auto 16px; width: 80px; height: 80px;"></div>
+                        <h2 id="profile-page-nickname" style="margin: 0 0 8px; font-size: 24px; color: var(--text-main);"></h2>
+                        <div style="display: flex; justify-content: center; gap: 20px; color: var(--text-muted); font-size: 14px;">
+                            <div><strong id="profile-page-story-count" style="color: var(--text-main); font-size: 16px;">0</strong> Stories</div>
+                            <div><strong id="profile-page-like-count" style="color: var(--text-main); font-size: 16px;">0</strong> Likes</div>
+                        </div>
+                    </div>
+                    <div id="profile-gallery-grid" class="profile-gallery" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px;">
+                        <!-- Photos will be inserted here -->
+                    </div>
+                </div>
+            </section>
         </aside>
 <!-- Main Interactive Map -->
 <div id="map-container">

@@ -243,6 +243,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadInput: document.getElementById('upload-input'),
         searchInput: document.getElementById('search-input'),
         btnGridDensity: document.getElementById('btn-grid-density'),
+        
+        // User Profile Panel
+        panelUserProfile: document.getElementById('panel-user-profile'),
+        btnBackProfileFeed: document.getElementById('btn-back-profile-feed'),
+        profilePageAvatar: document.getElementById('profile-page-avatar'),
+        profilePageNickname: document.getElementById('profile-page-nickname'),
+        profilePageStoryCount: document.getElementById('profile-page-story-count'),
+        profilePageLikeCount: document.getElementById('profile-page-like-count'),
+        profileGalleryGrid: document.getElementById('profile-gallery-grid'),
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
@@ -366,8 +375,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
         const isMyView = state.viewMode === 'my';
+        const isUserView = state.viewMode === 'user';
         
-        // 1. 사이드바 그리드용 리스트
+        // 1. 사이드바 메인 그리드용 리스트 (유저 프로필 뷰일때는 메인그리드 필요없지만 혹시 모르니 유지)
         const gridList = (isMyView 
             ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
             : state.sharedPhotos)
@@ -375,15 +385,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
-        // 2. 지도 표시용 리스트 (내 사진 + 공유된 모든 사진)
-        const mapList = state.photos.filter(p => {
+        // 2. 지도 표시용 리스트
+        let baseMapList = state.photos.filter(p => {
             const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
             const isShared = !!p.shared;
             return isMyPhoto || isShared;
-        })
-        .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
-        .filter(p => filterDate === 'all' || p.date === filterDate)
-        .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
+        });
+
+        if (isUserView) {
+            baseMapList = state.sharedPhotos.filter(p => p.owner_id === state.targetUserId);
+        }
+
+        const mapList = baseMapList
+            .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
+            .filter(p => filterDate === 'all' || p.date === filterDate)
+            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
         // 지도 렌더링
         clusterGroup.clearLayers();
@@ -477,6 +493,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 작성자 표시 로직
         const authorNameText = isMyPhoto ? (state.currentUser.user_metadata?.nickname || '나') : 'User ' + p.owner_id.substring(0,4);
         ui.authorName.textContent = authorNameText;
+        ui.authorName.onclick = () => {
+            openProfilePage(p.owner_id, authorNameText);
+        };
 
         if (p.description) {
             ui.detailTitleText.textContent = p.description;
@@ -555,11 +574,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const nickname = (state.currentUser && c.author_id === state.currentUser.id) 
                                      ? (state.currentUser.user_metadata?.nickname || '나') 
                                      : ('User ' + c.author_id.substring(0,4));
-                    el.innerHTML = `
-                        <div style="font-weight: 600; font-size: 13px; color: var(--primary-color); margin-bottom: 4px;">${nickname}</div>
+                                     
+                    const authorSpan = document.createElement('div');
+                    authorSpan.className = 'clickable-author';
+                    authorSpan.style.cssText = "font-weight: 600; font-size: 13px; color: var(--primary-color); margin-bottom: 4px; display: inline-block;";
+                    authorSpan.textContent = nickname;
+                    authorSpan.onclick = () => openProfilePage(c.author_id, nickname);
+
+                    const contentDiv = document.createElement('div');
+                    contentDiv.innerHTML = `
                         <div>${c.text}</div>
                         <span class="comment-date">${new Date(c.date).toLocaleString()}</span>
                     `;
+                    
+                    el.appendChild(authorSpan);
+                    el.appendChild(contentDiv);
                     ui.commentsList.appendChild(el);
                 });
             }
@@ -665,6 +694,63 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (now - start < 500) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
+    }
+
+    window.openProfilePage = (userId, nickname) => {
+        state.viewMode = 'user';
+        state.targetUserId = userId;
+
+        // Filter user photos
+        const userPhotos = state.sharedPhotos.filter(p => p.owner_id === userId);
+        const totalLikes = userPhotos.reduce((sum, p) => sum + (p.liked || 0), 0);
+
+        // Update Header
+        if (ui.profilePageNickname) ui.profilePageNickname.textContent = nickname;
+        if (ui.profilePageStoryCount) ui.profilePageStoryCount.textContent = userPhotos.length;
+        if (ui.profilePageLikeCount) ui.profilePageLikeCount.textContent = totalLikes;
+
+        // Generate Avatar (Initial)
+        if (ui.profilePageAvatar) {
+            const initial = nickname.charAt(0).toUpperCase();
+            ui.profilePageAvatar.innerHTML = `<span style="font-size: 32px; font-weight: bold; color: white;">${initial}</span>`;
+            ui.profilePageAvatar.style.background = 'var(--primary-color)';
+            ui.profilePageAvatar.style.display = 'flex';
+            ui.profilePageAvatar.style.alignItems = 'center';
+            ui.profilePageAvatar.style.justifyContent = 'center';
+        }
+
+        // Render Gallery
+        if (ui.profileGalleryGrid) {
+            ui.profileGalleryGrid.innerHTML = '';
+            userPhotos.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at)).forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'profile-gallery-item';
+                item.innerHTML = `<img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />`;
+                item.onclick = () => {
+                    showDetail(p);
+                };
+                ui.profileGalleryGrid.appendChild(item);
+            });
+        }
+
+        // Switch panels
+        ui.sidebar.classList.remove('hidden');
+        ui.panelExplore.classList.remove('active');
+        ui.panelDetail.classList.remove('active');
+        if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active');
+
+        // Filter Map
+        renderAll();
+    };
+
+    if (ui.btnBackProfileFeed) {
+        ui.btnBackProfileFeed.onclick = () => {
+            state.viewMode = 'shared';
+            state.targetUserId = null;
+            if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
+            ui.panelExplore.classList.add('active');
+            renderAll();
+        };
     }
 
     ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); };
