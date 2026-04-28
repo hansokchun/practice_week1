@@ -600,6 +600,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.sidebar.classList.remove('hidden');
         ui.sidebar.classList.add('expanded');
         ui.panelExplore.classList.remove('active');
+        if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
         ui.panelDetail.classList.add('active');
         ui.toggleBtn.textContent = '◀';
         
