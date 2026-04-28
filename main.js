@@ -221,9 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPhoto: null,
         searchQuery: '',
         isDenseGrid: false,
-        currentUser: currentUser,
-        targetUserId: null,
-        targetUserNickname: ''
+        currentUser: currentUser
     };
 
     // ═══════════════════════════════════════════════════
@@ -245,12 +243,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadInput: document.getElementById('upload-input'),
         searchInput: document.getElementById('search-input'),
         btnGridDensity: document.getElementById('btn-grid-density'),
-
-        // User Profile View
-        userProfileHeader: document.getElementById('user-profile-header'),
-        userProfileName: document.getElementById('user-profile-name'),
-        btnExitProfile: document.getElementById('btn-exit-profile'),
-        feedNavTabs: document.getElementById('feed-nav-tabs'),
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
@@ -374,34 +366,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
         const isMyView = state.viewMode === 'my';
-        const isUserView = state.viewMode === 'user';
         
-        let baseGridList = isMyView 
+        // 1. 사이드바 그리드용 리스트
+        const gridList = (isMyView 
             ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
-            : state.sharedPhotos;
-            
-        let baseMapList = state.photos.filter(p => {
+            : state.sharedPhotos)
+            .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
+            .filter(p => filterDate === 'all' || p.date === filterDate)
+            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
+
+        // 2. 지도 표시용 리스트 (내 사진 + 공유된 모든 사진)
+        const mapList = state.photos.filter(p => {
             const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
             const isShared = !!p.shared;
             return isMyPhoto || isShared;
-        });
-
-        if (isUserView) {
-            baseGridList = state.sharedPhotos.filter(p => p.owner_id === state.targetUserId);
-            baseMapList = baseGridList;
-        }
-
-        // 1. 사이드바 그리드용 리스트
-        const gridList = baseGridList
-            .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
-            .filter(p => filterDate === 'all' || p.date === filterDate)
-            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
-
-        // 2. 지도 표시용 리스트
-        const mapList = baseMapList
-            .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
-            .filter(p => filterDate === 'all' || p.date === filterDate)
-            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
+        })
+        .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
+        .filter(p => filterDate === 'all' || p.date === filterDate)
+        .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
         // 지도 렌더링
         clusterGroup.clearLayers();
@@ -495,9 +477,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 작성자 표시 로직
         const authorNameText = isMyPhoto ? (state.currentUser.user_metadata?.nickname || '나') : 'User ' + p.owner_id.substring(0,4);
         ui.authorName.textContent = authorNameText;
-        ui.authorName.onclick = () => {
-            showUserProfile(p.owner_id, authorNameText);
-        };
 
         if (p.description) {
             ui.detailTitleText.textContent = p.description;
@@ -576,21 +555,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const nickname = (state.currentUser && c.author_id === state.currentUser.id) 
                                      ? (state.currentUser.user_metadata?.nickname || '나') 
                                      : ('User ' + c.author_id.substring(0,4));
-                                     
-                    const authorSpan = document.createElement('div');
-                    authorSpan.className = 'clickable-author';
-                    authorSpan.style.cssText = "font-weight: 600; font-size: 13px; color: var(--primary-color); margin-bottom: 4px; display: inline-block;";
-                    authorSpan.textContent = nickname;
-                    authorSpan.onclick = () => showUserProfile(c.author_id, nickname);
-
-                    const contentDiv = document.createElement('div');
-                    contentDiv.innerHTML = `
+                    el.innerHTML = `
+                        <div style="font-weight: 600; font-size: 13px; color: var(--primary-color); margin-bottom: 4px;">${nickname}</div>
                         <div>${c.text}</div>
                         <span class="comment-date">${new Date(c.date).toLocaleString()}</span>
                     `;
-                    
-                    el.appendChild(authorSpan);
-                    el.appendChild(contentDiv);
                     ui.commentsList.appendChild(el);
                 });
             }
@@ -696,29 +665,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (now - start < 500) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
-    }
-
-    window.showUserProfile = (ownerId, nickname) => {
-        state.viewMode = 'user';
-        state.targetUserId = ownerId;
-        state.targetUserNickname = nickname;
-        
-        if (ui.userProfileName) ui.userProfileName.textContent = nickname + "'s Profile";
-        if (ui.userProfileHeader) ui.userProfileHeader.classList.remove('hidden');
-        if (ui.feedNavTabs) ui.feedNavTabs.classList.add('hidden');
-        
-        closeDetail();
-        renderAll();
-    };
-
-    if (ui.btnExitProfile) {
-        ui.btnExitProfile.onclick = () => {
-            state.viewMode = 'shared';
-            state.targetUserId = null;
-            if (ui.userProfileHeader) ui.userProfileHeader.classList.add('hidden');
-            if (ui.feedNavTabs) ui.feedNavTabs.classList.remove('hidden');
-            renderAll();
-        };
     }
 
     ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); };
