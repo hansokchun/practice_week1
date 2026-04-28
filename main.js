@@ -695,13 +695,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     function closeDetail() {
-        ui.sidebar.classList.remove('expanded');
         ui.panelDetail.classList.remove('active');
         state.currentPhoto = null;
         
         if (state.detailReturnTo === 'profile') {
+            ui.sidebar.classList.add('expanded');
             if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active');
         } else {
+            ui.sidebar.classList.remove('expanded');
             ui.panelExplore.classList.add('active');
         }
         
@@ -810,6 +811,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Switch panels
         ui.sidebar.classList.remove('hidden');
+        ui.sidebar.classList.add('expanded');
         ui.panelExplore.classList.remove('active');
         ui.panelDetail.classList.remove('active');
         if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active');
@@ -827,6 +829,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (state.profileReturnTo === 'detail' && state.profileReturnToPhoto) {
                 showDetail(state.profileReturnToPhoto);
             } else {
+                ui.sidebar.classList.remove('expanded');
                 ui.panelExplore.classList.add('active');
                 renderAll();
             }
