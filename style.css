@@ -455,6 +455,16 @@ body, html {
 .detail-actions-right { display: flex; gap: 20px; align-items: center; }
 .icon-btn { background: none; border: none; font-size: 13px; font-weight: 600; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .icon-btn.like-toggle.active svg { fill: var(--danger-color); stroke: var(--danger-color); }
+
+.clickable-author {
+    cursor: pointer;
+    text-decoration: underline transparent;
+    transition: all 0.2s;
+}
+.clickable-author:hover {
+    color: var(--primary-color) !important;
+    text-decoration-color: var(--primary-color);
+}
 /* Redesigned Share Button */
 .share-toggle {
     background: rgba(115, 115, 115, 0.1);
