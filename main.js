@@ -400,8 +400,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (state.currentMarker) {
                 state.currentMarker.setLatLng([lat, lng]);
             }
+            
+            // 픽업 완료 시 사이드바 복구 및 픽업 모드 가이드 종료
             state.isPickingEditLocation = false;
-            document.body.style.cursor = 'default';
+            document.body.classList.remove('picking-location');
+            ui.sidebar.classList.remove('hidden');
+            
+            // 만약 모바일에서 확장 상태였다면 다시 확장 처리 (UX)
+            if (window.innerWidth <= 768) {
+                ui.sidebar.classList.add('expanded');
+            }
+            
+            showToast("새로운 위치가 적용되었습니다.", "success");
         }
     });
 
@@ -652,15 +662,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.btnEditLocation.style.display = 'flex'; // 수정 모드일때만 상단 위치변경 버튼 노출
             ui.editTitleInput.focus();
             state.isPickingEditLocation = false;
-            document.body.style.cursor = 'default';
         };
 
         if (ui.btnPickLocation) {
             ui.btnPickLocation.onclick = (e) => {
                 e.stopPropagation();
                 state.isPickingEditLocation = true;
-                showToast("지도에서 원하는 위치를 클릭하여 지정해주세요.", "info");
-                document.body.style.cursor = 'crosshair';
+                
+                // 지도화면만 보이도록 사이드바 일시 숨김
+                ui.sidebar.classList.remove('expanded');
+                ui.sidebar.classList.add('hidden');
+                
+                // 기존 위치 지정용 CSS/UI 가이드 재활용
+                document.body.classList.add('picking-location');
+                const guideThumb = document.getElementById('guide-thumb');
+                if (guideThumb && state.currentPhoto) {
+                    guideThumb.src = state.currentPhoto._dataUrl || state.currentPhoto.url;
+                }
+                
+                showToast("지도화면에서 새로운 위치를 클릭하여 지정해주세요.", "info");
             };
         }
 
@@ -671,8 +691,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.editTitleInput.value = p.description || '';
             ui.editLatInput.value = p.lat || '';
             ui.editLngInput.value = p.lng || '';
-            state.isPickingEditLocation = false;
-            document.body.style.cursor = 'default';
+            
+            // 취소 시 사이드바/픽업상태 원상복구
+            if (state.isPickingEditLocation) {
+                state.isPickingEditLocation = false;
+                document.body.classList.remove('picking-location');
+                ui.sidebar.classList.remove('hidden');
+                if (window.innerWidth <= 768) ui.sidebar.classList.add('expanded');
+            }
         };
 
         ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
