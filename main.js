@@ -386,6 +386,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+    // 상세 보기 > 수정 모드 활성화 시 지도 직접 클릭으로 위치 수정 지원
+    map.on('click', (e) => {
+        if (ui.editModeContainer && !ui.editModeContainer.classList.contains('hidden') && state.currentPhoto) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            ui.editLatInput.value = lat.toFixed(6);
+            ui.editLngInput.value = lng.toFixed(6);
+            
+            if (state.currentMarker) {
+                state.currentMarker.setLatLng([lat, lng]);
+            }
+        }
+    });
+
     // 맵 마커 아이콘 생성은 renderAll 내부 동적 썸네일 아이콘 로직으로 대체되었음
 
     const clusterGroup = L.markerClusterGroup({ 
@@ -632,6 +647,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.editModeContainer.classList.remove('hidden');
             ui.btnEditLocation.style.display = 'flex'; // 수정 모드일때만 위치변경 버튼 노출
             ui.editTitleInput.focus();
+            showToast("지도를 클릭하여 즉시 위치를 변경할 수 있습니다.", "info");
         };
 
         ui.btnCancelEdit.onclick = () => {
