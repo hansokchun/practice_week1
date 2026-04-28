@@ -407,7 +407,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             clusterGroup.addLayer(m);
         });
-        map.addLayer(clusterGroup);
+        if (!state.currentPhoto) {
+            map.addLayer(clusterGroup);
+        } else {
+            map.removeLayer(clusterGroup);
+        }
 
         // 그리드 렌더링 (날짜 그룹핑 없이 최신순으로 플랫하게)
         gridList.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at));
@@ -444,6 +448,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function showDetail(p) {
         state.currentPhoto = p;
+
+        // Hide all other markers and show only this one
+        map.removeLayer(clusterGroup);
+        if (state.currentMarker) {
+            map.removeLayer(state.currentMarker);
+        }
+        
+        const microUrl = p.url ? p.url.replace('_detail.jpg', '_micro.jpg') : '';
+        const pinImg = microUrl || p.url;
+        const photoIcon = L.divIcon({
+            className: `map-photo-pin active`,
+            html: `<div class="pin-img-wrapper" style="border-color: var(--primary-color); transform: scale(1.1);"><img src="${pinImg}" alt="pin"/></div>`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40]
+        });
+        state.currentMarker = L.marker([p.lat, p.lng], { icon: photoIcon }).addTo(map);
+
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
         if (p.lat && p.lng) {
@@ -592,6 +613,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.panelExplore.classList.add('active');
         ui.panelDetail.classList.remove('active');
         state.currentPhoto = null;
+        
+        // Remove the temporary single marker and restore all clusters
+        if (state.currentMarker) {
+            map.removeLayer(state.currentMarker);
+            state.currentMarker = null;
+        }
+        map.addLayer(clusterGroup);
+
         refreshMapSize();
         window.history.replaceState(null, null, window.location.pathname);
     }
