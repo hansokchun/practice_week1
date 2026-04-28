@@ -719,17 +719,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function minimizeSidebar() {
         ui.sidebar.classList.add('hidden');
-        ui.sidebar.classList.remove('expanded');
         ui.toggleBtn.textContent = '▶';
         refreshMapSize();
     }
 
     function restoreSidebar() {
         ui.sidebar.classList.remove('hidden');
-        ui.sidebar.classList.remove('expanded');
         ui.toggleBtn.textContent = '◀';
-        ui.panelExplore.classList.add('active');
-        ui.panelDetail.classList.remove('active');
         refreshMapSize();
     }
 
