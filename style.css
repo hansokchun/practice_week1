@@ -634,29 +634,30 @@ body, html {
 }
 
 .custom-cluster-icon {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border-radius: 50%;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--accent-color);
+    border: 3px solid var(--primary-color);
     position: relative;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
 .custom-cluster-icon:hover {
-    transform: scale(1.1);
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
 }
 
-.custom-cluster-icon svg {
-    width: 22px;
-    height: 22px;
-    color: var(--accent-color);
-    margin-bottom: -2px;
+.custom-cluster-icon svg.cluster-gallery-svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--primary-color);
+    margin-left: 2px;
 }
 
 .cluster-count {
