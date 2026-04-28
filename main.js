@@ -302,6 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPhoto: null,
         searchQuery: '',
         isDenseGrid: false,
+        communitySortMode: 'latest', 
         currentUser: currentUser
     };
 
@@ -323,6 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnFilterLiked: document.getElementById('filter-liked'),
         uploadInput: document.getElementById('upload-input'),
         searchInput: document.getElementById('search-input'),
+        communitySort: document.getElementById('community-sort'),
         btnGridDensity: document.getElementById('btn-grid-density'),
         
         // User Profile Panel
@@ -459,8 +461,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isMyView = state.viewMode === 'my';
         const isUserView = state.viewMode === 'user';
         
-        // 1. 사이드바 메인 그리드용 리스트 (유저 프로필 뷰일때는 메인그리드 필요없지만 혹시 모르니 유지)
-        const gridList = (isMyView 
+        // 1. 사이드바 메인 그리드용 리스트 
+        let gridList = (isMyView 
             ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
             : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
@@ -511,8 +513,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             map.removeLayer(clusterGroup);
         }
 
-        // 그리드 렌더링 (날짜 그룹핑 없이 최신순으로 플랫하게)
-        gridList.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at));
+        // 상태에 따른 그리드 정렬 및 필터 적용
+        if (ui.communitySort) {
+            ui.communitySort.classList.toggle('hidden', state.viewMode !== 'shared');
+            if (state.viewMode === 'shared') {
+                ui.communitySort.value = state.communitySortMode;
+                const now = new Date();
+                
+                if (state.communitySortMode === 'best_month') {
+                    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+                    gridList = gridList.filter(p => new Date(p.created_at) >= thirtyDaysAgo);
+                    gridList.sort((a, b) => (b.liked || 0) - (a.liked || 0) || b.created_at.localeCompare(a.created_at));
+                } else if (state.communitySortMode === 'best_today') {
+                    const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+                    gridList = gridList.filter(p => new Date(p.created_at) >= oneDayAgo);
+                    gridList.sort((a, b) => (b.liked || 0) - (a.liked || 0) || b.created_at.localeCompare(a.created_at));
+                } else {
+                    gridList.sort((a, b) => b.created_at.localeCompare(a.created_at));
+                }
+            } else {
+                gridList.sort((a, b) => b.created_at.localeCompare(a.created_at));
+            }
+        } else {
+            gridList.sort((a, b) => b.created_at.localeCompare(a.created_at));
+        }
 
         ui.grid.innerHTML = '';
         ui.grid.classList.toggle('dense', state.isDenseGrid);
@@ -894,6 +918,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.searchQuery = e.target.value;
         renderAll(state.activeDate);
     };
+
+    if (ui.communitySort) {
+        ui.communitySort.onchange = (e) => {
+            state.communitySortMode = e.target.value;
+            renderAll(state.activeDate);
+        };
+    }
 
     ui.btnGridDensity.onclick = () => {
         state.isDenseGrid = !state.isDenseGrid;
