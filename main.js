@@ -259,6 +259,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         authorName: document.getElementById('author-name'),
         viewModeContainer: document.getElementById('view-mode-container'),
         editModeContainer: document.getElementById('edit-mode-container'),
+        slideHandle: document.getElementById('ui-slide-handle'),
+        storyViewer: document.querySelector('.story-viewer'),
         btnToggleEdit: document.getElementById('btn-toggle-edit'),
         btnCancelEdit: document.getElementById('btn-cancel-edit'),
         detailLikeBtn: document.getElementById('detail-like-btn'),
@@ -444,6 +446,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function showDetail(p) {
         state.currentPhoto = p;
+        
+        // Reset collapse state when opening a new photo
+        if (ui.storyViewer) {
+            ui.storyViewer.classList.remove('ui-collapsed');
+        }
+
         ui.detailImg.src = p.url;
         ui.detailDate.textContent = p.date;
         if (p.lat && p.lng) {
@@ -657,6 +665,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     ui.btnBack.onclick = closeDetail;
+
+    if (ui.slideHandle && ui.storyViewer) {
+        ui.slideHandle.onclick = () => {
+            ui.storyViewer.classList.toggle('ui-collapsed');
+        };
+    }
 
     ui.btnEditLocation.onclick = () => {
         if (!state.currentPhoto) return;
