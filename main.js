@@ -496,8 +496,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const photoIcon = L.divIcon({
                 className: `map-photo-pin ${isLikedByMe ? 'liked' : ''}`,
                 html: `<div class="pin-img-wrapper"><img src="${pinImg}" alt="pin"/></div>`,
-                iconSize: [40, 40],
-                iconAnchor: [20, 40]
+                iconSize: [34, 34],
+                iconAnchor: [17, 34]
             });
 
             const m = L.marker([p.lat, p.lng], { icon: photoIcon });
@@ -581,9 +581,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pinImg = microUrl || p.url;
         const photoIcon = L.divIcon({
             className: `map-photo-pin active`,
-            html: `<div class="pin-img-wrapper" style="border-color: var(--primary-color); transform: scale(1.1);"><img src="${pinImg}" alt="pin"/></div>`,
-            iconSize: [40, 40],
-            iconAnchor: [20, 40]
+            html: `<div class="pin-img-wrapper" style="border-color: var(--accent-color); transform: scale(1.1);"><img src="${pinImg}" alt="pin"/></div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 36]
         });
         state.currentMarker = L.marker([p.lat, p.lng], { icon: photoIcon }).addTo(map);
 
