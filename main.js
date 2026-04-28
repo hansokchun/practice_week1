@@ -66,14 +66,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnEditDemo = document.getElementById('btn-edit-demo');
         const btnSaveDemo = document.getElementById('btn-save-demo');
         const btnCancelDemo = document.getElementById('btn-cancel-demo');
+        const editAvatarPreview = document.getElementById('edit-avatar-preview');
+        const inputAvatarFile = document.getElementById('input-avatar-file');
+        let selectedAvatarFile = null;
 
         let nickname = (currentUser.user_metadata && currentUser.user_metadata.nickname) || '';
         let age = (currentUser.user_metadata && currentUser.user_metadata.age) || '';
         let gender = (currentUser.user_metadata && currentUser.user_metadata.gender) || '';
+        let avatarUrl = (currentUser.user_metadata && currentUser.user_metadata.avatar_url) || null;
 
         const renderProfileUI = () => {
             // 메인 뷰 정보
-            if (profileAvatarLg) profileAvatarLg.textContent = userInitial;
+            if (avatarUrl) {
+                const imgHtml = `<img src="${avatarUrl}" alt="avatar">`;
+                if (profileAvatarLg) profileAvatarLg.innerHTML = imgHtml;
+                if (userAvatar) userAvatar.innerHTML = imgHtml;
+            } else {
+                if (profileAvatarLg) profileAvatarLg.innerHTML = userInitial;
+                if (userAvatar) userAvatar.innerHTML = userInitial;
+            }
             if (profileNickname) profileNickname.textContent = nickname || currentUser.email;
             if (profileEmailSub) profileEmailSub.textContent = nickname ? currentUser.email : `ID: ${currentUser.id.substring(0, 8)}`;
             
@@ -127,6 +138,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (inputNickname) inputNickname.value = nickname;
                 if (inputAge) inputAge.value = age;
                 if (inputGender) inputGender.value = gender;
+                
+                selectedAvatarFile = null;
+                if (editAvatarPreview) {
+                    if (avatarUrl) {
+                        editAvatarPreview.innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
+                    } else {
+                        editAvatarPreview.innerHTML = `<span style="font-size: 12px; color: var(--text-muted);">클릭하여 변경</span>`;
+                    }
+                }
+            };
+        }
+
+        if (editAvatarPreview && inputAvatarFile) {
+            editAvatarPreview.onclick = (e) => {
+                e.stopPropagation();
+                inputAvatarFile.click();
+            };
+            inputAvatarFile.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedAvatarFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        editAvatarPreview.innerHTML = `<img src="${re.target.result}" alt="preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
             };
         }
 
@@ -148,7 +186,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnSaveDemo.textContent = '...';
                 btnSaveDemo.disabled = true;
 
-                const { user, error } = await updateUserMetadata({ nickname: newNickname, age: newAge, gender: newGender });
+                let newAvatarUrl = avatarUrl;
+                if (selectedAvatarFile) {
+                    const ext = selectedAvatarFile.name.split('.').pop();
+                    const fileName = `avatars/${currentUser.id}_${Date.now()}.${ext}`;
+                    const { url, error: uploadErr } = await uploadImage(selectedAvatarFile, fileName);
+                    if (!uploadErr && url) {
+                        newAvatarUrl = url;
+                    } else {
+                        console.error("Avatar upload failed:", uploadErr);
+                    }
+                }
+
+                const { user, error } = await updateUserMetadata({ 
+                    nickname: newNickname, 
+                    age: newAge, 
+                    gender: newGender,
+                    avatar_url: newAvatarUrl
+                });
                 
                 btnSaveDemo.textContent = originalText;
                 btnSaveDemo.disabled = false;
@@ -160,6 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     nickname = newNickname;
                     age = newAge;
                     gender = newGender;
+                    avatarUrl = newAvatarUrl;
                     renderProfileUI();
                 }
             };

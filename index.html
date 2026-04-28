@@ -107,6 +107,12 @@
                                         </div>
                                         <!-- 수정 모드 -->
                                         <div id="demo-edit" class="hidden">
+                                            <div class="edit-group" style="text-align: center; margin-bottom: 24px;">
+                                                <div id="edit-avatar-preview" class="profile-avatar-large" style="margin: 0 auto 12px; cursor: pointer; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc;">
+                                                    <span style="font-size: 12px; color: var(--text-muted);">클릭하여 변경</span>
+                                                </div>
+                                                <input type="file" id="input-avatar-file" accept="image/jpeg, image/png, image/webp" style="display: none;">
+                                            </div>
                                             <div class="edit-group">
                                                 <label class="info-label">닉네임</label>
                                                 <input type="text" id="input-nickname" class="demo-input" placeholder="닉네임 입력">
