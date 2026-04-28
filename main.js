@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.panelDetail.classList.add('active');
         ui.toggleBtn.textContent = '◀';
         
-        map.setView([p.lat, p.lng], 18);
+        map.setView([p.lat, p.lng], 14);
         refreshMapSize();
 
         window.history.replaceState(null, null, `#${p.id}`);
