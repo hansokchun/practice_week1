@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const profileMainView = document.getElementById('profile-main-view');
         const profileDetailView = document.getElementById('profile-detail-view');
         const btnViewInfo = document.getElementById('btn-view-info');
+        const btnViewMyProfile = document.getElementById('btn-view-my-profile');
         const btnBackProfile = document.getElementById('btn-back-profile');
         
         // 데모그래픽(상세정보/수정) 관련 DOM
@@ -113,6 +114,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderProfileUI();
 
         // 뷰 전환 이벤트
+        if (btnViewMyProfile) {
+            btnViewMyProfile.onclick = (e) => {
+                e.stopPropagation();
+                if (profilePopup) profilePopup.classList.add('hidden');
+                openProfilePage(currentUser.id, nickname || currentUser.email.split('@')[0] || '나');
+            };
+        }
+
         if (btnViewInfo) {
             btnViewInfo.onclick = (e) => {
                 e.stopPropagation();
@@ -771,7 +780,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Filter user photos
-        const userPhotos = state.sharedPhotos.filter(p => p.owner_id === userId);
+        const photoPool = (state.currentUser && userId === state.currentUser.id) ? state.photos : state.sharedPhotos;
+        const userPhotos = photoPool.filter(p => p.owner_id === userId);
         const totalLikes = userPhotos.reduce((sum, p) => sum + (p.liked || 0), 0);
 
         // Update Header
