@@ -774,11 +774,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (ui.profilePageStoryCount) ui.profilePageStoryCount.textContent = userPhotos.length;
         if (ui.profilePageLikeCount) ui.profilePageLikeCount.textContent = totalLikes;
 
-        // Generate Avatar (Initial)
+        // Generate Avatar
         if (ui.profilePageAvatar) {
-            const initial = nickname.charAt(0).toUpperCase();
-            ui.profilePageAvatar.innerHTML = `<span style="font-size: 32px; font-weight: bold; color: white;">${initial}</span>`;
-            ui.profilePageAvatar.style.background = 'var(--primary-color)';
+            let avatarToUse = null;
+            if (state.currentUser && userId === state.currentUser.id) {
+                avatarToUse = state.currentUser.user_metadata?.avatar_url;
+            }
+
+            if (avatarToUse) {
+                ui.profilePageAvatar.innerHTML = `<img src="${avatarToUse}" alt="avatar">`;
+                ui.profilePageAvatar.style.background = 'none';
+            } else {
+                const initial = nickname.charAt(0).toUpperCase();
+                ui.profilePageAvatar.innerHTML = `<span style="font-size: 32px; font-weight: bold; color: white;">${initial}</span>`;
+                ui.profilePageAvatar.style.background = 'var(--primary-color)';
+            }
             ui.profilePageAvatar.style.display = 'flex';
             ui.profilePageAvatar.style.alignItems = 'center';
             ui.profilePageAvatar.style.justifyContent = 'center';

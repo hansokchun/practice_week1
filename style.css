@@ -454,7 +454,7 @@ body, html {
 
 /* --- Detail View Refined UI --- */
 .story-viewer { display: flex; flex-direction: column; height: calc(100vh - 73px); overflow-y: auto; background: #fafafa; }
-.image-stage { background: #000; width: 100%; display: flex; align-items: center; justify-content: center; }
+.image-stage { background: none; width: 100%; display: flex; align-items: center; justify-content: center; }
 .image-stage img { width: 100%; max-height: 50vh; object-fit: contain; }
 
 .story-content { padding: 32px; background: #fff; border-top-left-radius: 24px; border-top-right-radius: 24px; margin-top: -20px; z-index: 10; position: relative; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); min-height: 50vh; }
@@ -568,7 +568,7 @@ body, html {
 #btn-send-comment { background: var(--accent-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; }
 
 .story-viewer { flex: 1; overflow-y: auto; }
-.image-stage { width: 100%; background: #000; display: flex; align-items: center; justify-content: center; min-height: 350px; }
+.image-stage { width: 100%; background: none; display: flex; align-items: center; justify-content: center; }
 #detail-image { width: 100%; height: auto; max-height: 75vh; object-fit: contain; }
 
 .story-content { padding: 40px 32px; }
