@@ -634,30 +634,30 @@ body, html {
 }
 
 .custom-cluster-icon {
-    width: 48px;
-    height: 48px;
+    width: 38px;
+    height: 38px;
     background: white;
     border-radius: 50%;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 3px solid var(--accent-color);
+    border: 3px solid #ff4757; /* 지도에서 눈에 확 띄는 비비드 컬러 */
     position: relative;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
 .custom-cluster-icon:hover {
-    transform: scale(1.15) translateY(-5px);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    transform: scale(1.15) translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
 }
 
 .custom-cluster-icon svg.cluster-gallery-svg {
-    width: 24px;
-    height: 24px;
-    stroke: var(--accent-color);
-    margin-left: 2px;
+    width: 18px;
+    height: 18px;
+    stroke: #ff4757;
+    margin-left: 0;
 }
 
 .cluster-count {

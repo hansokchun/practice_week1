@@ -395,15 +395,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             html: `
                 <div class="custom-cluster-icon">
                     <svg viewBox="0 0 24 24" fill="none" class="cluster-gallery-svg" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <path d="M2 15h10"></path>
-                        <path d="M2 9h10"></path>
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                        <polyline points="2 17 12 22 22 17"></polyline>
                     </svg>
                 </div>
             `, 
             className: 'cluster-wrapper', 
-            iconSize: [52, 52] 
+            iconSize: [42, 42] 
         })
     });
 
