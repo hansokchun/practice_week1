@@ -411,6 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ui.sidebar.classList.add('expanded');
             }
             
+            setTimeout(() => { refreshMapSize(); }, 300); // UI 트랜지션 후 지도 타일 다시 로드
             showToast("새로운 위치가 적용되었습니다.", "success");
         }
     });
@@ -680,6 +681,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     guideThumb.src = state.currentPhoto._dataUrl || state.currentPhoto.url;
                 }
                 
+                setTimeout(() => { refreshMapSize(); }, 300); // 사이드바가 숨겨진 후 남은 공간 맵 타일 로드
                 showToast("지도화면에서 새로운 위치를 클릭하여 지정해주세요.", "info");
             };
         }
@@ -698,6 +700,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.classList.remove('picking-location');
                 ui.sidebar.classList.remove('hidden');
                 if (window.innerWidth <= 768) ui.sidebar.classList.add('expanded');
+                setTimeout(() => { refreshMapSize(); }, 300); // 취소되어 사이드바 복원될 때 맵 사이즈 재계산
             }
         };
 
