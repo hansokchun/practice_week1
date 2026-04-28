@@ -764,6 +764,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.viewMode = 'user';
         state.targetUserId = userId;
 
+        state.currentPhoto = null;
+        if (state.currentMarker) {
+            map.removeLayer(state.currentMarker);
+            state.currentMarker = null;
+        }
+
         // Filter user photos
         const userPhotos = state.sharedPhotos.filter(p => p.owner_id === userId);
         const totalLikes = userPhotos.reduce((sum, p) => sum + (p.liked || 0), 0);
