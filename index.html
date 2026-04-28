@@ -233,9 +233,12 @@
                         <!-- Edit Controls (Edit Mode) -->
                         <div id="edit-mode-container" class="hidden" style="margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
                             <input type="text" id="edit-title-input" class="title-input" placeholder="사진 제목을 입력하세요..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-size: 16px; font-family: var(--sans-font); margin-bottom: 12px;">
-                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
                                 <input type="number" id="edit-lat-input" step="any" placeholder="Latitude (위도)" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
                                 <input type="number" id="edit-lng-input" step="any" placeholder="Longitude (경도)" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
+                                <button id="btn-pick-location" title="지도에서 지정하기" style="padding: 8px; background: white; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--text-main)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                </button>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button id="btn-save-edit" class="btn-action-fill"><span>저장</span></button>

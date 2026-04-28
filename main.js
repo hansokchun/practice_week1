@@ -300,6 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showOnlyLiked: false,
         activeDate: 'all',
         currentPhoto: null,
+        isPickingEditLocation: false,
         searchQuery: '',
         isDenseGrid: false,
         communitySortMode: 'latest', 
@@ -341,6 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnBack: document.getElementById('btn-back'),
         btnDelete: document.getElementById('btn-delete'),
         btnEditLocation: document.getElementById('btn-edit-location'),
+        btnPickLocation: document.getElementById('btn-pick-location'),
         btnCopyLink: document.getElementById('btn-copy-link'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
@@ -388,7 +390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 상세 보기 > 수정 모드 활성화 시 지도 직접 클릭으로 위치 수정 지원
     map.on('click', (e) => {
-        if (ui.editModeContainer && !ui.editModeContainer.classList.contains('hidden') && state.currentPhoto) {
+        if (state.isPickingEditLocation && ui.editModeContainer && !ui.editModeContainer.classList.contains('hidden') && state.currentPhoto) {
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
             
@@ -398,6 +400,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (state.currentMarker) {
                 state.currentMarker.setLatLng([lat, lng]);
             }
+            state.isPickingEditLocation = false;
+            document.body.style.cursor = 'default';
         }
     });
 
@@ -645,10 +649,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.btnToggleEdit.onclick = () => {
             ui.viewModeContainer.classList.add('hidden');
             ui.editModeContainer.classList.remove('hidden');
-            ui.btnEditLocation.style.display = 'flex'; // 수정 모드일때만 위치변경 버튼 노출
+            ui.btnEditLocation.style.display = 'flex'; // 수정 모드일때만 상단 위치변경 버튼 노출
             ui.editTitleInput.focus();
-            showToast("지도를 클릭하여 즉시 위치를 변경할 수 있습니다.", "info");
+            state.isPickingEditLocation = false;
+            document.body.style.cursor = 'default';
         };
+
+        if (ui.btnPickLocation) {
+            ui.btnPickLocation.onclick = (e) => {
+                e.stopPropagation();
+                state.isPickingEditLocation = true;
+                showToast("지도에서 원하는 위치를 클릭하여 지정해주세요.", "info");
+                document.body.style.cursor = 'crosshair';
+            };
+        }
 
         ui.btnCancelEdit.onclick = () => {
             ui.viewModeContainer.classList.remove('hidden');
@@ -657,6 +671,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.editTitleInput.value = p.description || '';
             ui.editLatInput.value = p.lat || '';
             ui.editLngInput.value = p.lng || '';
+            state.isPickingEditLocation = false;
+            document.body.style.cursor = 'default';
         };
 
         ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
