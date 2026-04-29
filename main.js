@@ -359,7 +359,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         detailTitleText: document.getElementById('detail-title-text'),
         detailAlbumBadge: document.getElementById('detail-album-badge'),
         editTitleInput: document.getElementById('edit-title-input'),
-        editAlbumInput: document.getElementById('edit-album-input'),
         editLatInput: document.getElementById('edit-lat-input'),
         editLngInput: document.getElementById('edit-lng-input'),
         authorName: document.getElementById('author-name'),
@@ -713,7 +712,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         ui.editTitleInput.value = p.description || '';
-        if (ui.editAlbumInput) ui.editAlbumInput.value = p.album || '';
         ui.editLatInput.value = p.lat || '';
         ui.editLngInput.value = p.lng || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
@@ -995,8 +993,78 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (state.profileViewMode === 'albums') {
+                if (state.isSelectingPhotos) {
+                    if (ui.profileGallerySort) ui.profileGallerySort.style.display = 'none';
+                    
+                    const headerItem = document.createElement('div');
+                    headerItem.style.gridColumn = '1 / -1';
+                    headerItem.style.padding = '10px';
+                    headerItem.style.display = 'flex';
+                    headerItem.style.alignItems = 'center';
+                    headerItem.style.justifyContent = 'space-between';
+                    headerItem.style.gap = '10px';
+                    headerItem.innerHTML = `
+                        <button id="btn-cancel-select" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; font-weight:600;">취소</button>
+                        <span style="font-weight:700;">${state.activeAlbum} 앨범에 추가할 사진 선택</span>
+                        <button id="btn-save-select" style="background:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">저장</button>
+                    `;
+                    ui.profileGalleryGrid.appendChild(headerItem);
+                    
+                    document.getElementById('btn-cancel-select').onclick = () => {
+                        state.isSelectingPhotos = false;
+                        state.selectedPhotosForAlbum = [];
+                        renderGallery();
+                    };
+
+                    document.getElementById('btn-save-select').onclick = async () => {
+                        const originalText = document.getElementById('btn-save-select').textContent;
+                        document.getElementById('btn-save-select').textContent = '저장 중...';
+                        
+                        // Upsert selected photos
+                        for (const p of userPhotos) {
+                            if (state.selectedPhotosForAlbum.includes(p.id)) {
+                                p.album = state.activeAlbum;
+                                await upsertPhoto(p);
+                            }
+                        }
+                        
+                        state.isSelectingPhotos = false;
+                        state.selectedPhotosForAlbum = [];
+                        renderGallery();
+                    };
+                    
+                    sortedPhotos.forEach(p => {
+                        const item = document.createElement('div');
+                        item.className = 'profile-gallery-item';
+                        const isSelected = state.selectedPhotosForAlbum.includes(p.id);
+                        item.style.position = 'relative';
+                        item.style.border = isSelected ? '3px solid var(--primary-color)' : 'none';
+                        item.style.boxSizing = 'border-box';
+                        
+                        item.innerHTML = `
+                            <img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" style="opacity: ${isSelected ? 0.7 : 1};" />
+                            ${isSelected ? '<div style="position:absolute; top:5px; right:5px; background:var(--primary-color); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:bold;">✓</div>' : ''}
+                        `;
+                        item.onclick = () => {
+                            if (isSelected) {
+                                state.selectedPhotosForAlbum = state.selectedPhotosForAlbum.filter(id => id !== p.id);
+                            } else {
+                                state.selectedPhotosForAlbum.push(p.id);
+                            }
+                            renderGallery();
+                        };
+                        ui.profileGalleryGrid.appendChild(item);
+                    });
+                    return;
+                }
+
                 // Group by album
                 const albumGroups = {};
+                const customAlbums = state.currentUser?.user_metadata?.customAlbums || [];
+                customAlbums.forEach(albumName => {
+                    albumGroups[albumName] = [];
+                });
+                
                 const noAlbumPhotos = [];
                 
                 sortedPhotos.forEach(p => {
@@ -1022,9 +1090,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     headerItem.style.alignItems = 'center';
                     headerItem.style.gap = '10px';
                     headerItem.innerHTML = `
-                        <button id="btn-back-to-albums" style="background:none; border:none; color:var(--primary-color); cursor:pointer; font-size:14px; font-weight:600;">← 뒤로</button>
-                        <span style="font-weight:700;">${state.activeAlbum}</span>
-                        <span style="color:var(--text-muted); font-size:12px;">(${albumPhotos.length})</span>
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                            <div>
+                                <button id="btn-back-to-albums" style="background:none; border:none; color:var(--primary-color); cursor:pointer; font-size:14px; font-weight:600;">← 뒤로</button>
+                                <span style="font-weight:700; margin-left:10px;">${state.activeAlbum}</span>
+                                <span style="color:var(--text-muted); font-size:12px;">(${albumPhotos.length})</span>
+                            </div>
+                            <button id="btn-add-photos-to-album" style="background:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">+ 사진 추가</button>
+                        </div>
                     `;
                     ui.profileGalleryGrid.appendChild(headerItem);
                     
@@ -1032,6 +1105,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         state.activeAlbum = null;
                         renderGallery();
                     };
+
+                    const btnAddPhotos = document.getElementById('btn-add-photos-to-album');
+                    if (btnAddPhotos) {
+                        btnAddPhotos.onclick = () => {
+                            state.isSelectingPhotos = true;
+                            state.selectedPhotosForAlbum = [];
+                            renderGallery();
+                        };
+                    }
                     
                     albumPhotos.forEach(p => {
                         const item = document.createElement('div');
@@ -1043,14 +1125,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     // Show album folders
                     for (const [albumName, photos] of Object.entries(albumGroups)) {
-                        const coverPhoto = photos[0];
+                        const coverPhoto = photos.length > 0 ? photos[0] : null;
                         const item = document.createElement('div');
                         item.className = 'profile-album-folder';
                         item.innerHTML = `
-                            <img src="${coverPhoto.url ? coverPhoto.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="album cover" onerror="this.src='${coverPhoto.url}'" />
-                            <div class="album-info">
-                                <div class="album-title">${albumName}</div>
-                                <div class="album-count">${photos.length} 사진</div>
+                            ${coverPhoto ? `<img src="${coverPhoto.url ? coverPhoto.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="album cover" onerror="this.src='${coverPhoto.url}'" />` : '<div style="width:100%; height:100%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">빈 앨범</div>'}
+                            <div class="album-info" style="padding-top: ${coverPhoto ? '20px' : '10px'};">
+                                <div class="album-title" style="color: ${coverPhoto ? 'white' : 'var(--text-main)'};">${albumName}</div>
+                                <div class="album-count" style="color: ${coverPhoto ? 'white' : 'var(--text-muted)'};">${photos.length} 사진</div>
                             </div>
                         `;
                         item.onclick = () => {
@@ -1078,6 +1160,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                         };
                         ui.profileGalleryGrid.appendChild(item);
                     }
+
+                    // Add "Create New Album" button
+                    const createFolderItem = document.createElement('div');
+                    createFolderItem.className = 'profile-album-folder';
+                    createFolderItem.style.background = '#f8fafc';
+                    createFolderItem.style.border = '2px dashed var(--border-color)';
+                    createFolderItem.style.display = 'flex';
+                    createFolderItem.style.flexDirection = 'column';
+                    createFolderItem.style.alignItems = 'center';
+                    createFolderItem.style.justifyContent = 'center';
+                    createFolderItem.style.color = 'var(--text-muted)';
+                    createFolderItem.style.cursor = 'pointer';
+                    createFolderItem.innerHTML = `
+                        <div style="font-size:32px; margin-bottom:8px;">+</div>
+                        <div style="font-size:14px; font-weight:600;">새 앨범 만들기</div>
+                    `;
+                    createFolderItem.onclick = async () => {
+                        const newName = prompt('새 앨범 이름을 입력하세요:');
+                        if (newName && newName.trim()) {
+                            const trimmedName = newName.trim();
+                            const currentCustomAlbums = state.currentUser?.user_metadata?.customAlbums || [];
+                            if (!currentCustomAlbums.includes(trimmedName)) {
+                                const newCustomAlbums = [...currentCustomAlbums, trimmedName];
+                                const { user, error } = await updateUserMetadata({ customAlbums: newCustomAlbums });
+                                if (!error) {
+                                    state.currentUser.user_metadata = user.user_metadata;
+                                    renderGallery();
+                                } else {
+                                    alert('앨범 생성 중 오류가 발생했습니다.');
+                                }
+                            }
+                        }
+                    };
+                    ui.profileGalleryGrid.appendChild(createFolderItem);
                 }
             } else {
                 // All photos view
@@ -1204,7 +1320,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.description = ui.editTitleInput.value;
-        if (ui.editAlbumInput) state.currentPhoto.album = ui.editAlbumInput.value.trim();
         const latVal = parseFloat(ui.editLatInput.value);
         const lngVal = parseFloat(ui.editLngInput.value);
         if (!isNaN(latVal) && !isNaN(lngVal)) {
