@@ -388,6 +388,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+    // 장소 검색 컨트롤 (Leaflet Control Geocoder)
+    if (typeof L.Control.Geocoder !== 'undefined') {
+        L.Control.geocoder({
+            defaultMarkGeocode: false,
+            position: 'topright',
+            placeholder: 'Search location...'
+        })
+        .on('markgeocode', function(e) {
+            const bbox = e.geocode.bbox;
+            map.fitBounds(bbox);
+        })
+        .addTo(map);
+    }
+
     // 상세 보기 > 수정 모드 활성화 시 지도 직접 클릭으로 위치 수정 지원
     map.on('click', (e) => {
         if (state.isPickingEditLocation && ui.editModeContainer && !ui.editModeContainer.classList.contains('hidden') && state.currentPhoto) {
