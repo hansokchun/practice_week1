@@ -304,7 +304,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         searchQuery: '',
         isDenseGrid: false,
         communitySortMode: 'latest', 
-        currentUser: currentUser
+        currentUser: currentUser,
+        targetUserId: null,
+        detailReturnTo: 'explore',
+        profileReturnTo: 'explore',
+        profileReturnToPhoto: null,
+        profileSortMode: 'latest',
+        profileViewMode: 'photos', // 'photos' or 'albums'
+        activeAlbum: null
     };
 
     // ═══════════════════════════════════════════════════
@@ -337,6 +344,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         profilePageLikeCount: document.getElementById('profile-page-like-count'),
         profileGalleryGrid: document.getElementById('profile-gallery-grid'),
         profileGallerySort: document.getElementById('profile-gallery-sort'),
+        btnViewPhotos: document.getElementById('btn-view-photos'),
+        btnViewAlbums: document.getElementById('btn-view-albums'),
 
         // Detail Panel UI
         btnBack: document.getElementById('btn-back'),
@@ -348,7 +357,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         detailDate: document.getElementById('detail-date'),
         detailCoordinates: document.querySelector('#detail-coordinates span'),
         detailTitleText: document.getElementById('detail-title-text'),
+        detailAlbumBadge: document.getElementById('detail-album-badge'),
         editTitleInput: document.getElementById('edit-title-input'),
+        editAlbumInput: document.getElementById('edit-album-input'),
         editLatInput: document.getElementById('edit-lat-input'),
         editLngInput: document.getElementById('edit-lng-input'),
         authorName: document.getElementById('author-name'),
@@ -692,7 +703,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.detailTitleText.textContent = '';
             ui.detailTitleText.style.display = 'none';
         }
+
+        if (p.album) {
+            ui.detailAlbumBadge.textContent = p.album;
+            ui.detailAlbumBadge.style.display = 'inline-block';
+        } else {
+            ui.detailAlbumBadge.textContent = '';
+            ui.detailAlbumBadge.style.display = 'none';
+        }
+
         ui.editTitleInput.value = p.description || '';
+        if (ui.editAlbumInput) ui.editAlbumInput.value = p.album || '';
         ui.editLatInput.value = p.lat || '';
         ui.editLngInput.value = p.lng || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
@@ -963,29 +984,151 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Gallery function
         const renderGallery = () => {
-            if (ui.profileGalleryGrid) {
-                ui.profileGalleryGrid.innerHTML = '';
-                
-                let sortedPhotos = [...userPhotos];
-                if (state.profileSortMode === 'likes') {
-                    sortedPhotos.sort((a, b) => (b.liked || 0) - (a.liked || 0) || b.date.localeCompare(a.date));
-                } else {
-                    sortedPhotos.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at));
-                }
+            if (!ui.profileGalleryGrid) return;
+            ui.profileGalleryGrid.innerHTML = '';
+            
+            let sortedPhotos = [...userPhotos];
+            if (state.profileSortMode === 'likes') {
+                sortedPhotos.sort((a, b) => (b.liked || 0) - (a.liked || 0) || b.date.localeCompare(a.date));
+            } else {
+                sortedPhotos.sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at));
+            }
 
+            if (state.profileViewMode === 'albums') {
+                // Group by album
+                const albumGroups = {};
+                const noAlbumPhotos = [];
+                
                 sortedPhotos.forEach(p => {
-                const item = document.createElement('div');
-                item.className = 'profile-gallery-item';
-                item.innerHTML = `<img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />`;
-                item.onclick = () => {
-                    showDetail(p);
-                };
-                ui.profileGalleryGrid.appendChild(item);
-            });
-        }
+                    const albumName = p.album ? p.album.trim() : '';
+                    if (albumName) {
+                        if (!albumGroups[albumName]) albumGroups[albumName] = [];
+                        albumGroups[albumName].push(p);
+                    } else {
+                        noAlbumPhotos.push(p);
+                    }
+                });
+                
+                if (ui.profileGallerySort) ui.profileGallerySort.style.display = 'none';
+
+                if (state.activeAlbum) {
+                    // Show photos inside the active album
+                    const albumPhotos = albumGroups[state.activeAlbum] || [];
+                    
+                    const headerItem = document.createElement('div');
+                    headerItem.style.gridColumn = '1 / -1';
+                    headerItem.style.padding = '10px';
+                    headerItem.style.display = 'flex';
+                    headerItem.style.alignItems = 'center';
+                    headerItem.style.gap = '10px';
+                    headerItem.innerHTML = `
+                        <button id="btn-back-to-albums" style="background:none; border:none; color:var(--primary-color); cursor:pointer; font-size:14px; font-weight:600;">← 뒤로</button>
+                        <span style="font-weight:700;">${state.activeAlbum}</span>
+                        <span style="color:var(--text-muted); font-size:12px;">(${albumPhotos.length})</span>
+                    `;
+                    ui.profileGalleryGrid.appendChild(headerItem);
+                    
+                    document.getElementById('btn-back-to-albums').onclick = () => {
+                        state.activeAlbum = null;
+                        renderGallery();
+                    };
+                    
+                    albumPhotos.forEach(p => {
+                        const item = document.createElement('div');
+                        item.className = 'profile-gallery-item';
+                        item.innerHTML = `<img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />`;
+                        item.onclick = () => showDetail(p);
+                        ui.profileGalleryGrid.appendChild(item);
+                    });
+                } else {
+                    // Show album folders
+                    for (const [albumName, photos] of Object.entries(albumGroups)) {
+                        const coverPhoto = photos[0];
+                        const item = document.createElement('div');
+                        item.className = 'profile-album-folder';
+                        item.innerHTML = `
+                            <img src="${coverPhoto.url ? coverPhoto.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="album cover" onerror="this.src='${coverPhoto.url}'" />
+                            <div class="album-info">
+                                <div class="album-title">${albumName}</div>
+                                <div class="album-count">${photos.length} 사진</div>
+                            </div>
+                        `;
+                        item.onclick = () => {
+                            state.activeAlbum = albumName;
+                            renderGallery();
+                        };
+                        ui.profileGalleryGrid.appendChild(item);
+                    }
+                    
+                    if (noAlbumPhotos.length > 0) {
+                        const coverPhoto = noAlbumPhotos[0];
+                        const item = document.createElement('div');
+                        item.className = 'profile-album-folder';
+                        item.innerHTML = `
+                            <img src="${coverPhoto.url ? coverPhoto.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="album cover" onerror="this.src='${coverPhoto.url}'" />
+                            <div class="album-info">
+                                <div class="album-title">분류되지 않음</div>
+                                <div class="album-count">${noAlbumPhotos.length} 사진</div>
+                            </div>
+                        `;
+                        item.onclick = () => {
+                            state.activeAlbum = '분류되지 않음';
+                            albumGroups['분류되지 않음'] = noAlbumPhotos;
+                            renderGallery();
+                        };
+                        ui.profileGalleryGrid.appendChild(item);
+                    }
+                }
+            } else {
+                // All photos view
+                if (ui.profileGallerySort) ui.profileGallerySort.style.display = 'block';
+                sortedPhotos.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'profile-gallery-item';
+                    item.innerHTML = `<img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />`;
+                    item.onclick = () => {
+                        showDetail(p);
+                    };
+                    ui.profileGalleryGrid.appendChild(item);
+                });
+            }
         };
 
         renderGallery();
+
+        if (ui.btnViewPhotos && ui.btnViewAlbums) {
+            ui.btnViewPhotos.onclick = () => {
+                state.profileViewMode = 'photos';
+                state.activeAlbum = null;
+                ui.btnViewPhotos.classList.add('active');
+                ui.btnViewPhotos.style.background = 'var(--primary-color)';
+                ui.btnViewPhotos.style.color = 'white';
+                ui.btnViewPhotos.style.border = 'none';
+                
+                ui.btnViewAlbums.classList.remove('active');
+                ui.btnViewAlbums.style.background = '#fff';
+                ui.btnViewAlbums.style.color = 'var(--text-main)';
+                ui.btnViewAlbums.style.border = '1px solid var(--border-color)';
+                
+                renderGallery();
+            };
+            
+            ui.btnViewAlbums.onclick = () => {
+                state.profileViewMode = 'albums';
+                state.activeAlbum = null;
+                ui.btnViewAlbums.classList.add('active');
+                ui.btnViewAlbums.style.background = 'var(--primary-color)';
+                ui.btnViewAlbums.style.color = 'white';
+                ui.btnViewAlbums.style.border = 'none';
+                
+                ui.btnViewPhotos.classList.remove('active');
+                ui.btnViewPhotos.style.background = '#fff';
+                ui.btnViewPhotos.style.color = 'var(--text-main)';
+                ui.btnViewPhotos.style.border = '1px solid var(--border-color)';
+                
+                renderGallery();
+            };
+        }
 
         if (ui.profileGallerySort) {
             ui.profileGallerySort.value = state.profileSortMode;
@@ -1061,6 +1204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.description = ui.editTitleInput.value;
+        if (ui.editAlbumInput) state.currentPhoto.album = ui.editAlbumInput.value.trim();
         const latVal = parseFloat(ui.editLatInput.value);
         const lngVal = parseFloat(ui.editLngInput.value);
         if (!isNaN(latVal) && !isNaN(lngVal)) {
@@ -1082,6 +1226,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 ui.detailTitleText.textContent = '';
                 ui.detailTitleText.style.display = 'none';
+            }
+
+            if (state.currentPhoto.album) {
+                ui.detailAlbumBadge.textContent = state.currentPhoto.album;
+                ui.detailAlbumBadge.style.display = 'inline-block';
+            } else {
+                ui.detailAlbumBadge.textContent = '';
+                ui.detailAlbumBadge.style.display = 'none';
             }
             if (state.currentPhoto.lat && state.currentPhoto.lng) {
                 ui.detailCoordinates.textContent = `${state.currentPhoto.lat.toFixed(4)}, ${state.currentPhoto.lng.toFixed(4)}`;
