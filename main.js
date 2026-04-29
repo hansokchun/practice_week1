@@ -998,7 +998,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     const headerItem = document.createElement('div');
                     headerItem.style.gridColumn = '1 / -1';
-                    headerItem.style.padding = '10px';
+                    headerItem.style.padding = '16px';
+                    headerItem.style.background = '#f8fafc';
+                    headerItem.style.borderBottom = '1px solid var(--border-color)';
+                    headerItem.style.marginBottom = '8px';
                     headerItem.style.display = 'flex';
                     headerItem.style.alignItems = 'center';
                     headerItem.style.justifyContent = 'space-between';
@@ -1085,7 +1088,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     const headerItem = document.createElement('div');
                     headerItem.style.gridColumn = '1 / -1';
-                    headerItem.style.padding = '10px';
+                    headerItem.style.padding = '16px';
+                    headerItem.style.background = '#f8fafc';
+                    headerItem.style.borderBottom = '1px solid var(--border-color)';
+                    headerItem.style.marginBottom = '8px';
                     headerItem.style.display = 'flex';
                     headerItem.style.alignItems = 'center';
                     headerItem.style.gap = '10px';
@@ -1217,14 +1223,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.profileViewMode = 'photos';
                 state.activeAlbum = null;
                 ui.btnViewPhotos.classList.add('active');
-                ui.btnViewPhotos.style.background = 'var(--primary-color)';
-                ui.btnViewPhotos.style.color = 'white';
-                ui.btnViewPhotos.style.border = 'none';
+                ui.btnViewPhotos.style.background = 'white';
+                ui.btnViewPhotos.style.color = 'var(--text-main)';
+                ui.btnViewPhotos.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 
                 ui.btnViewAlbums.classList.remove('active');
-                ui.btnViewAlbums.style.background = '#fff';
-                ui.btnViewAlbums.style.color = 'var(--text-main)';
-                ui.btnViewAlbums.style.border = '1px solid var(--border-color)';
+                ui.btnViewAlbums.style.background = 'transparent';
+                ui.btnViewAlbums.style.color = 'var(--text-muted)';
+                ui.btnViewAlbums.style.boxShadow = 'none';
                 
                 renderGallery();
             };
@@ -1233,14 +1239,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.profileViewMode = 'albums';
                 state.activeAlbum = null;
                 ui.btnViewAlbums.classList.add('active');
-                ui.btnViewAlbums.style.background = 'var(--primary-color)';
-                ui.btnViewAlbums.style.color = 'white';
-                ui.btnViewAlbums.style.border = 'none';
+                ui.btnViewAlbums.style.background = 'white';
+                ui.btnViewAlbums.style.color = 'var(--text-main)';
+                ui.btnViewAlbums.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                 
                 ui.btnViewPhotos.classList.remove('active');
-                ui.btnViewPhotos.style.background = '#fff';
-                ui.btnViewPhotos.style.color = 'var(--text-main)';
-                ui.btnViewPhotos.style.border = '1px solid var(--border-color)';
+                ui.btnViewPhotos.style.background = 'transparent';
+                ui.btnViewPhotos.style.color = 'var(--text-muted)';
+                ui.btnViewPhotos.style.boxShadow = 'none';
                 
                 renderGallery();
             };
