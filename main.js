@@ -388,19 +388,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // 장소 검색 컨트롤 (Leaflet Control Geocoder)
-    if (typeof L.Control.Geocoder !== 'undefined') {
-        L.Control.geocoder({
-            defaultMarkGeocode: false,
-            position: 'topright',
-            placeholder: 'Search location...'
-        })
-        .on('markgeocode', function(e) {
-            const bbox = e.geocode.bbox;
-            map.fitBounds(bbox);
-        })
-        .addTo(map);
-    }
+    // 장소 검색 컨트롤 (Google Places API)
+    const SearchControl = L.Control.extend({
+        options: { position: 'topright' },
+        onAdd: function (map) {
+            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control custom-google-search-control');
+            const input = L.DomUtil.create('input', 'google-search-input', container);
+            input.type = 'text';
+            input.placeholder = '장소, 상호명 검색...';
+
+            // 드래그 및 클릭 이벤트가 지도로 전파되지 않도록 차단
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.disableScrollPropagation(container);
+
+            // 구글 맵스 API 로드 완료 시 자동완성 연결
+            const initAutocomplete = () => {
+                if (window.google && google.maps && google.maps.places) {
+                    const autocomplete = new google.maps.places.Autocomplete(input);
+                    
+                    // Enter 키를 눌러 지도가 움직이는 것을 방지
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') e.preventDefault();
+                    });
+
+                    autocomplete.addListener('place_changed', function() {
+                        const place = autocomplete.getPlace();
+                        if (!place.geometry || !place.geometry.location) return;
+
+                        const lat = place.geometry.location.lat();
+                        const lng = place.geometry.location.lng();
+                        
+                        // 뷰포트 영역이 있으면 바운드에 맞춤, 없으면 flyTo
+                        if (place.geometry.viewport) {
+                            const bounds = place.geometry.viewport;
+                            map.fitBounds([
+                                [bounds.getSouthWest().lat(), bounds.getSouthWest().lng()],
+                                [bounds.getNorthEast().lat(), bounds.getNorthEast().lng()]
+                            ]);
+                        } else {
+                            map.flyTo([lat, lng], 16);
+                        }
+                    });
+                } else {
+                    setTimeout(initAutocomplete, 500);
+                }
+            };
+            initAutocomplete();
+
+            return container;
+        }
+    });
+    map.addControl(new SearchControl());
 
     // 상세 보기 > 수정 모드 활성화 시 지도 직접 클릭으로 위치 수정 지원
     map.on('click', (e) => {
