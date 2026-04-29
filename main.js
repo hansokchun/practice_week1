@@ -342,6 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         profilePageNickname: document.getElementById('profile-page-nickname'),
         profilePageStoryCount: document.getElementById('profile-page-story-count'),
         profilePageLikeCount: document.getElementById('profile-page-like-count'),
+        profileGalleryHeader: document.getElementById('profile-gallery-header'),
         profileGalleryGrid: document.getElementById('profile-gallery-grid'),
         profileGallerySort: document.getElementById('profile-gallery-sort'),
         btnViewPhotos: document.getElementById('btn-view-photos'),
@@ -984,6 +985,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const renderGallery = () => {
             if (!ui.profileGalleryGrid) return;
             ui.profileGalleryGrid.innerHTML = '';
+            if (ui.profileGalleryHeader) ui.profileGalleryHeader.innerHTML = '';
             
             let sortedPhotos = [...userPhotos];
             if (state.profileSortMode === 'likes') {
@@ -997,11 +999,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (ui.profileGallerySort) ui.profileGallerySort.style.display = 'none';
                     
                     const headerItem = document.createElement('div');
-                    headerItem.style.gridColumn = '1 / -1';
                     headerItem.style.padding = '16px';
                     headerItem.style.background = '#f8fafc';
                     headerItem.style.borderBottom = '1px solid var(--border-color)';
-                    headerItem.style.marginBottom = '8px';
                     headerItem.style.display = 'flex';
                     headerItem.style.alignItems = 'center';
                     headerItem.style.justifyContent = 'space-between';
@@ -1011,7 +1011,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span style="font-weight:700;">${state.activeAlbum} 앨범에 추가할 사진 선택</span>
                         <button id="btn-save-select" style="background:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">저장</button>
                     `;
-                    ui.profileGalleryGrid.appendChild(headerItem);
+                    if (ui.profileGalleryHeader) {
+                        ui.profileGalleryHeader.appendChild(headerItem);
+                    } else {
+                        ui.profileGalleryGrid.appendChild(headerItem);
+                    }
                     
                     document.getElementById('btn-cancel-select').onclick = () => {
                         state.isSelectingPhotos = false;
@@ -1087,11 +1091,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const albumPhotos = albumGroups[state.activeAlbum] || [];
                     
                     const headerItem = document.createElement('div');
-                    headerItem.style.gridColumn = '1 / -1';
                     headerItem.style.padding = '16px';
                     headerItem.style.background = '#f8fafc';
                     headerItem.style.borderBottom = '1px solid var(--border-color)';
-                    headerItem.style.marginBottom = '8px';
                     headerItem.style.display = 'flex';
                     headerItem.style.alignItems = 'center';
                     headerItem.style.gap = '10px';
@@ -1105,7 +1107,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <button id="btn-add-photos-to-album" style="background:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">+ 사진 추가</button>
                         </div>
                     `;
-                    ui.profileGalleryGrid.appendChild(headerItem);
+                    if (ui.profileGalleryHeader) {
+                        ui.profileGalleryHeader.appendChild(headerItem);
+                    } else {
+                        ui.profileGalleryGrid.appendChild(headerItem);
+                    }
                     
                     document.getElementById('btn-back-to-albums').onclick = () => {
                         state.activeAlbum = null;
