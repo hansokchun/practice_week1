@@ -148,7 +148,8 @@ async function upsertPhoto(photo) {
                 lng: photo.lng,
                 liked: Number(photo.liked || 0),
                 shared: !!photo.shared,
-                owner_id: photo.owner_id
+                owner_id: photo.owner_id,
+                album: photo.album || null
             }, { onConflict: 'id' });
         if (error) throw error;
         return { data, error: null };
