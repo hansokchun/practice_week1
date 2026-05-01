@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let state = {
         photos: [],
         sharedPhotos: [],
-        myLikedIds: JSON.parse(localStorage.getItem('my_liked_photos') || '[]'),
+        myLikedIds: [],
         viewMode: 'my', // 'my' or 'shared'
         showOnlyLiked: false,
         activeDate: 'all',
@@ -533,7 +533,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }));
             
             state.photos = cloudPhotos;
-            state.sharedPhotos = cloudPhotos.filter(p => p.shared); 
+            state.sharedPhotos = cloudPhotos.filter(p => p.shared);
+
+            // 로그인된 유저라면 서버에서 좋아요 목록 동기화
+            if (state.currentUser) {
+                const { data: likedIds, error: likesError } = await fetchMyLikes(state.currentUser.id);
+                if (!likesError) {
+                    state.myLikedIds = likedIds;
+                }
+            }
             
             renderAll();
 
@@ -1470,6 +1478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 좋아요: Supabase DB에 직접 upsert
+    // 좋아요: 서버(user_likes 테이블) 동기화 방식
     ui.detailLikeBtn.onclick = async () => {
         if (!state.currentUser) {
             showToast("로그인이 필요합니다.", "warning");
@@ -1479,6 +1488,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const photoId = state.currentPhoto.id.toString();
         const isLiked = state.myLikedIds.includes(photoId);
         
+        // 낙관적 UI 업데이트 (서버 응답 전 즉시 반영)
         if (isLiked) {
             state.myLikedIds = state.myLikedIds.filter(id => id !== photoId);
             state.currentPhoto.liked = Math.max(0, (state.currentPhoto.liked || 0) - 1);
@@ -1486,13 +1496,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             state.myLikedIds.push(photoId);
             state.currentPhoto.liked = (state.currentPhoto.liked || 0) + 1;
         }
-        localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
+        ui.detailLikeBtn.classList.toggle('active', !isLiked);
+        ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
 
-        const { error } = await toggleLikePhoto(photoId, !isLiked);
-        if (error) {
-            console.error('Like sync failed (RPC):', error);
-            showToast("좋아요 반영 실패! Supabase에서 SQL을 실행했는지 확인해주세요.", "warning");
-            // 로컬 상태 롤백
+        // 서버에 좋아요 카운터 반영 (RPC) + user_likes 테이블 동기화
+        const [rpcResult, likeResult] = await Promise.all([
+            toggleLikePhoto(photoId, !isLiked),
+            isLiked 
+                ? deleteLike(state.currentUser.id, photoId)
+                : insertLike(state.currentUser.id, photoId)
+        ]);
+
+        if (rpcResult.error || likeResult.error) {
+            console.error('Like sync failed:', rpcResult.error || likeResult.error);
+            // 롤백
             if (isLiked) {
                 state.myLikedIds.push(photoId);
                 state.currentPhoto.liked = (state.currentPhoto.liked || 0) + 1;
@@ -1500,14 +1517,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 state.myLikedIds = state.myLikedIds.filter(id => id !== photoId);
                 state.currentPhoto.liked = Math.max(0, (state.currentPhoto.liked || 0) - 1);
             }
-            localStorage.setItem('my_liked_photos', JSON.stringify(state.myLikedIds));
             ui.detailLikeBtn.classList.toggle('active', isLiked);
             ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
+            showToast("좋아요 반영에 실패했습니다.", "warning");
             return;
         }
         
-        ui.detailLikeBtn.classList.toggle('active', !isLiked);
-        ui.likeCountBadge.textContent = `${state.currentPhoto.liked} likes`;
         renderAll(state.activeDate);
     };
 

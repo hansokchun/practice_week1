@@ -175,6 +175,59 @@ async function toggleLikePhoto(photoId, isLiking) {
 }
 
 /**
+ * 특정 유저가 좋아요한 사진 ID 목록 조회
+ * 왜 필요: localStorage 대신 서버에서 좋아요 상태를 동기화하여
+ * 다른 기기에서도 동일한 좋아요 상태를 유지하기 위함
+ */
+async function fetchMyLikes(userId) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('user_likes')
+            .select('photo_id')
+            .eq('user_id', userId);
+        if (error) throw error;
+        return { data: (data || []).map(row => row.photo_id), error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
+/**
+ * 좋아요 추가 (user_likes 테이블에 INSERT)
+ */
+async function insertLike(userId, photoId) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb
+            .from('user_likes')
+            .insert({ user_id: userId, photo_id: photoId.toString() });
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
+    }
+}
+
+/**
+ * 좋아요 해제 (user_likes 테이블에서 DELETE)
+ */
+async function deleteLike(userId, photoId) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb
+            .from('user_likes')
+            .delete()
+            .eq('user_id', userId)
+            .eq('photo_id', photoId.toString());
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
+    }
+}
+
+/**
  * 사진 삭제
  * RLS 정책으로 본인 사진만 DELETE 가능
  * 관련 댓글은 ON DELETE CASCADE로 DB가 자동 삭제
