@@ -360,6 +360,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         detailTitleText: document.getElementById('detail-title-text'),
         detailAlbumBadge: document.getElementById('detail-album-badge'),
         editTitleInput: document.getElementById('edit-title-input'),
+        editDateInput: document.getElementById('edit-date-input'),
+        editTimeInput: document.getElementById('edit-time-input'),
         editLatInput: document.getElementById('edit-lat-input'),
         editLngInput: document.getElementById('edit-lng-input'),
         authorName: document.getElementById('author-name'),
@@ -573,12 +575,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const mapList = baseMapList
+            .filter(p => p.lat && p.lng)
             .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
             .filter(p => filterDate === 'all' || p.date === filterDate)
-            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
+            .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()))
+            .filter(p => {
+                if (isUserView && state.profileViewMode === 'albums' && state.activeAlbum) {
+                    const pAlbum = p.album ? p.album.trim() : '';
+                    return pAlbum === state.activeAlbum;
+                }
+                return true;
+            });
 
         // 지도 렌더링
         clusterGroup.clearLayers();
+        const bounds = L.latLngBounds();
+
         mapList.forEach(p => {
             const isLikedByMe = state.myLikedIds.includes(p.id.toString());
             
@@ -598,9 +610,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showDetail(p);
             });
             clusterGroup.addLayer(m);
+            bounds.extend([p.lat, p.lng]);
         });
         if (!state.currentPhoto) {
             map.addLayer(clusterGroup);
+            if (mapList.length > 0) {
+                // If we're filtering by a specific album, fit the map bounds to show all photos in the album
+                if (isUserView && state.profileViewMode === 'albums' && state.activeAlbum) {
+                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                }
+            }
         } else {
             map.removeLayer(clusterGroup);
         }
@@ -681,7 +700,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentMarker = L.marker([p.lat, p.lng], { icon: photoIcon }).addTo(map);
 
         ui.detailImg.src = p.url;
-        ui.detailDate.textContent = p.date;
+        
+        if (p.date) {
+            const displayDate = p.date.replace('T', ' ');
+            ui.detailDate.textContent = `찍은 시점: ${displayDate}`;
+        } else {
+            ui.detailDate.textContent = '찍은 시점: 정보 없음';
+        }
         if (p.lat && p.lng) {
             ui.detailCoordinates.textContent = `${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}`;
         } else {
@@ -713,6 +738,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         ui.editTitleInput.value = p.description || '';
+        if (p.date) {
+            // p.date가 ISO 형식이거나 YYYY-MM-DD HH:mm:ss 형식일 경우 분리
+            const dateStr = p.date.replace('T', ' ');
+            const parts = dateStr.split(' ');
+            ui.editDateInput.value = parts[0] || '';
+            ui.editTimeInput.value = parts[1] ? parts[1].substring(0, 5) : '';
+        } else {
+            ui.editDateInput.value = '';
+            ui.editTimeInput.value = '';
+        }
         ui.editLatInput.value = p.lat || '';
         ui.editLngInput.value = p.lng || '';
         ui.likeCountBadge.textContent = `${p.liked || 0} likes`;
@@ -763,6 +798,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.editModeContainer.classList.add('hidden');
             ui.btnEditLocation.style.display = 'none';
             ui.editTitleInput.value = p.description || '';
+            if (p.date) {
+                const dateStr = p.date.replace('T', ' ');
+                const parts = dateStr.split(' ');
+                ui.editDateInput.value = parts[0] || '';
+                ui.editTimeInput.value = parts[1] ? parts[1].substring(0, 5) : '';
+            } else {
+                ui.editDateInput.value = '';
+                ui.editTimeInput.value = '';
+            }
             ui.editLatInput.value = p.lat || '';
             ui.editLngInput.value = p.lng || '';
             
@@ -1129,6 +1173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.getElementById('btn-back-to-albums').onclick = () => {
                         state.activeAlbum = null;
                         renderGallery();
+                        renderAll();
                     };
 
                     const btnAddPhotos = document.getElementById('btn-add-photos-to-album');
@@ -1163,25 +1208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         item.onclick = () => {
                             state.activeAlbum = albumName;
                             renderGallery();
-                        };
-                        ui.profileGalleryGrid.appendChild(item);
-                    }
-                    
-                    if (noAlbumPhotos.length > 0) {
-                        const coverPhoto = noAlbumPhotos[0];
-                        const item = document.createElement('div');
-                        item.className = 'profile-album-folder';
-                        item.innerHTML = `
-                            <img src="${coverPhoto.url ? coverPhoto.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="album cover" onerror="this.src='${coverPhoto.url}'" />
-                            <div class="album-info">
-                                <div class="album-title">분류되지 않음</div>
-                                <div class="album-count">${noAlbumPhotos.length} 사진</div>
-                            </div>
-                        `;
-                        item.onclick = () => {
-                            state.activeAlbum = '분류되지 않음';
-                            albumGroups['분류되지 않음'] = noAlbumPhotos;
-                            renderGallery();
+                            renderAll();
                         };
                         ui.profileGalleryGrid.appendChild(item);
                     }
@@ -1252,6 +1279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ui.btnViewAlbums.style.boxShadow = 'none';
                 
                 renderGallery();
+                renderAll();
             };
             
             ui.btnViewAlbums.onclick = () => {
@@ -1268,6 +1296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ui.btnViewPhotos.style.boxShadow = 'none';
                 
                 renderGallery();
+                renderAll();
             };
         }
 
@@ -1345,6 +1374,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     ui.btnSaveEdit.onclick = async () => {
         if (!state.currentPhoto) return;
         state.currentPhoto.description = ui.editTitleInput.value;
+        const d = ui.editDateInput.value;
+        const t = ui.editTimeInput.value;
+        if (d) {
+            state.currentPhoto.date = t ? `${d} ${t}:00` : d;
+        }
         const latVal = parseFloat(ui.editLatInput.value);
         const lngVal = parseFloat(ui.editLngInput.value);
         if (!isNaN(latVal) && !isNaN(lngVal)) {
@@ -1544,9 +1578,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 
                 const newId = Date.now().toString() + Math.floor(Math.random() * 10000);
+                
+                // EXIF에서 날짜 추출 시 시간(Time)도 보존하기 위한 로직
+                let dateString = '';
+                if (exif && exif.DateTimeOriginal) {
+                    const dt = new Date(exif.DateTimeOriginal);
+                    // 로컬 시간 기준으로 YYYY-MM-DD HH:mm:ss 생성
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    dateString = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+                } else {
+                    const dt = new Date();
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    dateString = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+                }
+
                 const photoData = { 
                     id: newId,
-                    date: (exif?.DateTimeOriginal || new Date()).toISOString().split('T')[0], 
+                    date: dateString, 
                     title: '', 
                     description: '', 
                     lat: exif?.latitude, 
