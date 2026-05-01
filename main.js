@@ -1007,9 +1007,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     headerItem.style.justifyContent = 'space-between';
                     headerItem.style.gap = '10px';
                     headerItem.innerHTML = `
-                        <button id="btn-cancel-select" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; font-weight:600;">취소</button>
-                        <span style="font-weight:700;">${state.activeAlbum} 앨범에 추가할 사진 선택</span>
-                        <button id="btn-save-select" style="background:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">저장</button>
+                        <button id="btn-cancel-select" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; font-weight:600; flex-shrink:0; padding:8px;">취소</button>
+                        <div style="flex:1;"></div>
+                        <button id="btn-save-select" style="background-color:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0;">저장</button>
                     `;
                     if (ui.profileGalleryHeader) {
                         ui.profileGalleryHeader.appendChild(headerItem);
@@ -1049,16 +1049,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                         item.style.boxSizing = 'border-box';
                         
                         item.innerHTML = `
-                            <img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" style="opacity: ${isSelected ? 0.7 : 1};" />
-                            ${isSelected ? '<div style="position:absolute; top:5px; right:5px; background:var(--primary-color); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:bold;">✓</div>' : ''}
+                            <img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" style="opacity: ${isSelected ? 0.7 : 1}; transition: opacity 0.2s;" />
+                            ${isSelected ? '<div class="select-checkmark" style="position:absolute; top:5px; right:5px; background:var(--primary-color); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:bold; z-index:2; transition: all 0.2s;">✓</div>' : ''}
                         `;
                         item.onclick = () => {
-                            if (isSelected) {
+                            const currentlySelected = state.selectedPhotosForAlbum.includes(p.id);
+                            if (currentlySelected) {
                                 state.selectedPhotosForAlbum = state.selectedPhotosForAlbum.filter(id => id !== p.id);
+                                item.style.border = 'none';
+                                const img = item.querySelector('img');
+                                if(img) img.style.opacity = '1';
+                                const checkmark = item.querySelector('.select-checkmark');
+                                if(checkmark) checkmark.remove();
                             } else {
                                 state.selectedPhotosForAlbum.push(p.id);
+                                item.style.border = '3px solid var(--primary-color)';
+                                const img = item.querySelector('img');
+                                if(img) img.style.opacity = '0.7';
+                                const checkmark = document.createElement('div');
+                                checkmark.className = 'select-checkmark';
+                                checkmark.style = 'position:absolute; top:5px; right:5px; background:var(--primary-color); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:bold; z-index:2; transition: all 0.2s;';
+                                checkmark.innerHTML = '\u2713';
+                                item.appendChild(checkmark);
                             }
-                            renderGallery();
                         };
                         ui.profileGalleryGrid.appendChild(item);
                     });
@@ -1098,13 +1111,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     headerItem.style.alignItems = 'center';
                     headerItem.style.gap = '10px';
                     headerItem.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                            <div>
-                                <button id="btn-back-to-albums" style="background:none; border:none; color:var(--primary-color); cursor:pointer; font-size:14px; font-weight:600;">← 뒤로</button>
-                                <span style="font-weight:700; margin-left:10px;">${state.activeAlbum}</span>
-                                <span style="color:var(--text-muted); font-size:12px;">(${albumPhotos.length})</span>
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:nowrap;">
+                            <div style="display:flex; align-items:center; min-width:0;">
+                                <button id="btn-back-to-albums" style="background:none; border:none; color:var(--primary-color); cursor:pointer; font-size:14px; font-weight:600; flex-shrink:0; padding:0; margin-right:8px;">← 뒤로</button>
+                                <span style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${state.activeAlbum}</span>
+                                <span style="color:var(--text-muted); font-size:12px; margin-left:4px; flex-shrink:0;">(${albumPhotos.length})</span>
                             </div>
-                            <button id="btn-add-photos-to-album" style="background:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;">+ 사진 추가</button>
+                            <button id="btn-add-photos-to-album" style="background-color:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0; margin-left:8px;">+ 사진 추가</button>
                         </div>
                     `;
                     if (ui.profileGalleryHeader) {
