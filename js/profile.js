@@ -2,6 +2,7 @@
  * profile.js — 유저 프로필 페이지, 앨범 관리, 갤러리 렌더링
  */
 import { upsertPhoto, updateUserMetadata } from '../auth.js';
+import { activatePanel } from './state.js';
 
 export function initProfile({ state, ui, map }, { showDetail, renderAll }) {
 
@@ -247,12 +248,10 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll }) {
             ui.profileGallerySort.onchange = (e) => { state.profileSortMode = e.target.value; renderGallery(); };
         }
 
-        // 패널 전환
+        // 패널 전환 — 모든 패널 비활성화 후 profile만 활성화
         ui.sidebar.classList.remove('hidden');
         ui.sidebar.classList.add('expanded');
-        ui.panelExplore.classList.remove('active');
-        ui.panelDetail.classList.remove('active');
-        if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active');
+        activatePanel(ui, 'profile');
         renderAll();
     }
 
@@ -261,12 +260,11 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll }) {
         ui.btnBackProfileFeed.onclick = () => {
             state.viewMode = 'shared';
             state.targetUserId = null;
-            if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
+            activatePanel(ui, 'explore');  // 먼저 모든 패널 비활성화
             if (state.profileReturnTo === 'detail' && state.profileReturnToPhoto) {
                 showDetail(state.profileReturnToPhoto);
             } else {
                 ui.sidebar.classList.remove('expanded');
-                ui.panelExplore.classList.add('active');
                 renderAll();
             }
         };

@@ -3,6 +3,7 @@
  */
 import { fetchComments, postComment } from '../auth.js';
 import { refreshMapSize } from './map.js';
+import { activatePanel } from './state.js';
 
 export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showToast, syncData, openProfilePage }) {
 
@@ -138,12 +139,10 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
         ui.detailLikeBtn.classList.toggle('active', isLikedByMe);
         ui.detailShareBtn.classList.toggle('active', !!p.shared);
 
-        // 패널 전환
+        // 패널 전환 — 모든 패널을 먼저 비활성화 후 detail만 활성화
         ui.sidebar.classList.remove('hidden');
         ui.sidebar.classList.add('expanded');
-        ui.panelExplore.classList.remove('active');
-        if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
-        ui.panelDetail.classList.add('active');
+        activatePanel(ui, 'detail');
         ui.toggleBtn.textContent = '◀';
         
         map.setView([p.lat, p.lng], 14);
@@ -218,10 +217,10 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
         state.currentPhoto = null;
         if (state.detailReturnTo === 'profile') {
             ui.sidebar.classList.add('expanded');
-            if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active');
+            activatePanel(ui, 'profile');
         } else {
             ui.sidebar.classList.remove('expanded');
-            ui.panelExplore.classList.add('active');
+            activatePanel(ui, 'explore');
         }
         if (state.currentMarker) { map.removeLayer(state.currentMarker); state.currentMarker = null; }
         map.addLayer(clusterGroup);

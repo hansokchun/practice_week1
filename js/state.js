@@ -102,3 +102,28 @@ export function createUI() {
         btnCloseStreetView: document.getElementById('btn-close-street-view')
     };
 }
+
+/**
+ * 모든 사이드바 패널을 비활성화 (겹침 방지)
+ * 왜 필요: 패널 전환 시 이전 패널을 확실히 숨기지 않으면
+ * 두 패널이 동시에 active 상태가 되어 겹쳐 보이는 버그 발생
+ */
+export function deactivateAllPanels(ui) {
+    ui.panelExplore.classList.remove('active');
+    ui.panelDetail.classList.remove('active');
+    if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
+}
+
+/**
+ * 지정된 패널만 활성화 (다른 패널은 모두 비활성화됨)
+ * @param {'explore' | 'detail' | 'profile'} panelName
+ */
+export function activatePanel(ui, panelName) {
+    deactivateAllPanels(ui);
+    switch (panelName) {
+        case 'explore': ui.panelExplore.classList.add('active'); break;
+        case 'detail':  ui.panelDetail.classList.add('active'); break;
+        case 'profile': if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active'); break;
+    }
+}
+
