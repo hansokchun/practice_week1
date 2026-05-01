@@ -111,7 +111,7 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
             const photoIcon = L.divIcon({
                 className: `map-photo-pin ${isLikedByMe ? 'liked' : ''}`,
                 html: `<div class="pin-img-wrapper"><img src="${pinImg}" alt="pin"/></div>`,
-                iconSize: [34, 34], iconAnchor: [17, 34]
+                iconSize: [34, 34], iconAnchor: [17, 17]
             });
 
             const m = L.marker([p.lat, p.lng], { icon: photoIcon });

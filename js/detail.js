@@ -20,7 +20,7 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
         const photoIcon = L.divIcon({
             className: `map-photo-pin active`,
             html: `<div class="pin-img-wrapper" style="border-color: var(--accent-color); transform: scale(1.1);"><img src="${pinImg}" alt="pin"/></div>`,
-            iconSize: [36, 36], iconAnchor: [18, 36]
+            iconSize: [36, 36], iconAnchor: [18, 18]
         });
         state.currentMarker = L.marker([p.lat, p.lng], { icon: photoIcon }).addTo(map);
 
