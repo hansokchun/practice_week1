@@ -183,8 +183,14 @@ async function deletePhoto(id) {
     try {
         const sb = getSupabase();
 
-        // Storage에서 이미지 파일도 같이 삭제 시도 (실패해도 무시)
-        try { await sb.storage.from('photos').remove([`${id}.jpg`]); } catch {}
+        // Storage에서 업로드된 3가지 사이즈의 이미지를 모두 삭제 (실패해도 무시)
+        try {
+            await sb.storage.from('photos').remove([
+                `${id}_micro.jpg`,
+                `${id}_grid.jpg`,
+                `${id}_detail.jpg`
+            ]);
+        } catch {}
 
         const { error } = await sb
             .from('photos')
