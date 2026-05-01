@@ -75,9 +75,18 @@ export function initMap(state, ui) {
     const clusterGroup = L.markerClusterGroup({ 
         spiderfyOnMaxZoom: true, 
         showCoverageOnHover: false,
+        // 줌 레벨 15 이상에서는 클러스터링 해제 → 개별 마커 자동 표시
+        disableClusteringAtZoom: 15,
+        // 클러스터 반경을 줄여서 가까운 사진만 묶이도록
+        maxClusterRadius: 50,
+        // 클러스터 클릭 시 부드럽게 확대
+        zoomToBoundsOnClick: true,
+        // 애니메이션 활성화
+        animate: true,
         iconCreateFunction: (c) => L.divIcon({ 
             html: `
                 <div class="custom-cluster-icon">
+                    <span class="cluster-count">${c.getChildCount()}</span>
                     <svg viewBox="0 0 24 24" fill="none" class="cluster-gallery-svg" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                         <polyline points="2 12 12 17 22 12"></polyline>
