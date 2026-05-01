@@ -1,3 +1,22 @@
+/**
+ * main.js — Travelgram(Ikkyee) 메인 애플리케이션 로직
+ * 
+ * ┌─────────────────────────────────────────────────────────┐
+ * │  목차 (Ctrl+F로 섹션 번호 검색)                          │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  §1. AUTH & SPLASH GUARD — 인증 상태 확인, 프로필 팝업    │
+ * │  §2. STATE MANAGEMENT — 앱 전역 상태 객체                │
+ * │  §3. UI REFERENCES — DOM 요소 캐싱                      │
+ * │  §4. MAP SETUP — Leaflet 초기화, 클러스터, 검색           │
+ * │  §5. CORE LOGIC — syncData, renderAll, showDetail       │
+ * │  §6. EVENT HANDLERS — 버튼 클릭, 좋아요, 공유, 삭제      │
+ * │  §7. UPLOAD & EXIF — 파일 업로드, 압축, 위치 지정         │
+ * │  §8. MOBILE — 터치 드래그 핸들                           │
+ * │  §9. LOGIN MODAL — 이메일/구글 로그인 UI                  │
+ * └─────────────────────────────────────────────────────────┘
+ * 
+ * 의존성: auth.js (Supabase 헬퍼), Leaflet, exifr, Google Maps Places API
+ */
 document.addEventListener('DOMContentLoaded', async () => {
     // ═══════════════════════════════════════════════════
     // 1. SUPABASE AUTH & SPLASH GUARD
