@@ -1,0 +1,26 @@
+{
+  "name": "ikkyee",
+  "version": "1.0.0",
+  "description": "Travelgram - 사진 기반 여행 기록 웹 앱",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansokchun/practice_week1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hansokchun/practice_week1/issues"
+  },
+  "homepage": "https://github.com/hansokchun/practice_week1#readme",
+  "devDependencies": {
+    "vite": "^8.0.10"
+  }
+}

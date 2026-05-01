@@ -25,7 +25,7 @@ function getSupabase() {
 //  1. 인증 (Auth) — 로그인/가입/로그아웃/세션
 // ═══════════════════════════════════════════════════
 
-async function signUpWithEmail(email, password) {
+export async function signUpWithEmail(email, password) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb.auth.signUp({ email, password });
@@ -36,7 +36,7 @@ async function signUpWithEmail(email, password) {
     }
 }
 
-async function signInWithEmail(email, password) {
+export async function signInWithEmail(email, password) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
@@ -47,7 +47,7 @@ async function signInWithEmail(email, password) {
     }
 }
 
-async function signInWithGoogle() {
+export async function signInWithGoogle() {
     try {
         const sb = getSupabase();
         const { data, error } = await sb.auth.signInWithOAuth({
@@ -61,7 +61,7 @@ async function signInWithGoogle() {
     }
 }
 
-async function signOut() {
+export async function signOut() {
     try {
         const sb = getSupabase();
         const { error } = await sb.auth.signOut();
@@ -72,7 +72,7 @@ async function signOut() {
     }
 }
 
-async function getCurrentUser() {
+export async function getCurrentUser() {
     try {
         const sb = getSupabase();
         const { data: { user } } = await sb.auth.getUser();
@@ -82,7 +82,7 @@ async function getCurrentUser() {
     }
 }
 
-async function updateUserMetadata(metadata) {
+export async function updateUserMetadata(metadata) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb.auth.updateUser({
@@ -95,7 +95,7 @@ async function updateUserMetadata(metadata) {
     }
 }
 
-async function updateNicknameInDB(userId, newNickname) {
+export async function updateNicknameInDB(userId, newNickname) {
     try {
         const sb = getSupabase();
         const { error } = await sb.from('profiles').upsert({ id: userId, nickname: newNickname });
@@ -115,7 +115,7 @@ async function updateNicknameInDB(userId, newNickname) {
  * RLS 정책이 자동으로 "누구나 SELECT 가능"을 보장하므로,
  * 프론트에서 owner_id 필터링을 추가로 수행
  */
-async function fetchPhotos() {
+export async function fetchPhotos() {
     try {
         const sb = getSupabase();
         const { data, error } = await sb
@@ -133,7 +133,7 @@ async function fetchPhotos() {
  * 사진 추가 또는 수정 (UPSERT)
  * RLS 정책으로 본인 사진만 INSERT/UPDATE 가능
  */
-async function upsertPhoto(photo) {
+export async function upsertPhoto(photo) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb
@@ -162,7 +162,7 @@ async function upsertPhoto(photo) {
  * 사진 좋아요 증감 (RPC 호출)
  * RLS(본인만 수정 가능)를 우회하여 다른 사람의 사진 좋아요 수를 안전하게 처리합니다.
  */
-async function toggleLikePhoto(photoId, isLiking) {
+export async function toggleLikePhoto(photoId, isLiking) {
     try {
         const sb = getSupabase();
         const rpcName = isLiking ? 'increment_like' : 'decrement_like';
@@ -179,7 +179,7 @@ async function toggleLikePhoto(photoId, isLiking) {
  * 왜 필요: localStorage 대신 서버에서 좋아요 상태를 동기화하여
  * 다른 기기에서도 동일한 좋아요 상태를 유지하기 위함
  */
-async function fetchMyLikes(userId) {
+export async function fetchMyLikes(userId) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb
@@ -196,7 +196,7 @@ async function fetchMyLikes(userId) {
 /**
  * 좋아요 추가 (user_likes 테이블에 INSERT)
  */
-async function insertLike(userId, photoId) {
+export async function insertLike(userId, photoId) {
     try {
         const sb = getSupabase();
         const { error } = await sb
@@ -212,7 +212,7 @@ async function insertLike(userId, photoId) {
 /**
  * 좋아요 해제 (user_likes 테이블에서 DELETE)
  */
-async function deleteLike(userId, photoId) {
+export async function deleteLike(userId, photoId) {
     try {
         const sb = getSupabase();
         const { error } = await sb
@@ -232,7 +232,7 @@ async function deleteLike(userId, photoId) {
  * RLS 정책으로 본인 사진만 DELETE 가능
  * 관련 댓글은 ON DELETE CASCADE로 DB가 자동 삭제
  */
-async function deletePhoto(id) {
+export async function deletePhoto(id) {
     try {
         const sb = getSupabase();
 
@@ -259,7 +259,7 @@ async function deletePhoto(id) {
 /**
  * 특정 사진의 댓글 조회
  */
-async function fetchComments(photoId) {
+export async function fetchComments(photoId) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb
@@ -278,7 +278,7 @@ async function fetchComments(photoId) {
  * 댓글 작성
  * RLS 정책으로 로그인 유저만 INSERT 가능
  */
-async function postComment(photoId, text, authorId) {
+export async function postComment(photoId, text, authorId) {
     try {
         const sb = getSupabase();
         const { error } = await sb
@@ -304,7 +304,7 @@ async function postComment(photoId, text, authorId) {
  * 이미지를 Supabase Storage에 업로드하고 공개 URL을 반환
  * 왜 별도 함수: 업로드(Storage) → DB 저장(upsertPhoto) 2단계로 분리
  */
-async function uploadImage(file, fileName) {
+export async function uploadImage(file, fileName) {
     try {
         const sb = getSupabase();
         
@@ -332,7 +332,7 @@ async function uploadImage(file, fileName) {
  * 왜 필요: 브라우저의 FileReader가 만든 data:image/... 문자열을
  * Supabase Storage가 받을 수 있는 Blob/File 형태로 바꿔야 함
  */
-function dataUrlToFile(dataUrl, fileName) {
+export function dataUrlToFile(dataUrl, fileName) {
     const [header, base64] = dataUrl.split(',');
     const mime = header.match(/:(.*?);/)[1];
     const binary = atob(base64);
