@@ -59,16 +59,27 @@ export function initMap(state, ui) {
     // 수정 모드에서 지도 클릭으로 위치 지정
     map.on('click', (e) => {
         if (state.isPickingEditLocation && ui.editModeContainer && !ui.editModeContainer.classList.contains('hidden') && state.currentPhoto) {
+            // 좌표 입력 필드에 새 위치 반영
             ui.editLatInput.value = e.latlng.lat.toFixed(6);
             ui.editLngInput.value = e.latlng.lng.toFixed(6);
             if (state.currentMarker) state.currentMarker.setLatLng([e.latlng.lat, e.latlng.lng]);
             
             state.isPickingEditLocation = false;
             document.body.classList.remove('picking-location');
-            // 상세 페이지로 돌아가므로 항상 expanded 상태로 복원
+
+            // 이벤트 충돌 방지: events.js의 클릭 핸들러가 closeDetail을 호출하지 않도록
+            state._justPickedLocation = true;
+            setTimeout(() => { state._justPickedLocation = false; }, 100);
+
+            // 상세 페이지 수정 모드로 복원
             ui.sidebar.classList.remove('hidden');
             ui.sidebar.classList.add('expanded');
             ui.toggleBtn.textContent = '◀';
+
+            // 수정 모드 UI가 유지되도록 보장
+            ui.viewModeContainer.classList.add('hidden');
+            ui.editModeContainer.classList.remove('hidden');
+
             setTimeout(() => { refreshMapSize(map); }, 300);
         }
     });

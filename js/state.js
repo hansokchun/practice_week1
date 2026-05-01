@@ -28,7 +28,10 @@ export function createState(currentUser) {
         activeAlbum: null,
         routePolyline: null,
         // 현재 포커스된 마커 (상세 보기 시 단독 표시용)
-        currentMarker: null
+        currentMarker: null,
+        // 위치 지정 직후 이벤트 충돌 방지 플래그
+        // 왜 필요: map.js와 events.js의 클릭 핸들러가 같은 클릭에서 연쇄 실행되는 것을 방지
+        _justPickedLocation: false
     };
 }
 

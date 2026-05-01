@@ -30,9 +30,9 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
         else minimizeSidebar();
     };
 
-    // 지도 클릭 시 사이드바 축소/닫기 (위치 지정 모드에서는 무시)
+    // 지도 클릭 시 사이드바 축소/닫기 (위치 지정 모드 또는 직후에는 무시)
     map.on('click', () => {
-        if (state.isPickingEditLocation) return;
+        if (state.isPickingEditLocation || state._justPickedLocation) return;
         if (ui.sidebar.classList.contains('expanded')) closeDetail();
         else if (!ui.sidebar.classList.contains('hidden')) minimizeSidebar();
     });
