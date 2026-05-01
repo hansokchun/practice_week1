@@ -79,7 +79,12 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
         });
 
         if (isUserView) {
-            baseMapList = state.sharedPhotos.filter(p => p.owner_id === state.targetUserId);
+            // 자기 자신의 프로필이면 공유 여부와 관계없이 전체 사진 표시
+            // (앨범 경로 그리기 시 비공유 사진도 포함되어야 하므로)
+            const isOwnProfile = state.currentUser && state.targetUserId === state.currentUser.id;
+            baseMapList = isOwnProfile 
+                ? state.photos.filter(p => p.owner_id === state.targetUserId)
+                : state.sharedPhotos.filter(p => p.owner_id === state.targetUserId);
         }
 
         const mapList = baseMapList
@@ -124,14 +129,18 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
         if (!state.currentPhoto) {
             map.addLayer(clusterGroup);
             if (mapList.length > 0 && state.profileViewMode === 'albums' && state.activeAlbum) {
+                // 시간순 정렬 후 경로 그리기
                 mapList.sort((a, b) => new Date(a.date || a.created_at) - new Date(b.date || b.created_at));
                 const latlngs = mapList.map(p => [p.lat, p.lng]);
                 if (latlngs.length > 1) {
                     state.routePolyline = L.polyline(latlngs, {
                         color: '#ef4444', weight: 3, dashArray: '8, 8', opacity: 0.8
                     }).addTo(map);
+                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                } else if (latlngs.length === 1) {
+                    // 사진 1장이면 해당 위치로 이동
+                    map.setView(latlngs[0], 14);
                 }
-                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
             }
         } else {
             map.removeLayer(clusterGroup);

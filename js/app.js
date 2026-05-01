@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     closeDetail = detailFns.closeDetail;
 
     // profile 모듈
-    const profileFns = initProfile(ctx, { showDetail, renderAll });
+    const profileFns = initProfile(ctx, { showDetail, renderAll, showToast, syncData });
     openProfilePage = profileFns.openProfilePage;
 
     // upload 모듈

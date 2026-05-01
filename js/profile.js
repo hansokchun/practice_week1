@@ -4,7 +4,7 @@
 import { upsertPhoto, updateUserMetadata } from '../auth.js';
 import { activatePanel } from './state.js';
 
-export function initProfile({ state, ui, map }, { showDetail, renderAll }) {
+export function initProfile({ state, ui, map }, { showDetail, renderAll, showToast, syncData }) {
 
     function openProfilePage(userId, nickname) {
         state.profileReturnTo = ui.panelDetail.classList.contains('active') ? 'detail' : 'explore';
@@ -137,7 +137,10 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll }) {
                                 <span style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${state.activeAlbum}</span>
                                 <span style="color:var(--text-muted); font-size:12px; margin-left:4px; flex-shrink:0;">(${albumPhotos.length})</span>
                             </div>
-                            <button id="btn-add-photos-to-album" style="background-color:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0; margin-left:8px;">+ 사진 추가</button>
+                            <div style="display:flex; gap:6px; flex-shrink:0; margin-left:8px;">
+                                <button id="btn-add-photos-to-album" style="background-color:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;">+ 추가</button>
+                                <button id="btn-delete-album" style="background-color:#ef4444; color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;">삭제</button>
+                            </div>
                         </div>
                     `;
                     (ui.profileGalleryHeader || ui.profileGalleryGrid).appendChild(headerItem);
@@ -156,31 +159,105 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll }) {
                             renderGallery();
                         };
                     }
+
+                    // 앨범 삭제 버튼: 앨범 목록에서 제거 + 소속 사진의 album 필드 초기화
+                    const btnDeleteAlbum = document.getElementById('btn-delete-album');
+                    if (btnDeleteAlbum) {
+                        btnDeleteAlbum.onclick = async () => {
+                            if (!confirm(`"${state.activeAlbum}" 앨범을 삭제하시겠습니까?\n(사진은 삭제되지 않고 앨범에서만 해제됩니다.)`)) return;
+                            btnDeleteAlbum.textContent = '삭제 중...';
+                            btnDeleteAlbum.disabled = true;
+                            const albumToDelete = state.activeAlbum;
+                            // 소속 사진들의 album 필드 초기화
+                            for (const p of albumPhotos) {
+                                p.album = null;
+                                await upsertPhoto(p);
+                            }
+                            // customAlbums 목록에서 제거
+                            const currentCustomAlbums = state.currentUser?.user_metadata?.customAlbums || [];
+                            const newCustomAlbums = currentCustomAlbums.filter(a => a !== albumToDelete);
+                            const { user, error } = await updateUserMetadata({ customAlbums: newCustomAlbums });
+                            if (!error) state.currentUser.user_metadata = user.user_metadata;
+                            state.activeAlbum = null;
+                            showToast(`"${albumToDelete}" 앨범이 삭제되었습니다.`, 'info');
+                            await syncData();
+                            renderGallery();
+                        };
+                    }
                     
+                    // 각 사진에 "앨범에서 제거" 버튼 추가
                     albumPhotos.forEach(p => {
                         const item = document.createElement('div');
                         item.className = 'profile-gallery-item';
-                        item.innerHTML = `<img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />`;
-                        item.onclick = () => showDetail(p);
+                        item.style.position = 'relative';
+                        item.innerHTML = `
+                            <img src="${p.url ? p.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="photo" onerror="this.src='${p.url}'" />
+                            <button class="btn-remove-from-album" title="앨범에서 제거" style="position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;">✕</button>
+                        `;
+                        // 호버 시 제거 버튼 표시
+                        item.onmouseenter = () => { item.querySelector('.btn-remove-from-album').style.opacity = '1'; };
+                        item.onmouseleave = () => { item.querySelector('.btn-remove-from-album').style.opacity = '0'; };
+                        // 사진 클릭 → 상세
+                        item.querySelector('img').onclick = () => showDetail(p);
+                        // 제거 버튼 클릭 → 앨범에서 해제
+                        item.querySelector('.btn-remove-from-album').onclick = async (e) => {
+                            e.stopPropagation();
+                            p.album = null;
+                            await upsertPhoto(p);
+                            showToast('앨범에서 제거되었습니다.', 'info');
+                            await syncData();
+                            renderGallery();
+                            renderAll();
+                        };
                         ui.profileGalleryGrid.appendChild(item);
                     });
                 } else {
-                    // 앨범 폴더 목록
+                    // 앨범 폴더 목록 + 삭제 버튼
                     for (const [albumName, photos] of Object.entries(albumGroups)) {
                         const coverPhoto = photos.length > 0 ? photos[0] : null;
                         const item = document.createElement('div');
                         item.className = 'profile-album-folder';
+                        item.style.position = 'relative';
                         item.innerHTML = `
                             ${coverPhoto ? `<img src="${coverPhoto.url ? coverPhoto.url.replace('_detail.jpg', '_thumb.jpg') : ''}" loading="lazy" alt="album cover" onerror="this.src='${coverPhoto.url}'" />` : '<div style="width:100%; height:100%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:var(--text-muted);">빈 앨범</div>'}
                             <div class="album-info" style="padding-top: ${coverPhoto ? '20px' : '10px'};">
                                 <div class="album-title" style="color: ${coverPhoto ? 'white' : 'var(--text-main)'};">${albumName}</div>
                                 <div class="album-count" style="color: ${coverPhoto ? 'white' : 'var(--text-muted)'};">${photos.length} 사진</div>
                             </div>
+                            <button class="btn-delete-album-folder" title="앨범 삭제" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:26px; height:26px; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; z-index:2;">✕</button>
                         `;
-                        item.onclick = () => {
+                        item.onmouseenter = () => { item.querySelector('.btn-delete-album-folder').style.opacity = '1'; };
+                        item.onmouseleave = () => { item.querySelector('.btn-delete-album-folder').style.opacity = '0'; };
+                        // 앨범 클릭 → 앨범 내부로 진입
+                        item.querySelector('.album-info').onclick = () => {
                             state.activeAlbum = albumName;
                             renderGallery();
                             renderAll();
+                        };
+                        if (coverPhoto) {
+                            item.querySelector('img').onclick = () => {
+                                state.activeAlbum = albumName;
+                                renderGallery();
+                                renderAll();
+                            };
+                        }
+                        // 앨범 삭제 버튼 클릭
+                        item.querySelector('.btn-delete-album-folder').onclick = async (e) => {
+                            e.stopPropagation();
+                            if (!confirm(`"${albumName}" 앨범을 삭제하시겠습니까?\n(사진은 삭제되지 않고 앨범에서만 해제됩니다.)`)) return;
+                            // 소속 사진들의 album 필드 초기화
+                            for (const p of photos) {
+                                p.album = null;
+                                await upsertPhoto(p);
+                            }
+                            // customAlbums 목록에서 제거
+                            const currentCustomAlbums = state.currentUser?.user_metadata?.customAlbums || [];
+                            const newCustomAlbums = currentCustomAlbums.filter(a => a !== albumName);
+                            const { user, error } = await updateUserMetadata({ customAlbums: newCustomAlbums });
+                            if (!error) state.currentUser.user_metadata = user.user_metadata;
+                            showToast(`"${albumName}" 앨범이 삭제되었습니다.`, 'info');
+                            await syncData();
+                            renderGallery();
                         };
                         ui.profileGalleryGrid.appendChild(item);
                     }
