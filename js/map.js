@@ -65,10 +65,11 @@ export function initMap(state, ui) {
             
             state.isPickingEditLocation = false;
             document.body.classList.remove('picking-location');
+            // 상세 페이지로 돌아가므로 항상 expanded 상태로 복원
             ui.sidebar.classList.remove('hidden');
-            if (window.innerWidth <= 768) ui.sidebar.classList.add('expanded');
+            ui.sidebar.classList.add('expanded');
+            ui.toggleBtn.textContent = '◀';
             setTimeout(() => { refreshMapSize(map); }, 300);
-            // showToast는 외부에서 주입
         }
     });
 

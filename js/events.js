@@ -14,6 +14,13 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
     }
     function restoreSidebar() {
         ui.sidebar.classList.remove('hidden');
+        // 상세 페이지나 프로필 페이지가 활성이면 expanded 상태도 복원
+        // (이 패널들은 큰 사이드바가 필요하므로)
+        const needsExpanded = ui.panelDetail.classList.contains('active') 
+            || (ui.panelUserProfile && ui.panelUserProfile.classList.contains('active'));
+        if (needsExpanded) {
+            ui.sidebar.classList.add('expanded');
+        }
         ui.toggleBtn.textContent = '◀';
         refreshMapSize(map);
     }
@@ -23,8 +30,9 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
         else minimizeSidebar();
     };
 
-    // 지도 클릭 시 사이드바 축소/닫기
+    // 지도 클릭 시 사이드바 축소/닫기 (위치 지정 모드에서는 무시)
     map.on('click', () => {
+        if (state.isPickingEditLocation) return;
         if (ui.sidebar.classList.contains('expanded')) closeDetail();
         else if (!ui.sidebar.classList.contains('hidden')) minimizeSidebar();
     });

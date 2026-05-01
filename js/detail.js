@@ -131,7 +131,8 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
                 state.isPickingEditLocation = false;
                 document.body.classList.remove('picking-location');
                 ui.sidebar.classList.remove('hidden');
-                if (window.innerWidth <= 768) ui.sidebar.classList.add('expanded');
+                // 상세 페이지로 돌아가므로 항상 expanded
+                ui.sidebar.classList.add('expanded');
                 setTimeout(() => refreshMapSize(map), 300);
             }
         };
