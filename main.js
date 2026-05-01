@@ -311,7 +311,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         profileReturnToPhoto: null,
         profileSortMode: 'latest',
         profileViewMode: 'photos', // 'photos' or 'albums'
-        activeAlbum: null
+        activeAlbum: null,
+        routePolyline: null
     };
 
     // ═══════════════════════════════════════════════════
@@ -580,7 +581,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()))
             .filter(p => {
-                if (isUserView && state.profileViewMode === 'albums' && state.activeAlbum) {
+                if (state.profileViewMode === 'albums' && state.activeAlbum) {
                     const pAlbum = p.album ? p.album.trim() : '';
                     return pAlbum === state.activeAlbum;
                 }
@@ -612,11 +613,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             clusterGroup.addLayer(m);
             bounds.extend([p.lat, p.lng]);
         });
+        
+        // 기존 경로선 제거
+        if (state.routePolyline) {
+            map.removeLayer(state.routePolyline);
+            state.routePolyline = null;
+        }
+
         if (!state.currentPhoto) {
             map.addLayer(clusterGroup);
             if (mapList.length > 0) {
-                // If we're filtering by a specific album, fit the map bounds to show all photos in the album
-                if (isUserView && state.profileViewMode === 'albums' && state.activeAlbum) {
+                // 특정 앨범 필터링 중일 경우, 사진들을 시간순으로 정렬 후 경로(Polyline) 그리기 및 바운드 맞추기
+                if (state.profileViewMode === 'albums' && state.activeAlbum) {
+                    // 시간순 정렬 (오름차순)
+                    mapList.sort((a, b) => new Date(a.date || a.created_at) - new Date(b.date || b.created_at));
+                    
+                    const latlngs = mapList.map(p => [p.lat, p.lng]);
+                    if (latlngs.length > 1) {
+                        state.routePolyline = L.polyline(latlngs, {
+                            color: '#ef4444',
+                            weight: 3,
+                            dashArray: '8, 8',
+                            opacity: 0.8
+                        }).addTo(map);
+                    }
                     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
                 }
             }
