@@ -12,6 +12,9 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
         state.viewMode = 'user';
         state.targetUserId = userId;
         state.currentPhoto = null;
+        // 프로필 진입 시 항상 사진 탭이 먼저 보이도록 초기화
+        state.profileViewMode = 'photos';
+        state.activeAlbum = null;
         if (state.currentMarker) { map.removeLayer(state.currentMarker); state.currentMarker = null; }
 
         const photoPool = (state.currentUser && userId === state.currentUser.id) ? state.photos : state.sharedPhotos;
@@ -193,8 +196,10 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                                     await upsertPhoto(p);
                                 }
                                 showToast(newShared ? '앨범이 공유되었습니다.' : '앨범 공유가 해제되었습니다.', 'success');
+                                // 데이터 동기화 후 현재 앨범 페이지에서 그대로 유지
                                 await syncData();
                                 renderGallery();
+                                renderAll();
                             };
                         }
                     }
