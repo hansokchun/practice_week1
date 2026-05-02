@@ -137,10 +137,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                                 <span style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${state.activeAlbum}</span>
                                 <span style="color:var(--text-muted); font-size:12px; margin-left:4px; flex-shrink:0;">(${albumPhotos.length})</span>
                             </div>
-                            <div style="display:flex; gap:6px; flex-shrink:0; margin-left:8px;">
-                                <button id="btn-add-photos-to-album" style="background-color:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;">+ 추가</button>
-                                <button id="btn-delete-album" style="background-color:#ef4444; color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;">삭제</button>
-                            </div>
+                            <button id="btn-add-photos-to-album" style="background-color:var(--primary-color); color:white; border:none; border-radius:12px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0; margin-left:8px;">+ 추가</button>
                         </div>
                     `;
                     (ui.profileGalleryHeader || ui.profileGalleryGrid).appendChild(headerItem);
@@ -156,31 +153,6 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                         btnAdd.onclick = () => {
                             state.isSelectingPhotos = true;
                             state.selectedPhotosForAlbum = [];
-                            renderGallery();
-                        };
-                    }
-
-                    // 앨범 삭제 버튼: 앨범 목록에서 제거 + 소속 사진의 album 필드 초기화
-                    const btnDeleteAlbum = document.getElementById('btn-delete-album');
-                    if (btnDeleteAlbum) {
-                        btnDeleteAlbum.onclick = async () => {
-                            if (!confirm(`"${state.activeAlbum}" 앨범을 삭제하시겠습니까?\n(사진은 삭제되지 않고 앨범에서만 해제됩니다.)`)) return;
-                            btnDeleteAlbum.textContent = '삭제 중...';
-                            btnDeleteAlbum.disabled = true;
-                            const albumToDelete = state.activeAlbum;
-                            // 소속 사진들의 album 필드 초기화
-                            for (const p of albumPhotos) {
-                                p.album = null;
-                                await upsertPhoto(p);
-                            }
-                            // customAlbums 목록에서 제거
-                            const currentCustomAlbums = state.currentUser?.user_metadata?.customAlbums || [];
-                            const newCustomAlbums = currentCustomAlbums.filter(a => a !== albumToDelete);
-                            const { user, error } = await updateUserMetadata({ customAlbums: newCustomAlbums });
-                            if (!error) state.currentUser.user_metadata = user.user_metadata;
-                            state.activeAlbum = null;
-                            showToast(`"${albumToDelete}" 앨범이 삭제되었습니다.`, 'info');
-                            await syncData();
                             renderGallery();
                         };
                     }
