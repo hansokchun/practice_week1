@@ -96,6 +96,19 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
             state.isPickingEditLocation = false;
         };
 
+        // 좌표 입력란 변경 시 마커 + 지도 시점 실시간 추적
+        // (저장 전에도 핀이 움직이는 걸 바로 확인할 수 있게)
+        const syncMarkerToInputs = () => {
+            const lat = parseFloat(ui.editLatInput.value);
+            const lng = parseFloat(ui.editLngInput.value);
+            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                if (state.currentMarker) state.currentMarker.setLatLng([lat, lng]);
+                map.panTo([lat, lng]);
+            }
+        };
+        ui.editLatInput.addEventListener('input', syncMarkerToInputs);
+        ui.editLngInput.addEventListener('input', syncMarkerToInputs);
+
         if (ui.btnPickLocation) {
             ui.btnPickLocation.onclick = (e) => {
                 e.stopPropagation();

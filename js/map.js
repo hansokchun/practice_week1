@@ -83,7 +83,11 @@ export function initMap(state, ui) {
             ui.viewModeContainer.classList.add('hidden');
             ui.editModeContainer.classList.remove('hidden');
 
-            setTimeout(() => { refreshMapSize(map); }, 300);
+            setTimeout(() => {
+                refreshMapSize(map);
+                // 사이드바 복원 후 지도 시점을 새 위치로 이동
+                map.panTo([e.latlng.lat, e.latlng.lng]);
+            }, 350);
         }
     });
 
