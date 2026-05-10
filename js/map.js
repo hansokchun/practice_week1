@@ -133,19 +133,27 @@ export function refreshMapSize(map) {
 
 /**
  * 사이드바에 가려지지 않는 지도 영역의 중앙으로 시점 이동
- * 왜 필요: 사이드바가 오른쪽을 가리므로 일반 panTo를 쓰면 마커가 사이드바 뒤로 숨음
+ * 데스크탑: #map-container 자체가 사이드바를 피해 좁아지므로 기본 panTo로 완벽히 정중앙에 옴.
+ * 모바일: 지도가 전체 화면이고 사이드바가 하단을 가리므로 Y축(위아래) 오프셋이 필요함.
  */
 export function panToVisible(map, latlng) {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar || sidebar.classList.contains('hidden')) {
-        // 사이드바가 없거나 숨겨진 경우 그냥 중앙 이동
         map.panTo(latlng);
         return;
     }
-    // 사이드바 너비의 절반만큼 왼쪽으로 오프셋 → 보이는 영역의 중앙에 핀이 위치
-    const sidebarWidth = sidebar.offsetWidth;
-    const point = map.latLngToContainerPoint(latlng);
-    const offsetPoint = L.point(point.x - sidebarWidth / 2, point.y);
-    const offsetLatLng = map.containerPointToLatLng(offsetPoint);
-    map.panTo(offsetLatLng);
+    
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        // 모바일은 사이드바가 화면 하단(bottom)을 가림
+        const sidebarHeight = sidebar.offsetHeight;
+        const point = map.latLngToContainerPoint(latlng);
+        // 화면 중앙에 있는 핀을 위로 올리기 위해 지도를 아래로(Y 양수) 당김
+        const offsetPoint = L.point(point.x, point.y + sidebarHeight / 2);
+        const offsetLatLng = map.containerPointToLatLng(offsetPoint);
+        map.panTo(offsetLatLng);
+    } else {
+        // 데스크탑은 오프셋 불필요 (이전의 잘못된 X 오프셋 제거)
+        map.panTo(latlng);
+    }
 }
