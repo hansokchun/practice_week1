@@ -130,3 +130,42 @@ export function activatePanel(ui, panelName) {
     }
 }
 
+// ─── 페이지 상태 저장/복원 (새로고침 시 현재 페이지 유지) ───
+
+const PAGE_STATE_KEY = 'travelgram_page_state';
+
+/**
+ * 현재 페이지 상태를 sessionStorage에 저장
+ * 왜 sessionStorage: 탭을 닫으면 자동 삭제됨 (localStorage와 달리 영구 보관 안 함)
+ */
+export function savePageState(state) {
+    const snapshot = {
+        viewMode: state.viewMode,
+        targetUserId: state.targetUserId,
+        profileViewMode: state.profileViewMode,
+        activeAlbum: state.activeAlbum,
+        // 상세 보기 중인 사진 ID
+        currentPhotoId: state.currentPhoto?.id || null,
+        // 닉네임 (프로필 복원용)
+        targetNickname: state._targetNickname || null
+    };
+    try {
+        sessionStorage.setItem(PAGE_STATE_KEY, JSON.stringify(snapshot));
+    } catch (e) {
+        // sessionStorage 불가 환경 (시크릿 모드 등) 대비 무시
+    }
+}
+
+/**
+ * sessionStorage에서 저장된 페이지 상태를 읽어옴
+ * @returns {object|null} 저장된 스냅샷 또는 null
+ */
+export function loadPageState() {
+    try {
+        const raw = sessionStorage.getItem(PAGE_STATE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+

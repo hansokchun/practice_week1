@@ -3,6 +3,7 @@
  */
 import { upsertPhoto, deletePhoto, toggleLikePhoto, insertLike, deleteLike } from '../auth.js';
 import { refreshMapSize } from './map.js';
+import { savePageState } from './state.js';
 
 export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDetail, closeDetail, showToast, syncData, processFiles, startLocationPicker }) {
 
@@ -38,8 +39,8 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
     });
 
     // 피드 전환
-    ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); };
-    ui.btnSharedFeed.onclick = () => { state.viewMode = 'shared'; state.showOnlyLiked = false; renderAll(); };
+    ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); savePageState(state); };
+    ui.btnSharedFeed.onclick = () => { state.viewMode = 'shared'; state.showOnlyLiked = false; renderAll(); savePageState(state); };
     ui.btnFilterLiked.onclick = () => { state.showOnlyLiked = !state.showOnlyLiked; renderAll(state.activeDate); };
 
     // 검색

@@ -2,7 +2,7 @@
  * profile.js — 유저 프로필 페이지, 앨범 관리, 갤러리 렌더링
  */
 import { upsertPhoto, updateUserMetadata } from '../auth.js';
-import { activatePanel } from './state.js';
+import { activatePanel, savePageState } from './state.js';
 
 export function initProfile({ state, ui, map }, { showDetail, renderAll, showToast, syncData }) {
 
@@ -15,6 +15,8 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
         // 프로필 진입 시 항상 사진 탭이 먼저 보이도록 초기화
         state.profileViewMode = 'photos';
         state.activeAlbum = null;
+        // 닉네임을 상태에 저장 (새로고침 시 프로필 복원에 필요)
+        state._targetNickname = nickname;
         if (state.currentMarker) { map.removeLayer(state.currentMarker); state.currentMarker = null; }
 
         const photoPool = (state.currentUser && userId === state.currentUser.id) ? state.photos : state.sharedPhotos;
@@ -262,6 +264,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                             state.activeAlbum = albumName;
                             renderGallery();
                             renderAll();
+                            savePageState(state);
                         };
                         item.querySelector('.album-info').onclick = openAlbum;
                         if (coverPhoto) item.querySelector('img').onclick = openAlbum;
@@ -334,6 +337,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                 ui.btnViewAlbums.style.cssText += 'background:transparent; color:var(--text-muted); box-shadow:none;';
                 renderGallery();
                 renderAll();
+                savePageState(state);
             };
             ui.btnViewAlbums.onclick = () => {
                 state.profileViewMode = 'albums';
@@ -344,6 +348,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                 ui.btnViewPhotos.style.cssText += 'background:transparent; color:var(--text-muted); box-shadow:none;';
                 renderGallery();
                 renderAll();
+                savePageState(state);
             };
         }
 
@@ -357,6 +362,8 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
         ui.sidebar.classList.add('expanded');
         activatePanel(ui, 'profile');
         renderAll();
+        // 새로고침 복원용 상태 저장
+        savePageState(state);
     }
 
     // 뒤로가기 버튼
@@ -371,6 +378,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                 ui.sidebar.classList.remove('expanded');
                 renderAll();
             }
+            savePageState(state);
         };
     }
 

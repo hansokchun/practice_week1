@@ -5,7 +5,7 @@
  * 순환 참조를 방지하기 위해 모듈 간 함수는 이 파일에서 연결
  */
 import { getCurrentUser } from '../auth.js';
-import { createState, createUI } from './state.js';
+import { createState, createUI, loadPageState } from './state.js';
 import { initAuthGuard } from './auth-guard.js';
 import { initMap } from './map.js';
 import { initRender } from './render.js';
@@ -73,5 +73,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     initLogin();
 
     // 4. 첫 데이터 로드
-    syncData();
+    await syncData();
+
+    // 5. 새로고침 시 이전 페이지 복원
+    // 왜 syncData 이후: 사진 데이터가 로드된 상태여야 상세/프로필 페이지를 열 수 있음
+    const saved = loadPageState();
+    if (saved) {
+        if (saved.viewMode === 'user' && saved.targetUserId) {
+            // 프로필 페이지 복원
+            const nickname = saved.targetNickname || 'User';
+            openProfilePage(saved.targetUserId, nickname);
+
+            // 앨범 탭이었으면 앨범 탭으로 전환
+            if (saved.profileViewMode === 'albums') {
+                state.profileViewMode = 'albums';
+                if (saved.activeAlbum) {
+                    state.activeAlbum = saved.activeAlbum;
+                }
+                // 탭 버튼 스타일 업데이트
+                if (ui.btnViewAlbums) ui.btnViewAlbums.click();
+                // 특정 앨범이 열려있었으면 다시 열기
+                if (saved.activeAlbum) {
+                    state.activeAlbum = saved.activeAlbum;
+                    renderAll();
+                }
+            }
+        } else if (saved.currentPhotoId) {
+            // 사진 상세 페이지 복원
+            const photo = state.photos.find(p => String(p.id) === String(saved.currentPhotoId))
+                       || state.sharedPhotos.find(p => String(p.id) === String(saved.currentPhotoId));
+            if (photo) showDetail(photo);
+        } else if (saved.viewMode && saved.viewMode !== state.viewMode) {
+            // 피드 모드 복원 (my/shared)
+            state.viewMode = saved.viewMode;
+            renderAll();
+        }
+    }
 });

@@ -3,7 +3,7 @@
  */
 import { fetchComments, postComment } from '../auth.js';
 import { refreshMapSize, panToVisible } from './map.js';
-import { activatePanel } from './state.js';
+import { activatePanel, savePageState } from './state.js';
 
 export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showToast, syncData, openProfilePage }) {
 
@@ -169,6 +169,8 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
         refreshMapSize(map);
         window.history.replaceState(null, null, `#${p.id}`);
         loadComments(p.id);
+        // 새로고침 복원용 상태 저장
+        savePageState(state);
     }
 
     async function loadComments(photoId) {
@@ -246,6 +248,8 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
         map.addLayer(clusterGroup);
         refreshMapSize(map);
         window.history.replaceState(null, null, window.location.pathname);
+        // 새로고침 복원용 상태 저장
+        savePageState(state);
     }
 
     return { showDetail, closeDetail, loadComments };
