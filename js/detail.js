@@ -2,7 +2,7 @@
  * detail.js — 사진 상세 보기, 댓글 로드/작성, closeDetail
  */
 import { fetchComments, postComment } from '../auth.js';
-import { refreshMapSize } from './map.js';
+import { refreshMapSize, panToVisible } from './map.js';
 import { activatePanel } from './state.js';
 
 export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showToast, syncData, openProfilePage }) {
@@ -103,7 +103,7 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
             const lng = parseFloat(ui.editLngInput.value);
             if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
                 if (state.currentMarker) state.currentMarker.setLatLng([lat, lng]);
-                map.panTo([lat, lng]);
+                panToVisible(map, [lat, lng]);
             }
         };
         ui.editLatInput.addEventListener('input', syncMarkerToInputs);
@@ -143,7 +143,7 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
             // 취소 시 지도 마커 위치도 원래대로 복구
             if (state.currentMarker && p.lat && p.lng) {
                 state.currentMarker.setLatLng([p.lat, p.lng]);
-                map.flyTo([p.lat, p.lng]); // 지도 뷰도 기존 사진 위치로 이동 (옵션)
+                panToVisible(map, [p.lat, p.lng]);
             }
             
             if (state.isPickingEditLocation) {

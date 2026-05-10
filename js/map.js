@@ -85,8 +85,8 @@ export function initMap(state, ui) {
 
             setTimeout(() => {
                 refreshMapSize(map);
-                // 사이드바 복원 후 지도 시점을 새 위치로 이동
-                map.panTo([e.latlng.lat, e.latlng.lng]);
+                // 사이드바에 가려지지 않는 영역 중앙으로 시점 이동
+                panToVisible(map, [e.latlng.lat, e.latlng.lng]);
             }, 350);
         }
     });
@@ -129,4 +129,23 @@ export function refreshMapSize(map) {
         if (now - start < 500) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
+}
+
+/**
+ * 사이드바에 가려지지 않는 지도 영역의 중앙으로 시점 이동
+ * 왜 필요: 사이드바가 오른쪽을 가리므로 일반 panTo를 쓰면 마커가 사이드바 뒤로 숨음
+ */
+export function panToVisible(map, latlng) {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar || sidebar.classList.contains('hidden')) {
+        // 사이드바가 없거나 숨겨진 경우 그냥 중앙 이동
+        map.panTo(latlng);
+        return;
+    }
+    // 사이드바 너비의 절반만큼 왼쪽으로 오프셋 → 보이는 영역의 중앙에 핀이 위치
+    const sidebarWidth = sidebar.offsetWidth;
+    const point = map.latLngToContainerPoint(latlng);
+    const offsetPoint = L.point(point.x - sidebarWidth / 2, point.y);
+    const offsetLatLng = map.containerPointToLatLng(offsetPoint);
+    map.panTo(offsetLatLng);
 }
