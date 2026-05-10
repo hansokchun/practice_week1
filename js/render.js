@@ -66,19 +66,21 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
             .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
 
-        // 2. 지도 표시용 리스트
-        let baseMapList = state.photos.filter(p => {
-            const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
-            return isMyPhoto || !!p.shared;
-        });
-
+        // 2. 지도 표시용 리스트 — 사이드바에 보이는 사진만 지도에 핀으로 표시
+        // 왜: 사이드바와 지도가 같은 콘텐츠를 보여줘야 사용자가 혼란스럽지 않음
+        let baseMapList;
         if (isUserView) {
-            // 자기 자신의 프로필이면 공유 여부와 관계없이 전체 사진 표시
-            // (앨범 경로 그리기 시 비공유 사진도 포함되어야 하므로)
+            // 프로필 페이지: 해당 유저의 사진만
             const isOwnProfile = state.currentUser && state.targetUserId === state.currentUser.id;
             baseMapList = isOwnProfile 
                 ? state.photos.filter(p => p.owner_id === state.targetUserId)
                 : state.sharedPhotos.filter(p => p.owner_id === state.targetUserId);
+        } else if (isMyView) {
+            // 내 피드: 내 사진만
+            baseMapList = state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id);
+        } else {
+            // 커뮤니티(shared) 피드: 공유된 사진만
+            baseMapList = state.sharedPhotos;
         }
 
         const mapList = baseMapList
