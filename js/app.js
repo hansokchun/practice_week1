@@ -75,10 +75,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 4. 첫 데이터 로드
     await syncData();
 
-    // 5. 새로고침 시 이전 페이지 복원
+    // 5. 새로고침 시 이전 페이지 복원 (sessionStorage 우선, URL 해시 폴백)
     // 왜 syncData 이후: 사진 데이터가 로드된 상태여야 상세/프로필 페이지를 열 수 있음
     const saved = loadPageState();
-    if (saved) {
+    if (saved && saved.viewMode) {
         if (saved.viewMode === 'user' && saved.targetUserId) {
             // 프로필 페이지 복원
             const nickname = saved.targetNickname || 'User';
@@ -107,6 +107,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 피드 모드 복원 (my/shared)
             state.viewMode = saved.viewMode;
             renderAll();
+        }
+    } else {
+        // sessionStorage에 저장된 상태가 없으면 URL 해시(딥 링크)로 폴백
+        // (다른 사람이 공유한 URL로 직접 접속하는 경우)
+        const hashId = window.location.hash.slice(1);
+        if (hashId) {
+            const linkedPhoto = state.photos.find(p => p.id == hashId)
+                             || state.sharedPhotos.find(p => p.id == hashId);
+            if (linkedPhoto) showDetail(linkedPhoto);
         }
     }
 });

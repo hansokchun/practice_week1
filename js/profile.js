@@ -18,6 +18,8 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
         // 닉네임을 상태에 저장 (새로고침 시 프로필 복원에 필요)
         state._targetNickname = nickname;
         if (state.currentMarker) { map.removeLayer(state.currentMarker); state.currentMarker = null; }
+        // 상세 페이지에서 온 경우 URL 해시 제거 (새로고침 시 딥 링크 충돌 방지)
+        window.history.replaceState(null, null, window.location.pathname);
 
         const photoPool = (state.currentUser && userId === state.currentUser.id) ? state.photos : state.sharedPhotos;
         const userPhotos = photoPool.filter(p => p.owner_id === userId);

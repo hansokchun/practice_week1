@@ -23,8 +23,6 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
         }, 3000);
     }
 
-    let isFirstSync = true;
-
     async function syncData() {
         try {
             const { data, error } = await fetchPhotos();
@@ -44,17 +42,7 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
             }
             
             renderAll();
-
-            // 딥 링크 확인 — 최초 로드 시에만 실행
-            // (이후 syncData 호출에서는 무시하여 현재 페이지 유지)
-            if (isFirstSync) {
-                isFirstSync = false;
-                const hashId = window.location.hash.slice(1);
-                if (hashId) {
-                    const linkedPhoto = state.photos.find(p => p.id == hashId);
-                    if (linkedPhoto) setTimeout(() => showDetail(linkedPhoto), 500);
-                }
-            }
+            // 딥 링크 및 페이지 복원은 app.js에서 통합 관리
         } catch (e) {
             console.error("Sync Error:", e);
             showToast(`Sync Error: ${e.message}`, "warning");
