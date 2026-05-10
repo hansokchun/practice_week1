@@ -7,7 +7,10 @@ export function initMap(state, ui) {
     const map = L.map('map', { 
         zoomControl: false, 
         maxZoom: 19, 
-        minZoom: 5
+        minZoom: 5,
+        // 모바일 터치 줌 최적화
+        tap: false,                  // 300ms 탭 지연 제거
+        bounceAtZoomLimits: false    // 줌 경계에서 불필요한 바운스 제거
     }).setView([36.5, 127.5], 5);
 
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', { 

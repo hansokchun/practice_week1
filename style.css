@@ -18,7 +18,8 @@ body, html {
     background-color: var(--bg-color);
     color: var(--text-main);
     overflow: hidden;
-    touch-action: none;
+    /* manipulation: 핀치 줌/패닝은 허용하되, 더블탭 줌 등은 차단 */
+    touch-action: manipulation;
 }
 
 /* Utility Classes */
