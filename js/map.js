@@ -83,11 +83,11 @@ export function initMap(state, ui) {
             ui.viewModeContainer.classList.add('hidden');
             ui.editModeContainer.classList.remove('hidden');
 
-            setTimeout(() => {
-                refreshMapSize(map);
-                // 사이드바에 가려지지 않는 영역 중앙으로 시점 이동
-                panToVisible(map, [e.latlng.lat, e.latlng.lng]);
-            }, 350);
+            // 즉시 시점 이동: Leaflet이 마커를 중앙에 두며, 컨테이너가 줄어들 때 중앙도 왼쪽으로 자연스럽게 따라갑니다.
+            panToVisible(map, [e.latlng.lat, e.latlng.lng]);
+
+            // 리사이징 애니메이션과 동기화
+            refreshMapSize(map);
         }
     });
 
@@ -139,7 +139,7 @@ export function refreshMapSize(map) {
 export function panToVisible(map, latlng) {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar || sidebar.classList.contains('hidden')) {
-        map.panTo(latlng);
+        map.setView(latlng, map.getZoom(), { animate: false });
         return;
     }
     
@@ -151,9 +151,9 @@ export function panToVisible(map, latlng) {
         // 화면 중앙에 있는 핀을 위로 올리기 위해 지도를 아래로(Y 양수) 당김
         const offsetPoint = L.point(point.x, point.y + sidebarHeight / 2);
         const offsetLatLng = map.containerPointToLatLng(offsetPoint);
-        map.panTo(offsetLatLng);
+        map.setView(offsetLatLng, map.getZoom(), { animate: false });
     } else {
-        // 데스크탑은 오프셋 불필요 (이전의 잘못된 X 오프셋 제거)
-        map.panTo(latlng);
+        // 데스크탑은 오프셋 불필요
+        map.setView(latlng, map.getZoom(), { animate: false });
     }
 }
