@@ -126,6 +126,12 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
             }
             ui.editLatInput.value = p.lat || '';
             ui.editLngInput.value = p.lng || '';
+
+            // 취소 시 지도 마커 위치도 원래대로 복구
+            if (state.currentMarker && p.lat && p.lng) {
+                state.currentMarker.setLatLng([p.lat, p.lng]);
+                map.flyTo([p.lat, p.lng]); // 지도 뷰도 기존 사진 위치로 이동 (옵션)
+            }
             
             if (state.isPickingEditLocation) {
                 state.isPickingEditLocation = false;
