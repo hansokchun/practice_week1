@@ -1,0 +1,19 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { formatGoogleMapsLocation } from '../js/location-copy.mjs';
+
+test('formatGoogleMapsLocation returns Google Maps searchable coordinates', () => {
+    assert.equal(formatGoogleMapsLocation(37.566535, 126.9779692), '37.566535,126.977969');
+});
+
+test('formatGoogleMapsLocation accepts numeric strings', () => {
+    assert.equal(formatGoogleMapsLocation('35.1795543', '129.0756416'), '35.179554,129.075642');
+});
+
+test('formatGoogleMapsLocation rejects missing or invalid coordinates', () => {
+    assert.equal(formatGoogleMapsLocation(null, 126.9779692), null);
+    assert.equal(formatGoogleMapsLocation(37.566535, undefined), null);
+    assert.equal(formatGoogleMapsLocation('abc', 126.9779692), null);
+});
+

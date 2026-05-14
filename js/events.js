@@ -2,6 +2,7 @@
  * events.js — §6 이벤트 핸들러 바인딩 (좋아요, 공유, 삭제, 저장, 드래그&드롭 등)
  */
 import { upsertPhoto, deletePhoto, toggleLikePhoto, insertLike, deleteLike } from '../auth.js';
+import { formatGoogleMapsLocation } from './location-copy.mjs';
 import { refreshMapSize } from './map.js';
 import { savePageState } from './state.js';
 
@@ -125,6 +126,21 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
             .then(() => showToast("Direct link copied!", "success"))
             .catch(() => showToast("Failed to copy link", "warning"));
     };
+
+    if (ui.btnCopyLocation) {
+        ui.btnCopyLocation.onclick = () => {
+            const locationText = state.currentPhoto
+                ? formatGoogleMapsLocation(state.currentPhoto.lat, state.currentPhoto.lng)
+                : null;
+            if (!locationText) {
+                showToast("위치정보가 없습니다.", "warning");
+                return;
+            }
+            navigator.clipboard.writeText(locationText)
+                .then(() => showToast("위치 정보가 복사되었습니다.", "success"))
+                .catch(() => showToast("위치 정보 복사에 실패했습니다.", "warning"));
+        };
+    }
 
     // 좋아요 (서버 동기화)
     ui.detailLikeBtn.onclick = async () => {

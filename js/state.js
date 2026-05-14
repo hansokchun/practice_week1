@@ -74,6 +74,7 @@ export function createUI() {
         btnEditLocation: document.getElementById('btn-edit-location'),
         btnPickLocation: document.getElementById('btn-pick-location'),
         btnCopyLink: document.getElementById('btn-copy-link'),
+        btnCopyLocation: document.getElementById('btn-copy-location'),
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
         detailCoordinates: document.querySelector('#detail-coordinates span'),

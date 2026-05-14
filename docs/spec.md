@@ -6,6 +6,11 @@ Fix profile nickname updates so they are required, unique, saved reliably, and v
 
 ## Requirements
 
+- Photo detail must provide a top-action button that copies the photo location.
+- Copied location format must be `lat,lng`, such as `37.566535,126.977969`, so it can be pasted directly into Google Maps.
+- Copied coordinates must use 6 decimal places for better precision.
+- If the photo has no valid location, show `위치정보가 없습니다.`
+- On successful copy, show `위치 정보가 복사되었습니다.`
 - Nicknames are required. Empty or whitespace-only nicknames must not be saved.
 - Nicknames are unique. Duplicate nickname errors from Supabase must show a clear duplicate-name message.
 - Profile updates must continue to save age, gender, and avatar metadata when valid.
