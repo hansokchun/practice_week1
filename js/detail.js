@@ -4,8 +4,9 @@
 import { fetchComments, postComment } from '../auth.js';
 import { refreshMapSize, panToVisible } from './map.js';
 import { activatePanel, savePageState } from './state.js';
+import { getUserFallbackName } from './profile-names.mjs';
 
-export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showToast, syncData, openProfilePage }) {
+export function initDetail({ state, ui, map, clusterGroup, profileNameResolver }, { renderAll, showToast, syncData, openProfilePage }) {
 
     async function showDetail(p) {
         state.detailReturnTo = (ui.panelUserProfile && ui.panelUserProfile.classList.contains('active')) ? 'profile' : 'explore';
@@ -39,9 +40,18 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
         const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
         // 작성자 이름 및 클릭 이벤트
-        const authorNameText = isMyPhoto ? (state.currentUser.user_metadata?.nickname || '나') : 'User ' + p.owner_id.substring(0,4);
+        const authorNameText = isMyPhoto
+            ? (state.currentUser.user_metadata?.nickname || getUserFallbackName(p.owner_id))
+            : getUserFallbackName(p.owner_id);
         ui.authorName.textContent = authorNameText;
-        ui.authorName.onclick = () => openProfilePage(p.owner_id, authorNameText);
+        ui.authorName.onclick = () => openProfilePage(p.owner_id, ui.authorName.textContent || authorNameText);
+        if (profileNameResolver) {
+            profileNameResolver.resolve(p.owner_id, authorNameText).then((resolvedName) => {
+                if (state.currentPhoto && state.currentPhoto.id === p.id) {
+                    ui.authorName.textContent = resolvedName;
+                }
+            });
+        }
 
         // 설명 표시
         if (p.description) {
@@ -183,12 +193,15 @@ export function initDetail({ state, ui, map, clusterGroup }, { renderAll, showTo
             if (data.length === 0) {
                 ui.commentsList.innerHTML = '<p style="font-size:12px; color:var(--text-muted); padding: 10px;">No comments yet. Be the first!</p>';
             } else {
+                const authorNames = profileNameResolver
+                    ? await profileNameResolver.resolveMany(data.map(c => c.author_id))
+                    : {};
                 data.forEach(c => {
                     const el = document.createElement('div');
                     el.className = 'comment-item';
                     const nickname = (state.currentUser && c.author_id === state.currentUser.id) 
-                        ? (state.currentUser.user_metadata?.nickname || '나') 
-                        : ('User ' + c.author_id.substring(0,4));
+                        ? (state.currentUser.user_metadata?.nickname || authorNames[c.author_id] || getUserFallbackName(c.author_id)) 
+                        : (authorNames[c.author_id] || getUserFallbackName(c.author_id));
                     const authorSpan = document.createElement('div');
                     authorSpan.className = 'clickable-author';
                     authorSpan.style.cssText = "font-weight: 600; font-size: 13px; color: var(--primary-color); margin-bottom: 4px; display: inline-block;";

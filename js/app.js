@@ -4,8 +4,9 @@
  * 각 모듈을 초기화하고 의존성을 주입하는 오케스트레이터
  * 순환 참조를 방지하기 위해 모듈 간 함수는 이 파일에서 연결
  */
-import { getCurrentUser } from '../auth.js';
+import { fetchProfilesByIds, getCurrentUser } from '../auth.js';
 import { createState, createUI, loadPageState } from './state.js';
+import { createProfileNameResolver } from './profile-names.mjs';
 import { initAuthGuard } from './auth-guard.js';
 import { initMap } from './map.js';
 import { initRender } from './render.js';
@@ -21,10 +22,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentUser = await getCurrentUser();
     const state = createState(currentUser);
     const ui = createUI();
+    const profileNameResolver = createProfileNameResolver({
+        fetchProfilesByIds: async (ids) => {
+            const { data, error } = await fetchProfilesByIds(ids);
+            if (error) throw error;
+            return data;
+        }
+    });
+    if (currentUser?.user_metadata?.nickname) {
+        profileNameResolver.prime(currentUser.id, currentUser.user_metadata.nickname);
+    }
 
     // 2. 지도 초기화
     const { map, clusterGroup } = initMap(state, ui);
-    const ctx = { state, ui, map, clusterGroup };
+    const ctx = { state, ui, map, clusterGroup, profileNameResolver };
 
     // 3. 모듈 초기화 — 순환 참조를 방지하기 위해 단계적으로 주입
     //    showDetail과 renderAll이 서로를 참조하므로 지연 바인딩 사용
@@ -58,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     startLocationPicker = uploadFns.startLocationPicker;
 
     // auth-guard (프로필 팝업, 로그인 상태 UI)
-    initAuthGuard({ state, ui, showToast, openProfilePage });
+    initAuthGuard({ state, ui, showToast, openProfilePage, profileNameResolver });
 
     // events 모듈 (모든 이벤트 핸들러 바인딩)
     initEvents(ctx, {

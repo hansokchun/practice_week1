@@ -5,12 +5,13 @@
 import {
     getCurrentUser, signOut, updateUserMetadata, updateNicknameInDB, uploadImage
 } from '../auth.js';
+import { normalizeNickname } from './profile-names.mjs';
 
 /**
  * 인증 상태에 따른 UI 초기화 및 프로필 팝업 이벤트 바인딩
  * @param {Object} params - { state, ui, showToast, openProfilePage }
  */
-export function initAuthGuard({ state, ui, showToast, openProfilePage }) {
+export function initAuthGuard({ state, ui, showToast, openProfilePage, profileNameResolver }) {
     const currentUser = state.currentUser;
     const splash = document.getElementById('splash-screen');
     
@@ -176,7 +177,13 @@ export function initAuthGuard({ state, ui, showToast, openProfilePage }) {
         if (btnSaveDemo) {
             btnSaveDemo.onclick = async (e) => {
                 e.stopPropagation();
-                const newNickname = inputNickname ? inputNickname.value.trim() : '';
+                let newNickname = '';
+                try {
+                    newNickname = normalizeNickname(inputNickname ? inputNickname.value : '');
+                } catch {
+                    showToast("닉네임은 필수입니다.", "warning");
+                    return;
+                }
                 const newAge = inputAge ? inputAge.value : '';
                 const newGender = inputGender ? inputGender.value : '';
                 
@@ -196,9 +203,10 @@ export function initAuthGuard({ state, ui, showToast, openProfilePage }) {
                 if (newNickname !== nickname) {
                     const { error: dbError } = await updateNicknameInDB(currentUser.id, newNickname);
                     if (dbError) {
+                        console.error("Nickname profile upsert failed:", dbError);
                         btnSaveDemo.textContent = originalText;
                         btnSaveDemo.disabled = false;
-                        if (dbError.code === '23505') {
+                        if (dbError.code === '23505' || /duplicate/i.test(dbError.message || '')) {
                             showToast("이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해 주세요.", "warning");
                         } else {
                             showToast("닉네임 변경 중 오류가 발생했습니다.", "warning");
@@ -220,7 +228,11 @@ export function initAuthGuard({ state, ui, showToast, openProfilePage }) {
                     age = newAge;
                     gender = newGender;
                     avatarUrl = newAvatarUrl;
+                    if (profileNameResolver) profileNameResolver.prime(currentUser.id, newNickname);
                     renderProfileUI();
+                } else {
+                    console.error("Profile metadata update failed:", error);
+                    showToast("프로필 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.", "warning");
                 }
             };
         }

@@ -1,10 +1,11 @@
 {
   "name": "ikkyee",
   "version": "1.0.0",
-  "description": "Travelgram - 사진 기반 여행 기록 웹 앱",
+  "description": "Travelgram - photo-based travel journal web app",
   "private": true,
   "scripts": {
     "dev": "vite",
+    "test": "node --test",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -3,10 +3,12 @@
  */
 import { upsertPhoto, updateUserMetadata } from '../auth.js';
 import { activatePanel, savePageState } from './state.js';
+import { getUserFallbackName } from './profile-names.mjs';
 
-export function initProfile({ state, ui, map }, { showDetail, renderAll, showToast, syncData }) {
+export function initProfile({ state, ui, map, profileNameResolver }, { showDetail, renderAll, showToast, syncData }) {
 
     function openProfilePage(userId, nickname) {
+        const displayName = nickname || getUserFallbackName(userId);
         state.profileReturnTo = ui.panelDetail.classList.contains('active') ? 'detail' : 'explore';
         state.profileReturnToPhoto = state.currentPhoto;
         state.viewMode = 'user';
@@ -16,7 +18,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
         state.profileViewMode = 'photos';
         state.activeAlbum = null;
         // 닉네임을 상태에 저장 (새로고침 시 프로필 복원에 필요)
-        state._targetNickname = nickname;
+        state._targetNickname = displayName;
         if (state.currentMarker) { map.removeLayer(state.currentMarker); state.currentMarker = null; }
         // 상세 페이지에서 온 경우 URL 해시 제거 (새로고침 시 딥 링크 충돌 방지)
         window.history.replaceState(null, null, window.location.pathname);
@@ -25,7 +27,16 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
         const userPhotos = photoPool.filter(p => p.owner_id === userId);
         const totalLikes = userPhotos.reduce((sum, p) => sum + (p.liked || 0), 0);
 
-        if (ui.profilePageNickname) ui.profilePageNickname.textContent = nickname;
+        if (ui.profilePageNickname) ui.profilePageNickname.textContent = displayName;
+        if (profileNameResolver) {
+            profileNameResolver.resolve(userId, displayName).then((resolvedName) => {
+                if (state.targetUserId === userId) {
+                    state._targetNickname = resolvedName;
+                    if (ui.profilePageNickname) ui.profilePageNickname.textContent = resolvedName;
+                    savePageState(state);
+                }
+            });
+        }
         if (ui.profilePageStoryCount) ui.profilePageStoryCount.textContent = userPhotos.length;
         if (ui.profilePageLikeCount) ui.profilePageLikeCount.textContent = totalLikes;
 
@@ -39,7 +50,7 @@ export function initProfile({ state, ui, map }, { showDetail, renderAll, showToa
                 ui.profilePageAvatar.innerHTML = `<img src="${avatarToUse}" alt="avatar">`;
                 ui.profilePageAvatar.style.background = 'none';
             } else {
-                const initial = nickname.charAt(0).toUpperCase();
+                const initial = displayName.charAt(0).toUpperCase();
                 ui.profilePageAvatar.innerHTML = `<span style="font-size: 32px; font-weight: bold; color: white;">${initial}</span>`;
                 ui.profilePageAvatar.style.background = 'var(--primary-color)';
             }

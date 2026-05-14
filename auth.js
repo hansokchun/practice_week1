@@ -98,11 +98,30 @@ export async function updateUserMetadata(metadata) {
 export async function updateNicknameInDB(userId, newNickname) {
     try {
         const sb = getSupabase();
-        const { error } = await sb.from('profiles').upsert({ id: userId, nickname: newNickname });
+        const { error } = await sb
+            .from('profiles')
+            .upsert({ id: userId, nickname: newNickname }, { onConflict: 'id' });
         if (error) throw error;
         return { error: null };
     } catch (error) {
         return { error };
+    }
+}
+
+export async function fetchProfilesByIds(userIds) {
+    try {
+        const ids = [...new Set((userIds || []).filter(Boolean))];
+        if (ids.length === 0) return { data: [], error: null };
+
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('profiles')
+            .select('id,nickname')
+            .in('id', ids);
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
     }
 }
 
