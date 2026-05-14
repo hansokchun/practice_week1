@@ -7,4 +7,4 @@
 - Fixed Back buttons can feel wrong in a multi-panel SPA. A small sidebar history stack is a better fit than hard-coded return destinations.
 - Roll back behavior changes that are not verified in the real UI flow, even if pure helper tests pass. Sidebar Back needs a separate focused pass.
 - For copy-to-map workflows, copy plain `lat,lng` rather than a decorated string. It is the smallest format that Google Maps search accepts directly.
-- Supabase `upsert` can be fragile with RLS and multiple unique constraints. For profile nickname saves, update the user's row first and insert only when no row exists.
+- Nickname save failures can be caused by missing Supabase RLS policies even when the API project is active. Check `profiles` insert/update policies before changing persistence logic.

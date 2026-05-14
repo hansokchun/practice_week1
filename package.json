@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/hansokchun/practice_week1/issues"
   },

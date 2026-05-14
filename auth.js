@@ -98,33 +98,14 @@ export async function updateUserMetadata(metadata) {
 export async function updateNicknameInDB(userId, newNickname) {
     try {
         const sb = getSupabase();
-        return await saveNicknameProfile(sb, userId, newNickname);
+        const { error } = await sb
+            .from('profiles')
+            .upsert({ id: userId, nickname: newNickname }, { onConflict: 'id' });
+        if (error) throw error;
+        return { error: null };
     } catch (error) {
         return { error };
     }
-}
-
-export async function saveNicknameProfile(sb, userId, newNickname) {
-    const updateResult = await sb
-        .from('profiles')
-        .update({ nickname: newNickname })
-        .eq('id', userId)
-        .select('id')
-        .maybeSingle();
-
-    if (updateResult.error) {
-        return { error: updateResult.error };
-    }
-
-    if (updateResult.data) {
-        return { error: null };
-    }
-
-    const { error } = await sb
-        .from('profiles')
-        .insert({ id: userId, nickname: newNickname });
-
-    return { error: error || null };
 }
 
 export async function fetchProfilesByIds(userIds) {
