@@ -7,7 +7,9 @@
     "dev": "vite",
     "test": "node --test",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cf:deploy:dev": "npm run build && npx wrangler pages deploy dist --project-name practice-week1 --branch dev",
+    "cf:deploy:main": "npm run build && npx wrangler pages deploy dist --project-name practice-week1 --branch main"
   },
   "repository": {
     "type": "git",
