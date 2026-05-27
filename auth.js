@@ -413,6 +413,26 @@ export async function updateAlbumVisibility(albumId, visibility) {
     }
 }
 
+export async function updatePhotosVisibility(photoIds, visibility) {
+    try {
+        const ids = [...new Set((photoIds || []).filter(Boolean).map((id) => id.toString()))];
+        if (ids.length === 0) return { data: [], error: null };
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('photos')
+            .update({
+                visibility,
+                shared: visibility === 'public'
+            })
+            .in('id', ids)
+            .select('*');
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
 // ═══════════════════════════════════════════════════
 //  3. 파일 저장소 (Storage) — 이미지 업로드
 // ═══════════════════════════════════════════════════

@@ -8,17 +8,12 @@ import {
     signOut,
     signUpWithEmail,
     updatePhotoLocation,
+    updatePhotosVisibility,
     uploadImage,
     updateAlbumVisibility,
     upsertPhoto
 } from '../auth.js';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
-
-const publicTrips = [
-    { title: '도쿄 야경 산책', meta: '18 photos · 7 places' },
-    { title: '부산 광안리 바다', meta: '12 photos · 4 places' },
-    { title: '교토의 조용한 아침', meta: '21 photos · 8 places' }
-];
 
 const state = {
     currentUser: null,
@@ -29,6 +24,7 @@ const state = {
     albumDrafts: [],
     visibility: 'private',
     profileTab: 'map',
+    selectedPublicAlbumId: null,
     exploreZoom: 7,
     isPersistingUpload: false
 };
@@ -155,6 +151,152 @@ function getDraftPhotos() {
     ];
 }
 
+function getFallbackPublicAlbums() {
+    return [
+        {
+            id: 'demo-jeju',
+            title: 'Jeju East Coast Drive',
+            note: '성산에서 월정리까지 이어지는 바람 많은 해안 길. 공개할 사진만 골라 만든 여행 기록입니다.',
+            visibility: 'public',
+            cover_url: 'images/main_bg2.jpg',
+            owner_id: 'demo',
+            photo_count: 42,
+            places: 11
+        },
+        {
+            id: 'demo-tokyo',
+            title: 'Tokyo Night Walk',
+            note: '골목과 밤의 빛을 따라 만든 공개 여행 앨범입니다.',
+            visibility: 'public',
+            cover_url: 'images/main_bg3.jpg',
+            owner_id: 'demo',
+            photo_count: 18,
+            places: 7
+        },
+        {
+            id: 'demo-italy',
+            title: 'Italian Blue Week',
+            note: '푸른 바다와 오래된 골목을 따라 걸은 공개 여행 기록입니다.',
+            visibility: 'public',
+            cover_url: 'images/main_bg5.jpg',
+            owner_id: 'demo',
+            photo_count: 86,
+            places: 14
+        }
+    ];
+}
+
+function getPublicAlbums() {
+    const publicAlbums = state.savedAlbums
+        .filter((album) => ['public', 'link'].includes(album.visibility))
+        .map((album, index) => ({
+            ...album,
+            cover_url: album.cover_url || getDraftPhotos()[index % getDraftPhotos().length]?.url || 'images/main_bg2.jpg',
+            places: Math.max(1, Math.ceil(Number(album.photo_count || 1) / 4))
+        }));
+    return publicAlbums.length ? publicAlbums : getFallbackPublicAlbums();
+}
+
+function getSelectedPublicAlbum() {
+    const albums = getPublicAlbums();
+    return albums.find((album) => album.id === state.selectedPublicAlbumId) || albums[0];
+}
+
+function setSelectedPublicAlbum(albumId) {
+    state.selectedPublicAlbumId = albumId;
+    renderPublicSurfaces();
+}
+
+function renderPublicSurfaces() {
+    const albums = getPublicAlbums();
+    const selected = getSelectedPublicAlbum();
+    const cover = selected.cover_url || 'images/main_bg2.jpg';
+    const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
+    const photoCount = Number(selected.photo_count || 0);
+    const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
+
+    const preview = $('#explore-pin-preview');
+    const previewImage = preview?.querySelector('img');
+    const previewTitle = preview?.querySelector('.pin-preview-copy h2');
+    const previewNote = preview?.querySelector('.pin-preview-copy p:last-child');
+    const previewMeta = preview?.querySelector('.pin-preview-meta');
+    if (previewImage) {
+        previewImage.src = cover;
+        previewImage.alt = selected.title;
+    }
+    if (previewTitle) previewTitle.textContent = selected.title;
+    if (previewNote) previewNote.textContent = note;
+    if (previewMeta) {
+        previewMeta.innerHTML = `
+            <span><span class="material-symbols-outlined">photo_library</span> ${photoCount || 1} photos</span>
+            <span><span class="material-symbols-outlined">place</span> ${places} places</span>
+            <span><span class="material-symbols-outlined">public</span> ${selected.visibility === 'link' ? 'link' : 'public'}</span>
+        `;
+    }
+
+    const tripHeroImage = $('.public-trip-hero > img');
+    const tripTitle = $('#trip-title');
+    const tripCopy = $('.public-trip-copy > p:not(.eyebrow)');
+    const routeMeta = $('.trip-route-card .compact-heading p');
+    if (tripHeroImage) {
+        tripHeroImage.src = cover;
+        tripHeroImage.alt = selected.title;
+    }
+    if (tripTitle) tripTitle.textContent = selected.title;
+    if (tripCopy) tripCopy.textContent = note;
+    if (routeMeta) routeMeta.textContent = `공개 앨범 · ${places} places · ${photoCount || 1} public photos`;
+
+    const relatedGrid = $('.related-album-grid');
+    if (relatedGrid) {
+        relatedGrid.innerHTML = albums.slice(0, 3).map((album) => `
+            <article data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
+                <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
+                <strong>${escapeHtml(album.title)}</strong>
+                <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
+            </article>
+        `).join('');
+    }
+
+    const profileStats = $('.profile-stats');
+    if (profileStats) {
+        const totalPhotos = albums.reduce((sum, album) => sum + Number(album.photo_count || 0), 0);
+        const totalPlaces = albums.reduce((sum, album) => sum + Number(album.places || 1), 0);
+        profileStats.innerHTML = `
+            <span><strong>${albums.length}</strong> albums</span>
+            <span><strong>${totalPhotos || albums.length}</strong> photos</span>
+            <span><strong>${totalPlaces}</strong> places</span>
+        `;
+    }
+
+    const profileGrid = $('.profile-album-grid');
+    if (profileGrid) {
+        profileGrid.innerHTML = albums.slice(0, 6).map((album) => `
+            <article data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
+                <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
+                <strong>${escapeHtml(album.title)}</strong>
+                <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
+            </article>
+        `).join('');
+    }
+
+    const list = $('#explore-list');
+    if (list) {
+        list.innerHTML = albums.map((album) => `
+            <article class="explore-item" data-public-album-id="${escapeHtml(album.id)}">
+                <strong>${escapeHtml(album.title)}</strong>
+                <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
+            </article>
+        `).join('');
+    }
+
+    $$('[data-public-album-id]').forEach((item) => {
+        item.addEventListener('click', () => {
+            setSelectedPublicAlbum(item.dataset.publicAlbumId);
+            if (item.hasAttribute('data-go-trip')) routeTo('trip');
+        }, { once: true });
+    });
+}
+
 async function loadSavedPhotos() {
     const { data, error } = await fetchPhotos();
     if (error) {
@@ -166,6 +308,7 @@ async function loadSavedPhotos() {
         .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared || photo.visibility === 'public')
         .map(normalizeSavedPhoto);
     renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
 }
 
 async function loadSavedAlbums() {
@@ -178,6 +321,7 @@ async function loadSavedAlbums() {
         .filter((album) => !state.currentUser || album.owner_id === state.currentUser.id || ['public', 'link'].includes(album.visibility))
         .map(normalizeSavedAlbum);
     renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
 }
 
 function renderSavedPhotoSurfaces() {
@@ -349,14 +493,27 @@ async function saveShareSettings() {
     const latestOwnAlbum = state.currentUser
         ? state.savedAlbums.find((album) => album.owner_id === state.currentUser.id)
         : null;
+    let updatedAlbum = null;
     if (latestOwnAlbum) {
         const { data, error } = await updateAlbumVisibility(latestOwnAlbum.id, state.visibility);
         if (!error && data) {
+            updatedAlbum = normalizeSavedAlbum(data);
             state.savedAlbums = state.savedAlbums.map((album) => (
-                album.id === data.id ? normalizeSavedAlbum(data) : album
+                album.id === data.id ? updatedAlbum : album
             ));
         }
     }
+    const photoIds = state.lastSavedPhotoIds.length
+        ? state.lastSavedPhotoIds
+        : getMySavedPhotos().map((photo) => photo.id);
+    const { data: updatedPhotos } = await updatePhotosVisibility(photoIds, state.visibility);
+    if (updatedPhotos?.length) {
+        const normalized = updatedPhotos.map(normalizeSavedPhoto);
+        state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
+    }
+    if (updatedAlbum) state.selectedPublicAlbumId = updatedAlbum.id;
+    renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
     const message = state.visibility === 'public'
         ? '공개 여행으로 전환했습니다.'
         : state.visibility === 'link'
@@ -597,14 +754,7 @@ async function saveManualLocation(event) {
 }
 
 function renderExploreList() {
-    const list = $('#explore-list');
-    if (!list) return;
-    list.innerHTML = publicTrips.map((trip) => `
-        <article class="explore-item">
-            <strong>${trip.title}</strong>
-            <span>${trip.meta}</span>
-        </article>
-    `).join('');
+    renderPublicSurfaces();
 }
 
 function syncExploreGoogleMap() {
@@ -747,7 +897,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSavedAlbums();
     bindEvents();
     renderStagedPhotos();
-    renderAlbumDrafts();
+    renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
     renderExploreList();
     setVisibilityMode(state.visibility);
