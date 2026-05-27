@@ -771,7 +771,8 @@ img {
 }
 
 .album-builder label,
-.auth-form label {
+.auth-form label,
+.location-form label {
     color: var(--teal);
     font-size: 13px;
     font-weight: 800;
@@ -779,7 +780,8 @@ img {
 
 .album-builder input,
 .album-builder textarea,
-.auth-form input {
+.auth-form input,
+.location-form input {
     width: 100%;
     border: 1px solid var(--line);
     border-radius: 14px;
@@ -2200,6 +2202,7 @@ img {
 }
 
 .auth-form,
+.location-form,
 .auth-actions {
     display: grid;
     gap: 10px;

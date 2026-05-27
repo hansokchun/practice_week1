@@ -180,6 +180,26 @@ export async function upsertPhoto(photo) {
     }
 }
 
+export async function updatePhotoLocation(photoId, lat, lng) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('photos')
+            .update({
+                lat,
+                lng,
+                geo_source: 'manual'
+            })
+            .eq('id', photoId.toString())
+            .select('*')
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
 /**
  * 사진 좋아요 증감 (RPC 호출)
  * RLS(본인만 수정 가능)를 우회하여 다른 사람의 사진 좋아요 수를 안전하게 처리합니다.

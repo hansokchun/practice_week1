@@ -170,7 +170,7 @@
                         <strong>처리 필요: 위치 정보 없는 사진 12장</strong>
                         <p>사진의 메타데이터가 부족해 지도에 표시되지 않고 있습니다.</p>
                     </div>
-                    <button type="button">위치 지정하기</button>
+                    <button data-open-location-editor type="button">위치 지정하기</button>
                     <button type="button" class="solid">GPX로 매칭하기</button>
                 </section>
 
@@ -321,7 +321,7 @@
                     <div class="review-actions">
                         <button class="btn-primary" id="btn-open-share-settings-review" data-go-share type="button">공개 설정</button>
                         <button class="btn-secondary" data-open-photo-detail type="button">사진 상세</button>
-                        <button class="btn-secondary" type="button">사진 추가</button>
+                        <button class="btn-secondary" data-open-location-editor type="button">위치 수정</button>
                     </div>
                     <div class="review-day-list">
                         <article>
@@ -564,9 +564,29 @@
                 </dl>
                 <div class="detail-actions">
                     <button class="btn-primary" data-go-trip type="button">앨범으로 이동</button>
-                    <button class="btn-secondary" type="button">위치 수정</button>
+                    <button class="btn-secondary" data-open-location-editor type="button">위치 수정</button>
                 </div>
             </section>
+        </div>
+    </div>
+
+    <div id="location-editor-modal" class="modal" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="location-editor-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
+            <p class="eyebrow">Manual Location</p>
+            <h2 id="location-editor-title">사진 위치 직접 지정</h2>
+            <p>GPS가 없는 사진은 임시 위치를 입력해 지도 검토 단계에서 이어서 다룰 수 있습니다.</p>
+            <form id="location-editor-form" class="location-form">
+                <label for="location-lat-input">Latitude</label>
+                <input id="location-lat-input" type="number" step="0.000001" min="-90" max="90" placeholder="33.450701" required>
+                <label for="location-lng-input">Longitude</label>
+                <input id="location-lng-input" type="number" step="0.000001" min="-180" max="180" placeholder="126.570667" required>
+                <div class="auth-actions">
+                    <button class="btn-primary" type="submit">위치 저장</button>
+                    <button class="btn-secondary" data-close-modal type="button">취소</button>
+                </div>
+            </form>
+            <p id="location-editor-message" class="auth-message"></p>
         </div>
     </div>
 

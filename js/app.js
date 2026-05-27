@@ -7,6 +7,7 @@ import {
     signInWithEmail,
     signOut,
     signUpWithEmail,
+    updatePhotoLocation,
     uploadImage,
     updateAlbumVisibility,
     upsertPhoto
@@ -543,6 +544,58 @@ async function saveAlbumDraft() {
     showToast('앨범 초안을 만들었습니다.');
 }
 
+function getEditablePhoto() {
+    const myPhotos = getMySavedPhotos();
+    return myPhotos.find((photo) => photo.lat === null || photo.lng === null) || myPhotos[0] || null;
+}
+
+function openLocationEditor() {
+    const photo = getEditablePhoto();
+    const latInput = $('#location-lat-input');
+    const lngInput = $('#location-lng-input');
+    const message = $('#location-editor-message');
+    if (latInput) latInput.value = photo?.lat ?? '33.450701';
+    if (lngInput) lngInput.value = photo?.lng ?? '126.570667';
+    if (message) {
+        message.textContent = photo
+            ? `${photo.name}의 위치를 수정합니다.`
+            : '저장된 사진이 없으면 화면에서만 위치 지정 흐름을 확인할 수 있습니다.';
+    }
+    openModal('#location-editor-modal');
+}
+
+async function saveManualLocation(event) {
+    event.preventDefault();
+    const lat = Number($('#location-lat-input')?.value);
+    const lng = Number($('#location-lng-input')?.value);
+    const message = $('#location-editor-message');
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+        if (message) message.textContent = '올바른 위도와 경도를 입력해주세요.';
+        return;
+    }
+
+    const photo = getEditablePhoto();
+    if (!state.currentUser || !photo) {
+        if (message) message.textContent = '로그인 후 저장된 사진부터 위치를 저장할 수 있습니다.';
+        showToast('화면 흐름을 확인했습니다. 실제 저장은 로그인 후 가능합니다.');
+        closeModals();
+        return;
+    }
+
+    if (message) message.textContent = '위치를 저장하는 중입니다...';
+    const { data, error } = await updatePhotoLocation(photo.id, lat, lng);
+    if (error) {
+        if (message) message.textContent = error.message || '위치 저장에 실패했습니다.';
+        return;
+    }
+    const updated = normalizeSavedPhoto(data);
+    state.savedPhotos = state.savedPhotos.map((savedPhoto) => savedPhoto.id === updated.id ? updated : savedPhoto);
+    renderSavedPhotoSurfaces();
+    renderTravelDraftSurfaces();
+    closeModals();
+    showToast('사진 위치를 저장했습니다.');
+}
+
 function renderExploreList() {
     const list = $('#explore-list');
     if (!list) return;
@@ -627,6 +680,7 @@ function bindEvents() {
     $$('[data-go-trip]').forEach((button) => button.addEventListener('click', () => routeTo('trip')));
     $$('[data-go-profile]').forEach((button) => button.addEventListener('click', () => routeTo('profile')));
     $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => openModal('#photo-detail-modal')));
+    $$('[data-open-location-editor]').forEach((button) => button.addEventListener('click', openLocationEditor));
     $$('[data-explore-pin]').forEach((button) => button.addEventListener('click', () => {
         document.body.classList.add('explore-pin-selected');
         $('#explore-pin-preview')?.removeAttribute('hidden');
@@ -676,6 +730,7 @@ function bindEvents() {
     });
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-signup')?.addEventListener('click', handleSignup);
+    $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModals));
     $$('.modal').forEach((modal) => {
         modal.addEventListener('click', (event) => {
