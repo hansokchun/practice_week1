@@ -4,803 +4,674 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travelgram | Premium Storytelling</title>
+    <title>Travelgram / Ikkyee | Personal Travel Map Archive</title>
 
-    <!-- External Resources -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
-        rel="stylesheet">
-
-    <link rel="icon" href="images/logo.webp" type="image/png">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="icon" href="images/logo.webp" type="image/webp">
     <link rel="stylesheet" href="style.css">
-
 </head>
 
-<body>
-    <!-- Splash Screen / Intro Page -->
-    <div id="splash-screen">
-        <div class="splash-bg-slider">
-            <div class="slider-track">
-                <!-- User added travel/photo themed images -->
-                <div class="slide" style="background-image: url('images/main_bg1.jpg')"></div>
-                <div class="slide" style="background-image: url('images/main_bg2.jpg')"></div>
-                <div class="slide" style="background-image: url('images/main_bg3.jpg')"></div>
-                <div class="slide" style="background-image: url('images/main_bg4.jpg')"></div>
-                <div class="slide" style="background-image: url('images/main_bg5.jpg')"></div>
+<body data-page="home">
+    <header class="site-header">
+        <a class="brand" href="#/" aria-label="Travelgram home">
+            <img src="images/logo.webp" alt="">
+            <span>Travelgram</span>
+        </a>
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="#/" data-route="home" class="active">Home</a>
+            <a href="#/myphoto" data-route="myphoto">Myphoto</a>
+            <a href="#/explore" data-route="explore">Explore</a>
+        </nav>
+        <div class="account-area">
+            <button id="btn-new-trip" class="nav-action nav-create" type="button">
+                <span class="material-symbols-outlined">add</span>
+                새 여행 만들기
+            </button>
+            <span id="account-label" class="account-label">Guest</span>
+            <button id="btn-open-auth" class="nav-action" type="button">Login</button>
+        </div>
+    </header>
 
-                <!-- Duplicate for seamless loop -->
-                <div class="slide" style="background-image: url('images/main_bg1.jpg')"></div>
+    <main id="site-main">
+        <section id="page-home" class="page page-home active" aria-labelledby="home-title">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 id="home-title">사진을 고르면,<br>여행 지도가 만들어집니다.</h1>
+                    <p class="hero-copy">
+                        흩어진 여행 사진을 날짜와 위치에 따라 앨범으로 정리하고, 공개하고 싶은 여행만 지도 위에 공유하세요.
+                    </p>
+                    <div class="hero-actions">
+                        <button id="btn-home-myphoto" class="btn-primary" type="button">내 사진으로 시작하기</button>
+                        <button id="btn-home-explore" class="btn-secondary" type="button">공개 여행 둘러보기</button>
+                    </div>
+                </div>
+                <div class="hero-visual" aria-label="여행 지도 생성 미리보기">
+                    <div class="hero-map-card">
+                        <img src="https://lh3.googleusercontent.com/aida/ADBb0uhA02UwIV4dUQmO_i7SFH8G7fw3pPg4-CAjMckQQZhnCa-_j9O4Ixw8rxt9c4ylm5rZpYllAU41aIl9j08hKZFPRq0ezeT1zrFHfc5SQ3bDFOy7qzqJ9uObt6VLPs4mZ-YdBbvzzyhG_ybWEY128F3lH_NudmJ7cwpIKZR2oHz-l9RcD3la7A1aRvxevna9ZJD7GCiQmunRYrjZ5YNhnNb0FcsXE4lcfFeEXizhTi4nk-cU4zJhT85emtw" alt="여행 지도 시각화">
+                        <div class="generation-card">
+                            <span class="material-symbols-outlined">auto_awesome</span>
+                            <div>
+                                <strong>앨범 생성 중...</strong>
+                                <small>24장의 사진이 위치 정보와 연결되었습니다.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <section class="content-band white-band" aria-labelledby="home-flow-title">
+                <div class="section-heading">
+                    <h2 id="home-flow-title">사진에서 앨범, 앨범에서 여행 지도로</h2>
+                    <span class="section-rule"></span>
+                </div>
+                <div class="process-grid">
+                    <article>
+                        <span class="material-symbols-outlined">add_photo_alternate</span>
+                        <h3>1. 사진 선택</h3>
+                        <p>여행 중 찍은 사진을 선택하면 촬영 시간과 위치 정보를 먼저 확인합니다.</p>
+                    </article>
+                    <article>
+                        <span class="material-symbols-outlined">location_on</span>
+                        <h3>2. 자동 정리</h3>
+                        <p>사진을 여행 단위로 묶고, 위치가 빠진 사진은 나중에 지도에서 보완합니다.</p>
+                    </article>
+                    <article>
+                        <span class="material-symbols-outlined">map</span>
+                        <h3>3. 앨범 생성</h3>
+                        <p>모든 기록은 기본 비공개입니다. 공개할 여행만 Explore에 나타납니다.</p>
+                    </article>
+                    <article>
+                        <span class="material-symbols-outlined">shield</span>
+                        <h3>4. 안심 보관</h3>
+                        <p>나만 보기 또는 선택 공개로 자유롭게 관리하세요.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-band soft-band" aria-labelledby="home-preview-title">
+                <div class="section-heading">
+                    <h2 id="home-preview-title">내 최근 앨범</h2>
+                    <p>당신의 소중한 추억들이 기록되고 있습니다.</p>
+                </div>
+                <div class="archive-preview">
+                    <article>
+                        <img src="images/main_bg1.jpg" alt="여행 사진 예시">
+                        <div>
+                            <span>Private</span>
+                            <strong>제주도 가을 여행</strong>
+                            <small>24 photos · 6 places</small>
+                        </div>
+                    </article>
+                    <article>
+                        <img src="images/main_bg4.jpg" alt="여행 사진 예시">
+                        <div>
+                            <span>Draft</span>
+                            <strong>서울 비 오는 날의 산책</strong>
+                            <small>12 photos · 3 places</small>
+                        </div>
+                    </article>
+                    <article>
+                        <img src="images/main_bg5.jpg" alt="여행 사진 예시">
+                        <div>
+                            <span>Private</span>
+                            <strong>양양 서핑 트립</strong>
+                            <small>2023.08.05 - 08.07</small>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-band white-band" aria-labelledby="public-examples-title">
+                <div class="section-heading">
+                    <h2 id="public-examples-title">다른 사람들은 이렇게 기록했어요</h2>
+                    <p>세상의 아름다운 장소들을 탐험해보세요.</p>
+                </div>
+                <div class="public-example-grid">
+                    <article><img src="images/main_bg2.jpg" alt=""><strong>도쿄 도심의 밤</strong><span>Tokyo, Japan</span></article>
+                    <article><img src="images/main_bg3.jpg" alt=""><strong>교토의 고요한 아침</strong><span>Kyoto, Japan</span></article>
+                    <article><img src="images/main_bg4.jpg" alt=""><strong>부산 광안리 밤바다</strong><span>Busan, Korea</span></article>
+                    <article><img src="images/main_bg1.jpg" alt=""><strong>파리의 골목길 산책</strong><span>Paris, France</span></article>
+                </div>
+            </section>
+        </section>
+
+        <section id="page-myphoto" class="page page-myphoto" aria-labelledby="myphoto-title">
+            <div class="page-container">
+                <div class="page-intro">
+                    <p class="eyebrow">Myphoto</p>
+                    <h1 id="myphoto-title">내 사진과 앨범을 정리하는 공간</h1>
+                    <p>선택한 사진만 업로드됩니다. 모든 사진과 앨범은 기본 비공개입니다.</p>
+                </div>
+
+                <div class="myphoto-actions">
+                    <button id="btn-open-upload" class="action-card primary-action-card" type="button">
+                        <span class="material-symbols-outlined">add_a_photo</span>
+                        <strong>새 여행 사진을 업로드</strong>
+                        <small>파일 선택, 위치 정보 확인, 비공개 저장</small>
+                    </button>
+                    <button id="btn-open-album" class="action-card" type="button">
+                        <span class="material-symbols-outlined">library_add</span>
+                        <strong>기존 사진으로 여행 구성</strong>
+                        <small>사진 묶기, 앨범 이름 지정, 공개 전 검토</small>
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <article><span>최근 사진</span><strong>48</strong></article>
+                    <article><span>위치 확인됨</span><strong>36</strong></article>
+                    <article class="warning-stat"><span>위치 정보 없음</span><strong>12</strong></article>
+                    <article><span>내 앨범</span><strong>5</strong></article>
+                </div>
+
+                <section class="attention-banner">
+                    <span class="material-symbols-outlined">wrong_location</span>
+                    <div>
+                        <strong>처리 필요: 위치 정보 없는 사진 12장</strong>
+                        <p>사진의 메타데이터가 부족하여 지도에 표시되지 않고 있습니다.</p>
+                    </div>
+                    <button type="button">위치 지정하기</button>
+                    <button type="button" class="solid">GPX로 매칭하기</button>
+                </section>
+
+                <div class="dashboard-grid">
+                    <section class="dashboard-panel" aria-labelledby="upload-panel-title">
+                        <div class="panel-topline">
+                            <p class="eyebrow">Upload queue</p>
+                            <button id="btn-clear-staged" class="text-button" type="button">비우기</button>
+                        </div>
+                        <h2 id="upload-panel-title">선택한 사진</h2>
+                        <div id="staged-photos" class="photo-grid empty">
+                            <div class="empty-state">
+                                <strong>아직 선택한 사진이 없습니다.</strong>
+                                <span>사진 올리기를 누르면 이곳에서 업로드 초안을 확인합니다.</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-panel" aria-labelledby="album-panel-title">
+                        <div class="panel-topline">
+                            <p class="eyebrow">Album draft</p>
+                            <span id="album-count-label">0 photos</span>
+                        </div>
+                        <h2 id="album-panel-title">앨범 초안</h2>
+                        <div class="empty-state compact-empty">
+                            <strong>앨범 만들기 화면에서 초안을 구성합니다.</strong>
+                            <span>사진 올리기와 분리된 흐름으로 여행 단위를 분석합니다.</span>
+                            <button id="btn-open-album-inline" class="btn-secondary" type="button">앨범 만들기</button>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="recent-photo-section" aria-labelledby="recent-photo-title">
+                    <div class="panel-topline">
+                        <h2 id="recent-photo-title">최근 사진</h2>
+                        <button class="text-button" type="button">전체 보기</button>
+                    </div>
+                    <div class="recent-photo-grid">
+                        <article><img src="images/main_bg1.jpg" alt=""><span class="material-symbols-outlined">lock</span></article>
+                        <article><img src="images/main_bg2.jpg" alt=""><span class="material-symbols-outlined">lock</span></article>
+                        <article><img src="images/main_bg3.jpg" alt=""><span class="material-symbols-outlined">public</span></article>
+                        <article class="photo-placeholder"></article>
+                    </div>
+                </section>
+
+                <section class="dashboard-panel full-panel album-panel" aria-labelledby="my-albums-title">
+                    <div class="panel-topline">
+                        <div>
+                            <h2 id="my-albums-title">Travel Albums</h2>
+                            <p>Organized by your curated journeys</p>
+                        </div>
+                        <span id="myphoto-summary">0 photos · 0 albums</span>
+                    </div>
+                    <div id="album-list" class="album-list">
+                        <article class="album-row">
+                            <img src="images/main_bg2.jpg" alt="">
+                            <div>
+                                <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2023.11.12 - 11.16</span>
+                                <strong>도쿄 4박 5일</strong>
+                                <p>Arashiyama bamboo groves and ancient temples as they turned to vibrant crimsons.</p>
+                                <small>128 Photos · Archival Quality</small>
+                            </div>
+                        </article>
+                        <article class="album-row">
+                            <img src="images/main_bg5.jpg" alt="">
+                            <div>
+                                <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2023.09.20 - 10.05</span>
+                                <strong>이탈리아 신혼여행</strong>
+                                <p>Navigating azure waters and white-washed alleys. A study in blue and light.</p>
+                                <small>342 Photos · Archival Quality</small>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <section id="page-upload" class="page page-upload" aria-labelledby="upload-title">
+            <div class="page-container flow-page">
+                <button class="back-link" data-go-myphoto type="button">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Myphoto
+                </button>
+                <div class="flow-hero">
+                    <p class="eyebrow">Photo Upload</p>
+                    <h1 id="upload-title">여행 사진을 선택해주세요.</h1>
+                    <p>사진의 촬영 시간과 위치 정보를 확인해 지도 아카이브의 첫 초안을 만듭니다. 위치가 없는 사진은 다음 단계에서 지도 위에 직접 배치할 수 있어요.</p>
+                </div>
+                <label class="upload-dropzone">
+                    <input id="photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp">
+                    <span class="material-symbols-outlined">cloud_upload</span>
+                    <strong>사진 파일 선택</strong>
+                    <small>JPG, PNG, WEBP 파일을 여러 장 선택할 수 있습니다.</small>
+                </label>
+                <section id="upload-result-panel" class="upload-result-panel" aria-live="polite">
+                    <div>
+                        <p class="eyebrow">업로드 완료</p>
+                        <h2>추억의 조각들이 지도로 변환될 준비를 마쳤습니다.</h2>
+                        <p>다음 단계에서 사진의 촬영 시간과 위치 정보를 확인하고 여행 지도를 구성합니다.</p>
+                    </div>
+                    <div class="result-stats">
+                        <article><span>전체 사진</span><strong id="upload-total-count">0장</strong></article>
+                        <article><span>성공</span><strong id="upload-success-count">0장</strong></article>
+                        <article><span>오류</span><strong>0장</strong></article>
+                    </div>
+                    <div class="result-actions">
+                        <button id="btn-review-upload" class="btn-primary" type="button">사진 정보 확인하기</button>
+                        <button id="btn-upload-retry" class="btn-secondary" type="button">사진 다시 선택</button>
+                    </div>
+                    <div class="help-note">
+                        <span class="material-symbols-outlined">info</span>
+                        위치 정보가 없는 사진은 다음 단계에서 지도 위에 직접 배치할 수 있습니다.
+                    </div>
+                </section>
+                <div class="upload-step-list">
+                    <article><span>1</span><strong>사진 선택</strong><p>여행 중 찍은 사진을 기기에서 선택합니다.</p></article>
+                    <article><span>2</span><strong>위치 확인</strong><p>GPS가 있는 사진은 자동으로 지도에 연결합니다.</p></article>
+                    <article><span>3</span><strong>기본 비공개</strong><p>업로드된 사진은 공개 전까지 Myphoto에만 보관됩니다.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-album" class="page page-album" aria-labelledby="album-title">
+            <div class="page-container flow-page">
+                <button class="back-link" data-go-myphoto type="button">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Myphoto
+                </button>
+                <div class="flow-hero">
+                    <p class="eyebrow">Album Analysis</p>
+                    <h1 id="album-title">앨범 만들기: 분석 결과 확인</h1>
+                    <p>선택한 사진을 시간과 위치 흐름으로 묶어 여행 앨범 초안을 구성합니다. 사진 업로드와는 다른 앨범 구성 화면입니다.</p>
+                </div>
+                <div class="analysis-layout">
+                    <section class="analysis-card">
+                        <p class="eyebrow">Suggested album</p>
+                        <h2>도쿄 4박 5일</h2>
+                        <div class="analysis-stats">
+                            <span><strong>128</strong> Photos</span>
+                            <span><strong>14</strong> Places</span>
+                            <span><strong>5 days</strong> Timeline</span>
+                        </div>
+                        <div class="analysis-warning">
+                            <span class="material-symbols-outlined">explore</span>
+                            지도에 배치된 사진 62장의 위치를 확인했어요.
+                        </div>
+                        <div class="missing-location-actions">
+                            <strong>위치 없는 사진 처리 (24장)</strong>
+                            <button type="button"><span class="material-symbols-outlined">add_location_alt</span> 지도에서 직접 지정하기</button>
+                            <button type="button"><span class="material-symbols-outlined">route</span> GPX 파일로 자동 매칭하기</button>
+                            <button type="button">나중에 하기</button>
+                        </div>
+                        <div class="album-builder">
+                            <label for="album-name-input">앨범 이름</label>
+                            <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행">
+                            <label for="album-note-input">메모</label>
+                            <textarea id="album-note-input" rows="5" placeholder="이 여행을 어떻게 기억하고 싶은지 적어보세요."></textarea>
+                            <button id="btn-save-album-draft" class="btn-primary" type="button">앨범 초안 저장</button>
+                        </div>
+                        <button class="btn-primary wide-button" data-go-review type="button">지도에서 검토하기</button>
+                        <button id="btn-open-share-settings" class="btn-secondary wide-button" type="button">공개 설정으로 이동</button>
+                    </section>
+                    <section class="analysis-map">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                        <div class="route-line"></div>
+                        <b class="route-point p1"></b>
+                        <b class="route-point p2"></b>
+                        <b class="route-point p3"></b>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-review" class="page page-review" aria-labelledby="review-title">
+            <div class="review-shell">
+                <aside class="review-sidebar">
+                    <button class="back-link" data-go-album type="button">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        앨범 분석
+                    </button>
+                    <p class="eyebrow">Review Map</p>
+                    <h1 id="review-title">제주 동쪽 해안 드라이브</h1>
+                    <p>날짜별 이동 흐름과 위치가 비어 있는 사진을 확인한 뒤 공개 설정으로 넘어가세요.</p>
+                    <div class="review-toolbar">
+                        <button class="btn-primary" id="btn-open-share-settings-review" data-go-share type="button">공개 설정</button>
+                        <button class="btn-secondary" data-open-photo-detail type="button">사진 상세</button>
+                        <button class="btn-secondary" type="button">사진 추가</button>
+                    </div>
+                    <div class="day-divider-list">
+                        <article>
+                            <span>Day 1 · 2026.05.12</span>
+                            <strong>성산과 섭지코지</strong>
+                            <small>18 photos · 5 places</small>
+                        </article>
+                        <article>
+                            <span>Day 2 · 2026.05.13</span>
+                            <strong>세화와 월정리</strong>
+                            <small>22 photos · 4 places</small>
+                        </article>
+                        <article class="needs-location">
+                            <span>Need review</span>
+                            <strong>위치 없는 사진 12장</strong>
+                            <small>지도에 직접 놓거나 GPX로 매칭하세요.</small>
+                        </article>
+                    </div>
+                </aside>
+                <section class="review-map-area" aria-label="비공개 여행 검토 지도">
+                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                    <button class="review-photo-pin p1" data-open-photo-detail type="button"><img src="images/main_bg1.jpg" alt=""></button>
+                    <button class="review-photo-pin p2" data-open-photo-detail type="button"><img src="images/main_bg2.jpg" alt=""></button>
+                    <button class="review-photo-pin p3" data-open-photo-detail type="button"><img src="images/main_bg4.jpg" alt=""></button>
+                    <div class="review-map-status">
+                        <span class="material-symbols-outlined">lock</span>
+                        비공개 검토 중 · 공개 전까지 Explore에 노출되지 않습니다.
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <section id="page-share" class="page page-share" aria-labelledby="share-title">
+            <div class="page-container flow-page">
+                <button class="back-link" data-go-album type="button">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    앨범 분석
+                </button>
+                <div class="share-layout">
+                    <section class="share-main">
+                        <p class="eyebrow">공개 설정</p>
+                        <h1 id="share-title">도쿄 4박 5일</h1>
+                        <div class="trip-meta">
+                            <span><span class="material-symbols-outlined">calendar_today</span> 2026.05.12 - 2026.05.16</span>
+                            <span><span class="material-symbols-outlined">photo_library</span> 86 photos</span>
+                            <span><span class="material-symbols-outlined">lock</span> 현재 상태: 비공개</span>
+                        </div>
+                        <section class="share-card">
+                            <h2>공개할 사진 선택</h2>
+                            <p>공개하고 싶지 않은 사진은 개별적으로 끌 수 있습니다.</p>
+                            <div class="share-photo-grid">
+                                <article><img src="images/main_bg1.jpg" alt=""><span class="material-symbols-outlined">check_circle</span></article>
+                                <article><img src="images/main_bg2.jpg" alt=""><span class="material-symbols-outlined">check_circle</span></article>
+                                <article><img src="images/main_bg3.jpg" alt=""><span class="material-symbols-outlined">check_circle</span></article>
+                                <article><img src="images/main_bg4.jpg" alt=""><span class="material-symbols-outlined muted">radio_button_unchecked</span></article>
+                            </div>
+                        </section>
+                        <section class="share-card">
+                            <h2>앨범 공개 범위</h2>
+                            <div class="visibility-options">
+                                <button class="active" type="button"><span class="material-symbols-outlined">lock</span><strong>비공개</strong><small>나만 볼 수 있는 안전한 보관소</small></button>
+                                <button type="button"><span class="material-symbols-outlined">link</span><strong>링크로 공유</strong><small>링크를 가진 사람만 접근 가능</small></button>
+                                <button type="button"><span class="material-symbols-outlined">public</span><strong>공개</strong><small>Ikkyee 탐색 탭에 노출됩니다</small></button>
+                            </div>
+                        </section>
+                        <section class="share-card">
+                            <h2>세부 정보 노출</h2>
+                            <div class="privacy-options">
+                                <div><strong>위치 정보 노출</strong><span>정확한 위치 공개 · 대략 위치만 공개 · 위치 숨기기</span></div>
+                                <div><strong>시간 정보 노출</strong><span>정확한 촬영 시간 공개 · 날짜만 공개 · 촬영 시간 숨기기</span></div>
+                                <div><strong>원본 보호</strong><span>공개 이미지에서는 EXIF 메타데이터가 제거됩니다.</span></div>
+                            </div>
+                        </section>
+                    </section>
+                    <aside class="share-preview">
+                        <img src="images/main_bg2.jpg" alt="">
+                        <div>
+                            <span>공개 미리보기</span>
+                            <strong>도쿄 4박 5일</strong>
+                            <small>공개 사진 82장</small>
+                        </div>
+                        <button class="btn-primary" type="button">설정 저장</button>
+                        <button class="btn-secondary" type="button">비공개로 유지</button>
+                        <button class="btn-secondary" type="button">공유 링크 만들기</button>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-explore" class="page page-explore" aria-labelledby="explore-title">
+            <div class="explore-map-canvas" aria-label="공개 여행 지도">
+                <img class="map-bg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                <button class="map-cluster cluster-a" data-explore-pin type="button" aria-label="공개 여행 58개 보기">58</button>
+                <button class="map-cluster cluster-b" data-explore-pin type="button" aria-label="공개 여행 24개 보기">24</button>
+                <button class="map-pin pin-a" data-explore-pin type="button" aria-label="도쿄 도심의 밤 미리보기">
+                    <img src="images/main_bg3.jpg" alt="">
+                    <b>1</b>
+                </button>
+                <button class="map-dot dot-a" data-explore-pin type="button" aria-label="공개 사진 보기"></button>
+                <button class="map-dot dot-b" data-explore-pin type="button" aria-label="공개 사진 보기"></button>
+                <div class="map-filter">
+                    <button class="active"><span class="material-symbols-outlined">photo_library</span> 사진</button>
+                    <button><span class="material-symbols-outlined">auto_stories</span> 앨범</button>
+                </div>
+                <div class="map-controls">
+                    <button><span class="material-symbols-outlined">add</span></button>
+                    <button><span class="material-symbols-outlined">remove</span></button>
+                    <button><span class="material-symbols-outlined">my_location</span></button>
+                </div>
+                <div class="map-hint">
+                    <span class="material-symbols-outlined">info</span>
+                    지도에서 핀을 클릭하면 공개 사진을 볼 수 있어요.
+                </div>
+                <aside id="explore-pin-preview" class="explore-pin-preview" hidden>
+                    <button id="btn-close-pin-preview" class="panel-close" type="button" aria-label="미리보기 닫기">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                    <img src="images/main_bg3.jpg" alt="도쿄 야경 사진">
+                    <div class="pin-preview-copy">
+                        <p class="eyebrow">Selected Pin</p>
+                        <h2>도쿄 도심의 밤</h2>
+                        <p>신주쿠 골목과 전망대의 빛을 따라 만든 공개 여행 앨범입니다.</p>
+                    </div>
+                    <div class="pin-preview-meta">
+                        <span><span class="material-symbols-outlined">photo_library</span> 18 photos</span>
+                        <span><span class="material-symbols-outlined">place</span> 7 places</span>
+                        <span><span class="material-symbols-outlined">favorite</span> 124</span>
+                    </div>
+                    <div class="pin-author">
+                        <div class="avatar">IK</div>
+                        <button data-go-profile type="button">
+                            <strong>Ikkyee</strong>
+                            <small>공개 프로필 보기</small>
+                        </button>
+                    </div>
+                    <button class="btn-primary" data-go-trip type="button">공개 여행 보기</button>
+                </aside>
+                <div id="explore-list" class="explore-list sr-only"></div>
+            </div>
+        </section>
+
+        <section id="page-trip" class="page page-public-trip" aria-labelledby="trip-title">
+            <article class="public-trip-hero">
+                <img src="images/main_bg2.jpg" alt="제주 동쪽 해안 도로">
+                <div class="public-trip-copy">
+                    <button class="back-link" data-route="explore" type="button">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        Explore
+                    </button>
+                    <p class="eyebrow">Public Trip</p>
+                    <h1 id="trip-title">Jeju East Coast Drive</h1>
+                    <p>성산에서 세화까지 이어지는 바람 많은 해안 길. 공개된 사진만 골라 만든 여행 기록입니다.</p>
+                    <div class="trip-actions">
+                        <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
+                        <button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>
+                    </div>
+                </div>
+            </article>
+            <div class="page-container public-trip-body">
+                <section class="trip-route-card">
+                    <div class="section-heading compact-heading">
+                        <h2>Route</h2>
+                        <p>3 days · 11 places · 42 public photos</p>
+                    </div>
+                    <div class="route-strip">
+                        <span>성산일출봉</span>
+                        <i></i>
+                        <span>세화해변</span>
+                        <i></i>
+                        <span>월정리</span>
+                        <i></i>
+                        <span>김녕</span>
+                    </div>
+                </section>
+                <section class="trip-day-grid">
+                    <article>
+                        <p class="eyebrow">Day 1</p>
+                        <h3>바람이 센 해안 도로</h3>
+                        <p>해가 낮게 깔린 시간에 성산 주변을 천천히 돌았습니다.</p>
+                    </article>
+                    <article>
+                        <p class="eyebrow">Day 2</p>
+                        <h3>세화의 푸른 오후</h3>
+                        <p>작은 카페와 바다 사이를 걸으며 사진을 남겼습니다.</p>
+                    </article>
+                    <article>
+                        <p class="eyebrow">Day 3</p>
+                        <h3>월정리에서 김녕까지</h3>
+                        <p>공개해도 좋은 장면만 골라 하나의 앨범으로 정리했습니다.</p>
+                    </article>
+                </section>
+                <section class="public-author-card">
+                    <div class="avatar">IK</div>
+                    <div>
+                        <p class="eyebrow">Author</p>
+                        <h2>Ikkyee</h2>
+                        <p>개인 여행 사진을 조용히 기록하고, 공개해도 좋은 장면만 지도에 남깁니다.</p>
+                    </div>
+                    <button class="btn-secondary" data-go-profile type="button">프로필 보기</button>
+                </section>
+            </div>
+        </section>
+
+        <section id="page-profile" class="page page-public-profile" aria-labelledby="profile-title">
+            <div class="profile-cover">
+                <img src="images/main_bg4.jpg" alt="">
+                <div class="profile-card">
+                    <div class="avatar large-avatar">IK</div>
+                    <div>
+                        <p class="eyebrow">Public Profile</p>
+                        <h1 id="profile-title">Ikkyee</h1>
+                        <p>지도에 공개한 여행만 모아둔 공개 프로필입니다.</p>
+                    </div>
+                    <div class="profile-stats">
+                        <span><strong>12</strong> albums</span>
+                        <span><strong>318</strong> photos</span>
+                        <span><strong>41</strong> places</span>
+                    </div>
+                </div>
+            </div>
+            <div class="page-container profile-content">
+                <div class="profile-tabs" role="tablist" aria-label="프로필 보기 방식">
+                    <button class="active" type="button">Map View</button>
+                    <button type="button">Albums</button>
+                </div>
+                <div class="profile-layout">
+                    <section class="profile-map-preview">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                        <b class="route-point p1"></b>
+                        <b class="route-point p2"></b>
+                    </section>
+                    <section class="profile-album-grid">
+                        <article data-go-trip>
+                            <img src="images/main_bg2.jpg" alt="">
+                            <strong>Jeju East Coast Drive</strong>
+                            <span>42 photos · 11 places</span>
+                        </article>
+                        <article>
+                            <img src="images/main_bg3.jpg" alt="">
+                            <strong>Tokyo Night Walk</strong>
+                            <span>18 photos · 7 places</span>
+                        </article>
+                        <article>
+                            <img src="images/main_bg5.jpg" alt="">
+                            <strong>Italian Blue Week</strong>
+                            <span>86 photos · 14 places</span>
+                        </article>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
+        <div class="photo-detail-card" role="dialog" aria-modal="true" aria-labelledby="photo-detail-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
+            <img src="images/main_bg2.jpg" alt="여행 사진 상세">
+            <section>
+                <p class="eyebrow">Archival Photo</p>
+                <h2 id="photo-detail-title">성산 앞바다의 오후</h2>
+                <p>2026.05.14 · Jeju, Korea</p>
+                <dl>
+                    <div><dt>Album</dt><dd>Jeju East Coast Drive</dd></div>
+                    <div><dt>Visibility</dt><dd>Public photo · approximate location</dd></div>
+                    <div><dt>Original</dt><dd>EXIF metadata removed for public view</dd></div>
+                </dl>
+                <div class="detail-actions">
+                    <button class="btn-primary" data-go-trip type="button">앨범으로 이동</button>
+                    <button class="btn-secondary" type="button">위치 수정</button>
+                </div>
+            </section>
         </div>
-        <div class="splash-content">
-            <h1 class="splash-logo">Travelgram</h1>
-            <p class="splash-tagline">Archive your moments, Map your journey.</p>
-            <button id="btn-start" class="splash-start-btn">Get Started</button>
+    </div>
+    <div id="auth-modal" class="modal" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
+            <p class="eyebrow">Account</p>
+            <h2 id="auth-title">로그인 또는 가입</h2>
+            <form id="auth-form" class="auth-form">
+                <label for="email-input">Email</label>
+                <input id="email-input" type="email" autocomplete="email" required>
+                <label for="password-input">Password</label>
+                <input id="password-input" type="password" autocomplete="current-password" minlength="6" required>
+                <div class="auth-actions">
+                    <button id="btn-login" class="btn-primary" type="submit">Login</button>
+                    <button id="btn-signup" class="btn-secondary" type="button">Sign up</button>
+                </div>
+            </form>
+            <p id="auth-message" class="auth-message"></p>
         </div>
-        <div class="splash-overlay"></div>
     </div>
 
-    <div id="app">
-        <!-- Sidebar Content -->
-        <aside id="sidebar">
-            <nav id="app-nav" class="app-nav" aria-label="Primary">
-                <button id="nav-home" class="app-nav-item active" type="button" data-section="home">Archive</button>
-                <button id="nav-myphoto" class="app-nav-item" type="button" data-section="myphoto">Myphoto</button>
-                <button id="nav-explore" class="app-nav-item" type="button" data-section="explore">Explore</button>
-            </nav>
-            <div id="drag-handle" class="drag-handle">
-                <div class="handle-bar"></div>
-            </div>
-            <section id="panel-home" class="panel active">
-                <div class="home-panel">
-                    <p class="home-kicker">Personal Travel Map Archive</p>
-                    <h1>Your photos become a quiet map of where life happened.</h1>
-                    <p class="home-copy">
-                        Keep every trip private by default, organize memories by place and time, then publish only the routes worth sharing.
-                    </p>
-                    <div class="home-actions">
-                        <button id="btn-home-start" class="btn-primary" type="button">Open Myphoto</button>
-                        <button id="btn-home-explore" class="btn-secondary" type="button">View Explore</button>
-                    </div>
-                    <div class="home-stats" aria-label="Archive overview">
-                        <div>
-                            <strong>Map-first</strong>
-                            <span>Archive</span>
-                        </div>
-                        <div>
-                            <strong>Private</strong>
-                            <span>by default</span>
-                        </div>
-                        <div>
-                            <strong>Share</strong>
-                            <span>when ready</span>
-                        </div>
-                    </div>
-                    <div class="home-feature-list" aria-label="Product highlights">
-                        <div>
-                            <strong>Import from photos</strong>
-                            <span>GPS and capture time become the first draft of your travel record.</span>
-                        </div>
-                        <div>
-                            <strong>Review on the map</strong>
-                            <span>Correct places, group albums, and see each route before publishing.</span>
-                        </div>
-                        <div>
-                            <strong>Publish selectively</strong>
-                            <span>Public profiles and trips are opt-in views, not the default archive.</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- 1. FEED EXPLORE PANEL -->
-            <section id="panel-explore" class="panel">
-                <header class="sidebar-header">
-                    <h1 class="logo">Travelgram</h1>
-                    <div class="header-actions">
-                        <button class="btn-post" id="btn-open-upload" type="button">Upload</button>
-                        <input type="file" id="upload-input" multiple accept="image/jpeg, image/png"
-                            style="display:none;">
-                        <button id="btn-login-sidebar" class="btn-post"
-                            style="display: none; border: none; cursor: pointer;">Login</button>
-                        <div id="user-menu" class="user-menu" style="position: relative; display: none;">
-                            <div id="user-avatar" class="user-avatar" title="My account">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                            </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-                            <div id="profile-popup" class="profile-popup hidden">
-                                <div id="profile-main-view">
-                                    <div class="profile-header">
-                                        <div id="profile-popup-avatar" class="profile-avatar-large"></div>
-                                        <div class="profile-info">
-                                            <h3 id="profile-nickname"></h3>
-                                            <p id="profile-email-sub" class="text-muted"></p>
-                                        </div>
-                                    </div>
-                                    <div class="profile-stats">
-                                        <div class="stat-item">
-                                            <span id="profile-story-count" class="stat-value">0</span>
-                                            <span class="stat-label">Stories</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span id="profile-like-count" class="stat-value">0</span>
-                                            <span class="stat-label">Liked</span>
-                                        </div>
-                                    </div>
-                                    <div class="profile-actions">
-                                        <button id="btn-view-my-profile" class="btn-action-outline"
-                                            style="margin-bottom: 8px; border-color: var(--accent-color); color: var(--accent-color);">View My Archive</button>
-                                        <button id="btn-view-info" class="btn-action-outline">Profile Info</button>
-                                        <button id="btn-logout" class="btn-logout-full" title="Logout">
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                                <polyline points="16 17 21 12 16 7"></polyline>
-                                                <line x1="21" y1="12" x2="9" y2="12"></line>
-                                            </svg>
-                                            Logout
-                                        </button>
-                                    </div>
-                                </div>
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+        <button type="button" data-mobile-route="home">
+            <span class="material-symbols-outlined">home</span>
+            홈
+        </button>
+        <button type="button" data-mobile-route="myphoto">
+            <span class="material-symbols-outlined">photo_library</span>
+            내 사진
+        </button>
+        <button type="button" data-mobile-route="explore">
+            <span class="material-symbols-outlined">explore</span>
+            탐색
+        </button>
+    </nav>
 
-                                <div id="profile-detail-view" class="hidden">
-                                    <div class="detail-header-bar">
-                                        <button id="btn-back-profile" class="btn-icon-small">Back</button>
-                                        <h4>Profile Info</h4>
-                                        <div style="width:24px;"></div>
-                                    </div>
-                                    <div class="detail-body">
-                                        <div id="demo-display">
-                                            <div class="info-row"><span class="info-label">Email</span><span
-                                                    id="demo-email" class="info-val"></span></div>
-                                            <div class="info-row"><span class="info-label">Age</span><span id="demo-age"
-                                                    class="info-val">Not set</span></div>
-                                            <div class="info-row"><span class="info-label">Gender</span><span
-                                                    id="demo-gender" class="info-val">Not set</span></div>
-                                            <button id="btn-edit-demo" class="btn-action-fill"
-                                                style="width:100%; margin-top:16px;">Edit</button>
-                                        </div>
-                                        <div id="demo-edit" class="hidden">
-                                            <div class="edit-group" style="text-align: center; margin-bottom: 24px;">
-                                                <div id="edit-avatar-preview" class="profile-avatar-large"
-                                                    style="margin: 0 auto 12px; cursor: pointer; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc;">
-                                                    <span style="font-size: 12px; color: var(--text-muted);">Click to change</span>
-                                                </div>
-                                                <input type="file" id="input-avatar-file"
-                                                    accept="image/jpeg, image/png, image/webp" style="display: none;">
-                                            </div>
-                                            <div class="edit-group">
-                                                <label class="info-label">Nickname</label>
-                                                <input type="text" id="input-nickname" class="demo-input"
-                                                    placeholder="Enter nickname">
-                                            </div>
-                                            <div class="edit-group">
-                                                <label class="info-label">Age range</label>
-                                                <select id="input-age" class="demo-select">
-                                                    <option value="">Not set</option>
-                                                    <option value="10s">10s</option>
-                                                    <option value="20s">20s</option>
-                                                    <option value="30s">30s</option>
-                                                    <option value="40s">40s</option>
-                                                    <option value="50+">50+</option>
-                                                </select>
-                                            </div>
-                                            <div class="edit-group">
-                                                <label class="info-label">Gender</label>
-                                                <select id="input-gender" class="demo-select">
-                                                    <option value="">Not set</option>
-                                                    <option value="M">Male</option>
-                                                    <option value="F">Female</option>
-                                                    <option value="U">Private</option>
-                                                </select>
-                                            </div>
-                                            <div class="demo-actions">
-                                                <button id="btn-cancel-demo" class="btn-cancel-small">Cancel</button>
-                                                <button id="btn-save-demo" class="btn-save-small">Save</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                <nav class="feed-nav">
-                    <button id="btn-my-feed" class="nav-link active">My Archive</button>
-                    <button id="btn-shared-feed" class="nav-link">Public Maps</button>
-                </nav>
-
-                <div class="filter-bar">
-                    <div class="scroll-wrapper">
-                        <button id="filter-liked" class="chip">Liked</button>
-                        <div id="date-chips" class="chip-group">
-                            <button class="chip active" data-date="all">All Dates</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="view-switcher-tools">
-                    <select id="community-sort" class="demo-select hidden"
-                        style="font-size:13px; padding:4px 8px; margin-right:8px; border-radius: 20px; width: auto; height: 32px; border: 1px solid var(--border-color); cursor: pointer; background: #fff;">
-                        <option value="latest">Latest</option>
-                        <option value="best_month">Best this month</option>
-                        <option value="best_today">Best today</option>
-                    </select>
-                    <div class="search-box">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input type="text" id="search-input" placeholder="Search stories...">
-                    </div>
-                    <button id="btn-grid-density" class="icon-btn-tool" title="Toggle Grid Density">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                    </button>
-                </div>
-
-                <div id="review-map-summary" class="review-map-summary">
-                    <div>
-                        <span>Visible</span>
-                        <strong id="review-summary-visible">0</strong>
-                    </div>
-                    <div>
-                        <span>Mapped</span>
-                        <strong id="review-summary-mapped">0</strong>
-                    </div>
-                    <div>
-                        <span>Public</span>
-                        <strong id="review-summary-public">0</strong>
-                    </div>
-                </div>
-
-                <div id="grid-container" class="story-grid">
-                    <!-- Dynamic Grid Items with Grouping -->
-                </div>
-            </section>
-
-            <!-- 2. PHOTO UPLOAD PANEL -->
-            <section id="panel-upload" class="panel">
-                <header class="detail-header">
-                    <button id="btn-upload-back" class="icon-btn" type="button">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        <span>Back</span>
-                    </button>
-                    <div class="panel-title">Upload Photos</div>
-                    <div style="width: 64px;"></div>
-                </header>
-                <div class="upload-workspace">
-                    <div id="upload-start-state" class="upload-state active">
-                        <p class="home-kicker">Myphoto Workspace</p>
-                        <h2>Start with photos. We will build the map from their memory data.</h2>
-                        <p>
-                            Choose travel photos from your device. Photos with GPS data are archived immediately; photos
-                            without GPS will ask you to place them on the map.
-                        </p>
-                        <button id="btn-upload-choose" class="btn-primary" type="button">Choose Photos</button>
-                        <div class="upload-step-list" aria-label="Upload flow">
-                            <div>
-                                <strong>1. Import</strong>
-                                <span>Select JPG or PNG photos from a trip.</span>
-                            </div>
-                            <div>
-                                <strong>2. Review map</strong>
-                                <span>Confirm GPS points or place missing locations manually.</span>
-                            </div>
-                            <div>
-                                <strong>3. Keep private</strong>
-                                <span>New uploads stay private until you publish them.</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="upload-complete-state" class="upload-state">
-                        <div class="upload-complete-heading">
-                            <p class="home-kicker">Upload Complete</p>
-                            <span class="upload-complete-badge">All tasks finished</span>
-                        </div>
-                        <h2>Your photos are ready to become a travel map.</h2>
-                        <p id="upload-complete-copy">
-                            Review capture time and location data, then continue shaping this archive inside Myphoto.
-                        </p>
-                        <div class="upload-result-layout">
-                            <div id="upload-complete-grid" class="upload-complete-grid"></div>
-                            <aside class="upload-result-card">
-                                <h3>Upload Result</h3>
-                                <div class="upload-result-row">
-                                    <span>Total photos</span>
-                                    <strong id="upload-result-total">0</strong>
-                                </div>
-                                <div class="upload-result-row">
-                                    <span>Success</span>
-                                    <strong id="upload-result-success">0</strong>
-                                </div>
-                                <div class="upload-result-row">
-                                    <span>Need location</span>
-                                    <strong id="upload-result-location">0</strong>
-                                </div>
-                                <div class="upload-result-row">
-                                    <span>Errors</span>
-                                    <strong id="upload-result-errors">0</strong>
-                                </div>
-                                <div class="upload-result-note">
-                                    Photos remain private until you publish them from Public Settings.
-                                </div>
-                                <div class="upload-result-actions">
-                                    <button id="btn-upload-review-map" class="btn-primary" type="button">Review in Myphoto</button>
-                                    <button id="btn-upload-another" class="btn-secondary" type="button">Upload More</button>
-                                </div>
-                            </aside>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. PUBLIC SETTINGS PANEL -->
-            <section id="panel-share-settings" class="panel">
-                <header class="detail-header">
-                    <button id="btn-share-settings-back" class="icon-btn" type="button">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        <span>Back</span>
-                    </button>
-                    <div class="panel-title">Public Settings</div>
-                    <div style="width: 64px;"></div>
-                </header>
-                <div class="share-settings-panel">
-                    <p class="home-kicker">Visibility Review</p>
-                    <h2>Choose whether this memory belongs only to you or can appear in Explore.</h2>
-                    <div class="share-status-card">
-                        <span>Current visibility</span>
-                        <strong id="share-settings-status">Private</strong>
-                    </div>
-                    <div class="share-option-list">
-                        <button id="btn-share-private" class="share-option" type="button">
-                            <strong>Keep Private</strong>
-                            <span>Stay inside Myphoto and your personal archive.</span>
-                        </button>
-                        <button id="btn-share-public" class="share-option" type="button">
-                            <strong>Publish to Explore</strong>
-                            <span>Allow this photo to appear in public map views.</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 4. ALBUM REVIEW PANEL -->
-            <section id="panel-album-review" class="panel">
-                <header class="detail-header">
-                    <button id="btn-album-review-back" class="icon-btn" type="button">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        <span>Back</span>
-                    </button>
-                    <div class="panel-title">Album Review</div>
-                    <div style="width: 64px;"></div>
-                </header>
-                <div class="album-review-panel">
-                    <p class="home-kicker">Analysis Result</p>
-                    <h2 id="album-review-title">Ready to build an album.</h2>
-                    <p id="album-review-copy">
-                        Review the new album before adding photos or publishing anything.
-                    </p>
-                    <div class="album-review-summary">
-                        <div>
-                            <span>Album</span>
-                            <strong id="album-review-name">Untitled</strong>
-                        </div>
-                        <div>
-                            <span>Photos</span>
-                            <strong id="album-review-count">0</strong>
-                        </div>
-                        <div>
-                            <span>Status</span>
-                            <strong id="album-review-status">Private</strong>
-                        </div>
-                    </div>
-                    <div class="album-review-checklist" aria-label="Album analysis checklist">
-                        <div>
-                            <span>Map Coverage</span>
-                            <strong id="album-review-map-status">Needs photos</strong>
-                        </div>
-                        <div>
-                            <span>Public Trip</span>
-                            <strong id="album-review-trip-status">Draft ready</strong>
-                        </div>
-                        <div>
-                            <span>Privacy</span>
-                            <strong>Private by default</strong>
-                        </div>
-                    </div>
-                    <div class="album-review-actions">
-                        <button id="btn-album-review-add" class="btn-primary" type="button">Add Photos</button>
-                        <button id="btn-album-review-open" class="btn-secondary" type="button">Open Album</button>
-                        <button id="btn-album-review-trip" class="btn-secondary" type="button">Preview Trip Page</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. PUBLIC TRIP PANEL -->
-            <section id="panel-public-trip" class="panel">
-                <header class="detail-header">
-                    <button id="btn-public-trip-back" class="icon-btn" type="button">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        <span>Back</span>
-                    </button>
-                    <div class="panel-title">Public Trip</div>
-                    <div style="width: 64px;"></div>
-                </header>
-                <div class="public-trip-panel">
-                    <p class="home-kicker">Published Trip Preview</p>
-                    <h2 id="public-trip-title">Untitled Trip</h2>
-                    <p id="public-trip-copy">A map-first public page for an album route.</p>
-                    <div class="public-trip-summary">
-                        <div>
-                            <span>Photos</span>
-                            <strong id="public-trip-count">0</strong>
-                        </div>
-                        <div>
-                            <span>Route Stops</span>
-                            <strong id="public-trip-places">0</strong>
-                        </div>
-                        <div>
-                            <span>Timeline</span>
-                            <strong id="public-trip-range">Draft</strong>
-                        </div>
-                        <div>
-                            <span>Visibility</span>
-                            <strong id="public-trip-status">Private</strong>
-                        </div>
-                    </div>
-                    <div class="public-trip-route-card">
-                        <span class="home-kicker">Route</span>
-                        <div id="public-trip-route" class="public-trip-route"></div>
-                    </div>
-                    <div id="public-trip-grid" class="public-trip-grid"></div>
-                </div>
-            </section>
-
-            <!-- 6. STORY DETAIL PANEL -->
-            <section id="panel-detail" class="panel">
-                <header class="detail-header">
-                    <button id="btn-back" class="icon-btn">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        <span>Back</span>
-                    </button>
-                    <div class="detail-actions-right">
-
-                        <button id="btn-delete" class="icon-btn danger" title="Delete Photo">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path
-                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                </path>
-                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                            </svg>
-                        </button>
-                        <button id="btn-edit-location" class="icon-btn" title="Change Location">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                        </button>
-
-                        <button id="btn-copy-link" class="icon-btn" title="Copy Direct Link">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </button>
-                        <button id="btn-copy-location" class="icon-btn" title="Copy Location">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                        </button>
-                        <button id="detail-share-btn" class="icon-btn share-toggle" title="Review public sharing">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6z">
-                                </path>
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                            </svg>
-                        </button>
-                        <button id="detail-like-btn" class="icon-btn like-toggle" title="Like Photo">
-                            <svg id="heart-svg" viewBox="0 0 24 24" width="20" height="20" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <path
-                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                                </path>
-                            </svg>
-                        </button>
-                    </div>
-                </header>
-
-                <div class="story-viewer">
-                    <div class="image-stage">
-                        <img id="detail-image" src="" alt="Detail View">
-                    </div>
-
-                    <div class="story-content">
-                        <div class="selected-pin-summary">
-                            <p class="home-kicker">Selected Pin</p>
-                            <div>
-                                <strong id="selected-pin-title">Selected memory</strong>
-                                <span id="selected-pin-meta">Map location and capture time</span>
-                            </div>
-                        </div>
-
-                        <!-- Author Display -->
-                        <div id="author-info"
-                            style="margin-bottom: 16px; padding: 4px 8px; background: rgba(0,0,0,0.03); border-radius: 6px; display: inline-flex; align-items: center;">
-                            <span style="font-size: 12px; color: var(--text-muted); margin-right: 6px;">Uploaded
-                                by</span>
-                            <span id="author-name"
-                                style="font-size: 13px; font-weight: 700; color: var(--text-main);">Unknown User</span>
-                        </div>
-
-                        <!-- Title Display (Read Mode) -->
-                        <div id="view-mode-container">
-                            <h2 id="detail-title-text" class="title-display"
-                                style="margin: 0 0 4px; font-family: var(--serif-font); font-size: 32px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
-                            </h2>
-                            <div id="detail-album-badge" style="display: inline-block; padding: 4px 10px; background: var(--primary-color); color: white; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 12px; cursor: pointer; display: none;"></div>
-                            <button id="btn-toggle-edit" class="btn-action-outline"
-                                style="width: auto; padding: 6px 16px; margin-bottom: 20px; display: none;">Edit</button>
-                        </div>
-
-                        <!-- Edit Controls (Edit Mode) -->
-                        <div id="edit-mode-container" class="hidden"
-                            style="margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <input type="text" id="edit-title-input" class="title-input" placeholder="Add a photo description..."
-                                style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-size: 16px; font-family: var(--sans-font); margin-bottom: 12px;">
-                            <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                                <input type="date" id="edit-date-input" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;" title="Capture date">
-                                <input type="time" id="edit-time-input" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;" title="Capture time">
-                            </div>
-                            <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                                <input type="number" id="edit-lat-input" step="any" placeholder="Latitude"
-                                    style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
-                                <input type="number" id="edit-lng-input" step="any" placeholder="Longitude"
-                                    style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
-                                <button id="btn-pick-location" title="Pick location on map"
-                                    style="padding: 8px; background: white; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-                                        stroke="var(--text-main)" stroke-width="2">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                        <circle cx="12" cy="10" r="3"></circle>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button id="btn-save-edit" class="btn-action-fill"><span>Save</span></button>
-                                <button id="btn-cancel-edit" class="btn-cancel-small">Cancel</button>
-                            </div>
-                        </div>
-
-                        <!-- Meta & Location Box -->
-                        <div class="meta-box"
-                            style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-                            <div class="meta"
-                                style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                <span id="detail-date" class="date-text"
-                                    style="font-size: 14px; font-weight: 500; color: #475569;">March 14, 2024</span>
-                                <span id="like-count-badge" class="like-badge"
-                                    style="background: #fee2e2; color: #ef4444; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700;">0
-                                    likes</span>
-                            </div>
-
-                            <!-- Coordinates Display -->
-                            <div id="detail-coordinates"
-                                style="font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 6px;">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                    <circle cx="12" cy="10" r="3"></circle>
-                                </svg>
-                                <span></span>
-                            </div>
-                        </div>
-
-                        <hr class="serif-hr" style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-
-                        <!-- NEW: Comments Section -->
-                        <div class="comments-section mvp-deferred">
-                            <h3>Comments</h3>
-                            <div id="comments-list" class="comments-list"></div>
-                            <div class="comment-input-group">
-                                <input type="text" id="comment-input" placeholder="Write a comment...">
-                                <button id="btn-send-comment">Post</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. USER PROFILE PANEL -->
-            <section id="panel-user-profile" class="panel">
-                <header class="detail-header" style="padding: 16px 24px;">
-                    <button id="btn-back-profile-feed" class="icon-btn">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                        Back
-                    </button>
-                    <div style="font-weight: 600; font-size: 16px;" id="profile-page-title">Public Profile</div>
-                    <div style="width: 60px;"></div>
-                </header>
-                <div class="profile-page-content" style="overflow-y: auto; height: calc(100vh - 65px);">
-                    <div class="profile-page-header"
-                        style="padding: 30px 20px; text-align: center; border-bottom: 1px solid var(--border-color);">
-                        <p class="home-kicker profile-kicker">Map View Profile</p>
-                        <div id="profile-page-avatar" class="profile-avatar-large"
-                            style="margin: 0 auto 16px; width: 80px; height: 80px;"></div>
-                        <h2 id="profile-page-nickname"
-                            style="margin: 0 0 8px; font-size: 24px; color: var(--text-main);"></h2>
-                        <p id="profile-page-subtitle" class="profile-page-subtitle">A map-first archive of public travel memories.</p>
-                        <div class="profile-page-stats"
-                            style="display: flex; justify-content: center; gap: 20px; color: var(--text-muted); font-size: 14px;">
-                            <div><strong id="profile-page-story-count"
-                                    style="color: var(--text-main); font-size: 16px;">0</strong> Stories</div>
-                            <div><strong id="profile-page-like-count"
-                                    style="color: var(--text-main); font-size: 16px;">0</strong> Likes</div>
-                        </div>
-                    </div>
-                    <div class="profile-gallery-filter"
-                        style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: #fff;">
-                        <div id="profile-view-toggle" style="display: flex; background: #f1f5f9; padding: 4px; border-radius: 20px;">
-                            <button id="btn-view-photos" class="active" style="padding: 6px 16px; border-radius: 16px; border: none; background: white; color: var(--text-main); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s;">Map View</button>
-                            <button id="btn-view-albums" style="padding: 6px 16px; border-radius: 16px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: none; transition: all 0.2s;">Albums</button>
-                        </div>
-                        <select id="profile-gallery-sort"
-                            style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border-color); outline: none; font-size: 13px; color: var(--text-main); cursor: pointer; background: #fafafa;">
-                            <option value="latest">Latest</option>
-                            <option value="likes">Most liked</option>
-                        </select>
-                    </div>
-                    <div id="profile-gallery-grid" class="profile-gallery"
-                        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px;">
-                        <!-- Photos will be inserted here -->
-                    </div>
-                </div>
-            </section>
-        </aside>
-        <!-- Main Interactive Map -->
-        <div id="map-container">
-            <div id="map"></div>
-            <button id="sidebar-toggle" class="map-overlay-btn">←</button>
-
-            <!-- Map Picker Guide (Shown when pinning location) -->
-            <div id="map-picker-guide">
-                <img id="guide-thumb" src="" alt="Thumbnail">
-                <div class="guide-content">
-                    <div class="guide-text">Select location for this photo</div>
-                    <div class="guide-sub">Click on the map to place the marker</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- NEW: Login Modal Overlay -->
-        <div id="login-modal-overlay" class="login-modal-overlay hidden">
-            <div class="login-container">
-                <div class="login-card">
-                    <button id="btn-close-login" class="btn-close-login">?</button>
-                    <div class="login-brand">
-                        <h1 class="logo">Ikkyee</h1>
-                        <p class="tagline">Archive your moments, Map your journey.</p>
-                    </div>
-
-                    <div class="auth-tabs">
-                        <button id="tab-login" class="auth-tab active" type="button">Login</button>
-                        <button id="tab-signup" class="auth-tab" type="button">Sign up</button>
-                    </div>
-
-                    <div id="auth-message" class="auth-message"></div>
-
-                    <form id="auth-form" class="auth-form" autocomplete="on">
-                        <div class="form-group">
-                            <label for="email-input">Email</label>
-                            <input type="email" id="email-input" placeholder="email@example.com" required
-                                autocomplete="email">
-                        </div>
-                        <div class="form-group">
-                            <label for="password-input">Password</label>
-                            <input type="password" id="password-input" placeholder="Enter at least 6 characters" required minlength="6"
-                                autocomplete="current-password">
-                        </div>
-                        <button id="btn-submit" class="btn-submit" type="submit">Login</button>
-                    </form>
-
-                    <div class="divider">or</div>
-
-                    <div class="social-buttons">
-                        <button id="btn-google" class="btn-social btn-google" type="button">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                                    fill="#4285F4" />
-                                <path
-                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                    fill="#34A853" />
-                                <path
-                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                    fill="#FBBC05" />
-                                <path
-                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                    fill="#EA4335" />
-                            </svg>
-                            Continue with Google
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Notification Toasts -->
-        <div id="toast-container" class="toast-container"></div>
-
-
-
-        <!-- Scripts -->
-        <!-- Drag and Drop Overlay -->
-        <div id="drop-zone" class="hidden">
-            <div style="text-align: center;">
-                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2"
-                    style="margin-bottom: 16px;">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <div>Drop photos here to upload!</div>
-            </div>
-        </div>
-
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-        <!-- Google Maps API (Places Library) -->
-        <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmk08rywEd4yZcNmBwfpAC38FQJ7TuXuI&libraries=places"></script>
-        <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
-        <!-- Supabase SDK (CDN) -->
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-        <!-- ES module entry point -->
-        <script type="module" src="/js/app.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script type="module" src="/js/app.js"></script>
 </body>
 
 </html>
-
