@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
     buildTripShareUrl,
+    getSharedRouteState,
     parseSharedAlbumId
 } from '../js/share-link.mjs';
 
@@ -21,4 +22,19 @@ test('parseSharedAlbumId reads album id from route hashes', () => {
     assert.equal(parseSharedAlbumId('#/trip?album=album%201'), 'album 1');
     assert.equal(parseSharedAlbumId('#/explore?album=demo-jeju'), 'demo-jeju');
     assert.equal(parseSharedAlbumId('#/trip'), null);
+});
+
+test('getSharedRouteState returns normalized route and optional album id', () => {
+    assert.deepEqual(getSharedRouteState('#/trip?album=demo-jeju'), {
+        route: 'trip',
+        albumId: 'demo-jeju'
+    });
+    assert.deepEqual(getSharedRouteState('#/explore?album=demo-jeju'), {
+        route: 'explore',
+        albumId: 'demo-jeju'
+    });
+    assert.deepEqual(getSharedRouteState('#/unknown?album=demo-jeju'), {
+        route: 'home',
+        albumId: 'demo-jeju'
+    });
 });

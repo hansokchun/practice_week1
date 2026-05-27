@@ -28,7 +28,7 @@ import {
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
-import { buildTripShareUrl, parseSharedAlbumId } from './share-link.mjs';
+import { buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 
 const state = {
     currentUser: null,
@@ -103,6 +103,12 @@ function renderRoute(section) {
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === APP_SECTIONS.EXPLORE) syncExploreGoogleMap();
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+}
+
+function applyRouteHash(hash, options = {}) {
+    const sharedRoute = getSharedRouteState(hash);
+    if (sharedRoute.albumId) state.selectedPublicAlbumId = sharedRoute.albumId;
+    routeTo(sharedRoute.route || parseRouteHash(hash), options);
 }
 
 function openModal(id) {
@@ -1254,7 +1260,7 @@ function bindEvents() {
             if (event.target === modal) closeModals();
         });
     });
-    window.addEventListener('hashchange', () => renderRoute(parseRouteHash(window.location.hash)));
+    window.addEventListener('hashchange', () => applyRouteHash(window.location.hash));
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1273,6 +1279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderExploreList();
     setVisibilityMode(state.visibility);
     setProfileTab(state.profileTab);
-    routeTo(restoredAuthContext?.route || parseRouteHash(window.location.hash), { replace: !window.location.hash });
+    if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
+    else applyRouteHash(window.location.hash, { replace: !window.location.hash });
     if (state.currentUser) await runPendingAuthAction();
 });

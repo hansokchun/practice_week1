@@ -10,3 +10,14 @@ export function parseSharedAlbumId(hash) {
     const params = new URLSearchParams(query);
     return params.get('album');
 }
+
+export function getSharedRouteState(hash) {
+    const path = String(hash || '').replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
+    const route = ['home', 'myphoto', 'explore', 'upload', 'album', 'review', 'share', 'trip', 'profile'].includes(path)
+        ? path || 'home'
+        : 'home';
+    return {
+        route: route || 'home',
+        albumId: parseSharedAlbumId(hash)
+    };
+}
