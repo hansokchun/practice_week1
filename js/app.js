@@ -7,6 +7,8 @@ import {
     signInWithEmail,
     signOut,
     signUpWithEmail,
+    signInWithGoogle,
+    signInWithKakao,
     updatePhotoLocation,
     updatePhotosVisibility,
     uploadImage,
@@ -809,6 +811,17 @@ async function handleSignup() {
     showToast('가입을 완료했습니다.');
 }
 
+async function handleSocialLogin(provider) {
+    const message = $('#auth-message');
+    if (message) message.textContent = `${provider === 'google' ? 'Google' : 'Kakao'} 로그인으로 이동합니다...`;
+    const { error } = provider === 'google'
+        ? await signInWithGoogle()
+        : await signInWithKakao();
+    if (error && message) {
+        message.textContent = error.message || '소셜 로그인으로 이동하지 못했습니다.';
+    }
+}
+
 function bindEvents() {
     $$('[data-route]').forEach((link) => {
         link.addEventListener('click', (event) => {
@@ -880,6 +893,8 @@ function bindEvents() {
     });
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-signup')?.addEventListener('click', handleSignup);
+    $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
+    $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModals));
     $$('.modal').forEach((modal) => {

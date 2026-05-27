@@ -2164,6 +2164,62 @@ img {
     line-height: 1.5;
 }
 
+.social-login {
+    display: grid;
+    gap: 10px;
+}
+
+.social-login button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 46px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #ffffff;
+    color: var(--text);
+    font-weight: 800;
+}
+
+.social-login button span {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--teal);
+    color: #ffffff;
+    font-family: var(--headline);
+    font-size: 13px;
+}
+
+#btn-kakao-login {
+    background: #fee500;
+    border-color: #f0d600;
+}
+
+#btn-kakao-login span {
+    background: #191919;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+}
+
 .modal-close {
     position: absolute;
     top: 12px;

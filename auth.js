@@ -47,18 +47,26 @@ export async function signInWithEmail(email, password) {
     }
 }
 
-export async function signInWithGoogle() {
+export async function signInWithOAuthProvider(provider) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: `${window.location.origin}/index.html` }
+            provider,
+            options: { redirectTo: window.location.origin }
         });
         if (error) throw error;
         return { data, error: null };
     } catch (error) {
         return { data: null, error };
     }
+}
+
+export async function signInWithGoogle() {
+    return signInWithOAuthProvider('google');
+}
+
+export async function signInWithKakao() {
+    return signInWithOAuthProvider('kakao');
 }
 
 export async function signOut() {
