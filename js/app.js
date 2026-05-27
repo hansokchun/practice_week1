@@ -21,6 +21,7 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
+import { setPendingAuthAction, takePendingAuthAction } from './pending-auth-action.mjs';
 
 const state = {
     currentUser: null,
@@ -34,6 +35,7 @@ const state = {
     selectedPublicAlbumId: null,
     selectedPhotoId: null,
     selectedLocationPhotoId: null,
+    pendingAuthAction: null,
     exploreZoom: 7,
     isPersistingUpload: false
 };
@@ -682,6 +684,7 @@ function setVisibilityMode(mode) {
 
 async function saveShareSettings() {
     if (!state.currentUser) {
+        setPendingAuthAction(state, 'save-share');
         openModal('#auth-modal');
         showToast('공개 설정을 저장하려면 먼저 로그인해주세요.');
         return;
@@ -801,6 +804,7 @@ async function persistStagedPhotos() {
         return;
     }
     if (!state.currentUser) {
+        setPendingAuthAction(state, 'persist-upload');
         openModal('#auth-modal');
         showToast('사진을 저장하려면 먼저 로그인해주세요.');
         return;
@@ -1070,6 +1074,7 @@ async function handleAuthSubmit(event) {
     await loadSavedAlbums();
     closeModals();
     showToast('로그인했습니다.');
+    await runPendingAuthAction();
 }
 
 async function handleSignup() {
@@ -1089,6 +1094,7 @@ async function handleSignup() {
     await loadSavedAlbums();
     closeModals();
     showToast('가입을 완료했습니다.');
+    await runPendingAuthAction();
 }
 
 async function handleSocialLogin(provider) {
@@ -1100,6 +1106,15 @@ async function handleSocialLogin(provider) {
     if (error && message) {
         message.textContent = error.message || '소셜 로그인으로 이동하지 못했습니다.';
     }
+}
+
+async function runPendingAuthAction() {
+    const action = takePendingAuthAction(state);
+    if (action === 'persist-upload') {
+        await persistStagedPhotos();
+        return;
+    }
+    if (action === 'save-share') await saveShareSettings();
 }
 
 function bindEvents() {
