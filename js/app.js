@@ -27,6 +27,7 @@ const state = {
     visibility: 'private',
     profileTab: 'map',
     selectedPublicAlbumId: null,
+    selectedPhotoId: null,
     exploreZoom: 7,
     isPersistingUpload: false
 };
@@ -99,6 +100,51 @@ function closeModals() {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
     });
+}
+
+function getAllDisplayPhotos() {
+    return [
+        ...state.savedPhotos,
+        ...state.stagedPhotos.map((photo, index) => ({
+            id: `staged-${index}`,
+            name: photo.name,
+            url: photo.url,
+            date: new Date().toISOString(),
+            album: '업로드 초안',
+            visibility: 'private',
+            shared: false
+        }))
+    ];
+}
+
+function getDefaultDetailPhoto() {
+    const selectedAlbum = getSelectedPublicAlbum();
+    return selectedAlbum.photos?.[0]
+        || getAllDisplayPhotos()[0]
+        || { id: 'demo-detail', name: '성산 앞바다의 오후', url: 'images/main_bg2.jpg', date: '2026-05-14', album: selectedAlbum.title, visibility: selectedAlbum.visibility };
+}
+
+function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
+    state.selectedPhotoId = photo.id || null;
+    const modal = $('#photo-detail-modal');
+    const image = modal?.querySelector('.photo-detail-card > img');
+    const title = $('#photo-detail-title');
+    const meta = modal?.querySelector('.photo-detail-card section > p:not(.eyebrow)');
+    const albumValue = modal?.querySelector('dl div:nth-child(1) dd');
+    const visibilityValue = modal?.querySelector('dl div:nth-child(2) dd');
+    const originalValue = modal?.querySelector('dl div:nth-child(3) dd');
+    const date = photo.date ? new Date(photo.date) : null;
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
+
+    if (image) {
+        image.src = photo.url || 'images/main_bg2.jpg';
+        image.alt = photo.name || '여행 사진 상세';
+    }
+    if (title) title.textContent = photo.name || '여행 사진';
+    if (meta) meta.textContent = `${dateLabel} · ${photo.lat && photo.lng ? `${photo.lat.toFixed(4)}, ${photo.lng.toFixed(4)}` : '위치 미지정'}`;
+    if (albumValue) albumValue.textContent = photo.album || getSelectedPublicAlbum().title || '여행 앨범';
+    if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? 'Public photo · approximate location' : 'Private photo';
+    if (originalValue) originalValue.textContent = '공개 이미지에서는 EXIF 메타데이터를 보호합니다.';
 }
 
 function updateAccountUI() {
@@ -302,7 +348,7 @@ function renderPublicSurfaces() {
     if (tripPhotoGrid) {
         const tripPhotos = selected.photos?.length ? selected.photos : getDraftPhotos();
         tripPhotoGrid.innerHTML = tripPhotos.slice(0, 8).map((photo, index) => `
-            <article data-open-photo-detail>
+            <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id || `public-${index}`)}">
                 <img src="${photo.url || cover}" alt="${escapeHtml(photo.name || selected.title)}">
                 <span>${escapeHtml(photo.name || `Photo ${index + 1}`)}</span>
             </article>
@@ -399,7 +445,13 @@ function renderPublicSurfaces() {
         });
     });
     $$('#public-trip-photo-grid [data-open-photo-detail]').forEach((item) => {
-        item.addEventListener('click', () => openModal('#photo-detail-modal'));
+        item.addEventListener('click', () => {
+            const photo = getAllDisplayPhotos().find((candidate) => candidate.id === item.dataset.photoId)
+                || getSelectedPublicAlbum().photos?.find((candidate) => candidate.id === item.dataset.photoId)
+                || getDefaultDetailPhoto();
+            updatePhotoDetailModal(photo);
+            openModal('#photo-detail-modal');
+        });
     });
 }
 
@@ -994,7 +1046,10 @@ function bindEvents() {
     $$('[data-go-share]').forEach((button) => button.addEventListener('click', () => routeTo('share')));
     $$('[data-go-trip]').forEach((button) => button.addEventListener('click', () => routeTo('trip')));
     $$('[data-go-profile]').forEach((button) => button.addEventListener('click', () => routeTo('profile')));
-    $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => openModal('#photo-detail-modal')));
+    $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => {
+        updatePhotoDetailModal(getDefaultDetailPhoto());
+        openModal('#photo-detail-modal');
+    }));
     $$('[data-open-location-editor]').forEach((button) => button.addEventListener('click', openLocationEditor));
     $$('[data-explore-pin]').forEach((button) => button.addEventListener('click', () => {
         if (button.dataset.publicAlbumId) setSelectedPublicAlbum(button.dataset.publicAlbumId);
