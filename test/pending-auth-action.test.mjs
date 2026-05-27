@@ -4,7 +4,9 @@ import assert from 'node:assert/strict';
 import {
     createPendingAuthState,
     getPendingAuthAction,
+    restorePendingAuthContext,
     setPendingAuthAction,
+    storePendingAuthContext,
     takePendingAuthAction
 } from '../js/pending-auth-action.mjs';
 
@@ -24,4 +26,26 @@ test('takePendingAuthAction returns and clears the saved action', () => {
 
     assert.equal(takePendingAuthAction(state), 'save-share');
     assert.equal(takePendingAuthAction(state), null);
+});
+
+test('pending auth context can be stored and restored after OAuth redirect', () => {
+    const state = createPendingAuthState();
+    const storage = new Map();
+    const adapter = {
+        getItem: (key) => storage.get(key) || null,
+        setItem: (key, value) => storage.set(key, value),
+        removeItem: (key) => storage.delete(key)
+    };
+
+    setPendingAuthAction(state, 'save-share');
+    storePendingAuthContext(adapter, state, { route: 'share', visibility: 'public' });
+
+    const restored = createPendingAuthState();
+    assert.deepEqual(restorePendingAuthContext(adapter, restored), {
+        action: 'save-share',
+        route: 'share',
+        visibility: 'public'
+    });
+    assert.equal(getPendingAuthAction(restored), 'save-share');
+    assert.equal(adapter.getItem('ikkyee.pendingAuth'), null);
 });

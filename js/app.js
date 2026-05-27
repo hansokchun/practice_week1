@@ -21,7 +21,12 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
-import { setPendingAuthAction, takePendingAuthAction } from './pending-auth-action.mjs';
+import {
+    restorePendingAuthContext,
+    setPendingAuthAction,
+    storePendingAuthContext,
+    takePendingAuthAction
+} from './pending-auth-action.mjs';
 
 const state = {
     currentUser: null,
@@ -39,6 +44,8 @@ const state = {
     exploreZoom: 7,
     isPersistingUpload: false
 };
+
+const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'album', 'review', 'share', 'trip', 'profile']);
 const $ = (selector) => document.querySelector(selector);
@@ -1100,6 +1107,10 @@ async function handleSignup() {
 async function handleSocialLogin(provider) {
     const message = $('#auth-message');
     if (message) message.textContent = `${provider === 'google' ? 'Google' : 'Kakao'} 로그인으로 이동합니다...`;
+    storePendingAuthContext(window.sessionStorage, state, {
+        route: getCurrentRoute(),
+        visibility: state.visibility
+    });
     const { error } = provider === 'google'
         ? await signInWithGoogle()
         : await signInWithKakao();
@@ -1216,6 +1227,8 @@ function bindEvents() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const restoredAuthContext = restorePendingAuthContext(window.sessionStorage, state);
+    if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
     state.currentUser = await getCurrentUser();
     updateAccountUI();
     await loadSavedPhotos();
@@ -1227,5 +1240,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderExploreList();
     setVisibilityMode(state.visibility);
     setProfileTab(state.profileTab);
-    routeTo(parseRouteHash(window.location.hash), { replace: !window.location.hash });
+    routeTo(restoredAuthContext?.route || parseRouteHash(window.location.hash), { replace: !window.location.hash });
+    if (state.currentUser) await runPendingAuthAction();
 });

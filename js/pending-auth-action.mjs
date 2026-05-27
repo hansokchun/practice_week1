@@ -1,4 +1,5 @@
 const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share']);
+const STORAGE_KEY = 'ikkyee.pendingAuth';
 
 export function createPendingAuthState() {
     return {
@@ -23,4 +24,36 @@ export function takePendingAuthAction(state) {
     const action = getPendingAuthAction(state);
     state.pendingAuthAction = null;
     return action;
+}
+
+export function storePendingAuthContext(storage, state, context = {}) {
+    const action = getPendingAuthAction(state);
+    if (!storage || !action) return null;
+    const payload = {
+        action,
+        route: context.route || null,
+        visibility: context.visibility || null
+    };
+    storage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    return payload;
+}
+
+export function restorePendingAuthContext(storage, state) {
+    if (!storage) return null;
+    const raw = storage.getItem(STORAGE_KEY);
+    storage.removeItem(STORAGE_KEY);
+    if (!raw) return null;
+
+    try {
+        const parsed = JSON.parse(raw);
+        if (!SUPPORTED_ACTIONS.has(parsed?.action)) return null;
+        state.pendingAuthAction = parsed.action;
+        return {
+            action: parsed.action,
+            route: typeof parsed.route === 'string' ? parsed.route : null,
+            visibility: ['private', 'link', 'public'].includes(parsed.visibility) ? parsed.visibility : null
+        };
+    } catch {
+        return null;
+    }
 }
