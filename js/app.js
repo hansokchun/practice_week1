@@ -16,8 +16,7 @@ const state = {
     currentUser: null,
     stagedPhotos: [],
     albumDrafts: [],
-    map: null,
-    markers: []
+    exploreZoom: 7
 };
 
 const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'album', 'review', 'share', 'trip', 'profile']);
@@ -59,7 +58,7 @@ function renderRoute(section) {
     $$('[data-mobile-route]').forEach((button) => {
         button.classList.toggle('active', button.dataset.mobileRoute === navSection);
     });
-    if (normalized === APP_SECTIONS.EXPLORE) initExploreMap();
+    if (normalized === APP_SECTIONS.EXPLORE) syncExploreGoogleMap();
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 }
 
@@ -223,34 +222,17 @@ function renderExploreList() {
     `).join('');
 }
 
-function initExploreMap() {
-    const mapEl = $('#explore-map');
-    if (!mapEl || typeof L === 'undefined') return;
+function syncExploreGoogleMap() {
+    const frame = $('#explore-google-map');
+    if (!frame) return;
+    const nextSrc = `https://www.google.com/maps?q=36.45,127.85&z=${state.exploreZoom}&output=embed`;
+    if (frame.src !== nextSrc) frame.src = nextSrc;
+}
 
-    if (!state.map) {
-        state.map = L.map(mapEl, {
-            zoomControl: false,
-            attributionControl: false
-        }).setView([36.4, 127.8], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-        }).addTo(state.map);
-        L.control.zoom({ position: 'bottomright' }).addTo(state.map);
-
-        state.markers = publicTrips.map((trip) => {
-            const marker = L.circleMarker([trip.lat, trip.lng], {
-                radius: 11,
-                color: '#1a4d4e',
-                weight: 3,
-                fillColor: '#f48c71',
-                fillOpacity: 0.86
-            }).addTo(state.map);
-            marker.bindPopup(`<strong>${trip.title}</strong><br>${trip.meta}`);
-            return marker;
-        });
-    }
-
-    window.setTimeout(() => state.map?.invalidateSize(), 80);
+function updateExploreZoom(direction) {
+    const delta = direction === 'in' ? 1 : -1;
+    state.exploreZoom = Math.min(12, Math.max(5, state.exploreZoom + delta));
+    syncExploreGoogleMap();
 }
 
 async function handleAuthSubmit(event) {
@@ -319,6 +301,13 @@ function bindEvents() {
     $('#btn-close-pin-preview')?.addEventListener('click', () => {
         document.body.classList.remove('explore-pin-selected');
         $('#explore-pin-preview')?.setAttribute('hidden', '');
+    });
+    $$('[data-map-zoom]').forEach((button) => {
+        button.addEventListener('click', () => updateExploreZoom(button.dataset.mapZoom));
+    });
+    $('[data-map-reset]')?.addEventListener('click', () => {
+        state.exploreZoom = 7;
+        syncExploreGoogleMap();
     });
     $('#btn-open-share-settings')?.addEventListener('click', () => routeTo('share'));
     $('#btn-review-upload')?.addEventListener('click', () => routeTo('album'));

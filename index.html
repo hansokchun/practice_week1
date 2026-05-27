@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travelgram / Ikkyee | Personal Travel Map Archive</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -451,7 +450,14 @@
 
         <section id="page-explore" class="page page-explore" aria-labelledby="explore-title">
             <div class="explore-map-canvas" aria-label="공개 여행 지도">
-                <img class="map-bg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                <iframe
+                    id="explore-google-map"
+                    class="google-map-frame"
+                    title="Google map showing public travel photos"
+                    src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <div class="map-scrim" aria-hidden="true"></div>
                 <button class="map-cluster cluster-a" data-explore-pin type="button" aria-label="공개 여행 58개 보기">58</button>
                 <button class="map-cluster cluster-b" data-explore-pin type="button" aria-label="공개 여행 24개 보기">24</button>
                 <button class="map-pin pin-a" data-explore-pin type="button" aria-label="도쿄 도심의 밤 미리보기">
@@ -465,9 +471,9 @@
                     <button><span class="material-symbols-outlined">auto_stories</span> 앨범</button>
                 </div>
                 <div class="map-controls">
-                    <button><span class="material-symbols-outlined">add</span></button>
-                    <button><span class="material-symbols-outlined">remove</span></button>
-                    <button><span class="material-symbols-outlined">my_location</span></button>
+                    <button data-map-zoom="in" type="button" aria-label="지도 확대"><span class="material-symbols-outlined">add</span></button>
+                    <button data-map-zoom="out" type="button" aria-label="지도 축소"><span class="material-symbols-outlined">remove</span></button>
+                    <button data-map-reset type="button" aria-label="지도 초기화"><span class="material-symbols-outlined">my_location</span></button>
                 </div>
                 <div class="map-hint">
                     <span class="material-symbols-outlined">info</span>
@@ -669,7 +675,6 @@
         </button>
     </nav>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script type="module" src="/js/app.js"></script>
 </body>
