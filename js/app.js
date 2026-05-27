@@ -27,6 +27,7 @@ import {
     storePendingAuthContext,
     takePendingAuthAction
 } from './pending-auth-action.mjs';
+import { buildTripShareUrl, parseSharedAlbumId } from './share-link.mjs';
 
 const state = {
     currentUser: null,
@@ -296,6 +297,24 @@ function setSelectedPublicAlbum(albumId) {
     renderPublicSurfaces();
 }
 
+function getCurrentShareUrl() {
+    return buildTripShareUrl(window.location.origin, getSelectedPublicAlbum()?.id || state.selectedPublicAlbumId);
+}
+
+async function copyCurrentShareLink() {
+    const url = getCurrentShareUrl();
+    const output = $('#share-link-output');
+    if (output) output.value = url;
+    try {
+        await navigator.clipboard?.writeText(url);
+        showToast('공유 링크를 복사했습니다.');
+    } catch {
+        output?.select?.();
+        showToast('공유 링크를 만들었습니다.');
+    }
+    return url;
+}
+
 function renderPublicSurfaces() {
     const albums = getPublicAlbums();
     const selected = getSelectedPublicAlbum();
@@ -321,6 +340,8 @@ function renderPublicSurfaces() {
             <span><span class="material-symbols-outlined">public</span> ${selected.visibility === 'link' ? 'link' : 'public'}</span>
         `;
     }
+    const shareOutput = $('#share-link-output');
+    if (shareOutput) shareOutput.value = getCurrentShareUrl();
 
     const tripHeroImage = $('.public-trip-hero > img');
     const tripTitle = $('#trip-title');
@@ -723,6 +744,7 @@ async function saveShareSettings() {
             ? '공유 링크 설정을 준비했습니다.'
             : '비공개 상태로 저장했습니다.';
     showToast(message);
+    if (['public', 'link'].includes(state.visibility)) await copyCurrentShareLink();
     if (state.visibility === 'public') routeTo('trip');
 }
 
@@ -1188,6 +1210,8 @@ function bindEvents() {
     });
     $('#btn-save-share-settings')?.addEventListener('click', saveShareSettings);
     $$('[data-profile-tab]').forEach((button) => button.addEventListener('click', () => setProfileTab(button.dataset.profileTab)));
+    $('#btn-copy-share-link')?.addEventListener('click', copyCurrentShareLink);
+    $('#btn-copy-trip-link')?.addEventListener('click', copyCurrentShareLink);
     $('#btn-review-upload')?.addEventListener('click', persistStagedPhotos);
     $('#btn-upload-retry')?.addEventListener('click', () => $('#photo-input')?.click());
     $('#btn-clear-staged')?.addEventListener('click', () => {
@@ -1229,6 +1253,8 @@ function bindEvents() {
 document.addEventListener('DOMContentLoaded', async () => {
     const restoredAuthContext = restorePendingAuthContext(window.sessionStorage, state);
     if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
+    const sharedAlbumId = parseSharedAlbumId(window.location.hash);
+    if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
     state.currentUser = await getCurrentUser();
     updateAccountUI();
     await loadSavedPhotos();

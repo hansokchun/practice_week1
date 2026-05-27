@@ -396,6 +396,10 @@
                             <small id="share-preview-count">공개 사진 82장</small>
                         </div>
                         <button id="btn-save-share-settings" class="btn-primary" type="button">설정 저장</button>
+                        <div class="share-link-box">
+                            <input id="share-link-output" type="text" readonly value="">
+                            <button id="btn-copy-share-link" class="btn-secondary" type="button">링크 복사</button>
+                        </div>
                         <button class="btn-secondary" data-visibility-shortcut="private" type="button">비공개로 유지</button>
                         <button class="btn-secondary" data-visibility-shortcut="link" type="button">공유 링크 만들기</button>
                     </aside>
@@ -470,6 +474,7 @@
                     <div class="trip-actions">
                         <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
                         <button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>
+                        <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
                     </div>
                 </div>
             </article>

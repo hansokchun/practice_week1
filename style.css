@@ -1481,6 +1481,26 @@ img {
     font-size: 24px;
 }
 
+.share-link-box {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.share-link-box input {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    padding: 0 10px;
+}
+
+.share-link-box button {
+    white-space: nowrap;
+}
+
 .google-map-frame {
     position: absolute;
     inset: 0;
