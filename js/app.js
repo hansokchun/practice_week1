@@ -1,8 +1,11 @@
 import {
+    fetchPhotos,
     getCurrentUser,
     signInWithEmail,
     signOut,
-    signUpWithEmail
+    signUpWithEmail,
+    uploadImage,
+    upsertPhoto
 } from '../auth.js';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 
@@ -15,10 +18,12 @@ const publicTrips = [
 const state = {
     currentUser: null,
     stagedPhotos: [],
+    savedPhotos: [],
     albumDrafts: [],
     visibility: 'private',
     profileTab: 'map',
-    exploreZoom: 7
+    exploreZoom: 7,
+    isPersistingUpload: false
 };
 
 const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'album', 'review', 'share', 'trip', 'profile']);
@@ -90,6 +95,95 @@ function updateAccountUI() {
         || 'Guest';
     if (label) label.textContent = name;
     if (button) button.textContent = state.currentUser ? 'Logout' : 'Login';
+}
+
+async function loadSavedPhotos() {
+    const { data, error } = await fetchPhotos();
+    if (error) {
+        showToast('저장된 사진을 불러오지 못했습니다.');
+        state.savedPhotos = [];
+        return;
+    }
+    state.savedPhotos = (data || [])
+        .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared)
+        .map(normalizeSavedPhoto);
+    renderSavedPhotoSurfaces();
+}
+
+function normalizeSavedPhoto(photo) {
+    return {
+        id: photo.id,
+        name: photo.title || photo.description || 'Travel photo',
+        url: photo.url,
+        date: photo.date || photo.created_at || new Date().toISOString(),
+        lat: Number.isFinite(Number(photo.lat)) ? Number(photo.lat) : null,
+        lng: Number.isFinite(Number(photo.lng)) ? Number(photo.lng) : null,
+        shared: !!photo.shared,
+        owner_id: photo.owner_id,
+        album: photo.album || '나의 여행'
+    };
+}
+
+function getMySavedPhotos() {
+    if (!state.currentUser) return [];
+    return state.savedPhotos.filter((photo) => photo.owner_id === state.currentUser.id);
+}
+
+function renderSavedPhotoSurfaces() {
+    const myPhotos = getMySavedPhotos();
+    const source = myPhotos.length ? myPhotos : [];
+    const located = source.filter((photo) => photo.lat !== null && photo.lng !== null).length;
+    const albums = new Set(source.map((photo) => photo.album).filter(Boolean));
+    const statPhoto = $('#stat-photo-count');
+    const statLocated = $('#stat-located-count');
+    const statMissing = $('#stat-missing-count');
+    const statAlbum = $('#stat-album-count');
+    const recentGrid = $('#recent-photo-grid');
+
+    if (statPhoto) statPhoto.textContent = source.length ? String(source.length) : '48';
+    if (statLocated) statLocated.textContent = source.length ? String(located) : '36';
+    if (statMissing) statMissing.textContent = source.length ? String(source.length - located) : '12';
+    if (statAlbum) statAlbum.textContent = source.length ? String(Math.max(albums.size, 1)) : '5';
+
+    if (recentGrid && source.length) {
+        recentGrid.innerHTML = source.slice(0, 8).map((photo) => `
+            <article>
+                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <span class="material-symbols-outlined">${photo.shared ? 'public' : 'lock'}</span>
+            </article>
+        `).join('');
+    }
+
+    if (source.length && !state.albumDrafts.length) renderSavedAlbums(source);
+}
+
+function renderSavedAlbums(photos) {
+    const list = $('#album-list');
+    const summary = $('#myphoto-summary');
+    if (!list) return;
+    const grouped = photos.reduce((acc, photo) => {
+        const key = photo.album || '나의 여행';
+        acc[key] ||= [];
+        acc[key].push(photo);
+        return acc;
+    }, {});
+    const albums = Object.entries(grouped);
+    if (summary) summary.textContent = `${photos.length} photos · ${albums.length} albums`;
+    list.innerHTML = albums.map(([name, albumPhotos]) => {
+        const cover = albumPhotos[0];
+        const shared = albumPhotos.some((photo) => photo.shared);
+        return `
+            <article class="album-row">
+                <img src="${cover.url}" alt="${escapeHtml(name)}">
+                <div>
+                    <span class="status-line"><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span> ${shared ? '공개' : '비공개'} · 저장됨</span>
+                    <strong>${escapeHtml(name)}</strong>
+                    <p>저장된 사진을 기준으로 구성된 여행 앨범입니다.</p>
+                    <small>${albumPhotos.length} Photos · Supabase</small>
+                </div>
+            </article>
+        `;
+    }).join('');
 }
 
 function renderStagedPhotos() {
@@ -273,13 +367,79 @@ function handlePhotoFiles(files) {
     state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
     state.stagedPhotos = selected.map((file) => ({
         name: file.name,
-        url: URL.createObjectURL(file)
+        url: URL.createObjectURL(file),
+        file
     }));
     renderStagedPhotos();
     renderTravelDraftSurfaces();
     routeTo('upload');
     closeModals();
     showToast(`${selected.length}장의 사진을 업로드 초안에 추가했습니다.`);
+}
+
+function safeFileName(value) {
+    return String(value || 'photo')
+        .normalize('NFKD')
+        .replace(/[^\w.-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 80) || 'photo';
+}
+
+async function persistStagedPhotos() {
+    if (!state.stagedPhotos.length) {
+        routeTo('album');
+        return;
+    }
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        showToast('사진을 저장하려면 먼저 로그인해주세요.');
+        return;
+    }
+    if (state.isPersistingUpload) return;
+    state.isPersistingUpload = true;
+    const status = $('#upload-storage-status');
+    const reviewButton = $('#btn-review-upload');
+    if (status) status.textContent = '사진을 Supabase Storage에 저장하는 중입니다...';
+    if (reviewButton) reviewButton.disabled = true;
+
+    try {
+        const timestamp = Date.now();
+        const saved = [];
+        for (const [index, photo] of state.stagedPhotos.entries()) {
+            const id = `${timestamp}-${index}`;
+            const fileName = `${state.currentUser.id}/${id}-${safeFileName(photo.name)}`;
+            const { url, error: uploadError } = await uploadImage(photo.file, fileName);
+            if (uploadError) throw uploadError;
+            const record = {
+                id,
+                url,
+                date: new Date().toISOString(),
+                title: photo.name,
+                description: '',
+                lat: null,
+                lng: null,
+                liked: 0,
+                shared: false,
+                owner_id: state.currentUser.id,
+                album: $('#album-name-input')?.value.trim() || '업로드 초안'
+            };
+            const { error: dbError } = await upsertPhoto(record);
+            if (dbError) throw dbError;
+            saved.push(normalizeSavedPhoto(record));
+        }
+        state.savedPhotos = [...saved, ...state.savedPhotos.filter((photo) => photo.owner_id !== state.currentUser.id || !saved.some((next) => next.id === photo.id))];
+        renderSavedPhotoSurfaces();
+        if (status) status.textContent = `${saved.length}장의 사진을 저장했습니다. 다음 단계에서 앨범을 구성하세요.`;
+        showToast(`${saved.length}장의 사진을 저장했습니다.`);
+        routeTo('album');
+    } catch (error) {
+        if (status) status.textContent = error.message || '사진 저장에 실패했습니다.';
+        showToast('사진 저장에 실패했습니다. 로컬 초안은 유지됩니다.');
+    } finally {
+        state.isPersistingUpload = false;
+        if (reviewButton) reviewButton.disabled = false;
+    }
 }
 
 function saveAlbumDraft() {
@@ -339,6 +499,7 @@ async function handleAuthSubmit(event) {
     }
     state.currentUser = user;
     updateAccountUI();
+    await loadSavedPhotos();
     closeModals();
     showToast('로그인했습니다.');
 }
@@ -356,6 +517,7 @@ async function handleSignup() {
     }
     state.currentUser = user;
     updateAccountUI();
+    await loadSavedPhotos();
     closeModals();
     showToast('가입을 완료했습니다.');
 }
@@ -413,7 +575,7 @@ function bindEvents() {
     $$('[data-profile-tab]').forEach((button) => {
         button.addEventListener('click', () => setProfileTab(button.dataset.profileTab));
     });
-    $('#btn-review-upload')?.addEventListener('click', () => routeTo('album'));
+    $('#btn-review-upload')?.addEventListener('click', persistStagedPhotos);
     $('#btn-upload-retry')?.addEventListener('click', () => $('#photo-input')?.click());
     $('#btn-clear-staged')?.addEventListener('click', () => {
         state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
@@ -428,7 +590,9 @@ function bindEvents() {
         if (state.currentUser) {
             await signOut();
             state.currentUser = null;
+            state.savedPhotos = [];
             updateAccountUI();
+            renderSavedPhotoSurfaces();
             showToast('로그아웃했습니다.');
             return;
         }
@@ -452,6 +616,7 @@ function bindEvents() {
 document.addEventListener('DOMContentLoaded', async () => {
     state.currentUser = await getCurrentUser();
     updateAccountUI();
+    await loadSavedPhotos();
     bindEvents();
     renderStagedPhotos();
     renderAlbumDrafts();

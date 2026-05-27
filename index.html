@@ -159,10 +159,10 @@
                 </div>
 
                 <div class="stats-grid">
-                    <article><span>최근 사진</span><strong>48</strong></article>
-                    <article><span>위치 확인됨</span><strong>36</strong></article>
-                    <article class="warning-stat"><span>위치 정보 없음</span><strong>12</strong></article>
-                    <article><span>내 앨범</span><strong>5</strong></article>
+                    <article><span>최근 사진</span><strong id="stat-photo-count">48</strong></article>
+                    <article><span>위치 확인됨</span><strong id="stat-located-count">36</strong></article>
+                    <article class="warning-stat"><span>위치 정보 없음</span><strong id="stat-missing-count">12</strong></article>
+                    <article><span>내 앨범</span><strong id="stat-album-count">5</strong></article>
                 </div>
 
                 <section class="attention-banner">
@@ -209,7 +209,7 @@
                         <h2 id="recent-photo-title">최근 사진</h2>
                         <button class="text-button" type="button">전체 보기</button>
                     </div>
-                    <div class="recent-photo-grid">
+                    <div id="recent-photo-grid" class="recent-photo-grid">
                         <article><img src="images/main_bg1.jpg" alt=""><span class="material-symbols-outlined">lock</span></article>
                         <article><img src="images/main_bg2.jpg" alt=""><span class="material-symbols-outlined">lock</span></article>
                         <article><img src="images/main_bg3.jpg" alt=""><span class="material-symbols-outlined">public</span></article>
@@ -283,7 +283,7 @@
                     </div>
                     <div class="help-note">
                         <span class="material-symbols-outlined">info</span>
-                        위치 정보가 없는 사진은 다음 단계에서 지도 위에 직접 배치할 수 있습니다.
+                        <span id="upload-storage-status">위치 정보가 없는 사진은 다음 단계에서 지도 위에 직접 배치할 수 있습니다.</span>
                     </div>
                 </section>
                 <div class="upload-step-list">
