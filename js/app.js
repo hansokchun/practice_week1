@@ -16,6 +16,11 @@ import {
     upsertPhoto
 } from '../auth.js';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
+import {
+    getLocationEditorPhoto,
+    getMissingLocationPhotos,
+    normalizeLocationDraft
+} from './location-workflow.mjs';
 
 const state = {
     currentUser: null,
@@ -28,6 +33,7 @@ const state = {
     profileTab: 'map',
     selectedPublicAlbumId: null,
     selectedPhotoId: null,
+    selectedLocationPhotoId: null,
     exploreZoom: 7,
     isPersistingUpload: false
 };
@@ -484,7 +490,8 @@ async function loadSavedAlbums() {
 
 function renderSavedPhotoSurfaces() {
     const myPhotos = getMySavedPhotos();
-    const located = myPhotos.filter((photo) => photo.lat !== null && photo.lng !== null).length;
+    const missingLocationPhotos = getMissingLocationPhotos(myPhotos);
+    const located = myPhotos.length - missingLocationPhotos.length;
     const albumNames = new Set(myPhotos.map((photo) => photo.album).filter(Boolean));
     const savedAlbums = state.currentUser
         ? state.savedAlbums.filter((album) => album.owner_id === state.currentUser.id)
@@ -493,8 +500,9 @@ function renderSavedPhotoSurfaces() {
 
     $('#stat-photo-count') && ($('#stat-photo-count').textContent = myPhotos.length ? String(myPhotos.length) : '48');
     $('#stat-located-count') && ($('#stat-located-count').textContent = myPhotos.length ? String(located) : '36');
-    $('#stat-missing-count') && ($('#stat-missing-count').textContent = myPhotos.length ? String(myPhotos.length - located) : '12');
+    $('#stat-missing-count') && ($('#stat-missing-count').textContent = myPhotos.length ? String(missingLocationPhotos.length) : '12');
     $('#stat-album-count') && ($('#stat-album-count').textContent = savedAlbums.length || myPhotos.length ? String(Math.max(savedAlbums.length, albumNames.size, 1)) : '5');
+    renderMissingLocationTasks(missingLocationPhotos);
 
     if (recentGrid && myPhotos.length) {
         recentGrid.innerHTML = myPhotos.slice(0, 8).map((photo) => `
@@ -514,6 +522,31 @@ function renderSavedPhotoSurfaces() {
     } else {
         renderAlbumDrafts();
     }
+}
+
+function renderMissingLocationTasks(photos) {
+    const list = $('#missing-location-list');
+    if (!list) return;
+
+    if (!photos.length) {
+        list.innerHTML = `
+            <p class="missing-location-empty">
+                위치를 직접 지정해야 하는 사진이 없습니다.
+            </p>
+        `;
+        return;
+    }
+
+    list.innerHTML = photos.slice(0, 4).map((photo) => `
+        <button type="button" data-open-location-editor data-photo-id="${escapeHtml(photo.id)}">
+            <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+            <span>
+                <strong>${escapeHtml(photo.name)}</strong>
+                <small>위치 직접 지정</small>
+            </span>
+            <span class="material-symbols-outlined">edit_location_alt</span>
+        </button>
+    `).join('');
 }
 
 function renderSavedAlbumRows(albums) {
@@ -905,12 +938,52 @@ async function ensureAlbumForSharing() {
 }
 
 function getEditablePhoto() {
-    const myPhotos = getMySavedPhotos();
-    return myPhotos.find((photo) => photo.lat === null || photo.lng === null) || myPhotos[0] || null;
+    return getLocationEditorPhoto(getMySavedPhotos(), state.selectedLocationPhotoId || state.selectedPhotoId);
 }
 
-function openLocationEditor() {
-    const photo = getEditablePhoto();
+function renderLocationPhotoChoices(selectedPhotoId) {
+    const list = $('#location-photo-list');
+    if (!list) return;
+    const missingPhotos = getMissingLocationPhotos(getMySavedPhotos());
+
+    if (!missingPhotos.length) {
+        list.innerHTML = '';
+        return;
+    }
+
+    list.innerHTML = missingPhotos.slice(0, 6).map((photo) => `
+        <button class="${photo.id === selectedPhotoId ? 'is-selected' : ''}" type="button" data-select-location-photo="${escapeHtml(photo.id)}">
+            <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+            <span>${escapeHtml(photo.name)}</span>
+        </button>
+    `).join('');
+}
+
+function setLocationEditorPhoto(photoId) {
+    const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
+    const latInput = $('#location-lat-input');
+    const lngInput = $('#location-lng-input');
+    const message = $('#location-editor-message');
+    const title = $('#location-selected-photo-title');
+    const draft = normalizeLocationDraft(photo);
+
+    state.selectedLocationPhotoId = photo?.id || null;
+    if (latInput) latInput.value = draft.lat;
+    if (lngInput) lngInput.value = draft.lng;
+    if (title) title.textContent = photo ? photo.name : '저장된 사진 없음';
+    if (message) {
+        message.textContent = photo
+            ? `${photo.name}의 위치를 직접 지정합니다.`
+            : '저장된 사진이 없어서 화면 흐름만 확인할 수 있습니다.';
+    }
+    renderLocationPhotoChoices(state.selectedLocationPhotoId);
+}
+
+function openLocationEditor(eventOrPhotoId) {
+    const photoId = typeof eventOrPhotoId === 'string'
+        ? eventOrPhotoId
+        : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
+    const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
     const latInput = $('#location-lat-input');
     const lngInput = $('#location-lng-input');
     const message = $('#location-editor-message');
@@ -921,6 +994,7 @@ function openLocationEditor() {
             ? `${photo.name}의 위치를 수정합니다.`
             : '저장된 사진이 없으면 화면에서만 위치 지정 흐름을 확인할 수 있습니다.';
     }
+    setLocationEditorPhoto(photo?.id || null);
     openModal('#location-editor-modal');
 }
 
@@ -950,8 +1024,10 @@ async function saveManualLocation(event) {
     }
     const updated = normalizeSavedPhoto(data);
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => savedPhoto.id === updated.id ? updated : savedPhoto);
+    state.selectedLocationPhotoId = null;
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
+    renderPublicSurfaces();
     closeModals();
     showToast('사진 위치를 저장했습니다.');
 }
@@ -1050,7 +1126,18 @@ function bindEvents() {
         updatePhotoDetailModal(getDefaultDetailPhoto());
         openModal('#photo-detail-modal');
     }));
-    $$('[data-open-location-editor]').forEach((button) => button.addEventListener('click', openLocationEditor));
+    document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
+
+        const locationButton = event.target.closest('[data-open-location-editor]');
+        if (locationButton) {
+            openLocationEditor({ currentTarget: locationButton });
+            return;
+        }
+
+        const selectorButton = event.target.closest('[data-select-location-photo]');
+        if (selectorButton) setLocationEditorPhoto(selectorButton.dataset.selectLocationPhoto);
+    });
     $$('[data-explore-pin]').forEach((button) => button.addEventListener('click', () => {
         if (button.dataset.publicAlbumId) setSelectedPublicAlbum(button.dataset.publicAlbumId);
         document.body.classList.add('explore-pin-selected');
