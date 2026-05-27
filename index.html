@@ -310,9 +310,14 @@
                         <p class="eyebrow">Suggested album</p>
                         <h2>도쿄 4박 5일</h2>
                         <div class="analysis-stats">
-                            <span><strong>128</strong> Photos</span>
+                            <span><strong id="analysis-photo-count">128</strong> Photos</span>
                             <span><strong>14</strong> Places</span>
                             <span><strong>5 days</strong> Timeline</span>
+                        </div>
+                        <div id="analysis-selected-strip" class="analysis-selected-strip" aria-label="선택 사진 미리보기">
+                            <article><img src="images/main_bg1.jpg" alt=""><span>Cover</span></article>
+                            <article><img src="images/main_bg2.jpg" alt=""><span>Route</span></article>
+                            <article><img src="images/main_bg3.jpg" alt=""><span>Public</span></article>
                         </div>
                         <div class="analysis-warning">
                             <span class="material-symbols-outlined">explore</span>
@@ -335,7 +340,13 @@
                         <button id="btn-open-share-settings" class="btn-secondary wide-button" type="button">공개 설정으로 이동</button>
                     </section>
                     <section class="analysis-map">
-                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                        <iframe
+                            class="google-map-frame"
+                            title="Google map album analysis preview"
+                            src="https://www.google.com/maps?q=35.6762,139.6503&z=12&output=embed"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <div class="map-scrim" aria-hidden="true"></div>
                         <div class="route-line"></div>
                         <b class="route-point p1"></b>
                         <b class="route-point p2"></b>
@@ -364,7 +375,7 @@
                         <article>
                             <span>Day 1 · 2026.05.12</span>
                             <strong>성산과 섭지코지</strong>
-                            <small>18 photos · 5 places</small>
+                            <small id="review-day-one-count">18 photos · 5 places</small>
                         </article>
                         <article>
                             <span>Day 2 · 2026.05.13</span>
@@ -379,10 +390,16 @@
                     </div>
                 </aside>
                 <section class="review-map-area" aria-label="비공개 여행 검토 지도">
-                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
-                    <button class="review-photo-pin p1" data-open-photo-detail type="button"><img src="images/main_bg1.jpg" alt=""></button>
-                    <button class="review-photo-pin p2" data-open-photo-detail type="button"><img src="images/main_bg2.jpg" alt=""></button>
-                    <button class="review-photo-pin p3" data-open-photo-detail type="button"><img src="images/main_bg4.jpg" alt=""></button>
+                    <iframe
+                        class="google-map-frame"
+                        title="Google map private review"
+                        src="https://www.google.com/maps?q=33.45,126.72&z=11&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <div class="map-scrim" aria-hidden="true"></div>
+                    <button class="review-photo-pin p1" data-open-photo-detail type="button"><img id="review-pin-one" src="images/main_bg1.jpg" alt=""></button>
+                    <button class="review-photo-pin p2" data-open-photo-detail type="button"><img id="review-pin-two" src="images/main_bg2.jpg" alt=""></button>
+                    <button class="review-photo-pin p3" data-open-photo-detail type="button"><img id="review-pin-three" src="images/main_bg4.jpg" alt=""></button>
                     <div class="review-map-status">
                         <span class="material-symbols-outlined">lock</span>
                         비공개 검토 중 · 공개 전까지 Explore에 노출되지 않습니다.
@@ -393,9 +410,9 @@
 
         <section id="page-share" class="page page-share" aria-labelledby="share-title">
             <div class="page-container flow-page">
-                <button class="back-link" data-go-album type="button">
+                <button class="back-link" data-go-review type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
-                    앨범 분석
+                    지도 검토
                 </button>
                 <div class="share-layout">
                     <section class="share-main">
@@ -403,13 +420,13 @@
                         <h1 id="share-title">도쿄 4박 5일</h1>
                         <div class="trip-meta">
                             <span><span class="material-symbols-outlined">calendar_today</span> 2026.05.12 - 2026.05.16</span>
-                            <span><span class="material-symbols-outlined">photo_library</span> 86 photos</span>
-                            <span><span class="material-symbols-outlined">lock</span> 현재 상태: 비공개</span>
+                            <span><span class="material-symbols-outlined">photo_library</span> <span id="share-trip-photo-count">86 photos</span></span>
+                            <span><span class="material-symbols-outlined">lock</span> <span data-visibility-status>현재 상태: 비공개</span></span>
                         </div>
                         <section class="share-card">
                             <h2>공개할 사진 선택</h2>
                             <p>공개하고 싶지 않은 사진은 개별적으로 끌 수 있습니다.</p>
-                            <div class="share-photo-grid">
+                            <div id="share-photo-grid" class="share-photo-grid">
                                 <article><img src="images/main_bg1.jpg" alt=""><span class="material-symbols-outlined">check_circle</span></article>
                                 <article><img src="images/main_bg2.jpg" alt=""><span class="material-symbols-outlined">check_circle</span></article>
                                 <article><img src="images/main_bg3.jpg" alt=""><span class="material-symbols-outlined">check_circle</span></article>
@@ -419,9 +436,9 @@
                         <section class="share-card">
                             <h2>앨범 공개 범위</h2>
                             <div class="visibility-options">
-                                <button class="active" type="button"><span class="material-symbols-outlined">lock</span><strong>비공개</strong><small>나만 볼 수 있는 안전한 보관소</small></button>
-                                <button type="button"><span class="material-symbols-outlined">link</span><strong>링크로 공유</strong><small>링크를 가진 사람만 접근 가능</small></button>
-                                <button type="button"><span class="material-symbols-outlined">public</span><strong>공개</strong><small>Ikkyee 탐색 탭에 노출됩니다</small></button>
+                                <button class="active" data-visibility="private" type="button"><span class="material-symbols-outlined">lock</span><strong>비공개</strong><small>나만 볼 수 있는 안전한 보관소</small></button>
+                                <button data-visibility="link" type="button"><span class="material-symbols-outlined">link</span><strong>링크로 공유</strong><small>링크를 가진 사람만 접근 가능</small></button>
+                                <button data-visibility="public" type="button"><span class="material-symbols-outlined">public</span><strong>공개</strong><small>Ikkyee 탐색 탭에 노출됩니다</small></button>
                             </div>
                         </section>
                         <section class="share-card">
@@ -438,11 +455,11 @@
                         <div>
                             <span>공개 미리보기</span>
                             <strong>도쿄 4박 5일</strong>
-                            <small>공개 사진 82장</small>
+                            <small id="share-preview-count">공개 사진 82장</small>
                         </div>
-                        <button class="btn-primary" type="button">설정 저장</button>
-                        <button class="btn-secondary" type="button">비공개로 유지</button>
-                        <button class="btn-secondary" type="button">공유 링크 만들기</button>
+                        <button id="btn-save-share-settings" class="btn-primary" type="button">설정 저장</button>
+                        <button class="btn-secondary" data-visibility-shortcut="private" type="button">비공개로 유지</button>
+                        <button class="btn-secondary" data-visibility-shortcut="link" type="button">공유 링크 만들기</button>
                     </aside>
                 </div>
             </div>
@@ -593,7 +610,13 @@
                 </div>
                 <div class="profile-layout">
                     <section class="profile-map-preview">
-                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWhhdYbzrT9vDRt26C5tVXkA4z6otXRb9FaPmTPa5KI1_6jiEoGAYKyXQSvA4oIz2235LQ_U2-MjoWYx2UDnFsYqW6GXOyScir1zeFhY6i9NpDbWVZc7QDH3iggRracSQKKUp88YirmMN1w6FsXIsixtvKxUUVVLhKeLdXmIhoHUnhovzbgxu9t4MEMdP8BRH-gLGQRyipiFTKVpnbOFX67MxE8v4PcRa1l6lN9Kya_cQr7wo7meXxFTzzPsNdUhsy9HptxZGKMmg" alt="">
+                        <iframe
+                            class="google-map-frame"
+                            title="Google map public profile"
+                            src="https://www.google.com/maps?q=34.9,135.5&z=5&output=embed"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <div class="map-scrim" aria-hidden="true"></div>
                         <b class="route-point p1"></b>
                         <b class="route-point p2"></b>
                     </section>

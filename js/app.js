@@ -16,6 +16,7 @@ const state = {
     currentUser: null,
     stagedPhotos: [],
     albumDrafts: [],
+    visibility: 'private',
     exploreZoom: 7
 };
 
@@ -104,6 +105,7 @@ function renderStagedPhotos() {
     if (totalCount) totalCount.textContent = `${state.stagedPhotos.length}장`;
     if (successCount) successCount.textContent = `${state.stagedPhotos.length}장`;
     if (resultPanel) resultPanel.classList.toggle('is-visible', state.stagedPhotos.length > 0);
+    renderTravelDraftSurfaces();
 
     if (!state.stagedPhotos.length) {
         grid.className = 'photo-grid empty';
@@ -123,6 +125,81 @@ function renderStagedPhotos() {
             <span>${photo.name}</span>
         </article>
     `).join('');
+}
+
+function getDraftPhotos() {
+    if (state.stagedPhotos.length) return state.stagedPhotos;
+    return [
+        { name: 'Cover', url: 'images/main_bg1.jpg' },
+        { name: 'Route', url: 'images/main_bg2.jpg' },
+        { name: 'Public', url: 'images/main_bg3.jpg' },
+        { name: 'Private', url: 'images/main_bg4.jpg' }
+    ];
+}
+
+function renderTravelDraftSurfaces() {
+    const draftPhotos = getDraftPhotos();
+    const photoCount = state.stagedPhotos.length || 128;
+    const publicCount = Math.max(0, photoCount - (state.stagedPhotos.length ? Math.min(2, state.stagedPhotos.length) : 4));
+    const analysisCount = $('#analysis-photo-count');
+    const reviewCount = $('#review-day-one-count');
+    const shareTripCount = $('#share-trip-photo-count');
+    const sharePreviewCount = $('#share-preview-count');
+    const analysisStrip = $('#analysis-selected-strip');
+    const shareGrid = $('#share-photo-grid');
+
+    if (analysisCount) analysisCount.textContent = String(photoCount);
+    if (reviewCount) reviewCount.textContent = `${Math.min(photoCount, 18)} photos · 5 places`;
+    if (shareTripCount) shareTripCount.textContent = `${photoCount} photos`;
+    if (sharePreviewCount) sharePreviewCount.textContent = `공개 사진 ${publicCount}장`;
+
+    if (analysisStrip) {
+        analysisStrip.innerHTML = draftPhotos.slice(0, 4).map((photo, index) => `
+            <article>
+                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <span>${index === 0 ? 'Cover' : index === 1 ? 'Route' : 'Photo'}</span>
+            </article>
+        `).join('');
+    }
+
+    if (shareGrid) {
+        shareGrid.innerHTML = draftPhotos.slice(0, 6).map((photo, index) => `
+            <article>
+                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <span class="material-symbols-outlined${index === 3 ? ' muted' : ''}">${index === 3 ? 'radio_button_unchecked' : 'check_circle'}</span>
+            </article>
+        `).join('');
+    }
+
+    ['#review-pin-one', '#review-pin-two', '#review-pin-three'].forEach((selector, index) => {
+        const image = $(selector);
+        if (image && draftPhotos[index]) {
+            image.src = draftPhotos[index].url;
+            image.alt = draftPhotos[index].name;
+        }
+    });
+}
+
+function setVisibilityMode(mode) {
+    state.visibility = ['private', 'link', 'public'].includes(mode) ? mode : 'private';
+    $$('[data-visibility]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.visibility === state.visibility);
+    });
+    const status = $('.trip-meta [data-visibility-status]');
+    if (status) {
+        const label = state.visibility === 'public' ? '공개' : state.visibility === 'link' ? '링크 공유' : '비공개';
+        status.textContent = `현재 상태: ${label}`;
+    }
+}
+
+function saveShareSettings() {
+    const message = state.visibility === 'public'
+        ? '공개 여행으로 전환했습니다.'
+        : state.visibility === 'link'
+            ? '공유 링크 설정을 준비했습니다.'
+            : '비공개 상태로 저장했습니다.';
+    showToast(message);
+    if (state.visibility === 'public') routeTo('trip');
 }
 
 function renderAlbumDrafts() {
@@ -187,6 +264,7 @@ function handlePhotoFiles(files) {
         url: URL.createObjectURL(file)
     }));
     renderStagedPhotos();
+    renderTravelDraftSurfaces();
     routeTo('upload');
     closeModals();
     showToast(`${selected.length}장의 사진을 업로드 초안에 추가했습니다.`);
@@ -310,6 +388,16 @@ function bindEvents() {
         syncExploreGoogleMap();
     });
     $('#btn-open-share-settings')?.addEventListener('click', () => routeTo('share'));
+    $$('[data-visibility]').forEach((button) => {
+        button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility));
+    });
+    $$('[data-visibility-shortcut]').forEach((button) => {
+        button.addEventListener('click', () => {
+            setVisibilityMode(button.dataset.visibilityShortcut);
+            if (button.dataset.visibilityShortcut === 'link') showToast('공유 링크 설정을 선택했습니다.');
+        });
+    });
+    $('#btn-save-share-settings')?.addEventListener('click', saveShareSettings);
     $('#btn-review-upload')?.addEventListener('click', () => routeTo('album'));
     $('#btn-upload-retry')?.addEventListener('click', () => $('#photo-input')?.click());
     $('#btn-clear-staged')?.addEventListener('click', () => {
@@ -352,7 +440,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindEvents();
     renderStagedPhotos();
     renderAlbumDrafts();
+    renderTravelDraftSurfaces();
     renderExploreList();
+    setVisibilityMode(state.visibility);
     const initialSection = parseRouteHash(window.location.hash);
     routeTo(initialSection, { replace: !window.location.hash });
 });
