@@ -2,9 +2,10 @@
  * events.js — §6 이벤트 핸들러 바인딩 (좋아요, 공유, 삭제, 저장, 드래그&드롭 등)
  */
 import { upsertPhoto, deletePhoto, toggleLikePhoto, insertLike, deleteLike } from '../auth.js';
+import { APP_SECTIONS, getViewModeForSection, normalizeAppSection, sectionToHash } from './app-sections.mjs';
 import { formatGoogleMapsLocation } from './location-copy.mjs';
 import { refreshMapSize } from './map.js';
-import { savePageState } from './state.js';
+import { activatePanel, savePageState } from './state.js';
 
 export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDetail, closeDetail, showToast, syncData, processFiles, startLocationPicker }) {
 
@@ -27,6 +28,70 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
         refreshMapSize(map);
     }
 
+    function setActiveNav(section) {
+        const normalized = normalizeAppSection(section);
+        if (ui.navHome) ui.navHome.classList.toggle('active', normalized === APP_SECTIONS.HOME);
+        if (ui.navMyphoto) ui.navMyphoto.classList.toggle('active', normalized === APP_SECTIONS.MYPHOTO);
+        if (ui.navExplore) ui.navExplore.classList.toggle('active', normalized === APP_SECTIONS.EXPLORE);
+    }
+
+    function openSection(section, options = {}) {
+        const normalized = normalizeAppSection(section);
+        state.appSection = normalized;
+        state.showOnlyLiked = false;
+
+        if (normalized === APP_SECTIONS.HOME) {
+            activatePanel(ui, 'home');
+            setActiveNav(normalized);
+            state.currentPhoto = null;
+            renderAll();
+            if (!options.skipHash) window.location.hash = sectionToHash(normalized);
+            savePageState(state);
+            return;
+        }
+
+        state.viewMode = getViewModeForSection(normalized);
+        activatePanel(ui, 'explore');
+        setActiveNav(normalized);
+        renderAll();
+        if (!options.skipHash) window.location.hash = sectionToHash(normalized);
+        savePageState(state);
+    }
+
+    function refreshShareSettings() {
+        if (!ui.shareSettingsStatus || !state.currentPhoto) return;
+        const isPublic = !!state.currentPhoto.shared;
+        ui.shareSettingsStatus.textContent = isPublic ? 'Public in Explore' : 'Private in Myphoto';
+        if (ui.btnSharePrivate) ui.btnSharePrivate.classList.toggle('active', !isPublic);
+        if (ui.btnSharePublic) ui.btnSharePublic.classList.toggle('active', isPublic);
+    }
+
+    async function setCurrentPhotoVisibility(shared) {
+        if (!state.currentUser) { showToast("로그인이 필요합니다.", "warning"); return; }
+        if (!state.currentPhoto) return;
+        const previous = !!state.currentPhoto.shared;
+        if (previous === shared) {
+            refreshShareSettings();
+            return;
+        }
+
+        state.currentPhoto.shared = shared;
+        const { error } = await upsertPhoto(state.currentPhoto);
+        if (error) {
+            state.currentPhoto.shared = previous;
+            refreshShareSettings();
+            showToast("Share failed", "warning");
+            return;
+        }
+
+        if (ui.detailShareBtn) ui.detailShareBtn.classList.toggle('active', shared);
+        refreshShareSettings();
+        showToast(shared ? "Published to Explore" : "Kept private", "success");
+        syncData();
+    }
+
+    state.openSection = openSection;
+
     ui.toggleBtn.onclick = () => {
         if (ui.sidebar.classList.contains('hidden')) restoreSidebar();
         else minimizeSidebar();
@@ -40,8 +105,35 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
     });
 
     // 피드 전환
-    ui.btnMyFeed.onclick = () => { state.viewMode = 'my'; state.showOnlyLiked = false; renderAll(); savePageState(state); };
-    ui.btnSharedFeed.onclick = () => { state.viewMode = 'shared'; state.showOnlyLiked = false; renderAll(); savePageState(state); };
+    if (ui.navHome) ui.navHome.onclick = () => openSection(APP_SECTIONS.HOME);
+    if (ui.navMyphoto) ui.navMyphoto.onclick = () => openSection(APP_SECTIONS.MYPHOTO);
+    if (ui.navExplore) ui.navExplore.onclick = () => openSection(APP_SECTIONS.EXPLORE);
+    if (ui.btnHomeStart) ui.btnHomeStart.onclick = () => openSection(APP_SECTIONS.MYPHOTO);
+    if (ui.btnHomeExplore) ui.btnHomeExplore.onclick = () => openSection(APP_SECTIONS.EXPLORE);
+    if (ui.btnOpenUpload) ui.btnOpenUpload.onclick = () => {
+        if (!state.currentUser) { showToast("로그인이 필요합니다.", "warning"); return; }
+        state.appSection = APP_SECTIONS.MYPHOTO;
+        state.viewMode = 'my';
+        setActiveNav(APP_SECTIONS.MYPHOTO);
+        if (ui.uploadStartState) ui.uploadStartState.classList.add('active');
+        if (ui.uploadCompleteState) ui.uploadCompleteState.classList.remove('active');
+        activatePanel(ui, 'upload');
+        savePageState(state);
+    };
+    if (ui.btnUploadBack) ui.btnUploadBack.onclick = () => openSection(APP_SECTIONS.MYPHOTO);
+    if (ui.btnUploadChoose) ui.btnUploadChoose.onclick = () => {
+        if (!state.currentUser) { showToast("로그인이 필요합니다.", "warning"); return; }
+        ui.uploadInput.click();
+    };
+    if (ui.btnUploadReviewMap) ui.btnUploadReviewMap.onclick = () => openSection(APP_SECTIONS.MYPHOTO);
+    if (ui.btnUploadAnother) ui.btnUploadAnother.onclick = () => {
+        if (ui.uploadStartState) ui.uploadStartState.classList.add('active');
+        if (ui.uploadCompleteState) ui.uploadCompleteState.classList.remove('active');
+        ui.uploadInput.click();
+    };
+
+    ui.btnMyFeed.onclick = () => openSection(APP_SECTIONS.MYPHOTO);
+    ui.btnSharedFeed.onclick = () => openSection(APP_SECTIONS.EXPLORE);
     ui.btnFilterLiked.onclick = () => { state.showOnlyLiked = !state.showOnlyLiked; renderAll(state.activeDate); };
 
     // 검색
@@ -181,17 +273,19 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
     ui.detailShareBtn.onclick = async () => {
         if (!state.currentUser) { showToast("로그인이 필요합니다.", "warning"); return; }
         if (!state.currentPhoto) return;
-        state.currentPhoto.shared = !state.currentPhoto.shared;
-        const { error } = await upsertPhoto(state.currentPhoto);
-        if (error) { state.currentPhoto.shared = !state.currentPhoto.shared; showToast("Share failed", "warning"); return; }
-        ui.detailShareBtn.classList.toggle('active', state.currentPhoto.shared);
-        showToast(state.currentPhoto.shared ? "Shared to Community" : "Removed from Community", "success");
-        syncData();
+        refreshShareSettings();
+        activatePanel(ui, 'share');
     };
+
+    if (ui.btnShareSettingsBack) ui.btnShareSettingsBack.onclick = () => activatePanel(ui, 'detail');
+    if (ui.btnSharePrivate) ui.btnSharePrivate.onclick = () => setCurrentPhotoVisibility(false);
+    if (ui.btnSharePublic) ui.btnSharePublic.onclick = () => setCurrentPhotoVisibility(true);
 
     // 파일 업로드
     ui.uploadInput.onchange = (e) => {
-        if (e.target.files && e.target.files.length > 0) processFiles(e.target.files);
+        if (e.target.files && e.target.files.length > 0) {
+            processFiles(e.target.files);
+        }
         ui.uploadInput.value = '';
     };
 
@@ -209,7 +303,15 @@ export function initEvents({ state, ui, map, clusterGroup }, { renderAll, showDe
         dropZone.classList.remove('active');
         setTimeout(() => dropZone.classList.add('hidden'), 300);
         if (!state.currentUser) { showToast("로그인이 필요합니다.", "warning"); return; }
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            state.appSection = APP_SECTIONS.MYPHOTO;
+            state.viewMode = 'my';
+            setActiveNav(APP_SECTIONS.MYPHOTO);
+            if (ui.uploadStartState) ui.uploadStartState.classList.add('active');
+            if (ui.uploadCompleteState) ui.uploadCompleteState.classList.remove('active');
+            activatePanel(ui, 'upload');
+            processFiles(e.dataTransfer.files);
+        }
     });
 
     // 스트리트 뷰 닫기

@@ -4,13 +4,64 @@
 import { uploadImage, upsertPhoto, dataUrlToFile } from '../auth.js';
 
 export function initUpload({ state, ui, map, clusterGroup }, { showToast, syncData }) {
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]);
+    }
+
+    function showUploadComplete(result) {
+        state.lastUploadResult = result;
+        if (ui.uploadStartState) ui.uploadStartState.classList.remove('active');
+        if (ui.uploadCompleteState) ui.uploadCompleteState.classList.add('active');
+        if (ui.uploadResultTotal) ui.uploadResultTotal.textContent = String(result.total);
+        if (ui.uploadResultSuccess) ui.uploadResultSuccess.textContent = String(result.successPhotos.length);
+        if (ui.uploadResultLocation) ui.uploadResultLocation.textContent = String(result.needsLocation);
+        if (ui.uploadResultErrors) ui.uploadResultErrors.textContent = String(result.failed);
+        if (ui.uploadCompleteCopy) {
+            ui.uploadCompleteCopy.textContent = result.failed > 0
+                ? 'Most photos are archived. Review failed items, then continue shaping this trip in Myphoto.'
+                : 'Review capture time and location data, then continue shaping this archive inside Myphoto.';
+        }
+        if (ui.uploadCompleteGrid) {
+            const cards = result.successPhotos.slice(0, 8).map((p) => {
+                const preview = p._previewUrl || p.url || '';
+                const label = p.date ? String(p.date).slice(0, 10) : 'Archived photo';
+                return `
+                    <div class="upload-complete-card">
+                        <img src="${escapeHtml(preview)}" alt="${escapeHtml(label)}" loading="lazy">
+                        <span>${escapeHtml(label)}</span>
+                    </div>
+                `;
+            }).join('');
+            const errorCard = result.failed > 0
+                ? `<div class="upload-complete-card upload-complete-error"><strong>${result.failed}</strong><span>Needs retry</span></div>`
+                : '';
+            ui.uploadCompleteGrid.innerHTML = cards || errorCard
+                ? cards + errorCard
+                : '<div class="archive-empty-state"><strong>No photos were archived.</strong><span>Try selecting another set of image files.</span></div>';
+        }
+    }
 
     async function processFiles(files) {
         const pendingPhotos = [];
+        const result = {
+            total: Array.from(files).length,
+            successPhotos: [],
+            failed: 0,
+            needsLocation: 0
+        };
+        if (ui.uploadStartState) ui.uploadStartState.classList.add('active');
+        if (ui.uploadCompleteState) ui.uploadCompleteState.classList.remove('active');
         showToast("Processing photos...", "info");
         
         for (const f of Array.from(files)) {
             if (!f.type.startsWith('image/')) {
+                result.failed += 1;
                 showToast(`Skipped ${f.name} - Not an image`, "warning");
                 continue;
             }
@@ -44,20 +95,24 @@ export function initUpload({ state, ui, map, clusterGroup }, { showToast, syncDa
                 if (!photoData.lat || !photoData.lng) {
                     pendingPhotos.push(photoData);
                 } else {
-                    await uploadAndSavePhoto(photoData);
+                    const savedPhoto = await uploadAndSavePhoto(photoData);
+                    result.successPhotos.push(savedPhoto);
                 }
             } catch (err) { 
                 console.error(err); 
+                result.failed += 1;
                 showToast(`Photo processing error: ${err.message}`, "warning");
             }
         }
         
         if (pendingPhotos.length > 0) {
+            result.needsLocation = pendingPhotos.length;
             showToast(`${pendingPhotos.length} photos need location. Click on the map!`, "info");
-            startLocationPicker(pendingPhotos);
+            startLocationPicker(pendingPhotos, { fromUpload: true, result });
         } else {
             showToast("Upload complete!", "success");
-            syncData();
+            await syncData();
+            showUploadComplete(result);
         }
     }
 
@@ -122,11 +177,19 @@ export function initUpload({ state, ui, map, clusterGroup }, { showToast, syncDa
         
         const { error: dbError } = await upsertPhoto(dbPhoto);
         if (dbError) { showToast(`Save failed: ${dbError.message}`, "warning"); throw dbError; }
+        return { ...dbPhoto, _previewUrl: photoData._dataUrl || detailReq.url };
     }
 
     /** GPS가 없는 사진의 위치를 지도 클릭으로 지정 */
-    function startLocationPicker(list) {
-        if (!list.length) { document.body.classList.remove('picking-location'); showToast("Saved!", "success"); syncData(); return; }
+    function startLocationPicker(list, options = {}) {
+        if (!list.length) {
+            document.body.classList.remove('picking-location');
+            showToast(options.fromUpload ? "Upload complete!" : "Saved!", "success");
+            syncData().then(() => {
+                if (options.fromUpload && options.result) showUploadComplete(options.result);
+            });
+            return;
+        }
         const p = list.shift();
         const guideThumb = document.getElementById('guide-thumb');
         document.body.classList.add('picking-location');
@@ -134,10 +197,16 @@ export function initUpload({ state, ui, map, clusterGroup }, { showToast, syncDa
         clusterGroup.eachLayer(m => m.options.interactive = false);
         map.once('click', async (e) => {
             p.lat = e.latlng.lat; p.lng = e.latlng.lng;
-            try { await uploadAndSavePhoto(p); } catch (err) { console.error('Location pick upload failed:', err); }
+            try {
+                const savedPhoto = await uploadAndSavePhoto(p);
+                if (options.result) options.result.successPhotos.push(savedPhoto);
+            } catch (err) {
+                if (options.result) options.result.failed += 1;
+                console.error('Location pick upload failed:', err);
+            }
             clusterGroup.eachLayer(m => m.options.interactive = true);
             document.body.classList.remove('picking-location');
-            startLocationPicker(list);
+            startLocationPicker(list, options);
         });
     }
 

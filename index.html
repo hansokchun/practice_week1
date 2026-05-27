@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
         rel="stylesheet">
 
     <link rel="icon" href="images/logo.webp" type="image/png">
@@ -46,22 +46,67 @@
     <div id="app">
         <!-- Sidebar Content -->
         <aside id="sidebar">
+            <nav id="app-nav" class="app-nav" aria-label="Primary">
+                <button id="nav-home" class="app-nav-item active" type="button" data-section="home">Archive</button>
+                <button id="nav-myphoto" class="app-nav-item" type="button" data-section="myphoto">Myphoto</button>
+                <button id="nav-explore" class="app-nav-item" type="button" data-section="explore">Explore</button>
+            </nav>
             <div id="drag-handle" class="drag-handle">
                 <div class="handle-bar"></div>
             </div>
+            <section id="panel-home" class="panel active">
+                <div class="home-panel">
+                    <p class="home-kicker">Personal Travel Map Archive</p>
+                    <h1>Your photos become a quiet map of where life happened.</h1>
+                    <p class="home-copy">
+                        Keep every trip private by default, organize memories by place and time, then publish only the routes worth sharing.
+                    </p>
+                    <div class="home-actions">
+                        <button id="btn-home-start" class="btn-primary" type="button">Open Myphoto</button>
+                        <button id="btn-home-explore" class="btn-secondary" type="button">View Explore</button>
+                    </div>
+                    <div class="home-stats" aria-label="Archive overview">
+                        <div>
+                            <strong>Map-first</strong>
+                            <span>Archive</span>
+                        </div>
+                        <div>
+                            <strong>Private</strong>
+                            <span>by default</span>
+                        </div>
+                        <div>
+                            <strong>Share</strong>
+                            <span>when ready</span>
+                        </div>
+                    </div>
+                    <div class="home-feature-list" aria-label="Product highlights">
+                        <div>
+                            <strong>Import from photos</strong>
+                            <span>GPS and capture time become the first draft of your travel record.</span>
+                        </div>
+                        <div>
+                            <strong>Review on the map</strong>
+                            <span>Correct places, group albums, and see each route before publishing.</span>
+                        </div>
+                        <div>
+                            <strong>Publish selectively</strong>
+                            <span>Public profiles and trips are opt-in views, not the default archive.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
             <!-- 1. FEED EXPLORE PANEL -->
-            <section id="panel-explore" class="panel active">
+            <section id="panel-explore" class="panel">
                 <header class="sidebar-header">
                     <h1 class="logo">Travelgram</h1>
                     <div class="header-actions">
-                        <label for="upload-input" class="btn-post" id="btn-post-label">Post a Story</label>
+                        <button class="btn-post" id="btn-open-upload" type="button">Upload</button>
                         <input type="file" id="upload-input" multiple accept="image/jpeg, image/png"
                             style="display:none;">
                         <button id="btn-login-sidebar" class="btn-post"
-                            style="display: none; border: none; cursor: pointer;">로그인</button>
-                        <!-- 유저 프로필/로그아웃 영역 -->
+                            style="display: none; border: none; cursor: pointer;">Login</button>
                         <div id="user-menu" class="user-menu" style="position: relative; display: none;">
-                            <div id="user-avatar" class="user-avatar" title="내 계정">
+                            <div id="user-avatar" class="user-avatar" title="My account">
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -69,9 +114,7 @@
                                 </svg>
                             </div>
 
-                            <!-- 프로필 팝업 -->
                             <div id="profile-popup" class="profile-popup hidden">
-                                <!-- 1. 메인 뷰 -->
                                 <div id="profile-main-view">
                                     <div class="profile-header">
                                         <div id="profile-popup-avatar" class="profile-avatar-large"></div>
@@ -92,79 +135,74 @@
                                     </div>
                                     <div class="profile-actions">
                                         <button id="btn-view-my-profile" class="btn-action-outline"
-                                            style="margin-bottom: 8px; border-color: var(--accent-color); color: var(--accent-color);">내사진
-                                            보기</button>
-                                        <button id="btn-view-info" class="btn-action-outline">프로필 정보보기</button>
-                                        <button id="btn-logout" class="btn-logout-full" title="로그아웃">
+                                            style="margin-bottom: 8px; border-color: var(--accent-color); color: var(--accent-color);">View My Archive</button>
+                                        <button id="btn-view-info" class="btn-action-outline">Profile Info</button>
+                                        <button id="btn-logout" class="btn-logout-full" title="Logout">
                                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                                                 stroke="currentColor" stroke-width="2">
                                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                                 <polyline points="16 17 21 12 16 7"></polyline>
                                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                                             </svg>
-                                            로그아웃
+                                            Logout
                                         </button>
                                     </div>
                                 </div>
 
-                                <!-- 2. 상세 정보 및 수정 뷰 -->
                                 <div id="profile-detail-view" class="hidden">
                                     <div class="detail-header-bar">
-                                        <button id="btn-back-profile" class="btn-icon-small">◀</button>
-                                        <h4>프로필 정보</h4>
+                                        <button id="btn-back-profile" class="btn-icon-small">Back</button>
+                                        <h4>Profile Info</h4>
                                         <div style="width:24px;"></div>
                                     </div>
                                     <div class="detail-body">
-                                        <!-- 조회 모드 -->
                                         <div id="demo-display">
-                                            <div class="info-row"><span class="info-label">이메일</span><span
+                                            <div class="info-row"><span class="info-label">Email</span><span
                                                     id="demo-email" class="info-val"></span></div>
-                                            <div class="info-row"><span class="info-label">나이</span><span id="demo-age"
-                                                    class="info-val">미입력</span></div>
-                                            <div class="info-row"><span class="info-label">성별</span><span
-                                                    id="demo-gender" class="info-val">미입력</span></div>
+                                            <div class="info-row"><span class="info-label">Age</span><span id="demo-age"
+                                                    class="info-val">Not set</span></div>
+                                            <div class="info-row"><span class="info-label">Gender</span><span
+                                                    id="demo-gender" class="info-val">Not set</span></div>
                                             <button id="btn-edit-demo" class="btn-action-fill"
-                                                style="width:100%; margin-top:16px;">수정하기</button>
+                                                style="width:100%; margin-top:16px;">Edit</button>
                                         </div>
-                                        <!-- 수정 모드 -->
                                         <div id="demo-edit" class="hidden">
                                             <div class="edit-group" style="text-align: center; margin-bottom: 24px;">
                                                 <div id="edit-avatar-preview" class="profile-avatar-large"
                                                     style="margin: 0 auto 12px; cursor: pointer; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc;">
-                                                    <span style="font-size: 12px; color: var(--text-muted);">클릭하여
-                                                        변경</span>
+                                                    <span style="font-size: 12px; color: var(--text-muted);">Click to change</span>
                                                 </div>
                                                 <input type="file" id="input-avatar-file"
                                                     accept="image/jpeg, image/png, image/webp" style="display: none;">
                                             </div>
                                             <div class="edit-group">
-                                                <label class="info-label">닉네임</label>
+                                                <label class="info-label">Nickname</label>
                                                 <input type="text" id="input-nickname" class="demo-input"
-                                                    placeholder="닉네임 입력">
+                                                    placeholder="Enter nickname">
                                             </div>
                                             <div class="edit-group">
-                                                <label class="info-label">연령대</label>
+                                                <label class="info-label">Age range</label>
                                                 <select id="input-age" class="demo-select">
-                                                    <option value="">선택안함</option>
-                                                    <option value="10s">10대</option>
-                                                    <option value="20s">20대</option>
-                                                    <option value="30s">30대</option>
-                                                    <option value="40s">40대</option>
-                                                    <option value="50+">50대 이상</option>
+                                                    <option value="">Not set</option>
+                                                    <option value="10s">10s</option>
+                                                    <option value="20s">20s</option>
+                                                    <option value="30s">30s</option>
+                                                    <option value="40s">40s</option>
+                                                    <option value="50+">50+</option>
                                                 </select>
                                             </div>
                                             <div class="edit-group">
-                                                <label class="info-label">성별</label>
+                                                <label class="info-label">Gender</label>
                                                 <select id="input-gender" class="demo-select">
-                                                    <option value="">선택안함</option>
-                                                    <option value="M">남성</option>
-                                                    <option value="F">여성</option>
-                                                    <option value="U">비공개</option>
+                                                    <option value="">Not set</option>
+                                                    <option value="M">Male</option>
+                                                    <option value="F">Female</option>
+                                                    <option value="U">Private</option>
                                                 </select>
                                             </div>
                                             <div class="demo-actions">
-                                                <button id="btn-cancel-demo" class="btn-cancel-small">취소</button>
-                                                <button id="btn-save-demo" class="btn-save-small">저장</button>
+                                                <button id="btn-cancel-demo" class="btn-cancel-small">Cancel</button>
+                                                <button id="btn-save-demo" class="btn-save-small">Save</button>
                                             </div>
                                         </div>
                                     </div>
@@ -175,8 +213,8 @@
                 </header>
 
                 <nav class="feed-nav">
-                    <button id="btn-my-feed" class="nav-link active">My Stories</button>
-                    <button id="btn-shared-feed" class="nav-link">Community</button>
+                    <button id="btn-my-feed" class="nav-link active">My Archive</button>
+                    <button id="btn-shared-feed" class="nav-link">Public Maps</button>
                 </nav>
 
                 <div class="filter-bar">
@@ -191,9 +229,9 @@
                 <div class="view-switcher-tools">
                     <select id="community-sort" class="demo-select hidden"
                         style="font-size:13px; padding:4px 8px; margin-right:8px; border-radius: 20px; width: auto; height: 32px; border: 1px solid var(--border-color); cursor: pointer; background: #fff;">
-                        <option value="latest">최신순</option>
-                        <option value="best_month">이번 달 베스트</option>
-                        <option value="best_today">오늘 베스트</option>
+                        <option value="latest">Latest</option>
+                        <option value="best_month">Best this month</option>
+                        <option value="best_today">Best today</option>
                     </select>
                     <div class="search-box">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
@@ -214,12 +252,237 @@
                     </button>
                 </div>
 
+                <div id="review-map-summary" class="review-map-summary">
+                    <div>
+                        <span>Visible</span>
+                        <strong id="review-summary-visible">0</strong>
+                    </div>
+                    <div>
+                        <span>Mapped</span>
+                        <strong id="review-summary-mapped">0</strong>
+                    </div>
+                    <div>
+                        <span>Public</span>
+                        <strong id="review-summary-public">0</strong>
+                    </div>
+                </div>
+
                 <div id="grid-container" class="story-grid">
                     <!-- Dynamic Grid Items with Grouping -->
                 </div>
             </section>
 
-            <!-- 2. STORY DETAIL PANEL -->
+            <!-- 2. PHOTO UPLOAD PANEL -->
+            <section id="panel-upload" class="panel">
+                <header class="detail-header">
+                    <button id="btn-upload-back" class="icon-btn" type="button">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+                    <div class="panel-title">Upload Photos</div>
+                    <div style="width: 64px;"></div>
+                </header>
+                <div class="upload-workspace">
+                    <div id="upload-start-state" class="upload-state active">
+                        <p class="home-kicker">Myphoto Workspace</p>
+                        <h2>Start with photos. We will build the map from their memory data.</h2>
+                        <p>
+                            Choose travel photos from your device. Photos with GPS data are archived immediately; photos
+                            without GPS will ask you to place them on the map.
+                        </p>
+                        <button id="btn-upload-choose" class="btn-primary" type="button">Choose Photos</button>
+                        <div class="upload-step-list" aria-label="Upload flow">
+                            <div>
+                                <strong>1. Import</strong>
+                                <span>Select JPG or PNG photos from a trip.</span>
+                            </div>
+                            <div>
+                                <strong>2. Review map</strong>
+                                <span>Confirm GPS points or place missing locations manually.</span>
+                            </div>
+                            <div>
+                                <strong>3. Keep private</strong>
+                                <span>New uploads stay private until you publish them.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="upload-complete-state" class="upload-state">
+                        <div class="upload-complete-heading">
+                            <p class="home-kicker">Upload Complete</p>
+                            <span class="upload-complete-badge">All tasks finished</span>
+                        </div>
+                        <h2>Your photos are ready to become a travel map.</h2>
+                        <p id="upload-complete-copy">
+                            Review capture time and location data, then continue shaping this archive inside Myphoto.
+                        </p>
+                        <div class="upload-result-layout">
+                            <div id="upload-complete-grid" class="upload-complete-grid"></div>
+                            <aside class="upload-result-card">
+                                <h3>Upload Result</h3>
+                                <div class="upload-result-row">
+                                    <span>Total photos</span>
+                                    <strong id="upload-result-total">0</strong>
+                                </div>
+                                <div class="upload-result-row">
+                                    <span>Success</span>
+                                    <strong id="upload-result-success">0</strong>
+                                </div>
+                                <div class="upload-result-row">
+                                    <span>Need location</span>
+                                    <strong id="upload-result-location">0</strong>
+                                </div>
+                                <div class="upload-result-row">
+                                    <span>Errors</span>
+                                    <strong id="upload-result-errors">0</strong>
+                                </div>
+                                <div class="upload-result-note">
+                                    Photos remain private until you publish them from Public Settings.
+                                </div>
+                                <div class="upload-result-actions">
+                                    <button id="btn-upload-review-map" class="btn-primary" type="button">Review in Myphoto</button>
+                                    <button id="btn-upload-another" class="btn-secondary" type="button">Upload More</button>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. PUBLIC SETTINGS PANEL -->
+            <section id="panel-share-settings" class="panel">
+                <header class="detail-header">
+                    <button id="btn-share-settings-back" class="icon-btn" type="button">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+                    <div class="panel-title">Public Settings</div>
+                    <div style="width: 64px;"></div>
+                </header>
+                <div class="share-settings-panel">
+                    <p class="home-kicker">Visibility Review</p>
+                    <h2>Choose whether this memory belongs only to you or can appear in Explore.</h2>
+                    <div class="share-status-card">
+                        <span>Current visibility</span>
+                        <strong id="share-settings-status">Private</strong>
+                    </div>
+                    <div class="share-option-list">
+                        <button id="btn-share-private" class="share-option" type="button">
+                            <strong>Keep Private</strong>
+                            <span>Stay inside Myphoto and your personal archive.</span>
+                        </button>
+                        <button id="btn-share-public" class="share-option" type="button">
+                            <strong>Publish to Explore</strong>
+                            <span>Allow this photo to appear in public map views.</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. ALBUM REVIEW PANEL -->
+            <section id="panel-album-review" class="panel">
+                <header class="detail-header">
+                    <button id="btn-album-review-back" class="icon-btn" type="button">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+                    <div class="panel-title">Album Review</div>
+                    <div style="width: 64px;"></div>
+                </header>
+                <div class="album-review-panel">
+                    <p class="home-kicker">Analysis Result</p>
+                    <h2 id="album-review-title">Ready to build an album.</h2>
+                    <p id="album-review-copy">
+                        Review the new album before adding photos or publishing anything.
+                    </p>
+                    <div class="album-review-summary">
+                        <div>
+                            <span>Album</span>
+                            <strong id="album-review-name">Untitled</strong>
+                        </div>
+                        <div>
+                            <span>Photos</span>
+                            <strong id="album-review-count">0</strong>
+                        </div>
+                        <div>
+                            <span>Status</span>
+                            <strong id="album-review-status">Private</strong>
+                        </div>
+                    </div>
+                    <div class="album-review-checklist" aria-label="Album analysis checklist">
+                        <div>
+                            <span>Map Coverage</span>
+                            <strong id="album-review-map-status">Needs photos</strong>
+                        </div>
+                        <div>
+                            <span>Public Trip</span>
+                            <strong id="album-review-trip-status">Draft ready</strong>
+                        </div>
+                        <div>
+                            <span>Privacy</span>
+                            <strong>Private by default</strong>
+                        </div>
+                    </div>
+                    <div class="album-review-actions">
+                        <button id="btn-album-review-add" class="btn-primary" type="button">Add Photos</button>
+                        <button id="btn-album-review-open" class="btn-secondary" type="button">Open Album</button>
+                        <button id="btn-album-review-trip" class="btn-secondary" type="button">Preview Trip Page</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. PUBLIC TRIP PANEL -->
+            <section id="panel-public-trip" class="panel">
+                <header class="detail-header">
+                    <button id="btn-public-trip-back" class="icon-btn" type="button">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
+                    <div class="panel-title">Public Trip</div>
+                    <div style="width: 64px;"></div>
+                </header>
+                <div class="public-trip-panel">
+                    <p class="home-kicker">Published Trip Preview</p>
+                    <h2 id="public-trip-title">Untitled Trip</h2>
+                    <p id="public-trip-copy">A map-first public page for an album route.</p>
+                    <div class="public-trip-summary">
+                        <div>
+                            <span>Photos</span>
+                            <strong id="public-trip-count">0</strong>
+                        </div>
+                        <div>
+                            <span>Route Stops</span>
+                            <strong id="public-trip-places">0</strong>
+                        </div>
+                        <div>
+                            <span>Timeline</span>
+                            <strong id="public-trip-range">Draft</strong>
+                        </div>
+                        <div>
+                            <span>Visibility</span>
+                            <strong id="public-trip-status">Private</strong>
+                        </div>
+                    </div>
+                    <div class="public-trip-route-card">
+                        <span class="home-kicker">Route</span>
+                        <div id="public-trip-route" class="public-trip-route"></div>
+                    </div>
+                    <div id="public-trip-grid" class="public-trip-grid"></div>
+                </div>
+            </section>
+
+            <!-- 6. STORY DETAIL PANEL -->
             <section id="panel-detail" class="panel">
                 <header class="detail-header">
                     <button id="btn-back" class="icon-btn">
@@ -264,7 +527,7 @@
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
                         </button>
-                        <button id="detail-share-btn" class="icon-btn share-toggle" title="Share to Community">
+                        <button id="detail-share-btn" class="icon-btn share-toggle" title="Review public sharing">
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path
@@ -291,6 +554,14 @@
                     </div>
 
                     <div class="story-content">
+                        <div class="selected-pin-summary">
+                            <p class="home-kicker">Selected Pin</p>
+                            <div>
+                                <strong id="selected-pin-title">Selected memory</strong>
+                                <span id="selected-pin-meta">Map location and capture time</span>
+                            </div>
+                        </div>
+
                         <!-- Author Display -->
                         <div id="author-info"
                             style="margin-bottom: 16px; padding: 4px 8px; background: rgba(0,0,0,0.03); border-radius: 6px; display: inline-flex; align-items: center;">
@@ -307,24 +578,24 @@
                             </h2>
                             <div id="detail-album-badge" style="display: inline-block; padding: 4px 10px; background: var(--primary-color); color: white; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 12px; cursor: pointer; display: none;"></div>
                             <button id="btn-toggle-edit" class="btn-action-outline"
-                                style="width: auto; padding: 6px 16px; margin-bottom: 20px; display: none;">수정하기</button>
+                                style="width: auto; padding: 6px 16px; margin-bottom: 20px; display: none;">Edit</button>
                         </div>
 
                         <!-- Edit Controls (Edit Mode) -->
                         <div id="edit-mode-container" class="hidden"
                             style="margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <input type="text" id="edit-title-input" class="title-input" placeholder="사진 설명 입력..."
+                            <input type="text" id="edit-title-input" class="title-input" placeholder="Add a photo description..."
                                 style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-size: 16px; font-family: var(--sans-font); margin-bottom: 12px;">
                             <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                                <input type="date" id="edit-date-input" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;" title="촬영 날짜">
-                                <input type="time" id="edit-time-input" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;" title="촬영 시간">
+                                <input type="date" id="edit-date-input" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;" title="Capture date">
+                                <input type="time" id="edit-time-input" style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;" title="Capture time">
                             </div>
                             <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                                <input type="number" id="edit-lat-input" step="any" placeholder="Latitude (위도)"
+                                <input type="number" id="edit-lat-input" step="any" placeholder="Latitude"
                                     style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
-                                <input type="number" id="edit-lng-input" step="any" placeholder="Longitude (경도)"
+                                <input type="number" id="edit-lng-input" step="any" placeholder="Longitude"
                                     style="flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 14px;">
-                                <button id="btn-pick-location" title="지도에서 지정하기"
+                                <button id="btn-pick-location" title="Pick location on map"
                                     style="padding: 8px; background: white; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
                                         stroke="var(--text-main)" stroke-width="2">
@@ -334,8 +605,8 @@
                                 </button>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button id="btn-save-edit" class="btn-action-fill"><span>저장</span></button>
-                                <button id="btn-cancel-edit" class="btn-cancel-small">취소</button>
+                                <button id="btn-save-edit" class="btn-action-fill"><span>Save</span></button>
+                                <button id="btn-cancel-edit" class="btn-cancel-small">Cancel</button>
                             </div>
                         </div>
 
@@ -366,7 +637,7 @@
                         <hr class="serif-hr" style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
 
                         <!-- NEW: Comments Section -->
-                        <div class="comments-section">
+                        <div class="comments-section mvp-deferred">
                             <h3>Comments</h3>
                             <div id="comments-list" class="comments-list"></div>
                             <div class="comment-input-group">
@@ -388,17 +659,19 @@
                         </svg>
                         Back
                     </button>
-                    <div style="font-weight: 600; font-size: 16px;" id="profile-page-title">Profile</div>
+                    <div style="font-weight: 600; font-size: 16px;" id="profile-page-title">Public Profile</div>
                     <div style="width: 60px;"></div>
                 </header>
                 <div class="profile-page-content" style="overflow-y: auto; height: calc(100vh - 65px);">
                     <div class="profile-page-header"
                         style="padding: 30px 20px; text-align: center; border-bottom: 1px solid var(--border-color);">
+                        <p class="home-kicker profile-kicker">Map View Profile</p>
                         <div id="profile-page-avatar" class="profile-avatar-large"
                             style="margin: 0 auto 16px; width: 80px; height: 80px;"></div>
                         <h2 id="profile-page-nickname"
                             style="margin: 0 0 8px; font-size: 24px; color: var(--text-main);"></h2>
-                        <div
+                        <p id="profile-page-subtitle" class="profile-page-subtitle">A map-first archive of public travel memories.</p>
+                        <div class="profile-page-stats"
                             style="display: flex; justify-content: center; gap: 20px; color: var(--text-muted); font-size: 14px;">
                             <div><strong id="profile-page-story-count"
                                     style="color: var(--text-main); font-size: 16px;">0</strong> Stories</div>
@@ -409,13 +682,13 @@
                     <div class="profile-gallery-filter"
                         style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: #fff;">
                         <div id="profile-view-toggle" style="display: flex; background: #f1f5f9; padding: 4px; border-radius: 20px;">
-                            <button id="btn-view-photos" class="active" style="padding: 6px 16px; border-radius: 16px; border: none; background: white; color: var(--text-main); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s;">모든 사진</button>
-                            <button id="btn-view-albums" style="padding: 6px 16px; border-radius: 16px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: none; transition: all 0.2s;">앨범</button>
+                            <button id="btn-view-photos" class="active" style="padding: 6px 16px; border-radius: 16px; border: none; background: white; color: var(--text-main); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s;">Map View</button>
+                            <button id="btn-view-albums" style="padding: 6px 16px; border-radius: 16px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: none; transition: all 0.2s;">Albums</button>
                         </div>
                         <select id="profile-gallery-sort"
                             style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border-color); outline: none; font-size: 13px; color: var(--text-main); cursor: pointer; background: #fafafa;">
-                            <option value="latest">최신순</option>
-                            <option value="likes">좋아요순</option>
+                            <option value="latest">Latest</option>
+                            <option value="likes">Most liked</option>
                         </select>
                     </div>
                     <div id="profile-gallery-grid" class="profile-gallery"
@@ -428,7 +701,7 @@
         <!-- Main Interactive Map -->
         <div id="map-container">
             <div id="map"></div>
-            <button id="sidebar-toggle" class="map-overlay-btn">◀</button>
+            <button id="sidebar-toggle" class="map-overlay-btn">←</button>
 
             <!-- Map Picker Guide (Shown when pinning location) -->
             <div id="map-picker-guide">
@@ -444,34 +717,34 @@
         <div id="login-modal-overlay" class="login-modal-overlay hidden">
             <div class="login-container">
                 <div class="login-card">
-                    <button id="btn-close-login" class="btn-close-login">✕</button>
+                    <button id="btn-close-login" class="btn-close-login">?</button>
                     <div class="login-brand">
                         <h1 class="logo">Ikkyee</h1>
                         <p class="tagline">Archive your moments, Map your journey.</p>
                     </div>
 
                     <div class="auth-tabs">
-                        <button id="tab-login" class="auth-tab active" type="button">로그인</button>
-                        <button id="tab-signup" class="auth-tab" type="button">회원가입</button>
+                        <button id="tab-login" class="auth-tab active" type="button">Login</button>
+                        <button id="tab-signup" class="auth-tab" type="button">Sign up</button>
                     </div>
 
                     <div id="auth-message" class="auth-message"></div>
 
                     <form id="auth-form" class="auth-form" autocomplete="on">
                         <div class="form-group">
-                            <label for="email-input">이메일</label>
+                            <label for="email-input">Email</label>
                             <input type="email" id="email-input" placeholder="email@example.com" required
                                 autocomplete="email">
                         </div>
                         <div class="form-group">
-                            <label for="password-input">비밀번호</label>
-                            <input type="password" id="password-input" placeholder="6자 이상 입력" required minlength="6"
+                            <label for="password-input">Password</label>
+                            <input type="password" id="password-input" placeholder="Enter at least 6 characters" required minlength="6"
                                 autocomplete="current-password">
                         </div>
-                        <button id="btn-submit" class="btn-submit" type="submit">로그인</button>
+                        <button id="btn-submit" class="btn-submit" type="submit">Login</button>
                     </form>
 
-                    <div class="divider">또는</div>
+                    <div class="divider">or</div>
 
                     <div class="social-buttons">
                         <button id="btn-google" class="btn-social btn-google" type="button">
@@ -489,12 +762,13 @@
                                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                                     fill="#EA4335" />
                             </svg>
-                            Google로 계속하기
+                            Continue with Google
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
 
         <!-- Notification Toasts -->
         <div id="toast-container" class="toast-container"></div>
@@ -524,8 +798,9 @@
         <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
         <!-- Supabase SDK (CDN) -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-        <!-- 앱 모듈 진입점 (auth.js는 app.js에서 import됨) -->
+        <!-- ES module entry point -->
         <script type="module" src="/js/app.js"></script>
 </body>
 
 </html>
+

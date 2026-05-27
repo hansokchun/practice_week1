@@ -1,3 +1,8 @@
+import { APP_SECTIONS } from './app-sections.mjs';
+import { createPageStateSnapshot, normalizeSavedPageState } from './page-state.mjs';
+
+export { createPageStateSnapshot, normalizeSavedPageState } from './page-state.mjs';
+
 /**
  * state.js — 앱 전역 상태 객체와 UI DOM 참조를 생성
  * 왜 분리: state와 ui는 모든 모듈이 공유하는 핵심 데이터이므로
@@ -10,6 +15,7 @@ export function createState(currentUser) {
         photos: [],
         sharedPhotos: [],
         myLikedIds: [],
+        appSection: APP_SECTIONS.HOME,
         viewMode: 'my',           // 'my' | 'shared'
         showOnlyLiked: false,
         activeDate: 'all',
@@ -42,24 +48,54 @@ export function createUI() {
         toggleBtn: document.getElementById('sidebar-toggle'),
         grid: document.getElementById('grid-container'),
         dateChips: document.getElementById('date-chips'),
+        appShell: document.getElementById('app-shell'),
+        appNav: document.getElementById('app-nav'),
+        navHome: document.getElementById('nav-home'),
+        navMyphoto: document.getElementById('nav-myphoto'),
+        navExplore: document.getElementById('nav-explore'),
+        panelHome: document.getElementById('panel-home'),
+        btnHomeStart: document.getElementById('btn-home-start'),
+        btnHomeExplore: document.getElementById('btn-home-explore'),
         
         panelExplore: document.getElementById('panel-explore'),
+        panelUpload: document.getElementById('panel-upload'),
         panelDetail: document.getElementById('panel-detail'),
+        panelShareSettings: document.getElementById('panel-share-settings'),
+        panelAlbumReview: document.getElementById('panel-album-review'),
+        panelPublicTrip: document.getElementById('panel-public-trip'),
 
         // 피드 전환 버튼
         btnMyFeed: document.getElementById('btn-my-feed'),
         btnSharedFeed: document.getElementById('btn-shared-feed'),
         btnFilterLiked: document.getElementById('filter-liked'),
+        btnOpenUpload: document.getElementById('btn-open-upload'),
+        btnUploadBack: document.getElementById('btn-upload-back'),
+        btnUploadChoose: document.getElementById('btn-upload-choose'),
+        uploadStartState: document.getElementById('upload-start-state'),
+        uploadCompleteState: document.getElementById('upload-complete-state'),
+        uploadCompleteCopy: document.getElementById('upload-complete-copy'),
+        uploadCompleteGrid: document.getElementById('upload-complete-grid'),
+        uploadResultTotal: document.getElementById('upload-result-total'),
+        uploadResultSuccess: document.getElementById('upload-result-success'),
+        uploadResultLocation: document.getElementById('upload-result-location'),
+        uploadResultErrors: document.getElementById('upload-result-errors'),
+        btnUploadReviewMap: document.getElementById('btn-upload-review-map'),
+        btnUploadAnother: document.getElementById('btn-upload-another'),
         uploadInput: document.getElementById('upload-input'),
         searchInput: document.getElementById('search-input'),
         communitySort: document.getElementById('community-sort'),
         btnGridDensity: document.getElementById('btn-grid-density'),
+        reviewSummaryVisible: document.getElementById('review-summary-visible'),
+        reviewSummaryMapped: document.getElementById('review-summary-mapped'),
+        reviewSummaryPublic: document.getElementById('review-summary-public'),
         
         // 유저 프로필 패널
         panelUserProfile: document.getElementById('panel-user-profile'),
         btnBackProfileFeed: document.getElementById('btn-back-profile-feed'),
+        profilePageTitle: document.getElementById('profile-page-title'),
         profilePageAvatar: document.getElementById('profile-page-avatar'),
         profilePageNickname: document.getElementById('profile-page-nickname'),
+        profilePageSubtitle: document.getElementById('profile-page-subtitle'),
         profilePageStoryCount: document.getElementById('profile-page-story-count'),
         profilePageLikeCount: document.getElementById('profile-page-like-count'),
         profileGalleryHeader: document.getElementById('profile-gallery-header'),
@@ -78,6 +114,8 @@ export function createUI() {
         detailImg: document.getElementById('detail-image'),
         detailDate: document.getElementById('detail-date'),
         detailCoordinates: document.querySelector('#detail-coordinates span'),
+        selectedPinTitle: document.getElementById('selected-pin-title'),
+        selectedPinMeta: document.getElementById('selected-pin-meta'),
         detailTitleText: document.getElementById('detail-title-text'),
         detailAlbumBadge: document.getElementById('detail-album-badge'),
         editTitleInput: document.getElementById('edit-title-input'),
@@ -92,6 +130,30 @@ export function createUI() {
         btnCancelEdit: document.getElementById('btn-cancel-edit'),
         detailLikeBtn: document.getElementById('detail-like-btn'),
         detailShareBtn: document.getElementById('detail-share-btn'),
+        btnShareSettingsBack: document.getElementById('btn-share-settings-back'),
+        shareSettingsStatus: document.getElementById('share-settings-status'),
+        btnSharePrivate: document.getElementById('btn-share-private'),
+        btnSharePublic: document.getElementById('btn-share-public'),
+        btnAlbumReviewBack: document.getElementById('btn-album-review-back'),
+        albumReviewTitle: document.getElementById('album-review-title'),
+        albumReviewCopy: document.getElementById('album-review-copy'),
+        albumReviewName: document.getElementById('album-review-name'),
+        albumReviewCount: document.getElementById('album-review-count'),
+        albumReviewStatus: document.getElementById('album-review-status'),
+        albumReviewMapStatus: document.getElementById('album-review-map-status'),
+        albumReviewTripStatus: document.getElementById('album-review-trip-status'),
+        btnAlbumReviewAdd: document.getElementById('btn-album-review-add'),
+        btnAlbumReviewOpen: document.getElementById('btn-album-review-open'),
+        btnAlbumReviewTrip: document.getElementById('btn-album-review-trip'),
+        btnPublicTripBack: document.getElementById('btn-public-trip-back'),
+        publicTripTitle: document.getElementById('public-trip-title'),
+        publicTripCopy: document.getElementById('public-trip-copy'),
+        publicTripCount: document.getElementById('public-trip-count'),
+        publicTripPlaces: document.getElementById('public-trip-places'),
+        publicTripRange: document.getElementById('public-trip-range'),
+        publicTripStatus: document.getElementById('public-trip-status'),
+        publicTripRoute: document.getElementById('public-trip-route'),
+        publicTripGrid: document.getElementById('public-trip-grid'),
         btnSaveEdit: document.getElementById('btn-save-edit'),
         likeCountBadge: document.getElementById('like-count-badge'),
 
@@ -113,20 +175,30 @@ export function createUI() {
  * 두 패널이 동시에 active 상태가 되어 겹쳐 보이는 버그 발생
  */
 export function deactivateAllPanels(ui) {
+    if (ui.panelHome) ui.panelHome.classList.remove('active');
     ui.panelExplore.classList.remove('active');
+    if (ui.panelUpload) ui.panelUpload.classList.remove('active');
     ui.panelDetail.classList.remove('active');
+    if (ui.panelShareSettings) ui.panelShareSettings.classList.remove('active');
+    if (ui.panelAlbumReview) ui.panelAlbumReview.classList.remove('active');
+    if (ui.panelPublicTrip) ui.panelPublicTrip.classList.remove('active');
     if (ui.panelUserProfile) ui.panelUserProfile.classList.remove('active');
 }
 
 /**
  * 지정된 패널만 활성화 (다른 패널은 모두 비활성화됨)
- * @param {'explore' | 'detail' | 'profile'} panelName
+ * @param {'home' | 'explore' | 'upload' | 'detail' | 'share' | 'albumReview' | 'publicTrip' | 'profile'} panelName
  */
 export function activatePanel(ui, panelName) {
     deactivateAllPanels(ui);
     switch (panelName) {
+        case 'home': if (ui.panelHome) ui.panelHome.classList.add('active'); break;
         case 'explore': ui.panelExplore.classList.add('active'); break;
+        case 'upload': if (ui.panelUpload) ui.panelUpload.classList.add('active'); break;
         case 'detail':  ui.panelDetail.classList.add('active'); break;
+        case 'share': if (ui.panelShareSettings) ui.panelShareSettings.classList.add('active'); break;
+        case 'albumReview': if (ui.panelAlbumReview) ui.panelAlbumReview.classList.add('active'); break;
+        case 'publicTrip': if (ui.panelPublicTrip) ui.panelPublicTrip.classList.add('active'); break;
         case 'profile': if (ui.panelUserProfile) ui.panelUserProfile.classList.add('active'); break;
     }
 }
@@ -140,16 +212,7 @@ const PAGE_STATE_KEY = 'travelgram_page_state';
  * 왜 sessionStorage: 탭을 닫으면 자동 삭제됨 (localStorage와 달리 영구 보관 안 함)
  */
 export function savePageState(state) {
-    const snapshot = {
-        viewMode: state.viewMode,
-        targetUserId: state.targetUserId,
-        profileViewMode: state.profileViewMode,
-        activeAlbum: state.activeAlbum,
-        // 상세 보기 중인 사진 ID
-        currentPhotoId: state.currentPhoto?.id || null,
-        // 닉네임 (프로필 복원용)
-        targetNickname: state._targetNickname || null
-    };
+    const snapshot = createPageStateSnapshot(state);
     try {
         sessionStorage.setItem(PAGE_STATE_KEY, JSON.stringify(snapshot));
     } catch (e) {
@@ -164,7 +227,7 @@ export function savePageState(state) {
 export function loadPageState() {
     try {
         const raw = sessionStorage.getItem(PAGE_STATE_KEY);
-        return raw ? JSON.parse(raw) : null;
+        return raw ? normalizeSavedPageState(JSON.parse(raw)) : null;
     } catch (e) {
         return null;
     }

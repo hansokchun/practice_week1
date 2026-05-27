@@ -6,6 +6,8 @@ import { refreshMapSize, panToVisible } from './map.js';
 import { activatePanel, savePageState } from './state.js';
 import { getUserFallbackName } from './profile-names.mjs';
 
+const COMMENTS_ENABLED = false;
+
 export function initDetail({ state, ui, map, clusterGroup, profileNameResolver }, { renderAll, showToast, syncData, openProfilePage }) {
 
     async function showDetail(p) {
@@ -36,6 +38,14 @@ export function initDetail({ state, ui, map, clusterGroup, profileNameResolver }
         ui.detailCoordinates.textContent = (p.lat && p.lng)
             ? `${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}`
             : '위치 정보 없음';
+
+        if (ui.selectedPinTitle) {
+            ui.selectedPinTitle.textContent = p.description || p.album || 'Selected memory';
+        }
+        if (ui.selectedPinMeta) {
+            const coordinateText = (p.lat && p.lng) ? `${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}` : 'No location';
+            ui.selectedPinMeta.textContent = `${p.date || 'Undated'} · ${coordinateText}`;
+        }
 
         const isMyPhoto = state.currentUser && p.owner_id === state.currentUser.id;
         
@@ -178,7 +188,12 @@ export function initDetail({ state, ui, map, clusterGroup, profileNameResolver }
         map.setView([p.lat, p.lng], 14);
         refreshMapSize(map);
         window.history.replaceState(null, null, `#${p.id}`);
-        loadComments(p.id);
+        if (COMMENTS_ENABLED) {
+            loadComments(p.id);
+        } else if (ui.commentsList) {
+            ui.commentsList.innerHTML = '';
+        }
+        savePageState(state);
         // 새로고침 복원용 상태 저장
         savePageState(state);
     }
@@ -221,6 +236,7 @@ export function initDetail({ state, ui, map, clusterGroup, profileNameResolver }
     }
 
     const handlePostComment = async () => {
+        if (!COMMENTS_ENABLED) return;
         if (!state.currentUser) { showToast("로그인이 필요합니다.", "warning"); return; }
         const text = ui.commentInput.value.trim();
         if (!text || !state.currentPhoto) return;
@@ -242,10 +258,15 @@ export function initDetail({ state, ui, map, clusterGroup, profileNameResolver }
         }
     };
 
-    ui.btnSendComment.onclick = handlePostComment;
-    ui.commentInput.onkeydown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handlePostComment(); }
-    };
+    if (COMMENTS_ENABLED) {
+        ui.btnSendComment.onclick = handlePostComment;
+        ui.commentInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handlePostComment(); }
+        };
+    } else {
+        ui.btnSendComment.onclick = null;
+        ui.commentInput.onkeydown = null;
+    }
 
     function closeDetail() {
         ui.panelDetail.classList.remove('active');

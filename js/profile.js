@@ -6,8 +6,176 @@ import { activatePanel, savePageState } from './state.js';
 import { getUserFallbackName } from './profile-names.mjs';
 
 export function initProfile({ state, ui, map, profileNameResolver }, { showDetail, renderAll, showToast, syncData }) {
+    let renderCurrentProfileGallery = null;
+    let lastProfileUserId = null;
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]);
+    }
+
+    function getCurrentAlbumPhotos(albumName) {
+        const photoPool = (state.currentUser && lastProfileUserId === state.currentUser.id) ? state.photos : state.sharedPhotos;
+        return photoPool.filter((p) => p.owner_id === lastProfileUserId && (p.album ? p.album.trim() : '') === albumName);
+    }
+
+    function formatTripRange(photos) {
+        const dates = photos
+            .map((p) => String(p.date || p.created_at || '').slice(0, 10))
+            .filter(Boolean)
+            .sort();
+        if (!dates.length) return 'Draft';
+        if (dates[0] === dates[dates.length - 1]) return dates[0];
+        return `${dates[0]} - ${dates[dates.length - 1]}`;
+    }
+
+    function showPublicTrip(albumName) {
+        if (!albumName) return;
+        const albumPhotos = getCurrentAlbumPhotos(albumName)
+            .slice()
+            .sort((a, b) => String(a.date || a.created_at || '').localeCompare(String(b.date || b.created_at || '')));
+        const isPublic = albumPhotos.length > 0 && albumPhotos.every((p) => p.shared);
+        const routeStops = albumPhotos.filter((p) => p.lat && p.lng).length;
+        const tripRange = formatTripRange(albumPhotos);
+
+        state.activeAlbum = albumName;
+        state.profileViewMode = 'albums';
+        if (ui.publicTripTitle) ui.publicTripTitle.textContent = albumName;
+        if (ui.publicTripCopy) {
+            ui.publicTripCopy.textContent = albumPhotos.length
+                ? 'A public-facing route page generated from this album.'
+                : 'This trip page is ready, but it needs photos before it can tell a route.';
+        }
+        if (ui.publicTripCount) ui.publicTripCount.textContent = String(albumPhotos.length);
+        if (ui.publicTripPlaces) ui.publicTripPlaces.textContent = String(routeStops);
+        if (ui.publicTripRange) ui.publicTripRange.textContent = tripRange;
+        if (ui.publicTripStatus) ui.publicTripStatus.textContent = isPublic ? 'Public' : 'Private Draft';
+        if (ui.publicTripRoute) {
+            ui.publicTripRoute.innerHTML = albumPhotos.length
+                ? albumPhotos.slice(0, 6).map((p, index) => {
+                    const label = p.description || p.date || `Stop ${index + 1}`;
+                    const meta = p.lat && p.lng ? `${Number(p.lat).toFixed(3)}, ${Number(p.lng).toFixed(3)}` : 'Location to review';
+                    return `
+                        <div class="public-trip-route-stop">
+                            <b>${index + 1}</b>
+                            <span><strong>${escapeHtml(label)}</strong><em>${escapeHtml(meta)}</em></span>
+                        </div>
+                    `;
+                }).join('')
+                : '<div class="archive-empty-state"><strong>No route yet.</strong><span>Add photos to build this trip path.</span></div>';
+        }
+        if (ui.publicTripGrid) {
+            ui.publicTripGrid.innerHTML = albumPhotos.length
+                ? albumPhotos.map((p) => {
+                    const thumb = p.url ? p.url.replace('_detail.jpg', '_grid.jpg') : '';
+                    const title = p.description || p.date || 'Trip memory';
+                    return `
+                        <button class="public-trip-card" type="button" data-photo-id="${escapeHtml(p.id)}">
+                            <img src="${escapeHtml(thumb || p.url || '')}" alt="${escapeHtml(title)}" loading="lazy">
+                            <span>${escapeHtml(title)}</span>
+                        </button>
+                    `;
+                }).join('')
+                : '<div class="archive-empty-state"><strong>No photos yet.</strong><span>Add photos to turn this album into a route.</span></div>';
+            ui.publicTripGrid.querySelectorAll('[data-photo-id]').forEach((button) => {
+                button.onclick = () => {
+                    const photo = albumPhotos.find((p) => String(p.id) === button.dataset.photoId);
+                    if (photo) showDetail(photo);
+                };
+            });
+        }
+        if (ui.btnPublicTripBack) {
+            ui.btnPublicTripBack.onclick = () => {
+                activatePanel(ui, 'profile');
+                if (renderCurrentProfileGallery) renderCurrentProfileGallery();
+                renderAll();
+            };
+        }
+        activatePanel(ui, 'publicTrip');
+        renderAll();
+        savePageState(state);
+    }
+
+    function showAlbumReview(albumName, options = {}) {
+        if (!albumName) return;
+        const albumPhotos = getCurrentAlbumPhotos(albumName);
+        const isPublic = albumPhotos.length > 0 && albumPhotos.every((p) => p.shared);
+        if (ui.albumReviewTitle) ui.albumReviewTitle.textContent = options.isNew ? 'Album is ready for review.' : 'Review this album before sharing.';
+        if (ui.albumReviewCopy) {
+            ui.albumReviewCopy.textContent = options.isNew
+                ? 'Add photos now, or open the empty album and build it from your archive.'
+                : 'Check the photo count and visibility before you publish or continue editing.';
+        }
+        if (ui.albumReviewName) ui.albumReviewName.textContent = albumName;
+        if (ui.albumReviewCount) ui.albumReviewCount.textContent = String(albumPhotos.length);
+        if (ui.albumReviewStatus) ui.albumReviewStatus.textContent = isPublic ? 'Public' : 'Private';
+        if (ui.albumReviewMapStatus) {
+            const mappedCount = albumPhotos.filter((p) => p.lat && p.lng).length;
+            ui.albumReviewMapStatus.textContent = albumPhotos.length ? `${mappedCount}/${albumPhotos.length} mapped` : 'Needs photos';
+        }
+        if (ui.albumReviewTripStatus) {
+            ui.albumReviewTripStatus.textContent = albumPhotos.length ? 'Preview available' : 'Draft ready';
+        }
+        if (ui.btnAlbumReviewBack) ui.btnAlbumReviewBack.onclick = () => {
+            activatePanel(ui, 'profile');
+            if (renderCurrentProfileGallery) renderCurrentProfileGallery();
+            renderAll();
+        };
+        if (ui.btnAlbumReviewAdd) ui.btnAlbumReviewAdd.onclick = () => {
+            state.activeAlbum = albumName;
+            state.profileViewMode = 'albums';
+            state.isSelectingPhotos = true;
+            state.selectedPhotosForAlbum = [];
+            activatePanel(ui, 'profile');
+            updateProfileViewButtons();
+            if (renderCurrentProfileGallery) renderCurrentProfileGallery();
+            renderAll();
+            savePageState(state);
+        };
+        if (ui.btnAlbumReviewOpen) ui.btnAlbumReviewOpen.onclick = () => {
+            state.activeAlbum = albumName;
+            state.profileViewMode = 'albums';
+            activatePanel(ui, 'profile');
+            updateProfileViewButtons();
+            if (renderCurrentProfileGallery) renderCurrentProfileGallery();
+            renderAll();
+            savePageState(state);
+        };
+        if (ui.btnAlbumReviewTrip) ui.btnAlbumReviewTrip.onclick = () => showPublicTrip(albumName);
+        activatePanel(ui, 'albumReview');
+        renderAll();
+    }
+
+    const updateProfileViewButtons = () => {
+        if (!ui.btnViewPhotos || !ui.btnViewAlbums) return;
+
+        const isAlbums = state.profileViewMode === 'albums';
+        ui.btnViewPhotos.classList.toggle('active', !isAlbums);
+        ui.btnViewPhotos.style.background = isAlbums ? 'transparent' : 'var(--primary-color)';
+        ui.btnViewPhotos.style.color = isAlbums ? 'var(--text-muted)' : '#ffffff';
+        ui.btnViewPhotos.style.boxShadow = isAlbums ? 'none' : '0 8px 18px rgba(26,77,78,0.16)';
+        ui.btnViewAlbums.classList.toggle('active', isAlbums);
+        ui.btnViewAlbums.style.background = isAlbums ? 'var(--primary-color)' : 'transparent';
+        ui.btnViewAlbums.style.color = isAlbums ? '#ffffff' : 'var(--text-muted)';
+        ui.btnViewAlbums.style.boxShadow = isAlbums ? '0 8px 18px rgba(26,77,78,0.16)' : 'none';
+    };
+
+    function restoreProfileGallery({ profileViewMode, activeAlbum } = {}) {
+        if (profileViewMode) state.profileViewMode = profileViewMode;
+        state.activeAlbum = activeAlbum || null;
+        updateProfileViewButtons();
+        if (renderCurrentProfileGallery) renderCurrentProfileGallery();
+        renderAll();
+        savePageState(state);
+    }
 
     function openProfilePage(userId, nickname) {
+        lastProfileUserId = userId;
         const displayName = nickname || getUserFallbackName(userId);
         state.profileReturnTo = ui.panelDetail.classList.contains('active') ? 'detail' : 'explore';
         state.profileReturnToPhoto = state.currentPhoto;
@@ -26,8 +194,15 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
         const photoPool = (state.currentUser && userId === state.currentUser.id) ? state.photos : state.sharedPhotos;
         const userPhotos = photoPool.filter(p => p.owner_id === userId);
         const totalLikes = userPhotos.reduce((sum, p) => sum + (p.liked || 0), 0);
+        const isOwnProfilePage = state.currentUser && userId === state.currentUser.id;
 
+        if (ui.profilePageTitle) ui.profilePageTitle.textContent = isOwnProfilePage ? 'My Public Profile' : 'Public Profile';
         if (ui.profilePageNickname) ui.profilePageNickname.textContent = displayName;
+        if (ui.profilePageSubtitle) {
+            ui.profilePageSubtitle.textContent = isOwnProfilePage
+                ? 'Your public-facing map view and albums. Private memories stay in Myphoto.'
+                : 'A map-first archive of public travel memories and published albums.';
+        }
         if (profileNameResolver) {
             profileNameResolver.resolve(userId, displayName).then((resolvedName) => {
                 if (state.targetUserId === userId) {
@@ -153,7 +328,7 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
                     const albumPhotos = albumGroups[state.activeAlbum] || [];
                     const isAlbumShared = albumPhotos.length > 0 && albumPhotos.every(p => p.shared);
                     const headerItem = document.createElement('div');
-                    headerItem.style.cssText = 'padding:16px; background:#f8fafc; border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:10px;';
+                    headerItem.className = 'profile-album-header';
                     
                     if (isOwnProfile) {
                         // 소유자: 뒤로, 추가, 공유 버튼
@@ -281,6 +456,17 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
                         };
                         item.querySelector('.album-info').onclick = openAlbum;
                         if (coverPhoto) item.querySelector('img').onclick = openAlbum;
+                        if (isOwnProfile) {
+                            const tripBtn = document.createElement('button');
+                            tripBtn.type = 'button';
+                            tripBtn.className = 'btn-preview-trip-folder';
+                            tripBtn.textContent = 'Trip';
+                            tripBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                showPublicTrip(albumName);
+                            };
+                            item.appendChild(tripBtn);
+                        }
 
                         // 소유자 전용: 앨범 삭제
                         if (isOwnProfile) {
@@ -306,8 +492,7 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
                     // 소유자 전용: "새 앨범 만들기" 버튼
                     if (isOwnProfile) {
                         const createItem = document.createElement('div');
-                        createItem.className = 'profile-album-folder';
-                        createItem.style.cssText = 'background:#f8fafc; border:2px dashed var(--border-color); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted); cursor:pointer;';
+                        createItem.className = 'profile-album-folder profile-album-create';
                         createItem.innerHTML = `<div style="font-size:32px; margin-bottom:8px;">+</div><div style="font-size:14px; font-weight:600;">새 앨범 만들기</div>`;
                         createItem.onclick = async () => {
                             const newName = prompt('새 앨범 이름을 입력하세요:');
@@ -316,7 +501,14 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
                                 const currentCustomAlbums = state.currentUser?.user_metadata?.customAlbums || [];
                                 if (!currentCustomAlbums.includes(trimmedName)) {
                                     const { user, error } = await updateUserMetadata({ customAlbums: [...currentCustomAlbums, trimmedName] });
-                                    if (!error) { state.currentUser.user_metadata = user.user_metadata; renderGallery(); }
+                                    if (!error) {
+                                        state.currentUser.user_metadata = user.user_metadata;
+                                        state.profileViewMode = 'albums';
+                                        state.activeAlbum = trimmedName;
+                                        renderGallery();
+                                        savePageState(state);
+                                        showAlbumReview(trimmedName, { isNew: true });
+                                    }
                                     else alert('앨범 생성 중 오류가 발생했습니다.');
                                 }
                             }
@@ -337,17 +529,16 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
             }
         };
 
+        renderCurrentProfileGallery = renderGallery;
         renderGallery();
+        updateProfileViewButtons();
 
         // 사진/앨범 탭 전환
         if (ui.btnViewPhotos && ui.btnViewAlbums) {
             ui.btnViewPhotos.onclick = () => {
                 state.profileViewMode = 'photos';
                 state.activeAlbum = null;
-                ui.btnViewPhotos.classList.add('active');
-                ui.btnViewPhotos.style.cssText += 'background:white; color:var(--text-main); box-shadow:0 1px 3px rgba(0,0,0,0.1);';
-                ui.btnViewAlbums.classList.remove('active');
-                ui.btnViewAlbums.style.cssText += 'background:transparent; color:var(--text-muted); box-shadow:none;';
+                updateProfileViewButtons();
                 renderGallery();
                 renderAll();
                 savePageState(state);
@@ -355,10 +546,7 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
             ui.btnViewAlbums.onclick = () => {
                 state.profileViewMode = 'albums';
                 state.activeAlbum = null;
-                ui.btnViewAlbums.classList.add('active');
-                ui.btnViewAlbums.style.cssText += 'background:white; color:var(--text-main); box-shadow:0 1px 3px rgba(0,0,0,0.1);';
-                ui.btnViewPhotos.classList.remove('active');
-                ui.btnViewPhotos.style.cssText += 'background:transparent; color:var(--text-muted); box-shadow:none;';
+                updateProfileViewButtons();
                 renderGallery();
                 renderAll();
                 savePageState(state);
@@ -398,5 +586,5 @@ export function initProfile({ state, ui, map, profileNameResolver }, { showDetai
     // 전역 접근 가능하게 (auth-guard에서 참조)
     window.openProfilePage = openProfilePage;
 
-    return { openProfilePage };
+    return { openProfilePage, restoreProfileGallery };
 }

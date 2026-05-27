@@ -3,12 +3,23 @@
  * 왜 분리: renderAll은 앱의 핵심 렌더링 엔진으로, 다른 모든 모듈에서 호출됨
  */
 import { fetchPhotos, fetchMyLikes } from '../auth.js';
+import { APP_SECTIONS } from './app-sections.mjs';
 
 /**
  * 렌더링 관련 함수들을 초기화하고 반환
  * @returns {{ showToast, syncData, renderAll, renderDateChips }}
  */
 export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]);
+    }
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -21,6 +32,18 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
             toast.classList.add('fade-out');
             setTimeout(() => toast.remove(), 400);
         }, 3000);
+    }
+
+    function getDateKey(photo) {
+        return String(photo?.date || photo?.created_at || '').slice(0, 10) || 'undated';
+    }
+
+    function formatDateLabel(dateKey) {
+        if (dateKey === 'all') return 'All Dates';
+        if (dateKey === 'undated') return 'Undated';
+        const date = new Date(`${dateKey}T00:00:00`);
+        if (Number.isNaN(date.getTime())) return dateKey;
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
     async function syncData() {
@@ -49,22 +72,56 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
         }
     }
 
-    function renderDateChips() {
-        ui.dateChips.style.display = 'none';
+    function renderDateChips(sourceList = []) {
+        if (!ui.dateChips) return;
+        const dateKeys = [...new Set(sourceList.map(getDateKey))]
+            .sort((a, b) => b.localeCompare(a))
+            .slice(0, 12);
+        ui.dateChips.style.display = dateKeys.length ? 'flex' : 'none';
+        ui.dateChips.innerHTML = [
+            `<button class="chip ${state.activeDate === 'all' ? 'active' : ''}" data-date="all">All Dates</button>`,
+            ...dateKeys.map((dateKey) => (
+                `<button class="chip ${state.activeDate === dateKey ? 'active' : ''}" data-date="${escapeHtml(dateKey)}">${escapeHtml(formatDateLabel(dateKey))}</button>`
+            ))
+        ].join('');
     }
 
     function renderAll(filterDate = 'all') {
         state.activeDate = filterDate;
+
+        if (state.appSection === APP_SECTIONS.HOME) {
+            if (ui.grid) ui.grid.innerHTML = '';
+            if (ui.dateChips) ui.dateChips.innerHTML = '';
+            if (clusterGroup) clusterGroup.clearLayers();
+            if (state.routePolyline) {
+                if (!map.hasLayer || map.hasLayer(state.routePolyline)) {
+                    map.removeLayer(state.routePolyline);
+                }
+                state.routePolyline = null;
+            }
+            if (state.currentMarker) {
+                if (!map.hasLayer || map.hasLayer(state.currentMarker)) {
+                    map.removeLayer(state.currentMarker);
+                }
+                state.currentMarker = null;
+            }
+            if (ui.btnMyFeed) ui.btnMyFeed.classList.remove('active');
+            if (ui.btnSharedFeed) ui.btnSharedFeed.classList.remove('active');
+            return;
+        }
+
         const isMyView = state.viewMode === 'my';
         const isUserView = state.viewMode === 'user';
         
         // 1. 사이드바 메인 그리드용 리스트
-        let gridList = (isMyView 
+        const gridSource = (isMyView 
             ? state.photos.filter(p => state.currentUser && p.owner_id === state.currentUser.id) 
             : state.sharedPhotos)
             .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
-            .filter(p => filterDate === 'all' || p.date === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()));
+        renderDateChips(gridSource);
+        let gridList = gridSource
+            .filter(p => filterDate === 'all' || getDateKey(p) === filterDate);
 
         // 2. 지도 표시용 리스트 — 사이드바에 보이는 사진만 지도에 핀으로 표시
         // 왜: 사이드바와 지도가 같은 콘텐츠를 보여줘야 사용자가 혼란스럽지 않음
@@ -86,7 +143,7 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
         const mapList = baseMapList
             .filter(p => p.lat && p.lng)
             .filter(p => !state.showOnlyLiked || state.myLikedIds.includes(p.id.toString()))
-            .filter(p => filterDate === 'all' || p.date === filterDate)
+            .filter(p => filterDate === 'all' || getDateKey(p) === filterDate)
             .filter(p => !state.searchQuery || (p.description || '').toLowerCase().includes(state.searchQuery.toLowerCase()))
             .filter(p => {
                 if (state.profileViewMode === 'albums' && state.activeAlbum) {
@@ -96,6 +153,10 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
             });
 
         // 지도 렌더링
+        if (ui.reviewSummaryVisible) ui.reviewSummaryVisible.textContent = String(gridList.length);
+        if (ui.reviewSummaryMapped) ui.reviewSummaryMapped.textContent = String(mapList.length);
+        if (ui.reviewSummaryPublic) ui.reviewSummaryPublic.textContent = String(gridList.filter((p) => p.shared).length);
+
         clusterGroup.clearLayers();
         const bounds = L.latLngBounds();
 
@@ -170,19 +231,56 @@ export function initRender({ state, ui, map, clusterGroup }, { showDetail }) {
         ui.grid.classList.toggle('dense', state.isDenseGrid);
 
         if (gridList.length === 0) {
-            ui.grid.innerHTML = `<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No stories found.</div>`;
+            const emptyTitle = state.viewMode === 'my' ? 'Your archive is waiting.' : 'No public maps found.';
+            const emptyCopy = state.viewMode === 'my'
+                ? 'Upload travel photos to start building your private map archive.'
+                : 'Try another search or come back after more trips are shared.';
+            ui.grid.innerHTML = `
+                <div class="archive-empty-state">
+                    <strong>${emptyTitle}</strong>
+                    <span>${emptyCopy}</span>
+                </div>
+            `;
         } else {
-            const container = document.createElement('div');
-            container.className = 'grid-items-container';
-            gridList.forEach(p => {
-                const item = document.createElement('div');
-                item.className = 'grid-item';
-                const gridUrl = p.url ? p.url.replace('_detail.jpg', '_grid.jpg') : '';
-                item.innerHTML = `<img src="${gridUrl || p.url}" loading="lazy">`;
-                item.onclick = () => showDetail(p);
-                container.appendChild(item);
-            });
-            ui.grid.appendChild(container);
+            const groups = gridList.reduce((acc, photo) => {
+                const dateKey = getDateKey(photo);
+                if (!acc[dateKey]) acc[dateKey] = [];
+                acc[dateKey].push(photo);
+                return acc;
+            }, {});
+            Object.entries(groups)
+                .sort(([a], [b]) => b.localeCompare(a))
+                .forEach(([dateKey, photos]) => {
+                    const group = document.createElement('section');
+                    group.className = 'grid-group';
+                    group.innerHTML = `
+                        <div class="grid-date-header">
+                            <span>${escapeHtml(formatDateLabel(dateKey))}</span>
+                            <small>${photos.length} ${photos.length === 1 ? 'memory' : 'memories'}</small>
+                        </div>
+                    `;
+                    const container = document.createElement('div');
+                    container.className = 'grid-items-container';
+                    photos.forEach(p => {
+                        const item = document.createElement('div');
+                        item.className = 'grid-item';
+                        item.dataset.visibility = p.shared ? 'Public' : 'Private';
+                        const gridUrl = p.url ? p.url.replace('_detail.jpg', '_grid.jpg') : '';
+                        const title = p.description || (p.album ? p.album : 'Untitled memory');
+                        const date = p.date || 'Undated';
+                        item.innerHTML = `
+                            <img src="${escapeHtml(gridUrl || p.url)}" loading="lazy" alt="${escapeHtml(title)}">
+                            <div class="grid-item-meta">
+                                <strong>${escapeHtml(title)}</strong>
+                                <span>${escapeHtml(date)}</span>
+                            </div>
+                        `;
+                        item.onclick = () => showDetail(p);
+                        container.appendChild(item);
+                    });
+                    group.appendChild(container);
+                    ui.grid.appendChild(group);
+                });
         }
 
         ui.btnMyFeed.classList.toggle('active', state.viewMode === 'my');
