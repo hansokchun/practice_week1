@@ -7,6 +7,8 @@
  * 모든 페이지(index.html, login.html)에서 동일한 설정으로 재사용하기 위함.
  */
 
+import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
+
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 
@@ -459,10 +461,7 @@ export async function uploadImage(file, fileName) {
         
         const { error } = await sb.storage
             .from('photos')
-            .upload(fileName, file, {
-                contentType: file.type || 'image/jpeg',
-                upsert: true // 같은 이름이면 덮어쓰기
-            });
+            .upload(fileName, file, getStorageUploadOptions(file));
         if (error) throw error;
 
         // 업로드 성공 시 퍼블릭 URL 생성
