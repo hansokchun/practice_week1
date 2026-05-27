@@ -168,7 +168,10 @@ export async function upsertPhoto(photo) {
                 liked: Number(photo.liked || 0),
                 shared: !!photo.shared,
                 owner_id: photo.owner_id,
-                album: photo.album || null
+                album: photo.album || null,
+                album_id: photo.album_id || null,
+                visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
+                geo_source: photo.geo_source || 'unknown'
             }, { onConflict: 'id' });
         if (error) throw error;
         return { data, error: null };
@@ -312,6 +315,81 @@ export async function postComment(photoId, text, authorId) {
         return { error: null };
     } catch (error) {
         return { error };
+    }
+}
+
+export async function fetchAlbums() {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('albums')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
+export async function createAlbum(album) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('albums')
+            .insert({
+                owner_id: album.owner_id,
+                title: album.title,
+                note: album.note || '',
+                visibility: album.visibility || 'private',
+                cover_url: album.cover_url || null,
+                date_start: album.date_start || null,
+                date_end: album.date_end || null,
+                photo_count: Number(album.photo_count || 0)
+            })
+            .select('*')
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
+export async function attachPhotosToAlbum(albumId, photoIds) {
+    try {
+        const ids = [...new Set((photoIds || []).filter(Boolean))];
+        if (!albumId || ids.length === 0) return { data: [], error: null };
+        const sb = getSupabase();
+        const rows = ids.map((photoId, index) => ({
+            album_id: albumId,
+            photo_id: photoId.toString(),
+            sort_order: index
+        }));
+        const { data, error } = await sb
+            .from('album_photos')
+            .upsert(rows, { onConflict: 'album_id,photo_id' })
+            .select('*');
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
+export async function updateAlbumVisibility(albumId, visibility) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('albums')
+            .update({ visibility })
+            .eq('id', albumId)
+            .select('*')
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
     }
 }
 

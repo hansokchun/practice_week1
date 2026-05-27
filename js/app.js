@@ -1,10 +1,14 @@
 import {
+    attachPhotosToAlbum,
+    createAlbum,
+    fetchAlbums,
     fetchPhotos,
     getCurrentUser,
     signInWithEmail,
     signOut,
     signUpWithEmail,
     uploadImage,
+    updateAlbumVisibility,
     upsertPhoto
 } from '../auth.js';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
@@ -19,6 +23,8 @@ const state = {
     currentUser: null,
     stagedPhotos: [],
     savedPhotos: [],
+    savedAlbums: [],
+    lastSavedPhotoIds: [],
     albumDrafts: [],
     visibility: 'private',
     profileTab: 'map',
@@ -110,6 +116,31 @@ async function loadSavedPhotos() {
     renderSavedPhotoSurfaces();
 }
 
+async function loadSavedAlbums() {
+    const { data, error } = await fetchAlbums();
+    if (error) {
+        state.savedAlbums = [];
+        return;
+    }
+    state.savedAlbums = (data || [])
+        .filter((album) => !state.currentUser || album.owner_id === state.currentUser.id || ['public', 'link'].includes(album.visibility))
+        .map(normalizeSavedAlbum);
+    renderSavedPhotoSurfaces();
+}
+
+function normalizeSavedAlbum(album) {
+    return {
+        id: album.id,
+        title: album.title,
+        note: album.note || '',
+        visibility: album.visibility || 'private',
+        cover_url: album.cover_url,
+        owner_id: album.owner_id,
+        photo_count: Number(album.photo_count || 0),
+        created_at: album.created_at
+    };
+}
+
 function normalizeSavedPhoto(photo) {
     return {
         id: photo.id,
@@ -134,6 +165,9 @@ function renderSavedPhotoSurfaces() {
     const source = myPhotos.length ? myPhotos : [];
     const located = source.filter((photo) => photo.lat !== null && photo.lng !== null).length;
     const albums = new Set(source.map((photo) => photo.album).filter(Boolean));
+    const savedAlbums = state.currentUser
+        ? state.savedAlbums.filter((album) => album.owner_id === state.currentUser.id)
+        : [];
     const statPhoto = $('#stat-photo-count');
     const statLocated = $('#stat-located-count');
     const statMissing = $('#stat-missing-count');
@@ -143,7 +177,7 @@ function renderSavedPhotoSurfaces() {
     if (statPhoto) statPhoto.textContent = source.length ? String(source.length) : '48';
     if (statLocated) statLocated.textContent = source.length ? String(located) : '36';
     if (statMissing) statMissing.textContent = source.length ? String(source.length - located) : '12';
-    if (statAlbum) statAlbum.textContent = source.length ? String(Math.max(albums.size, 1)) : '5';
+    if (statAlbum) statAlbum.textContent = savedAlbums.length || source.length ? String(Math.max(savedAlbums.length, albums.size, 1)) : '5';
 
     if (recentGrid && source.length) {
         recentGrid.innerHTML = source.slice(0, 8).map((photo) => `
@@ -154,10 +188,29 @@ function renderSavedPhotoSurfaces() {
         `).join('');
     }
 
-    if (source.length && !state.albumDrafts.length) renderSavedAlbums(source);
+    if (savedAlbums.length && !state.albumDrafts.length) renderSavedAlbumRows(savedAlbums);
+    else if (source.length && !state.albumDrafts.length) renderSavedPhotoAlbums(source);
 }
 
-function renderSavedAlbums(photos) {
+function renderSavedAlbumRows(albums) {
+    const list = $('#album-list');
+    const summary = $('#myphoto-summary');
+    if (!list) return;
+    if (summary) summary.textContent = `${albums.reduce((sum, album) => sum + album.photo_count, 0)} photos · ${albums.length} albums`;
+    list.innerHTML = albums.map((album) => `
+        <article class="album-row">
+            <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="${escapeHtml(album.title)}">
+            <div>
+                <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${album.visibility === 'public' ? '공개' : album.visibility === 'link' ? '링크 공유' : '비공개'} · Supabase</span>
+                <strong>${escapeHtml(album.title)}</strong>
+                <p>${escapeHtml(album.note || '저장된 여행 앨범입니다.')}</p>
+                <small>${album.photo_count} Photos · Album record</small>
+            </div>
+        </article>
+    `).join('');
+}
+
+function renderSavedPhotoAlbums(photos) {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
     if (!list) return;
@@ -287,7 +340,18 @@ function setVisibilityMode(mode) {
     }
 }
 
-function saveShareSettings() {
+async function saveShareSettings() {
+    const latestOwnAlbum = state.currentUser
+        ? state.savedAlbums.find((album) => album.owner_id === state.currentUser.id)
+        : null;
+    if (latestOwnAlbum) {
+        const { data, error } = await updateAlbumVisibility(latestOwnAlbum.id, state.visibility);
+        if (!error && data) {
+            state.savedAlbums = state.savedAlbums.map((album) => (
+                album.id === data.id ? normalizeSavedAlbum(data) : album
+            ));
+        }
+    }
     const message = state.visibility === 'public'
         ? '공개 여행으로 전환했습니다.'
         : state.visibility === 'link'
@@ -428,6 +492,7 @@ async function persistStagedPhotos() {
             if (dbError) throw dbError;
             saved.push(normalizeSavedPhoto(record));
         }
+        state.lastSavedPhotoIds = saved.map((photo) => photo.id);
         state.savedPhotos = [...saved, ...state.savedPhotos.filter((photo) => photo.owner_id !== state.currentUser.id || !saved.some((next) => next.id === photo.id))];
         renderSavedPhotoSurfaces();
         if (status) status.textContent = `${saved.length}장의 사진을 저장했습니다. 다음 단계에서 앨범을 구성하세요.`;
@@ -442,7 +507,7 @@ async function persistStagedPhotos() {
     }
 }
 
-function saveAlbumDraft() {
+async function saveAlbumDraft() {
     const nameInput = $('#album-name-input');
     const noteInput = $('#album-note-input');
     const name = nameInput?.value.trim();
@@ -451,13 +516,34 @@ function saveAlbumDraft() {
         nameInput?.focus();
         return;
     }
-    state.albumDrafts.unshift({
+    const localDraft = {
         name,
         note: noteInput?.value.trim() || ''
-    });
+    };
+    state.albumDrafts.unshift(localDraft);
+
+    if (state.currentUser) {
+        const draftPhotos = getDraftPhotos();
+        const { data: album, error } = await createAlbum({
+            owner_id: state.currentUser.id,
+            title: name,
+            note: localDraft.note,
+            visibility: state.visibility,
+            cover_url: draftPhotos[0]?.url || null,
+            photo_count: state.lastSavedPhotoIds.length || state.stagedPhotos.length || getMySavedPhotos().length
+        });
+        if (error) {
+            showToast('앨범 초안은 화면에 만들었지만 DB 저장은 실패했습니다.');
+        } else if (album) {
+            state.savedAlbums.unshift(normalizeSavedAlbum(album));
+            if (state.lastSavedPhotoIds.length) await attachPhotosToAlbum(album.id, state.lastSavedPhotoIds);
+        }
+    }
+
     nameInput.value = '';
     if (noteInput) noteInput.value = '';
     renderAlbumDrafts();
+    renderSavedPhotoSurfaces();
     showToast('앨범 초안을 만들었습니다.');
 }
 
@@ -500,6 +586,7 @@ async function handleAuthSubmit(event) {
     state.currentUser = user;
     updateAccountUI();
     await loadSavedPhotos();
+    await loadSavedAlbums();
     closeModals();
     showToast('로그인했습니다.');
 }
@@ -518,6 +605,7 @@ async function handleSignup() {
     state.currentUser = user;
     updateAccountUI();
     await loadSavedPhotos();
+    await loadSavedAlbums();
     closeModals();
     showToast('가입을 완료했습니다.');
 }
@@ -591,6 +679,8 @@ function bindEvents() {
             await signOut();
             state.currentUser = null;
             state.savedPhotos = [];
+            state.savedAlbums = [];
+            state.lastSavedPhotoIds = [];
             updateAccountUI();
             renderSavedPhotoSurfaces();
             showToast('로그아웃했습니다.');
@@ -617,6 +707,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     state.currentUser = await getCurrentUser();
     updateAccountUI();
     await loadSavedPhotos();
+    await loadSavedAlbums();
     bindEvents();
     renderStagedPhotos();
     renderAlbumDrafts();
