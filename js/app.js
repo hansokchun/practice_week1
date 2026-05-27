@@ -27,6 +27,7 @@ import {
     storePendingAuthContext,
     takePendingAuthAction
 } from './pending-auth-action.mjs';
+import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { buildTripShareUrl, parseSharedAlbumId } from './share-link.mjs';
 
 const state = {
@@ -804,7 +805,13 @@ function renderAlbumDrafts() {
 }
 
 function handlePhotoFiles(files) {
-    const selected = Array.from(files || []);
+    const { accepted: selected, rejected } = filterAcceptedPhotoFiles(files || []);
+    if (rejected.length) {
+        const message = rejected.length === 1
+            ? `${rejected[0].file.name}: ${rejected[0].reason}`
+            : `${rejected.length}개의 파일을 제외했습니다. JPG, PNG, WebP와 15MB 이하 사진만 올릴 수 있습니다.`;
+        showToast(message);
+    }
     if (!selected.length) return;
     state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
     state.stagedPhotos = selected.map((file) => ({
