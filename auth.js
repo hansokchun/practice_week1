@@ -399,6 +399,10 @@ export async function attachPhotosToAlbum(albumId, photoIds) {
             .upsert(rows, { onConflict: 'album_id,photo_id' })
             .select('*');
         if (error) throw error;
+        await sb
+            .from('photos')
+            .update({ album_id: albumId })
+            .in('id', ids.map((id) => id.toString()));
         return { data: data || [], error: null };
     } catch (error) {
         return { data: [], error };

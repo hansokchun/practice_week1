@@ -492,9 +492,13 @@ function setVisibilityMode(mode) {
 }
 
 async function saveShareSettings() {
-    const latestOwnAlbum = state.currentUser
-        ? state.savedAlbums.find((album) => album.owner_id === state.currentUser.id)
-        : null;
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        showToast('공개 설정을 저장하려면 먼저 로그인해주세요.');
+        return;
+    }
+    const latestOwnAlbum = await ensureAlbumForSharing();
+    if (!latestOwnAlbum) return;
     let updatedAlbum = null;
     if (latestOwnAlbum) {
         const { data, error } = await updateAlbumVisibility(latestOwnAlbum.id, state.visibility);
@@ -505,9 +509,7 @@ async function saveShareSettings() {
             ));
         }
     }
-    const photoIds = state.lastSavedPhotoIds.length
-        ? state.lastSavedPhotoIds
-        : getMySavedPhotos().map((photo) => photo.id);
+    const photoIds = getSharePhotoIds();
     const { data: updatedPhotos } = await updatePhotosVisibility(photoIds, state.visibility);
     if (updatedPhotos?.length) {
         const normalized = updatedPhotos.map(normalizeSavedPhoto);
@@ -701,6 +703,49 @@ async function saveAlbumDraft() {
     renderAlbumDrafts();
     renderSavedPhotoSurfaces();
     showToast('앨범 초안을 만들었습니다.');
+}
+
+function getSharePhotoIds() {
+    return state.lastSavedPhotoIds.length
+        ? state.lastSavedPhotoIds
+        : getMySavedPhotos().map((photo) => photo.id);
+}
+
+function getDraftAlbumInput() {
+    const name = $('#album-name-input')?.value.trim()
+        || state.albumDrafts[0]?.name
+        || '나의 여행 앨범';
+    const note = $('#album-note-input')?.value.trim()
+        || state.albumDrafts[0]?.note
+        || '사진을 바탕으로 만든 여행 앨범입니다.';
+    return { name, note };
+}
+
+async function ensureAlbumForSharing() {
+    if (!state.currentUser) return null;
+    const existingAlbum = state.savedAlbums.find((album) => album.owner_id === state.currentUser.id);
+    if (existingAlbum) return existingAlbum;
+
+    const { name, note } = getDraftAlbumInput();
+    const photoIds = getSharePhotoIds();
+    const draftPhotos = getDraftPhotos();
+    const { data, error } = await createAlbum({
+        owner_id: state.currentUser.id,
+        title: name,
+        note,
+        visibility: state.visibility,
+        cover_url: draftPhotos[0]?.url || null,
+        photo_count: photoIds.length || state.stagedPhotos.length || getMySavedPhotos().length
+    });
+    if (error || !data) {
+        showToast('공개 설정을 저장할 앨범을 만들지 못했습니다.');
+        return null;
+    }
+
+    const album = normalizeSavedAlbum(data);
+    state.savedAlbums.unshift(album);
+    if (photoIds.length) await attachPhotosToAlbum(album.id, photoIds);
+    return album;
 }
 
 function getEditablePhoto() {
