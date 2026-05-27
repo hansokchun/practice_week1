@@ -583,6 +583,29 @@
                     </div>
                     <button class="btn-secondary" data-go-profile type="button">프로필 보기</button>
                 </section>
+                <section class="related-albums-section" aria-labelledby="related-albums-title">
+                    <div class="section-heading compact-heading">
+                        <h2 id="related-albums-title">Related Albums</h2>
+                        <p>같은 작성자가 공개한 다른 여행입니다.</p>
+                    </div>
+                    <div class="related-album-grid">
+                        <article>
+                            <img src="images/main_bg3.jpg" alt="">
+                            <strong>Tokyo Night Walk</strong>
+                            <span>18 photos · 7 places</span>
+                        </article>
+                        <article>
+                            <img src="images/main_bg5.jpg" alt="">
+                            <strong>Italian Blue Week</strong>
+                            <span>86 photos · 14 places</span>
+                        </article>
+                        <article>
+                            <img src="images/main_bg1.jpg" alt="">
+                            <strong>Paris Alley Notes</strong>
+                            <span>31 photos · 9 places</span>
+                        </article>
+                    </div>
+                </section>
             </div>
         </section>
 
@@ -605,11 +628,11 @@
             </div>
             <div class="page-container profile-content">
                 <div class="profile-tabs" role="tablist" aria-label="프로필 보기 방식">
-                    <button class="active" type="button">Map View</button>
-                    <button type="button">Albums</button>
+                    <button class="active" data-profile-tab="map" type="button">Map View</button>
+                    <button data-profile-tab="albums" type="button">Albums</button>
                 </div>
                 <div class="profile-layout">
-                    <section class="profile-map-preview">
+                    <section class="profile-map-preview" data-profile-panel="map">
                         <iframe
                             class="google-map-frame"
                             title="Google map public profile"
@@ -620,7 +643,7 @@
                         <b class="route-point p1"></b>
                         <b class="route-point p2"></b>
                     </section>
-                    <section class="profile-album-grid">
+                    <section class="profile-album-grid" data-profile-panel="albums">
                         <article data-go-trip>
                             <img src="images/main_bg2.jpg" alt="">
                             <strong>Jeju East Coast Drive</strong>

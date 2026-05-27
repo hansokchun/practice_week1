@@ -17,6 +17,7 @@ const state = {
     stagedPhotos: [],
     albumDrafts: [],
     visibility: 'private',
+    profileTab: 'map',
     exploreZoom: 7
 };
 
@@ -200,6 +201,17 @@ function saveShareSettings() {
             : '비공개 상태로 저장했습니다.';
     showToast(message);
     if (state.visibility === 'public') routeTo('trip');
+}
+
+function setProfileTab(tab) {
+    state.profileTab = tab === 'albums' ? 'albums' : 'map';
+    $$('[data-profile-tab]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.profileTab === state.profileTab);
+        button.setAttribute('aria-selected', String(button.dataset.profileTab === state.profileTab));
+    });
+    $$('[data-profile-panel]').forEach((panel) => {
+        panel.classList.toggle('is-active', panel.dataset.profilePanel === state.profileTab);
+    });
 }
 
 function renderAlbumDrafts() {
@@ -398,6 +410,9 @@ function bindEvents() {
         });
     });
     $('#btn-save-share-settings')?.addEventListener('click', saveShareSettings);
+    $$('[data-profile-tab]').forEach((button) => {
+        button.addEventListener('click', () => setProfileTab(button.dataset.profileTab));
+    });
     $('#btn-review-upload')?.addEventListener('click', () => routeTo('album'));
     $('#btn-upload-retry')?.addEventListener('click', () => $('#photo-input')?.click());
     $('#btn-clear-staged')?.addEventListener('click', () => {
@@ -443,6 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderTravelDraftSurfaces();
     renderExploreList();
     setVisibilityMode(state.visibility);
+    setProfileTab(state.profileTab);
     const initialSection = parseRouteHash(window.location.hash);
     routeTo(initialSection, { replace: !window.location.hash });
 });

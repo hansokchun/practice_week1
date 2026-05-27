@@ -1821,19 +1821,50 @@ img {
 }
 
 .trip-day-grid,
-.profile-album-grid {
+.profile-album-grid,
+.related-album-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
 }
 
 .trip-day-grid article,
-.profile-album-grid article {
+.profile-album-grid article,
+.related-album-grid article {
     border: 1px solid var(--line);
     border-radius: 18px;
     background: #ffffff;
     box-shadow: 0 10px 26px rgba(26, 77, 78, 0.06);
     padding: 22px;
+}
+
+.related-album-grid article {
+    overflow: hidden;
+    padding: 0;
+}
+
+.related-album-grid img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.related-album-grid strong,
+.related-album-grid span {
+    display: block;
+    padding: 0 18px;
+}
+
+.related-album-grid strong {
+    margin-top: 16px;
+    color: var(--teal);
+    font-family: var(--headline);
+}
+
+.related-album-grid span {
+    margin: 6px 0 18px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .trip-day-grid h3 {
@@ -1941,6 +1972,22 @@ img {
     gap: 22px;
 }
 
+[data-profile-panel] {
+    display: none;
+}
+
+[data-profile-panel].is-active {
+    grid-column: 1 / -1;
+}
+
+.profile-map-preview.is-active {
+    display: block;
+}
+
+.profile-album-grid.is-active {
+    display: grid;
+}
+
 .profile-map-preview {
     position: relative;
     overflow: hidden;
@@ -1952,7 +1999,7 @@ img {
 }
 
 .profile-album-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .profile-album-grid article {
@@ -2313,6 +2360,7 @@ img {
     .visibility-options,
     .review-shell,
     .trip-day-grid,
+    .related-album-grid,
     .profile-card,
     .profile-stats,
     .profile-layout,
