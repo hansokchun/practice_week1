@@ -1051,21 +1051,6 @@ img {
     object-fit: cover;
 }
 
-.upload-thumbnail .material-symbols-outlined {
-    display: none;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.92);
-    color: var(--teal);
-    font-size: 22px;
-}
-
 .upload-dropzone input {
     display: none;
 }

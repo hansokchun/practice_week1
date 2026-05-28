@@ -63,6 +63,7 @@ import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import {
     appendUploadPhotos,
+    countSelectedUploadPhotos,
     getSelectedUploadPhotos,
     shouldClearUploadQueue,
     toggleUploadPhotoSelection
@@ -909,9 +910,10 @@ function renderStagedPhotos() {
     if (!grid) return;
     const uploadDropzone = $('#upload-dropzone');
     const reviewButton = $('#btn-review-upload');
+    const selectedUploadCount = countSelectedUploadPhotos(state.stagedPhotos);
     $('#album-count-label') && ($('#album-count-label').textContent = `${state.stagedPhotos.length} photos`);
     $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${state.stagedPhotos.length} photos · ${state.albumDrafts.length} albums`);
-    $('#upload-total-count') && ($('#upload-total-count').textContent = `${state.stagedPhotos.length}장`);
+    $('#upload-total-count') && ($('#upload-total-count').textContent = `${selectedUploadCount}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
     renderTravelDraftSurfaces();
@@ -944,9 +946,8 @@ function renderStagedPhotos() {
             <input id="photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp">
             <div class="upload-thumbnail-grid" aria-label="업로드할 사진 선택">
                 ${state.stagedPhotos.map((photo) => `
-                    <button class="upload-thumbnail${photo.selected === false ? '' : ' is-selected'}" type="button" data-upload-photo-id="${escapeHtml(photo.localId)}" aria-pressed="${photo.selected === false ? 'false' : 'true'}">
-                        <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-                        <span class="material-symbols-outlined">${photo.selected === false ? 'radio_button_unchecked' : 'check_circle'}</span>
+                    <button class="upload-thumbnail${photo.selected === false ? '' : ' is-selected'}" type="button" data-upload-photo-id="${escapeHtml(photo.localId)}" aria-pressed="${photo.selected === false ? 'false' : 'true'}" draggable="false">
+                        <img src="${photo.url}" alt="${escapeHtml(photo.name)}" draggable="false">
                     </button>
                 `).join('')}
             </div>
@@ -1655,6 +1656,11 @@ function bindEvents() {
             if (!['Enter', ' '].includes(event.key)) return;
             event.preventDefault();
             $('#photo-input')?.click();
+        });
+        uploadDropzone.addEventListener('dragstart', (event) => {
+            if (event.target instanceof Element && event.target.closest('[data-upload-photo-id]')) {
+                event.preventDefault();
+            }
         });
         ['dragenter', 'dragover'].forEach((eventName) => {
             uploadDropzone.addEventListener(eventName, (event) => {
