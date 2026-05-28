@@ -53,6 +53,7 @@ import {
 } from './travel-draft-photos.mjs';
 import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
+import { getUploadNextRoute } from './upload-flow-action.mjs';
 
 const state = {
     currentUser: null,
@@ -1089,7 +1090,8 @@ function safeFileName(value) {
 
 async function persistStagedPhotos() {
     if (!state.stagedPhotos.length) {
-        routeTo('album');
+        routeTo(getUploadNextRoute(0));
+        showToast('사진을 먼저 선택해주세요.');
         return;
     }
     if (!state.currentUser) {
@@ -1138,9 +1140,9 @@ async function persistStagedPhotos() {
             ...state.savedPhotos.filter((photo) => photo.owner_id !== state.currentUser.id || !saved.some((next) => next.id === photo.id))
         ];
         renderSavedPhotoSurfaces();
-        if (status) status.textContent = `${saved.length}장의 사진을 저장했습니다. 다음 단계에서 앨범을 구성하세요.`;
+        if (status) status.textContent = `${saved.length}장의 사진을 저장했습니다. 다음 단계에서 사진 정보를 확인하세요.`;
         showToast(`${saved.length}장의 사진을 저장했습니다.`);
-        routeTo('album');
+        routeTo(getUploadNextRoute(saved.length));
     } catch (error) {
         if (status) status.textContent = error.message || '사진 저장에 실패했습니다.';
         showToast('사진 저장에 실패했습니다. 로컬 초안은 유지됩니다.');
