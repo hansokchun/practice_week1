@@ -18,6 +18,7 @@ import {
 } from '../auth.js';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
+import { shouldOpenExplorePreview } from './explore-selection.mjs';
 import {
     getLocationEditorPhoto,
     getMissingLocationPhotos,
@@ -571,6 +572,13 @@ function renderPublicSurfaces() {
         item.addEventListener('click', () => {
             setSelectedPublicAlbum(item.dataset.publicAlbumId);
             if (item.hasAttribute('data-go-trip')) routeToTrip(item.dataset.publicAlbumId);
+            if (shouldOpenExplorePreview({
+                isTripLink: item.hasAttribute('data-go-trip'),
+                isExploreListItem: item.classList.contains('explore-item')
+            })) {
+                document.body.classList.add('explore-pin-selected');
+                $('#explore-pin-preview')?.removeAttribute('hidden');
+            }
         });
     });
     $$('#public-trip-photo-grid [data-open-photo-detail]').forEach((item) => {
