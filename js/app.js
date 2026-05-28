@@ -32,6 +32,7 @@ import {
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
+import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
@@ -547,6 +548,12 @@ function renderPublicSurfaces() {
                 <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
             </article>
         `).join('');
+    }
+
+    const profileHeroImage = $('.profile-cover > img');
+    if (profileHeroImage) {
+        profileHeroImage.src = getProfileHeroImage(selected, profileAlbums);
+        profileHeroImage.alt = `${authorName} public profile cover`;
     }
 
     const list = $('#explore-list');
