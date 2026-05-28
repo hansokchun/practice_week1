@@ -33,7 +33,7 @@ import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
-import { getShareCompletionHash } from './share-completion.mjs';
+import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -835,7 +835,8 @@ async function saveShareSettings() {
         const normalized = updatedPhotos.map(normalizeSavedPhoto);
         state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
     }
-    if (updatedAlbum) state.selectedPublicAlbumId = updatedAlbum.id;
+    const shareTargetAlbumId = getShareTargetAlbumId(updatedAlbum, latestOwnAlbum);
+    if (shareTargetAlbumId) state.selectedPublicAlbumId = shareTargetAlbumId;
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
     const message = state.visibility === 'public'
@@ -845,7 +846,7 @@ async function saveShareSettings() {
             : '비공개 상태로 저장했습니다.';
     showToast(message);
     if (['public', 'link'].includes(state.visibility)) await copyCurrentShareLink();
-    const completionHash = getShareCompletionHash(state.visibility, updatedAlbum?.id || latestOwnAlbum.id);
+    const completionHash = getShareCompletionHash(state.visibility, shareTargetAlbumId);
     if (completionHash !== '#/share') {
         window.location.hash = completionHash;
         renderRoute('trip');
@@ -1026,7 +1027,9 @@ async function saveAlbumDraft() {
         if (error) {
             showToast('앨범 초안은 화면에 만들었지만 DB 저장에 실패했습니다.');
         } else if (album) {
-            state.savedAlbums.unshift(normalizeSavedAlbum(album));
+            const savedAlbum = normalizeSavedAlbum(album);
+            state.savedAlbums.unshift(savedAlbum);
+            state.selectedPublicAlbumId = savedAlbum.id;
             if (draftPhotoIds.length) await attachPhotosToAlbum(album.id, draftPhotoIds);
             await loadPublicProfileNames();
         }

@@ -4,3 +4,7 @@ export function getShareCompletionHash(visibility, albumId) {
     if (visibility === 'public') return buildTripHash(albumId);
     return '#/share';
 }
+
+export function getShareTargetAlbumId(updatedAlbum, fallbackAlbum) {
+    return updatedAlbum?.id || fallbackAlbum?.id || null;
+}
