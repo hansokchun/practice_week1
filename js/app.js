@@ -41,6 +41,7 @@ import {
     getTravelDraftPhotoIds,
     getTravelDraftPhotos
 } from './travel-draft-photos.mjs';
+import { getTravelSummary } from './travel-summary.mjs';
 
 const state = {
     currentUser: null,
@@ -757,18 +758,27 @@ function renderStagedPhotos() {
 
 function renderTravelDraftSurfaces() {
     const draftPhotos = getDraftPhotos();
-    const photoCount = getDraftPhotoCount({
+    const fallbackPhotoCount = getDraftPhotoCount({
         staged: state.stagedPhotos,
         saved: getMySavedPhotos(),
         demos: getDemoDraftPhotos()
     });
-    const hasRealDraft = state.stagedPhotos.length || getMySavedPhotos().length;
-    const publicCount = Math.max(0, photoCount - (hasRealDraft ? Math.min(2, photoCount) : 1));
+    const summary = getTravelSummary({
+        draftPhotos,
+        albumDrafts: state.albumDrafts,
+        selectedAlbum: state.selectedPublicAlbumId ? getSelectedPublicAlbum() : null
+    });
+    const photoCount = summary.photoCount || fallbackPhotoCount;
 
+    $('#analysis-title') && ($('#analysis-title').textContent = summary.title);
     $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(photoCount));
-    $('#review-day-one-count') && ($('#review-day-one-count').textContent = `${Math.min(photoCount, 18)} photos · 5 places`);
+    $('#analysis-place-count') && ($('#analysis-place-count').textContent = String(summary.places));
+    $('#analysis-day-count') && ($('#analysis-day-count').textContent = `${summary.days} days`);
+    $('#review-day-one-count') && ($('#review-day-one-count').textContent = `${Math.min(photoCount, 18)} photos · ${summary.places} places`);
+    $('#share-title') && ($('#share-title').textContent = summary.title);
+    $('#share-preview-title') && ($('#share-preview-title').textContent = summary.title);
     $('#share-trip-photo-count') && ($('#share-trip-photo-count').textContent = `${photoCount} photos`);
-    $('#share-preview-count') && ($('#share-preview-count').textContent = `공개 사진 ${publicCount}장`);
+    $('#share-preview-count') && ($('#share-preview-count').textContent = `공개 사진 ${summary.publicCount}장`);
 
     const analysisStrip = $('#analysis-selected-strip');
     if (analysisStrip) {
