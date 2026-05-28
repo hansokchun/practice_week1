@@ -1,7 +1,7 @@
 export function getTravelDraftPhotos({ staged = [], saved = [], demos = [] } = {}) {
     if (staged.length) return staged;
     if (saved.length) return saved;
-    return demos;
+    return [];
 }
 
 export function getTravelDraftPhotoIds({ lastSavedPhotoIds = [], saved = [] } = {}) {

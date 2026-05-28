@@ -19,10 +19,11 @@ test('getTravelDraftPhotos prefers staged photos', () => {
     assert.deepEqual(getTravelDraftPhotos({ staged, saved, demos }), staged);
 });
 
-test('getTravelDraftPhotos falls back to saved photos before demo photos', () => {
+test('getTravelDraftPhotos falls back to saved photos and otherwise stays empty', () => {
     const saved = [{ id: 'saved-1', name: 'saved', url: 'saved.jpg' }];
 
     assert.deepEqual(getTravelDraftPhotos({ staged: [], saved, demos }), saved);
+    assert.deepEqual(getTravelDraftPhotos({ staged: [], saved: [], demos }), []);
 });
 
 test('getTravelDraftPhotoIds prefers last saved ids and then saved photo ids', () => {
@@ -32,8 +33,8 @@ test('getTravelDraftPhotoIds prefers last saved ids and then saved photo ids', (
     assert.deepEqual(getTravelDraftPhotoIds({ lastSavedPhotoIds: [], saved }), ['saved-1', 'saved-2']);
 });
 
-test('getDraftPhotoCount counts real draft photos before demo fallback', () => {
+test('getDraftPhotoCount counts real draft photos only', () => {
     assert.equal(getDraftPhotoCount({ staged: [{ name: 'a' }], saved: [], demos }), 1);
     assert.equal(getDraftPhotoCount({ staged: [], saved: [{ id: 'saved-1' }], demos }), 1);
-    assert.equal(getDraftPhotoCount({ staged: [], saved: [], demos }), 2);
+    assert.equal(getDraftPhotoCount({ staged: [], saved: [], demos }), 0);
 });

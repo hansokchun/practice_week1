@@ -32,6 +32,7 @@ import {
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
+import { getPublicAlbumEmptyState } from './public-album-empty-state.mjs';
 import { getPublicAlbumCardClass } from './public-album-card-state.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
@@ -191,9 +192,9 @@ function getAllDisplayPhotos() {
 
 function getDefaultDetailPhoto() {
     const selectedAlbum = getSelectedPublicAlbum();
-    return selectedAlbum.photos?.[0]
+    return selectedAlbum?.photos?.[0]
         || getAllDisplayPhotos()[0]
-        || { id: 'demo-detail', name: '성산 앞바다의 오후', url: 'images/main_bg2.jpg', date: '2026-05-14', album: selectedAlbum.title, visibility: selectedAlbum.visibility };
+        || { id: 'empty-detail', name: '여행 사진', url: 'images/main_bg2.jpg', date: new Date().toISOString(), album: selectedAlbum?.title || '여행 앨범', visibility: selectedAlbum?.visibility || 'private' };
 }
 
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
@@ -347,7 +348,7 @@ function getPublicAlbums() {
                 photos
             };
         });
-    return publicAlbums.length ? publicAlbums : getFallbackPublicAlbums();
+    return publicAlbums;
 }
 
 function getSelectedPublicAlbum() {
@@ -385,9 +386,67 @@ async function copyCurrentShareLink() {
     return url;
 }
 
+function renderEmptyPublicSurfaces() {
+    const empty = getPublicAlbumEmptyState();
+    const shareOutput = $('#share-link-output');
+    if (shareOutput) shareOutput.value = getCurrentShareUrl();
+
+    const preview = $('#explore-pin-preview');
+    const previewImage = preview?.querySelector('img');
+    const previewTitle = preview?.querySelector('.pin-preview-copy h2');
+    const previewNote = preview?.querySelector('.pin-preview-copy p:last-child');
+    const previewMeta = preview?.querySelector('.pin-preview-meta');
+    if (previewImage) {
+        previewImage.src = 'images/main_bg2.jpg';
+        previewImage.alt = empty.title;
+    }
+    if (previewTitle) previewTitle.textContent = empty.title;
+    if (previewNote) previewNote.textContent = empty.body;
+    if (previewMeta) previewMeta.textContent = empty.meta;
+
+    const tripHeroImage = $('.public-trip-hero > img');
+    if (tripHeroImage) {
+        tripHeroImage.src = 'images/main_bg2.jpg';
+        tripHeroImage.alt = empty.title;
+    }
+    $('#trip-title') && ($('#trip-title').textContent = empty.title);
+    const tripCopy = $('.public-trip-copy > p:not(.eyebrow)');
+    if (tripCopy) tripCopy.textContent = empty.body;
+    const routeMeta = $('.trip-route-card .compact-heading p');
+    if (routeMeta) routeMeta.textContent = empty.meta;
+
+    const emptyCard = `
+        <article class="empty-state">
+            <strong>${empty.title}</strong>
+            <span>${empty.body}</span>
+        </article>
+    `;
+    $('#explore-list') && ($('#explore-list').innerHTML = emptyCard);
+    $('#public-trip-photo-grid') && ($('#public-trip-photo-grid').innerHTML = emptyCard);
+    $('.trip-day-grid') && ($('.trip-day-grid').innerHTML = emptyCard);
+    $('.related-album-grid') && ($('.related-album-grid').innerHTML = '');
+    $('.profile-album-grid') && ($('.profile-album-grid').innerHTML = emptyCard);
+    $('.route-strip') && ($('.route-strip').innerHTML = '<span>Public map</span>');
+    $('.profile-stats') && ($('.profile-stats').innerHTML = '<span><strong>0</strong> albums</span><span><strong>0</strong> photos</span><span><strong>0</strong> places</span>');
+    $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
+        node.textContent = 'Ikkyee';
+    });
+    $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
+        avatar.textContent = 'IK';
+    });
+    $$('[data-explore-pin]').forEach((target) => {
+        delete target.dataset.publicAlbumId;
+        target.classList.remove('is-selected');
+    });
+}
+
 function renderPublicSurfaces() {
     const albums = getPublicAlbums();
     const selected = getSelectedPublicAlbum();
+    if (!selected) {
+        renderEmptyPublicSurfaces();
+        return;
+    }
     const cover = selected.cover_url || 'images/main_bg2.jpg';
     const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
