@@ -35,6 +35,7 @@ import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelated
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
+import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
 import {
     getDraftPhotoCount,
     getTravelDraftPhotoIds,
@@ -1324,9 +1325,10 @@ function bindEvents() {
     $('#btn-open-share-settings')?.addEventListener('click', () => routeTo('share'));
     $$('[data-visibility]').forEach((button) => button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility)));
     $$('[data-visibility-shortcut]').forEach((button) => {
-        button.addEventListener('click', () => {
-            setVisibilityMode(button.dataset.visibilityShortcut);
-            if (button.dataset.visibilityShortcut === 'link') showToast('공유 링크 설정을 선택했습니다.');
+        button.addEventListener('click', async () => {
+            const action = getVisibilityShortcutAction(button.dataset.visibilityShortcut);
+            setVisibilityMode(action.visibility);
+            if (action.shouldSave) await saveShareSettings();
         });
     });
     $('#btn-save-share-settings')?.addEventListener('click', saveShareSettings);
