@@ -29,6 +29,11 @@ import {
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
+import {
+    getDraftPhotoCount,
+    getTravelDraftPhotoIds,
+    getTravelDraftPhotos
+} from './travel-draft-photos.mjs';
 
 const state = {
     currentUser: null,
@@ -215,7 +220,14 @@ function getMySavedPhotos() {
 }
 
 function getDraftPhotos() {
-    if (state.stagedPhotos.length) return state.stagedPhotos;
+    return getTravelDraftPhotos({
+        staged: state.stagedPhotos,
+        saved: getMySavedPhotos(),
+        demos: getDemoDraftPhotos()
+    });
+}
+
+function getDemoDraftPhotos() {
     return [
         { name: 'Cover', url: 'images/main_bg1.jpg' },
         { name: 'Route', url: 'images/main_bg2.jpg' },
@@ -668,8 +680,13 @@ function renderStagedPhotos() {
 
 function renderTravelDraftSurfaces() {
     const draftPhotos = getDraftPhotos();
-    const photoCount = state.stagedPhotos.length || 128;
-    const publicCount = Math.max(0, photoCount - (state.stagedPhotos.length ? Math.min(2, state.stagedPhotos.length) : 4));
+    const photoCount = getDraftPhotoCount({
+        staged: state.stagedPhotos,
+        saved: getMySavedPhotos(),
+        demos: getDemoDraftPhotos()
+    });
+    const hasRealDraft = state.stagedPhotos.length || getMySavedPhotos().length;
+    const publicCount = Math.max(0, photoCount - (hasRealDraft ? Math.min(2, photoCount) : 1));
 
     $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(photoCount));
     $('#review-day-one-count') && ($('#review-day-one-count').textContent = `${Math.min(photoCount, 18)} photos · 5 places`);
@@ -917,19 +934,20 @@ async function saveAlbumDraft() {
 
     if (state.currentUser) {
         const draftPhotos = getDraftPhotos();
+        const draftPhotoIds = getSharePhotoIds();
         const { data: album, error } = await createAlbum({
             owner_id: state.currentUser.id,
             title: name,
             note: localDraft.note,
             visibility: state.visibility,
             cover_url: draftPhotos[0]?.url || null,
-            photo_count: state.lastSavedPhotoIds.length || state.stagedPhotos.length || getMySavedPhotos().length
+            photo_count: draftPhotoIds.length || draftPhotos.length
         });
         if (error) {
             showToast('앨범 초안은 화면에 만들었지만 DB 저장에 실패했습니다.');
         } else if (album) {
             state.savedAlbums.unshift(normalizeSavedAlbum(album));
-            if (state.lastSavedPhotoIds.length) await attachPhotosToAlbum(album.id, state.lastSavedPhotoIds);
+            if (draftPhotoIds.length) await attachPhotosToAlbum(album.id, draftPhotoIds);
         }
     }
 
@@ -941,9 +959,10 @@ async function saveAlbumDraft() {
 }
 
 function getSharePhotoIds() {
-    return state.lastSavedPhotoIds.length
-        ? state.lastSavedPhotoIds
-        : getMySavedPhotos().map((photo) => photo.id);
+    return getTravelDraftPhotoIds({
+        lastSavedPhotoIds: state.lastSavedPhotoIds,
+        saved: getMySavedPhotos()
+    });
 }
 
 function getDraftAlbumInput() {
