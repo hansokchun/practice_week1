@@ -24,6 +24,7 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
+import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import {
     restorePendingAuthContext,
     setPendingAuthAction,
@@ -709,7 +710,7 @@ function renderSavedAlbumRows(albums) {
     list.innerHTML = albums.map((album) => {
         const visibilityLabel = album.visibility === 'public' ? '공개' : album.visibility === 'link' ? '링크 공유' : '비공개';
         return `
-            <article class="album-row">
+            <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="${escapeHtml(album.title)}">
                 <div>
                     <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${visibilityLabel} · Supabase</span>
@@ -738,7 +739,7 @@ function renderSavedPhotoAlbums(photos) {
         const cover = albumPhotos[0];
         const shared = albumPhotos.some((photo) => photo.shared);
         return `
-            <article class="album-row">
+            <article class="album-row" role="button" tabindex="0" data-myphoto-album-name="${escapeHtml(name)}" data-myphoto-album-visibility="${shared ? 'public' : 'private'}">
                 <img src="${cover.url}" alt="${escapeHtml(name)}">
                 <div>
                     <span class="status-line"><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span> ${shared ? '공개' : '비공개'} · 저장됨</span>
@@ -919,6 +920,18 @@ function setProfileTab(tab) {
     });
 }
 
+function openMyphotoAlbum(albumRow) {
+    const action = getMyphotoAlbumAction({
+        albumId: albumRow.dataset.myphotoAlbumId || null,
+        visibility: albumRow.dataset.myphotoAlbumVisibility || 'private',
+        isDraft: albumRow.dataset.myphotoAlbumDraft === 'true'
+    });
+
+    if (action.albumId) state.selectedPublicAlbumId = action.albumId;
+    if (action.route === 'trip') routeToTrip(action.albumId);
+    else routeTo('share');
+}
+
 function renderAlbumDrafts() {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
@@ -927,7 +940,7 @@ function renderAlbumDrafts() {
 
     if (!state.albumDrafts.length) {
         list.innerHTML = `
-            <article class="album-row">
+            <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
                 <img src="images/main_bg2.jpg" alt="">
                 <div>
                     <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.05.12 - 05.16</span>
@@ -936,7 +949,7 @@ function renderAlbumDrafts() {
                     <small>128 Photos · Archival Quality</small>
                 </div>
             </article>
-            <article class="album-row">
+            <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
                 <img src="images/main_bg5.jpg" alt="">
                 <div>
                     <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.04.20 - 04.22</span>
@@ -950,7 +963,7 @@ function renderAlbumDrafts() {
     }
 
     list.innerHTML = state.albumDrafts.map((album) => `
-        <article class="album-row">
+        <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
             <img src="images/main_bg4.jpg" alt="">
             <div>
                 <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 방금 생성</span>
@@ -1352,6 +1365,12 @@ function bindEvents() {
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
 
+        const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
+        if (albumRow) {
+            openMyphotoAlbum(albumRow);
+            return;
+        }
+
         const locationButton = event.target.closest('[data-open-location-editor]');
         if (locationButton) {
             openLocationEditor({ currentTarget: locationButton });
@@ -1360,6 +1379,13 @@ function bindEvents() {
 
         const selectorButton = event.target.closest('[data-select-location-photo]');
         if (selectorButton) setLocationEditorPhoto(selectorButton.dataset.selectLocationPhoto);
+    });
+    document.addEventListener('keydown', (event) => {
+        if (!['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) return;
+        const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
+        if (!albumRow) return;
+        event.preventDefault();
+        openMyphotoAlbum(albumRow);
     });
     $$('[data-explore-pin]').forEach((button) => button.addEventListener('click', () => {
         if (button.dataset.publicAlbumId) setSelectedPublicAlbum(button.dataset.publicAlbumId);
