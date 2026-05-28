@@ -33,6 +33,7 @@ import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
+import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
@@ -385,6 +386,11 @@ function renderPublicSurfaces() {
     const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
     const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
+    const tripPhotos = selected.photos?.length ? selected.photos : getDraftPhotos();
+    const tripSummary = getTravelSummary({
+        draftPhotos: tripPhotos,
+        selectedAlbum: selected
+    });
     const authorName = getSelectedAuthorName(selected);
     const authorInitials = getAuthorInitials(authorName);
     const preview = $('#explore-pin-preview');
@@ -418,7 +424,7 @@ function renderPublicSurfaces() {
     }
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
-    if (routeMeta) routeMeta.textContent = `공개 앨범 · ${places} places · ${photoCount || 1} public photos`;
+    if (routeMeta) routeMeta.textContent = getPublicTripRouteMeta(tripSummary);
 
     $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
         avatar.textContent = authorInitials;
@@ -439,11 +445,11 @@ function renderPublicSurfaces() {
 
     const dayGrid = $('.trip-day-grid');
     if (dayGrid) {
-        const tripPhotos = selected.photos?.length ? selected.photos : getDraftPhotos().map((photo, index) => ({
+        const dayPhotos = selected.photos?.length ? selected.photos : getDraftPhotos().map((photo, index) => ({
             ...photo,
             date: new Date(Date.now() + index * 86400000).toISOString()
         }));
-        dayGrid.innerHTML = getPublicTripDayCards(tripPhotos, selected.title).map((card) => `
+        dayGrid.innerHTML = getPublicTripDayCards(dayPhotos, selected.title).map((card) => `
             <article>
                 <p class="eyebrow">${escapeHtml(card.eyebrow)}</p>
                 <h3>${escapeHtml(card.title)}</h3>
