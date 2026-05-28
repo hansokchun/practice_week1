@@ -284,17 +284,32 @@ export async function deleteLike(userId, photoId) {
  * RLS 정책으로 본인 사진만 DELETE 가능
  * 관련 댓글은 ON DELETE CASCADE로 DB가 자동 삭제
  */
-export async function deletePhoto(id) {
+function getStoragePathFromPublicUrl(url) {
+    if (!url) return null;
+    try {
+        const parsed = new URL(url);
+        const marker = '/storage/v1/object/public/photos/';
+        const index = parsed.pathname.indexOf(marker);
+        return index === -1 ? null : decodeURIComponent(parsed.pathname.slice(index + marker.length));
+    } catch {
+        return null;
+    }
+}
+
+export async function deletePhoto(id, url) {
     try {
         const sb = getSupabase();
 
         // Storage에서 업로드된 3가지 사이즈의 이미지를 모두 삭제 (실패해도 무시)
         try {
-            await sb.storage.from('photos').remove([
+            const paths = [
                 `${id}_micro.jpg`,
                 `${id}_grid.jpg`,
                 `${id}_detail.jpg`
-            ]);
+            ];
+            const uploadedPath = getStoragePathFromPublicUrl(url);
+            if (uploadedPath) paths.push(uploadedPath);
+            await sb.storage.from('photos').remove([...new Set(paths)]);
         } catch {}
 
         const { error } = await sb

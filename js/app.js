@@ -14,6 +14,7 @@ import {
     updatePhotosVisibility,
     uploadImage,
     updateAlbumVisibility,
+    deletePhoto,
     upsertPhoto
 } from '../auth.js';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
@@ -33,6 +34,12 @@ import {
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
+import {
+    getSelectedPersonalPhotos,
+    prunePersonalPhotoSelection,
+    removeSelectedPersonalPhotos,
+    togglePersonalPhotoSelection
+} from './personal-photo-selection.mjs';
 import { getPublicAlbumEmptyState } from './public-album-empty-state.mjs';
 import { getPublicAlbumCardClass } from './public-album-card-state.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
@@ -73,6 +80,7 @@ const state = {
     profileTab: 'map',
     selectedPublicAlbumId: null,
     selectedPhotoId: null,
+    selectedPersonalPhotoIds: [],
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     exploreZoom: 7,
@@ -760,7 +768,14 @@ function renderSavedPhotoSurfaces() {
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const grid = $('#personal-photo-grid');
     const summary = $('#personal-photo-summary');
+    const deleteButton = $('#btn-delete-selected-photos');
+    state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
+    const selectedCount = state.selectedPersonalPhotoIds.length;
     if (summary) summary.textContent = `${photos.length} photos`;
+    if (deleteButton) {
+        deleteButton.disabled = selectedCount === 0;
+        deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
+    }
     if (!grid) return;
 
     if (!photos.length) {
@@ -775,8 +790,10 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
 
     grid.innerHTML = photos.map((photo) => {
         const hasLocation = Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng));
+        const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
         return `
-            <article class="personal-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+                <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
                 <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
                 <div>
                     <strong>${escapeHtml(photo.name)}</strong>
@@ -785,6 +802,31 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
             </article>
         `;
     }).join('');
+}
+
+async function deleteSelectedPersonalPhotos() {
+    const myPhotos = getMySavedPhotos();
+    const selectedPhotos = getSelectedPersonalPhotos(myPhotos, state.selectedPersonalPhotoIds);
+    if (!selectedPhotos.length) return;
+
+    const deleteButton = $('#btn-delete-selected-photos');
+    if (deleteButton) deleteButton.disabled = true;
+
+    try {
+        for (const photo of selectedPhotos) {
+            const { error } = await deletePhoto(photo.id, photo.url);
+            if (error) throw error;
+        }
+        state.savedPhotos = removeSelectedPersonalPhotos(state.savedPhotos, state.selectedPersonalPhotoIds);
+        state.lastSavedPhotoIds = state.lastSavedPhotoIds.filter((id) => !state.selectedPersonalPhotoIds.includes(id));
+        state.selectedPersonalPhotoIds = [];
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+        showToast(`${selectedPhotos.length}장의 사진을 삭제했습니다.`);
+    } catch (error) {
+        showToast(error.message || '사진 삭제에 실패했습니다.');
+        renderPersonalPhotosPage();
+    }
 }
 
 function renderMissingLocationTasks(photos) {
@@ -1505,6 +1547,7 @@ function bindEvents() {
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
+    $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-open-album')?.addEventListener('click', () => routeTo('album'));
     $('#btn-open-album-inline')?.addEventListener('click', () => routeTo('album'));
     $('#btn-new-trip')?.addEventListener('click', () => routeTo('album'));
@@ -1524,6 +1567,16 @@ function bindEvents() {
     }));
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
+
+        const personalPhotoToggle = event.target.closest('[data-toggle-personal-photo]');
+        if (personalPhotoToggle) {
+            state.selectedPersonalPhotoIds = togglePersonalPhotoSelection(
+                state.selectedPersonalPhotoIds,
+                personalPhotoToggle.dataset.togglePersonalPhoto
+            );
+            renderPersonalPhotosPage();
+            return;
+        }
 
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
         if (albumRow) {
