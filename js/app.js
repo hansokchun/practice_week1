@@ -32,7 +32,7 @@ import {
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
-import { getMyphotoStats } from './myphoto-stats.mjs';
+import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -616,6 +616,14 @@ function renderSavedPhotoSurfaces() {
     $('#stat-located-count') && ($('#stat-located-count').textContent = String(stats.locatedCount));
     $('#stat-missing-count') && ($('#stat-missing-count').textContent = String(stats.missingLocationCount));
     $('#stat-album-count') && ($('#stat-album-count').textContent = String(stats.albumCount));
+    const attentionTitle = $('.attention-banner strong');
+    const attentionCopy = $('.attention-banner p');
+    if (attentionTitle) attentionTitle.textContent = formatMissingLocationSummary(stats.missingLocationCount);
+    if (attentionCopy) {
+        attentionCopy.textContent = stats.missingLocationCount
+            ? '사진의 메타데이터가 부족해 지도에 표시되지 않고 있습니다.'
+            : '새로 추가한 사진 중 위치가 빠진 항목이 생기면 여기에서 알려드릴게요.';
+    }
     renderMissingLocationTasks(missingLocationPhotos);
 
     if (recentGrid) {

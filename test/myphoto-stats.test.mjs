@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getMyphotoStats } from '../js/myphoto-stats.mjs';
+import { formatMissingLocationSummary, getMyphotoStats } from '../js/myphoto-stats.mjs';
 
 test('getMyphotoStats returns zero counts for an empty dashboard', () => {
     assert.deepEqual(getMyphotoStats([], []), {
@@ -36,4 +36,9 @@ test('getMyphotoStats falls back to grouped photo albums when no saved albums ex
     ];
 
     assert.equal(getMyphotoStats(photos, []).albumCount, 2);
+});
+
+test('formatMissingLocationSummary reflects the current missing-location count', () => {
+    assert.equal(formatMissingLocationSummary(0), '위치 정보가 모두 정리되었습니다.');
+    assert.equal(formatMissingLocationSummary(3), '처리 필요: 위치 정보 없는 사진 3장');
 });
