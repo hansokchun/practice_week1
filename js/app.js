@@ -56,7 +56,6 @@ import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import {
     appendUploadPhotos,
-    countSelectedUploadPhotos,
     getSelectedUploadPhotos,
     shouldClearUploadQueue,
     toggleUploadPhotoSelection
@@ -868,12 +867,9 @@ function renderStagedPhotos() {
     if (!grid) return;
     const uploadDropzone = $('#upload-dropzone');
     const reviewButton = $('#btn-review-upload');
-    const selectedCount = countSelectedUploadPhotos(state.stagedPhotos);
     $('#album-count-label') && ($('#album-count-label').textContent = `${state.stagedPhotos.length} photos`);
     $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${state.stagedPhotos.length} photos · ${state.albumDrafts.length} albums`);
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${state.stagedPhotos.length}장`);
-    $('#upload-success-count') && ($('#upload-success-count').textContent = `${selectedCount}장`);
-    $('#upload-missing-location-count') && ($('#upload-missing-location-count').textContent = `${state.stagedPhotos.length}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
     renderTravelDraftSurfaces();

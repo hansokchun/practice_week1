@@ -1085,10 +1085,11 @@ img {
 
 .result-stats {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
 }
 
+.result-stats article:has(#upload-success-count),
 .result-stats article:has(#upload-missing-location-count) {
     display: none;
 }
