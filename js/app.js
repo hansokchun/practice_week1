@@ -15,6 +15,7 @@ import {
     updateAlbumVisibility,
     upsertPhoto
 } from '../auth.js';
+import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import {
     getLocationEditorPhoto,
@@ -977,10 +978,10 @@ function getDraftAlbumInput() {
 
 async function ensureAlbumForSharing() {
     if (!state.currentUser) return null;
-    const existingAlbum = state.savedAlbums.find((album) => album.owner_id === state.currentUser.id);
+    const { name, note } = getDraftAlbumInput();
+    const existingAlbum = selectAlbumForSharing(state.savedAlbums, state.currentUser.id, name);
     if (existingAlbum) return existingAlbum;
 
-    const { name, note } = getDraftAlbumInput();
     const photoIds = getSharePhotoIds();
     const draftPhotos = getDraftPhotos();
     const { data, error } = await createAlbum({
