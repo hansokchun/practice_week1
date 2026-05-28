@@ -1168,13 +1168,7 @@ function renderTravelDraftSurfaces() {
                         </div>
                     </article>
                 `).join('')
-            : `
-                <button class="album-add-photos" id="btn-album-add-photos" type="button">
-                    <span class="material-symbols-outlined">add_photo_alternate</span>
-                    <strong>사진 추가하기</strong>
-                    <small>개별사진을 업로드하면 이곳에서 앨범으로 묶을 수 있습니다.</small>
-                </button>
-            `;
+            : '';
     }
 
     const albumMap = $('#album-map-frame');
@@ -1912,12 +1906,6 @@ function bindEvents() {
         const saveAlbumButton = event.target.closest('#btn-save-album-draft');
         if (saveAlbumButton) {
             saveAlbumAndOpenDetail();
-            return;
-        }
-
-        const addAlbumPhotosButton = event.target.closest('#btn-album-add-photos');
-        if (addAlbumPhotosButton) {
-            routeTo('upload');
             return;
         }
 
