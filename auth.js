@@ -220,6 +220,10 @@ export async function updatePhotoInfo(photoId, updates = {}) {
         if ('lat' in updates) payload.lat = updates.lat;
         if ('lng' in updates) payload.lng = updates.lng;
         if ('geo_source' in updates) payload.geo_source = updates.geo_source;
+        if ('visibility' in updates) {
+            payload.visibility = updates.visibility;
+            payload.shared = updates.visibility === 'public';
+        }
 
         const { data, error } = await sb
             .from('photos')

@@ -88,9 +88,13 @@ const state = {
     albumBuilderPhotoIds: [],
     albumPhotoPickerIds: [],
     editingAlbumId: null,
+    editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     exploreZoom: 7,
+    exploreMap: null,
+    exploreMarkers: [],
+    exploreSearchMarker: null,
     isPersistingUpload: false,
     isSavingShare: false
 };
@@ -175,7 +179,10 @@ function renderRoute(section) {
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
-    if (normalized === APP_SECTIONS.EXPLORE) syncExploreGoogleMap();
+    if (normalized === APP_SECTIONS.EXPLORE) {
+        ensureExploreMap();
+        window.setTimeout(() => state.exploreMap?.invalidateSize(), 0);
+    }
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 }
 
@@ -309,6 +316,65 @@ function updateExplorePhotoPreview(photo) {
     updatePhotoDetailModal(photo);
 }
 
+function getLeaflet() {
+    return window.L || null;
+}
+
+function createPhotoMarkerIcon(photo, selected = false) {
+    const L = getLeaflet();
+    if (!L) return null;
+    return L.divIcon({
+        className: `leaflet-photo-marker ${selected ? 'is-selected' : ''}`,
+        html: `<img src="${photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg'}" alt="">`,
+        iconSize: [54, 64],
+        iconAnchor: [27, 62],
+        popupAnchor: [0, -56]
+    });
+}
+
+function ensureExploreMap() {
+    const L = getLeaflet();
+    const container = $('#explore-map');
+    if (!L || !container) return null;
+    if (state.exploreMap) return state.exploreMap;
+
+    state.exploreMap = L.map(container, {
+        zoomControl: true,
+        scrollWheelZoom: true
+    }).setView([36.45, 127.85], state.exploreZoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(state.exploreMap);
+    return state.exploreMap;
+}
+
+function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
+    const L = getLeaflet();
+    const map = ensureExploreMap();
+    if (!L || !map) return;
+
+    state.exploreMarkers.forEach((marker) => marker.remove());
+    state.exploreMarkers = locatedPhotos.map((photo) => {
+        const marker = L.marker([Number(photo.lat), Number(photo.lng)], {
+            icon: createPhotoMarkerIcon(photo, photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId)
+        }).addTo(map);
+        marker.on('click', () => {
+            if (photo.album_id) setSelectedPublicAlbum(photo.album_id);
+            updateExplorePhotoPreview(photo);
+            renderExploreMapMarkers(locatedPhotos, photo.album_id);
+            document.body.classList.add('explore-pin-selected');
+            $('#explore-pin-preview')?.removeAttribute('hidden');
+        });
+        return marker;
+    });
+
+    const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selectedAlbumId) || locatedPhotos[0];
+    if (selectedPhoto) {
+        map.setView([Number(selectedPhoto.lat), Number(selectedPhoto.lng)], Math.max(map.getZoom(), state.exploreZoom));
+    }
+}
+
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
@@ -411,6 +477,30 @@ function getDemoDraftPhotos() {
     ];
 }
 
+function getFallbackPublicPhotos(album) {
+    const samples = {
+        'demo-jeju': [
+            { id: 'demo-jeju-1', name: '성산 일출봉 산책', url: 'images/main_bg2.jpg', lat: 33.4582, lng: 126.9425, date: '2026-05-12T09:20:00.000Z', description: '바다 쪽 산책로에서 찍은 공개 예시 사진입니다.' },
+            { id: 'demo-jeju-2', name: '월정리 해변', url: 'images/main_bg1.jpg', lat: 33.5563, lng: 126.7958, date: '2026-05-12T15:10:00.000Z', description: '사진 위치 핀이 지도 위에서 어떻게 보이는지 확인하기 위한 샘플입니다.' }
+        ],
+        'demo-tokyo': [
+            { id: 'demo-tokyo-1', name: '시부야 야경', url: 'images/main_bg3.jpg', lat: 35.6595, lng: 139.7005, date: '2026-05-13T20:30:00.000Z', description: '도쿄 공개 사진 위치 예시입니다.' },
+            { id: 'demo-tokyo-2', name: '긴자 골목', url: 'images/main_bg4.jpg', lat: 35.6719, lng: 139.7658, date: '2026-05-14T18:05:00.000Z', description: '확대/축소 시 지도에 붙어 움직이는 예시 핀입니다.' }
+        ],
+        'demo-italy': [
+            { id: 'demo-italy-1', name: '로마 저녁 산책', url: 'images/main_bg5.jpg', lat: 41.9028, lng: 12.4964, date: '2026-05-15T17:40:00.000Z', description: '실제 좌표가 있는 공개 사진 샘플입니다.' }
+        ]
+    };
+    return (samples[album.id] || []).map((photo) => ({
+        ...photo,
+        album: album.title,
+        album_id: album.id,
+        owner_id: album.owner_id,
+        visibility: 'public',
+        shared: true
+    }));
+}
+
 function getFallbackPublicAlbums() {
     return [
         {
@@ -478,7 +568,16 @@ function getPublicAlbums() {
                 photos
             };
         });
-    return publicAlbums;
+    if (publicAlbums.some((album) => album.photos?.some(hasPhotoLocation))) return publicAlbums;
+    return getFallbackPublicAlbums().map((album) => {
+        const photos = getFallbackPublicPhotos(album);
+        return {
+            ...album,
+            photo_count: photos.length,
+            places: photos.length,
+            photos
+        };
+    });
 }
 
 function getSelectedPublicAlbum() {
@@ -570,6 +669,10 @@ function renderEmptyPublicSurfaces() {
     });
     const photoPinLayer = $('#explore-photo-pins');
     if (photoPinLayer) photoPinLayer.innerHTML = '';
+    if (state.exploreMarkers.length) {
+        state.exploreMarkers.forEach((marker) => marker.remove());
+        state.exploreMarkers = [];
+    }
 }
 
 function renderPublicSurfaces() {
@@ -675,30 +778,10 @@ function renderPublicSurfaces() {
         `).join('');
     }
 
-    const mapFrame = $('#explore-google-map');
-    if (mapFrame && Number.isFinite(Number(selected.lat)) && Number.isFinite(Number(selected.lng))) {
-        const nextSrc = `https://www.google.com/maps?q=${selected.lat},${selected.lng}&z=${state.exploreZoom}&output=embed`;
-        if (mapFrame.src !== nextSrc) mapFrame.src = nextSrc;
-    }
     const locatedPhotos = getLocatedPublicPhotos(albums);
-    const photoPinLayer = $('#explore-photo-pins');
-    if (photoPinLayer) {
-        photoPinLayer.innerHTML = locatedPhotos.slice(0, 40).map((photo) => {
-            const position = getExplorePinPosition(photo, locatedPhotos);
-            const isSelected = photo.album_id === selected.id || photo.id === state.selectedPhotoId;
-            return `
-                <button class="explore-photo-pin ${isSelected ? 'is-selected' : ''}" style="top:${position.top}%;left:${position.left}%;" type="button" data-explore-photo-pin="${escapeHtml(photo.id)}" data-public-album-id="${escapeHtml(photo.album_id || '')}" aria-label="${escapeHtml(photo.name || photo.albumTitle || 'Public photo')}">
-                    <img src="${photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg'}" alt="">
-                </button>
-            `;
-        }).join('');
-    }
+    renderExploreMapMarkers(locatedPhotos, selected.id);
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
-    if (selectedPhoto) {
-        const nextPhotoMapSrc = getPhotoMapUrl(selectedPhoto, state.exploreZoom);
-        if (mapFrame && nextPhotoMapSrc && mapFrame.src !== nextPhotoMapSrc) mapFrame.src = nextPhotoMapSrc;
-        updateExplorePhotoPreview(selectedPhoto);
-    }
+    if (selectedPhoto) updateExplorePhotoPreview(selectedPhoto);
 
     const relatedGrid = $('.related-album-grid');
     if (relatedGrid) {
@@ -846,9 +929,8 @@ function renderSavedPhotoSurfaces() {
     if (recentGrid) {
         recentGrid.innerHTML = myPhotos.length
             ? myPhotos.slice(0, 8).map((photo) => `
-            <article>
+            <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-                <span class="material-symbols-outlined">${photo.shared ? 'public' : 'lock'}</span>
             </article>
         `).join('')
             : '<article class="photo-placeholder"></article>';
@@ -1738,6 +1820,10 @@ function setLocationEditorPhoto(photoId) {
     if (descriptionInput) descriptionInput.value = photo?.description || '';
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
     if (mapFrame) mapFrame.src = getPhotoMapUrl({ lat: draft.lat, lng: draft.lng }, 13);
+    state.editingPhotoVisibility = photo?.visibility === 'public' || photo?.shared ? 'public' : 'private';
+    $$('[data-photo-visibility]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.photoVisibility === state.editingPhotoVisibility);
+    });
     if (title) title.textContent = photo ? photo.name : '저장된 사진 없음';
     if (message) {
         message.textContent = photo
@@ -1802,6 +1888,7 @@ async function saveManualLocation(event) {
         date: dateValue ? new Date(dateValue).toISOString() : photo.date,
         lat,
         lng,
+        visibility: state.editingPhotoVisibility,
         geo_source: 'manual'
     });
     if (error) {
@@ -1819,18 +1906,35 @@ async function saveManualLocation(event) {
     showToast('사진 위치를 저장했습니다.');
 }
 
-function renderExploreList() {
-    renderPublicSurfaces();
+async function searchExploreMap(event) {
+    event.preventDefault();
+    const input = $('#explore-map-search-input');
+    const query = input?.value.trim();
+    const map = ensureExploreMap();
+    const L = getLeaflet();
+    if (!query || !map || !L) return;
+
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`, {
+            headers: { Accept: 'application/json' }
+        });
+        const [place] = await response.json();
+        if (!place) {
+            showToast('검색 결과를 찾지 못했습니다.');
+            return;
+        }
+        const lat = Number(place.lat);
+        const lng = Number(place.lon);
+        map.setView([lat, lng], 13);
+        if (state.exploreSearchMarker) state.exploreSearchMarker.remove();
+        state.exploreSearchMarker = L.marker([lat, lng]).addTo(map);
+    } catch (error) {
+        showToast('장소 검색에 실패했습니다.');
+    }
 }
 
-function syncExploreGoogleMap() {
-    const frame = $('#explore-google-map');
-    if (!frame) return;
-    const selected = getSelectedPublicAlbum();
-    const lat = Number.isFinite(Number(selected?.lat)) ? Number(selected.lat) : 36.45;
-    const lng = Number.isFinite(Number(selected?.lng)) ? Number(selected.lng) : 127.85;
-    const nextSrc = `https://www.google.com/maps?q=${lat},${lng}&z=${state.exploreZoom}&output=embed`;
-    if (frame.src !== nextSrc) frame.src = nextSrc;
+function renderExploreList() {
+    renderPublicSurfaces();
 }
 
 async function handleAuthSubmit(event) {
@@ -2008,6 +2112,15 @@ function bindEvents() {
             return;
         }
 
+        const photoVisibilityButton = event.target.closest('[data-photo-visibility]');
+        if (photoVisibilityButton) {
+            state.editingPhotoVisibility = photoVisibilityButton.dataset.photoVisibility === 'public' ? 'public' : 'private';
+            $$('[data-photo-visibility]').forEach((button) => {
+                button.classList.toggle('active', button === photoVisibilityButton);
+            });
+            return;
+        }
+
         const saveAlbumButton = event.target.closest('#btn-save-album-draft');
         if (saveAlbumButton) {
             saveAlbumAndOpenDetail();
@@ -2016,6 +2129,8 @@ function bindEvents() {
 
         const personalPhotoToggle = event.target.closest('[data-toggle-personal-photo]');
         if (personalPhotoToggle) {
+            event.preventDefault();
+            event.stopPropagation();
             state.selectedPersonalPhotoIds = togglePersonalPhotoSelection(
                 state.selectedPersonalPhotoIds,
                 personalPhotoToggle.dataset.togglePersonalPhoto
@@ -2161,6 +2276,7 @@ function bindEvents() {
     $('#btn-signup')?.addEventListener('click', handleSignup);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
+    $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#location-lat-input')?.addEventListener('change', syncLocationEditorMap);
     $('#location-lng-input')?.addEventListener('change', syncLocationEditorMap);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
