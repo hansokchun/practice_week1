@@ -1,6 +1,12 @@
+export function buildAlbumRouteHash(route, albumId) {
+    const path = String(route || 'trip').replace(/^#?\/*/, '').replace(/^\/+|\/+$/g, '') || 'trip';
+    const hash = path === 'home' ? '#/' : `#/${path}`;
+    if (!albumId) return hash;
+    return `${hash}?album=${encodeURIComponent(albumId)}`;
+}
+
 export function buildTripHash(albumId) {
-    if (!albumId) return '#/trip';
-    return `#/trip?album=${encodeURIComponent(albumId)}`;
+    return buildAlbumRouteHash('trip', albumId);
 }
 
 export function buildTripShareUrl(origin, albumId) {

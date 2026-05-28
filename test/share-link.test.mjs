@@ -2,11 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    buildAlbumRouteHash,
     buildTripHash,
     buildTripShareUrl,
     getSharedRouteState,
     parseSharedAlbumId
 } from '../js/share-link.mjs';
+
+test('buildAlbumRouteHash keeps album id on public routes', () => {
+    assert.equal(buildAlbumRouteHash('profile', 'album 1'), '#/profile?album=album%201');
+    assert.equal(buildAlbumRouteHash('explore', 'demo-jeju'), '#/explore?album=demo-jeju');
+});
+
+test('buildAlbumRouteHash falls back to the route without an album id', () => {
+    assert.equal(buildAlbumRouteHash('profile', null), '#/profile');
+});
 
 test('buildTripHash keeps album id in the trip route hash', () => {
     assert.equal(buildTripHash('album 1'), '#/trip?album=album%201');

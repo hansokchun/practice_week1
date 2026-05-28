@@ -32,7 +32,7 @@ import {
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter } from './public-profile-albums.mjs';
-import { buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
+import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
     getTravelDraftPhotoIds,
@@ -98,13 +98,18 @@ function routeTo(section, { replace = false } = {}) {
     renderRoute(normalized);
 }
 
-function routeToTrip(albumId, { replace = false } = {}) {
+function routeToPublic(section, albumId, { replace = false } = {}) {
+    const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const selectedAlbumId = albumId || getSelectedPublicAlbum()?.id || state.selectedPublicAlbumId;
-    const hash = buildTripHash(selectedAlbumId);
+    const hash = buildAlbumRouteHash(normalized, selectedAlbumId);
     if (selectedAlbumId) state.selectedPublicAlbumId = selectedAlbumId;
     if (replace) window.history.replaceState(null, '', hash);
     else if (window.location.hash !== hash) window.location.hash = hash;
-    renderRoute('trip');
+    renderRoute(normalized);
+}
+
+function routeToTrip(albumId, options = {}) {
+    routeToPublic('trip', albumId, options);
 }
 
 function renderRoute(section) {
@@ -1265,7 +1270,9 @@ function bindEvents() {
     $$('[data-go-trip]').forEach((button) => {
         button.addEventListener('click', () => routeToTrip(button.dataset.publicAlbumId));
     });
-    $$('[data-go-profile]').forEach((button) => button.addEventListener('click', () => routeTo('profile')));
+    $$('[data-go-profile]').forEach((button) => {
+        button.addEventListener('click', () => routeToPublic('profile', button.dataset.publicAlbumId));
+    });
     $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => {
         updatePhotoDetailModal(getDefaultDetailPhoto());
         openModal('#photo-detail-modal');
