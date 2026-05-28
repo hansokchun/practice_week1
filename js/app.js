@@ -32,6 +32,7 @@ import {
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
+import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
@@ -442,11 +443,11 @@ function renderPublicSurfaces() {
             ...photo,
             date: new Date(Date.now() + index * 86400000).toISOString()
         }));
-        dayGrid.innerHTML = tripPhotos.slice(0, 3).map((photo, index) => `
+        dayGrid.innerHTML = getPublicTripDayCards(tripPhotos, selected.title).map((card) => `
             <article>
-                <p class="eyebrow">Day ${index + 1}</p>
-                <h3>${escapeHtml(photo.name || selected.title)}</h3>
-                <p>${index === 0 ? '여행의 첫 장면을 공개 앨범의 시작점으로 정리했습니다.' : index === 1 ? '지도 위에서 이어지는 사진 흐름을 확인할 수 있습니다.' : '공개하기 좋은 장면만 골라 여행 기록으로 묶었습니다.'}</p>
+                <p class="eyebrow">${escapeHtml(card.eyebrow)}</p>
+                <h3>${escapeHtml(card.title)}</h3>
+                <p>${escapeHtml(card.body)}</p>
             </article>
         `).join('');
     }
