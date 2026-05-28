@@ -30,6 +30,7 @@ import {
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
+import { getPublicAlbumCardClass } from './public-album-card-state.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
 import { getProfileHeroImage } from './public-profile-hero.mjs';
@@ -513,7 +514,7 @@ function renderPublicSurfaces() {
     const relatedGrid = $('.related-album-grid');
     if (relatedGrid) {
         relatedGrid.innerHTML = getRelatedAlbums(albums, selected).map((album) => `
-            <article data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
+            <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
@@ -542,7 +543,7 @@ function renderPublicSurfaces() {
     const profileGrid = $('.profile-album-grid');
     if (profileGrid) {
         profileGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
-            <article data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
+            <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
@@ -559,7 +560,7 @@ function renderPublicSurfaces() {
     const list = $('#explore-list');
     if (list) {
         list.innerHTML = albums.map((album) => `
-            <article class="explore-item" data-public-album-id="${escapeHtml(album.id)}">
+            <article class="explore-item ${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
             </article>
