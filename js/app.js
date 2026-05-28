@@ -31,6 +31,7 @@ import {
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
+import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter } from './public-profile-albums.mjs';
 import { buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -482,19 +483,26 @@ function renderPublicSurfaces() {
     }
 
     const profileStats = $('.profile-stats');
+    const profileAlbums = getProfileAlbums(albums, selected);
     if (profileStats) {
-        const totalPhotos = albums.reduce((sum, album) => sum + Number(album.photo_count || 0), 0);
-        const totalPlaces = albums.reduce((sum, album) => sum + Number(album.places || 1), 0);
+        const stats = getProfileAlbumStats(profileAlbums);
         profileStats.innerHTML = `
-            <span><strong>${albums.length}</strong> albums</span>
-            <span><strong>${totalPhotos || albums.length}</strong> photos</span>
-            <span><strong>${totalPlaces}</strong> places</span>
+            <span><strong>${stats.albums}</strong> albums</span>
+            <span><strong>${stats.photos || stats.albums}</strong> photos</span>
+            <span><strong>${stats.places}</strong> places</span>
         `;
+    }
+
+    const profileMapFrame = $('.profile-map-preview .google-map-frame');
+    if (profileMapFrame) {
+        const center = getProfileMapCenter(profileAlbums);
+        const nextSrc = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=5&output=embed`;
+        if (profileMapFrame.src !== nextSrc) profileMapFrame.src = nextSrc;
     }
 
     const profileGrid = $('.profile-album-grid');
     if (profileGrid) {
-        profileGrid.innerHTML = albums.slice(0, 6).map((album) => `
+        profileGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
             <article data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>
