@@ -41,6 +41,7 @@ import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
+import { getShareSaveControlState } from './share-save-state.mjs';
 import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
 import {
@@ -66,7 +67,8 @@ const state = {
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     exploreZoom: 7,
-    isPersistingUpload: false
+    isPersistingUpload: false,
+    isSavingShare: false
 };
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
@@ -865,13 +867,29 @@ function setVisibilityMode(mode) {
     if (status) status.textContent = getVisibilityStatusText(state.visibility);
 }
 
+function applyShareSaveState() {
+    const controlState = getShareSaveControlState(state.isSavingShare);
+    const saveButton = $('#btn-save-share-settings');
+    if (saveButton) {
+        saveButton.disabled = controlState.disabled;
+        saveButton.textContent = controlState.saveLabel;
+    }
+    $$('[data-visibility-shortcut]').forEach((button) => {
+        button.disabled = controlState.disabled;
+    });
+}
+
 async function saveShareSettings() {
+    if (state.isSavingShare) return;
     if (!state.currentUser) {
         setPendingAuthAction(state, 'save-share');
         openModal('#auth-modal');
         showToast('공개 설정을 저장하려면 먼저 로그인해주세요.');
         return;
     }
+    state.isSavingShare = true;
+    applyShareSaveState();
+    try {
     const latestOwnAlbum = await ensureAlbumForSharing();
     if (!latestOwnAlbum) return;
     let updatedAlbum = null;
@@ -905,6 +923,10 @@ async function saveShareSettings() {
     if (completionHash !== '#/share') {
         window.location.hash = completionHash;
         renderRoute('trip');
+    }
+    } finally {
+        state.isSavingShare = false;
+        applyShareSaveState();
     }
 }
 
