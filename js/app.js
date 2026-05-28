@@ -58,6 +58,7 @@ import {
     appendUploadPhotos,
     countSelectedUploadPhotos,
     getSelectedUploadPhotos,
+    shouldClearUploadQueue,
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
 
@@ -135,8 +136,18 @@ function routeToTrip(albumId, options = {}) {
     routeToPublic('trip', albumId, options);
 }
 
+function clearUploadQueue() {
+    state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
+    state.stagedPhotos = [];
+    renderStagedPhotos();
+}
+
 function renderRoute(section) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
+    const previousRoute = document.body.dataset.page || null;
+    if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
+        clearUploadQueue();
+    }
     const navSection = ['upload', 'photos', 'album', 'review', 'share'].includes(normalized)
         ? APP_SECTIONS.MYPHOTO
         : ['trip', 'profile'].includes(normalized)
@@ -1213,6 +1224,7 @@ async function persistStagedPhotos() {
         renderSavedPhotoSurfaces();
         if (status) status.textContent = `${saved.length}장의 사진을 개별사진 보관함에 저장했습니다.`;
         showToast(`${saved.length}장의 사진을 저장했습니다.`);
+        clearUploadQueue();
         routeTo(getUploadNextRoute(saved.length));
     } catch (error) {
         if (status) status.textContent = error.message || '사진 저장에 실패했습니다.';

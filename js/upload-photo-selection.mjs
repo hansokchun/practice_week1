@@ -29,3 +29,7 @@ export function appendUploadPhotos(existingPhotos = [], files = [], {
         }))
     ];
 }
+
+export function shouldClearUploadQueue(previousRoute, nextRoute) {
+    return previousRoute === 'upload' && nextRoute !== 'upload';
+}

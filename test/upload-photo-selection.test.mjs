@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    appendUploadPhotos,
     countSelectedUploadPhotos,
     getSelectedUploadPhotos,
-    appendUploadPhotos,
+    shouldClearUploadQueue,
     toggleUploadPhotoSelection
 } from '../js/upload-photo-selection.mjs';
 
@@ -48,4 +49,11 @@ test('appendUploadPhotos keeps the existing queue and selects new photos', () =>
             selected: true
         }
     ]);
+});
+
+test('shouldClearUploadQueue clears only when leaving upload page', () => {
+    assert.equal(shouldClearUploadQueue('upload', 'myphoto'), true);
+    assert.equal(shouldClearUploadQueue('upload', 'photos'), true);
+    assert.equal(shouldClearUploadQueue('upload', 'upload'), false);
+    assert.equal(shouldClearUploadQueue('myphoto', 'upload'), false);
 });

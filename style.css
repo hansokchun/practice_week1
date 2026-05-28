@@ -999,6 +999,7 @@ img {
 }
 
 .upload-thumbnail .material-symbols-outlined {
+    display: none;
     position: absolute;
     top: 8px;
     right: 8px;
@@ -1084,8 +1085,12 @@ img {
 
 .result-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+}
+
+.result-stats article:has(#upload-missing-location-count) {
+    display: none;
 }
 
 .result-stats article {
