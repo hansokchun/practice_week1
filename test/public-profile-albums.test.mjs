@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {
     getProfileAlbumStats,
     getProfileAlbums,
-    getProfileMapCenter
+    getProfileMapCenter,
+    getRelatedAlbums
 } from '../js/public-profile-albums.mjs';
 
 const albums = [
@@ -19,6 +20,14 @@ test('getProfileAlbums returns albums from the selected album author', () => {
 
 test('getProfileAlbums falls back to all albums when no selected owner exists', () => {
     assert.deepEqual(getProfileAlbums(albums, null).map((album) => album.id), ['a', 'b', 'c']);
+});
+
+test('getRelatedAlbums returns other albums from the same author', () => {
+    assert.deepEqual(getRelatedAlbums(albums, albums[0]).map((album) => album.id), ['b']);
+});
+
+test('getRelatedAlbums falls back to other public albums when author has no other albums', () => {
+    assert.deepEqual(getRelatedAlbums(albums, albums[2]).map((album) => album.id), ['a', 'b']);
 });
 
 test('getProfileAlbumStats summarizes only profile albums', () => {

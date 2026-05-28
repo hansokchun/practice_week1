@@ -31,7 +31,7 @@ import {
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
-import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter } from './public-profile-albums.mjs';
+import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -498,7 +498,7 @@ function renderPublicSurfaces() {
 
     const relatedGrid = $('.related-album-grid');
     if (relatedGrid) {
-        relatedGrid.innerHTML = albums.slice(0, 3).map((album) => `
+        relatedGrid.innerHTML = getRelatedAlbums(albums, selected).map((album) => `
             <article data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>

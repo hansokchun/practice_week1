@@ -5,6 +5,15 @@ export function getProfileAlbums(albums = [], selectedAlbum = null) {
     return ownerAlbums.length ? ownerAlbums : albums;
 }
 
+export function getRelatedAlbums(albums = [], selectedAlbum = null, limit = 3) {
+    const selectedId = selectedAlbum?.id;
+    const otherAlbums = albums.filter((album) => album.id !== selectedId);
+    const ownerId = selectedAlbum?.owner_id;
+    const ownerAlbums = ownerId ? otherAlbums.filter((album) => album.owner_id === ownerId) : [];
+    const relatedAlbums = ownerAlbums.length ? ownerAlbums : otherAlbums;
+    return relatedAlbums.slice(0, limit);
+}
+
 export function getProfileAlbumStats(albums = []) {
     return {
         albums: albums.length,
