@@ -18,6 +18,7 @@ import {
 } from '../auth.js';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
+import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
 import { shouldOpenExplorePreview } from './explore-selection.mjs';
 import {
     getLocationEditorPhoto,
@@ -1344,12 +1345,6 @@ function syncExploreGoogleMap() {
     if (frame.src !== nextSrc) frame.src = nextSrc;
 }
 
-function updateExploreZoom(direction) {
-    const delta = direction === 'in' ? 1 : -1;
-    state.exploreZoom = Math.min(12, Math.max(5, state.exploreZoom + delta));
-    syncExploreGoogleMap();
-}
-
 async function handleAuthSubmit(event) {
     event.preventDefault();
     const email = $('#email-input')?.value.trim();
@@ -1478,11 +1473,6 @@ function bindEvents() {
         document.body.classList.remove('explore-pin-selected');
         $('#explore-pin-preview')?.setAttribute('hidden', '');
     });
-    $$('[data-map-zoom]').forEach((button) => button.addEventListener('click', () => updateExploreZoom(button.dataset.mapZoom)));
-    $('[data-map-reset]')?.addEventListener('click', () => {
-        state.exploreZoom = 7;
-        syncExploreGoogleMap();
-    });
     $('#btn-open-share-settings')?.addEventListener('click', () => routeTo('share'));
     $$('[data-visibility]').forEach((button) => button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility)));
     $$('[data-visibility-shortcut]').forEach((button) => {
@@ -1506,6 +1496,25 @@ function bindEvents() {
     });
     $('#btn-save-album-draft')?.addEventListener('click', saveAlbumDraft);
     $('#photo-input')?.addEventListener('change', (event) => handlePhotoFiles(event.target.files));
+    const uploadDropzone = $('#upload-dropzone');
+    if (uploadDropzone) {
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            uploadDropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                uploadDropzone.className = getUploadDropzoneClass(true);
+            });
+        });
+        ['dragleave', 'drop'].forEach((eventName) => {
+            uploadDropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                uploadDropzone.className = getUploadDropzoneClass(false);
+            });
+        });
+        uploadDropzone.addEventListener('drop', (event) => {
+            const droppedFiles = getDroppedFiles(event.dataTransfer);
+            if (droppedFiles.length) handlePhotoFiles(droppedFiles);
+        });
+    }
     $('#btn-open-auth')?.addEventListener('click', async () => {
         if (state.currentUser) {
             await signOut();

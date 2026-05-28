@@ -916,6 +916,11 @@ img {
     box-shadow: var(--shadow);
 }
 
+.upload-dropzone.is-dragging {
+    border-color: var(--teal);
+    background: rgba(45, 142, 151, 0.08);
+}
+
 .upload-dropzone input {
     display: none;
 }
@@ -1524,7 +1529,6 @@ img {
 .map-dot,
 .map-pin,
 .map-filter,
-.map-controls,
 .map-hint {
     position: absolute;
     z-index: 3;
@@ -1629,8 +1633,7 @@ img {
     gap: 12px;
 }
 
-.map-filter button,
-.map-controls button {
+.map-filter button {
     border: 1px solid rgba(255, 255, 255, 0.55);
     background: rgba(255, 255, 255, 0.76);
     backdrop-filter: blur(12px);
@@ -1650,22 +1653,6 @@ img {
 .map-filter button.active {
     color: var(--teal);
     background: rgba(255, 255, 255, 0.9);
-}
-
-.map-controls {
-    right: 24px;
-    bottom: 44px;
-    display: grid;
-    gap: 10px;
-}
-
-.map-controls button {
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    color: var(--teal);
 }
 
 .map-hint {
