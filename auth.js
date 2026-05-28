@@ -210,6 +210,30 @@ export async function updatePhotoLocation(photoId, lat, lng) {
     }
 }
 
+export async function updatePhotoInfo(photoId, updates = {}) {
+    try {
+        const sb = getSupabase();
+        const payload = {};
+        if ('title' in updates) payload.title = updates.title || '';
+        if ('description' in updates) payload.description = updates.description || '';
+        if ('date' in updates) payload.date = updates.date;
+        if ('lat' in updates) payload.lat = updates.lat;
+        if ('lng' in updates) payload.lng = updates.lng;
+        if ('geo_source' in updates) payload.geo_source = updates.geo_source;
+
+        const { data, error } = await sb
+            .from('photos')
+            .update(payload)
+            .eq('id', photoId.toString())
+            .select('*')
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
 /**
  * 사진 좋아요 증감 (RPC 호출)
  * RLS(본인만 수정 가능)를 우회하여 다른 사람의 사진 좋아요 수를 안전하게 처리합니다.

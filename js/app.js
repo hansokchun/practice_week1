@@ -10,7 +10,7 @@ import {
     signUpWithEmail,
     signInWithGoogle,
     signInWithKakao,
-    updatePhotoLocation,
+    updatePhotoInfo,
     updatePhotosVisibility,
     uploadImage,
     updateAlbum,
@@ -36,6 +36,7 @@ import {
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
+import { readPhotoExif } from './photo-exif-reader.mjs';
 import {
     getSelectedPersonalPhotos,
     prunePersonalPhotoSelection,
@@ -231,12 +232,91 @@ function getDefaultDetailPhoto() {
         || { id: 'empty-detail', name: '여행 사진', url: 'images/main_bg2.jpg', date: new Date().toISOString(), album: selectedAlbum?.title || '여행 앨범', visibility: selectedAlbum?.visibility || 'private' };
 }
 
+function hasPhotoLocation(photo) {
+    return Number.isFinite(Number(photo?.lat)) && Number.isFinite(Number(photo?.lng));
+}
+
+function getPhotoMapUrl(photo, zoom = 14) {
+    if (!hasPhotoLocation(photo)) return '';
+    return `https://www.google.com/maps?q=${Number(photo.lat)},${Number(photo.lng)}&z=${zoom}&output=embed`;
+}
+
+function formatPhotoDateInput(value) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return '';
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().slice(0, 16);
+}
+
+function getLocatedPublicPhotos(albums = getPublicAlbums()) {
+    return albums.flatMap((album) => (album.photos || [])
+        .filter(hasPhotoLocation)
+        .map((photo) => ({
+            ...photo,
+            album_id: photo.album_id || album.id,
+            album: photo.album || album.title,
+            albumTitle: album.title,
+            albumNote: album.note,
+            albumVisibility: album.visibility,
+            albumCoverUrl: album.cover_url,
+            albumOwnerId: album.owner_id
+        })));
+}
+
+function getExplorePinPosition(photo, photos) {
+    const lats = photos.map((item) => Number(item.lat));
+    const lngs = photos.map((item) => Number(item.lng));
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    const latRange = maxLat - minLat || 1;
+    const lngRange = maxLng - minLng || 1;
+    const left = 8 + ((Number(photo.lng) - minLng) / lngRange) * 84;
+    const top = 8 + ((maxLat - Number(photo.lat)) / latRange) * 84;
+    return {
+        top: Math.min(92, Math.max(8, top)),
+        left: Math.min(92, Math.max(8, left))
+    };
+}
+
+function updateExplorePhotoPreview(photo) {
+    const preview = $('#explore-pin-preview');
+    if (!preview || !photo) return;
+    const image = preview.querySelector('img');
+    const title = preview.querySelector('.pin-preview-copy h2');
+    const note = preview.querySelector('.pin-preview-copy p:last-child');
+    const meta = preview.querySelector('.pin-preview-meta');
+    const tripButton = preview.querySelector('[data-go-trip]');
+    const profileButton = preview.querySelector('[data-go-profile]');
+    const date = photo.date ? new Date(photo.date) : null;
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : 'No date';
+    if (image) {
+        image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
+        image.alt = photo.name || photo.albumTitle || 'Public photo';
+    }
+    if (title) title.textContent = photo.name || photo.albumTitle || 'Public photo';
+    if (note) note.textContent = photo.description || photo.albumNote || photo.albumTitle || '';
+    if (meta) {
+        meta.innerHTML = `
+            <span><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
+            <span><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
+            <span><span class="material-symbols-outlined">public</span> ${photo.albumVisibility === 'link' ? 'link' : 'public'}</span>
+        `;
+    }
+    if (tripButton) tripButton.dataset.publicAlbumId = photo.album_id || '';
+    if (profileButton) profileButton.dataset.publicAlbumId = photo.album_id || '';
+    updatePhotoDetailModal(photo);
+}
+
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
     const image = modal?.querySelector('.photo-detail-card > img');
     const title = $('#photo-detail-title');
     const meta = modal?.querySelector('.photo-detail-card section > p:not(.eyebrow)');
+    const map = $('#photo-detail-map');
+    const mapFrame = $('#photo-detail-map-frame');
     const albumValue = modal?.querySelector('dl div:nth-child(1) dd');
     const visibilityValue = modal?.querySelector('dl div:nth-child(2) dd');
     const originalValue = modal?.querySelector('dl div:nth-child(3) dd');
@@ -248,10 +328,20 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
         image.alt = photo.name || '여행 사진 상세';
     }
     if (title) title.textContent = photo.name || '여행 사진';
-    if (meta) meta.textContent = `${dateLabel} · ${photo.lat && photo.lng ? `${photo.lat.toFixed(4)}, ${photo.lng.toFixed(4)}` : '위치 미지정'}`;
-    if (albumValue) albumValue.textContent = photo.album || getSelectedPublicAlbum().title || '여행 앨범';
+    if (meta) meta.textContent = `${dateLabel} · ${hasPhotoLocation(photo) ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}` : '위치 정보 없음'}`;
+    if (map && mapFrame) {
+        const mapUrl = getPhotoMapUrl(photo);
+        if (mapUrl) {
+            mapFrame.src = mapUrl;
+            map.removeAttribute('hidden');
+        } else {
+            mapFrame.removeAttribute('src');
+            map.setAttribute('hidden', '');
+        }
+    }
+    if (albumValue) albumValue.textContent = photo.album || getSelectedPublicAlbum().title || '내 개별사진';
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? 'Public photo · approximate location' : 'Private photo';
-    if (originalValue) originalValue.textContent = '공개 이미지에서는 EXIF 메타데이터를 보호합니다.';
+    if (originalValue) originalValue.textContent = photo.description || '사진 정보는 내 보관함에 저장됩니다.';
 }
 
 function updateAccountUI() {
@@ -268,6 +358,7 @@ function normalizeSavedPhoto(photo) {
     return {
         id: photo.id,
         name: photo.title || photo.description || 'Travel photo',
+        description: photo.description || '',
         url: photo.url,
         date: photo.date || photo.created_at || new Date().toISOString(),
         lat: Number.isFinite(Number(photo.lat)) ? Number(photo.lat) : null,
@@ -477,6 +568,8 @@ function renderEmptyPublicSurfaces() {
         delete target.dataset.publicAlbumId;
         target.classList.remove('is-selected');
     });
+    const photoPinLayer = $('#explore-photo-pins');
+    if (photoPinLayer) photoPinLayer.innerHTML = '';
 }
 
 function renderPublicSurfaces() {
@@ -587,40 +680,25 @@ function renderPublicSurfaces() {
         const nextSrc = `https://www.google.com/maps?q=${selected.lat},${selected.lng}&z=${state.exploreZoom}&output=embed`;
         if (mapFrame.src !== nextSrc) mapFrame.src = nextSrc;
     }
-
-    const mapTargets = [
-        ...$$('[data-explore-pin].map-pin'),
-        ...$$('[data-explore-pin].map-cluster'),
-        ...$$('[data-explore-pin].map-dot')
-    ];
-    const positions = [
-        { top: 45, left: 64 },
-        { top: 32, left: 44 },
-        { top: 61, left: 22 },
-        { top: 22, left: 78 },
-        { top: 74, left: 56 }
-    ];
-    mapTargets.forEach((target, index) => {
-        const album = albums[index] || albums[index % albums.length];
-        if (!album) return;
-        const position = positions[index] || positions[0];
-        target.dataset.publicAlbumId = album.id;
-        target.setAttribute('aria-label', `${album.title} 공개 여행 보기`);
-        target.style.top = `${position.top}%`;
-        target.style.left = `${position.left}%`;
-        target.classList.toggle('is-selected', album.id === selected.id);
-        if (target.classList.contains('map-pin')) {
-            const image = target.querySelector('img');
-            const count = target.querySelector('b');
-            if (image) {
-                image.src = album.cover_url || 'images/main_bg2.jpg';
-                image.alt = album.title;
-            }
-            if (count) count.textContent = String(Math.max(1, Number(album.photo_count || 1)));
-        } else if (target.classList.contains('map-cluster')) {
-            target.textContent = String(Math.max(1, Number(album.photo_count || 1)));
-        }
-    });
+    const locatedPhotos = getLocatedPublicPhotos(albums);
+    const photoPinLayer = $('#explore-photo-pins');
+    if (photoPinLayer) {
+        photoPinLayer.innerHTML = locatedPhotos.slice(0, 40).map((photo) => {
+            const position = getExplorePinPosition(photo, locatedPhotos);
+            const isSelected = photo.album_id === selected.id || photo.id === state.selectedPhotoId;
+            return `
+                <button class="explore-photo-pin ${isSelected ? 'is-selected' : ''}" style="top:${position.top}%;left:${position.left}%;" type="button" data-explore-photo-pin="${escapeHtml(photo.id)}" data-public-album-id="${escapeHtml(photo.album_id || '')}" aria-label="${escapeHtml(photo.name || photo.albumTitle || 'Public photo')}">
+                    <img src="${photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg'}" alt="">
+                </button>
+            `;
+        }).join('');
+    }
+    const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
+    if (selectedPhoto) {
+        const nextPhotoMapSrc = getPhotoMapUrl(selectedPhoto, state.exploreZoom);
+        if (mapFrame && nextPhotoMapSrc && mapFrame.src !== nextPhotoMapSrc) mapFrame.src = nextPhotoMapSrc;
+        updateExplorePhotoPreview(selectedPhoto);
+    }
 
     const relatedGrid = $('.related-album-grid');
     if (relatedGrid) {
@@ -865,7 +943,7 @@ function renderMissingLocationTasks(photos) {
     }
 
     list.innerHTML = photos.slice(0, 4).map((photo) => `
-        <button type="button" data-open-location-editor data-photo-id="${escapeHtml(photo.id)}">
+        <button type="button" data-open-photo-editor data-photo-id="${escapeHtml(photo.id)}">
             <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
             <span>
                 <strong>${escapeHtml(photo.name)}</strong>
@@ -1422,22 +1500,23 @@ async function persistStagedPhotos() {
         for (const [index, photo] of selectedPhotos.entries()) {
             const id = `${timestamp}-${index}`;
             const fileName = `${state.currentUser.id}/${id}-${safeFileName(photo.name)}`;
+            const exif = await readPhotoExif(photo.file);
             const { url, error: uploadError } = await uploadImage(photo.file, fileName);
             if (uploadError) throw uploadError;
             const record = {
                 id,
                 url,
-                date: new Date().toISOString(),
+                date: exif.date || new Date().toISOString(),
                 title: photo.name,
                 description: '',
-                lat: null,
-                lng: null,
+                lat: exif.lat,
+                lng: exif.lng,
                 liked: 0,
                 shared: false,
                 owner_id: state.currentUser.id,
                 album: $('#album-name-input')?.value.trim() || '업로드 초안',
                 visibility: 'private',
-                geo_source: 'unknown'
+                geo_source: exif.lat !== null && exif.lng !== null ? 'exif' : 'unknown'
             };
             const { error: dbError } = await upsertPhoto(record);
             if (dbError) throw dbError;
@@ -1644,6 +1723,10 @@ function setLocationEditorPhoto(photoId) {
     const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
     const latInput = $('#location-lat-input');
     const lngInput = $('#location-lng-input');
+    const nameInput = $('#photo-title-input');
+    const descriptionInput = $('#photo-description-input');
+    const dateInput = $('#photo-date-input');
+    const mapFrame = $('#location-editor-map-frame');
     const message = $('#location-editor-message');
     const title = $('#location-selected-photo-title');
     const draft = normalizeLocationDraft(photo);
@@ -1651,6 +1734,10 @@ function setLocationEditorPhoto(photoId) {
     state.selectedLocationPhotoId = photo?.id || null;
     if (latInput) latInput.value = draft.lat;
     if (lngInput) lngInput.value = draft.lng;
+    if (nameInput) nameInput.value = photo?.name || '';
+    if (descriptionInput) descriptionInput.value = photo?.description || '';
+    if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
+    if (mapFrame) mapFrame.src = getPhotoMapUrl({ lat: draft.lat, lng: draft.lng }, 13);
     if (title) title.textContent = photo ? photo.name : '저장된 사진 없음';
     if (message) {
         message.textContent = photo
@@ -1679,10 +1766,21 @@ function openLocationEditor(eventOrPhotoId) {
     openModal('#location-editor-modal');
 }
 
+function syncLocationEditorMap() {
+    const lat = Number($('#location-lat-input')?.value);
+    const lng = Number($('#location-lng-input')?.value);
+    const mapFrame = $('#location-editor-map-frame');
+    if (!mapFrame || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    mapFrame.src = getPhotoMapUrl({ lat, lng }, 13);
+}
+
 async function saveManualLocation(event) {
     event.preventDefault();
     const lat = Number($('#location-lat-input')?.value);
     const lng = Number($('#location-lng-input')?.value);
+    const title = $('#photo-title-input')?.value.trim() || '';
+    const description = $('#photo-description-input')?.value.trim() || '';
+    const dateValue = $('#photo-date-input')?.value;
     const message = $('#location-editor-message');
     if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
         if (message) message.textContent = '올바른 위도와 경도를 입력해주세요.';
@@ -1698,7 +1796,14 @@ async function saveManualLocation(event) {
     }
 
     if (message) message.textContent = '위치를 저장하는 중입니다...';
-    const { data, error } = await updatePhotoLocation(photo.id, lat, lng);
+    const { data, error } = await updatePhotoInfo(photo.id, {
+        title: title || photo.name,
+        description,
+        date: dateValue ? new Date(dateValue).toISOString() : photo.date,
+        lat,
+        lng,
+        geo_source: 'manual'
+    });
     if (error) {
         if (message) message.textContent = error.message || '위치 저장에 실패했습니다.';
         return;
@@ -1709,6 +1814,7 @@ async function saveManualLocation(event) {
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
     renderPublicSurfaces();
+    updatePhotoDetailModal(updated);
     closeModals();
     showToast('사진 위치를 저장했습니다.');
 }
@@ -1813,7 +1919,6 @@ function bindEvents() {
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-open-album')?.addEventListener('click', startNewAlbum);
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
-    $('#btn-new-trip')?.addEventListener('click', startNewAlbum);
     $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO)));
     $$('[data-go-album]').forEach((button) => button.addEventListener('click', () => routeTo('album')));
     $$('[data-go-trip]').forEach((button) => {
@@ -1940,9 +2045,27 @@ function bindEvents() {
             return;
         }
 
-        const locationButton = event.target.closest('[data-open-location-editor]');
+        const locationButton = event.target.closest('[data-open-photo-editor]');
         if (locationButton) {
             openLocationEditor({ currentTarget: locationButton });
+            return;
+        }
+
+        const photoEditorButton = event.target.closest('#btn-expand-photo-map');
+        if (photoEditorButton) {
+            openLocationEditor({ currentTarget: photoEditorButton });
+            return;
+        }
+
+        const explorePhotoPin = event.target.closest('[data-explore-photo-pin]');
+        if (explorePhotoPin) {
+            const photo = getLocatedPublicPhotos().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
+            if (photo?.album_id) setSelectedPublicAlbum(photo.album_id);
+            updateExplorePhotoPreview(photo);
+            renderPublicSurfaces();
+            updateExplorePhotoPreview(photo);
+            document.body.classList.add('explore-pin-selected');
+            $('#explore-pin-preview')?.removeAttribute('hidden');
             return;
         }
 
@@ -1956,11 +2079,6 @@ function bindEvents() {
         event.preventDefault();
         openMyphotoAlbum(albumRow);
     });
-    $$('[data-explore-pin]').forEach((button) => button.addEventListener('click', () => {
-        if (button.dataset.publicAlbumId) setSelectedPublicAlbum(button.dataset.publicAlbumId);
-        document.body.classList.add('explore-pin-selected');
-        $('#explore-pin-preview')?.removeAttribute('hidden');
-    }));
     $('#btn-close-pin-preview')?.addEventListener('click', () => {
         document.body.classList.remove('explore-pin-selected');
         $('#explore-pin-preview')?.setAttribute('hidden', '');
@@ -2043,6 +2161,8 @@ function bindEvents() {
     $('#btn-signup')?.addEventListener('click', handleSignup);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
+    $('#location-lat-input')?.addEventListener('change', syncLocationEditorMap);
+    $('#location-lng-input')?.addEventListener('change', syncLocationEditorMap);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModals));
     $$('.modal').forEach((modal) => {

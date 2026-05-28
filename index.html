@@ -24,10 +24,6 @@
             <a href="#/explore" data-route="explore">Explore</a>
         </nav>
         <div class="account-area">
-            <button id="btn-new-trip" class="nav-action nav-create" type="button">
-                <span class="material-symbols-outlined">add</span>
-                여행 만들기
-            </button>
             <span id="account-label" class="account-label">Guest</span>
             <button id="btn-open-auth" class="nav-action" type="button">Login</button>
         </div>
@@ -170,8 +166,8 @@
                         <strong>처리 필요: 위치 정보 없는 사진 12장</strong>
                         <p>사진의 메타데이터가 부족해 지도에 표시되지 않고 있습니다.</p>
                     </div>
-                    <button data-open-location-editor type="button">위치 지정하기</button>
-                    <button type="button" class="solid" data-open-location-editor>직접 지정하기</button>
+                    <button data-open-photo-editor type="button">수정</button>
+                    <button type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
                     <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
                 </section>
 
@@ -333,7 +329,7 @@
                     <p>위치가 정확하지 않은 사진은 공개 전에 직접 조정할 수 있습니다.</p>
                     <div class="review-toolbar">
                         <button class="btn-secondary" data-open-photo-detail type="button">사진 상세</button>
-                        <button class="btn-secondary" data-open-location-editor type="button">위치 수정</button>
+                        <button class="btn-secondary" data-open-photo-editor type="button">수정</button>
                     </div>
                     <div id="review-day-list" class="day-divider-list">
                         <article>
@@ -418,14 +414,7 @@
             <div class="explore-map-canvas" aria-label="공개 여행 지도">
                 <iframe id="explore-google-map" class="google-map-frame" title="Google map showing public travel photos" src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 <div class="map-scrim" aria-hidden="true"></div>
-                <button class="map-cluster cluster-a" data-explore-pin type="button" aria-label="공개 여행 58개 보기">58</button>
-                <button class="map-cluster cluster-b" data-explore-pin type="button" aria-label="공개 여행 24개 보기">24</button>
-                <button class="map-pin pin-a" data-explore-pin type="button" aria-label="도쿄 야경 산책 미리보기">
-                    <img src="images/main_bg3.jpg" alt="">
-                    <b>1</b>
-                </button>
-                <button class="map-dot dot-a" data-explore-pin type="button" aria-label="공개 사진 보기"></button>
-                <button class="map-dot dot-b" data-explore-pin type="button" aria-label="공개 사진 보기"></button>
+                <div id="explore-photo-pins" class="explore-photo-pins" aria-label="공개 사진 위치 핀"></div>
                 <div class="map-filter">
                     <button class="active"><span class="material-symbols-outlined">photo_library</span> 사진</button>
                     <button><span class="material-symbols-outlined">auto_stories</span> 앨범</button>
@@ -570,16 +559,22 @@
             <img src="images/main_bg2.jpg" alt="여행 사진 상세">
             <section>
                 <p class="eyebrow">Archival Photo</p>
-                <h2 id="photo-detail-title">성산 앞바다의 오후</h2>
-                <p>2026.05.14 · Jeju, Korea</p>
+                <h2 id="photo-detail-title">여행 사진</h2>
+                <p>촬영 날짜 없음 · 위치 정보 없음</p>
+                <div id="photo-detail-map" class="photo-detail-map" hidden>
+                    <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <button id="btn-expand-photo-map" class="map-expand-button" type="button" aria-label="지도 크게 보기">
+                        <span class="material-symbols-outlined">open_in_full</span>
+                    </button>
+                </div>
                 <dl>
-                    <div><dt>Album</dt><dd>Jeju East Coast Drive</dd></div>
-                    <div><dt>Visibility</dt><dd>Public photo · approximate location</dd></div>
-                    <div><dt>Original</dt><dd>EXIF metadata removed for public view</dd></div>
+                    <div><dt>Album</dt><dd>내 개별사진</dd></div>
+                    <div><dt>Visibility</dt><dd>Private photo</dd></div>
+                    <div><dt>Original</dt><dd>원본 사진 정보는 내 보관함에 저장됩니다.</dd></div>
                 </dl>
                 <div class="detail-actions">
                     <button class="btn-primary" data-go-trip type="button">앨범으로 이동</button>
-                    <button class="btn-secondary" data-open-location-editor type="button">위치 수정</button>
+                    <button class="btn-secondary" data-open-photo-editor type="button">수정</button>
                 </div>
             </section>
         </div>
@@ -588,21 +583,30 @@
     <div id="location-editor-modal" class="modal" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="location-editor-title">
             <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
-            <p class="eyebrow">Manual Location</p>
-            <h2 id="location-editor-title">사진 위치 직접 지정</h2>
-            <p>GPS가 없는 사진은 임시 위치를 입력해 지도 검토 단계에서 이어서 다룰 수 있습니다.</p>
+            <p class="eyebrow">Photo Edit</p>
+            <h2 id="location-editor-title">사진 정보 수정</h2>
+            <p>사진 이름, 설명, 촬영 날짜와 지도에 표시될 위치를 수정합니다.</p>
             <div class="location-photo-picker">
                 <span>선택한 사진</span>
                 <strong id="location-selected-photo-title">저장된 사진 없음</strong>
-                <div id="location-photo-list" class="location-photo-list" aria-label="위치 지정 사진 선택"></div>
+                <div id="location-photo-list" class="location-photo-list" aria-label="수정할 사진 선택"></div>
+            </div>
+            <div id="location-editor-map" class="location-editor-map">
+                <iframe id="location-editor-map-frame" title="Editable photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
             <form id="location-editor-form" class="location-form">
+                <label for="photo-title-input">사진 이름</label>
+                <input id="photo-title-input" type="text" maxlength="120" placeholder="사진 이름">
+                <label for="photo-description-input">설명</label>
+                <textarea id="photo-description-input" rows="3" maxlength="500" placeholder="사진 설명"></textarea>
+                <label for="photo-date-input">촬영 날짜</label>
+                <input id="photo-date-input" type="datetime-local">
                 <label for="location-lat-input">Latitude</label>
                 <input id="location-lat-input" type="number" step="0.000001" min="-90" max="90" placeholder="33.450701" required>
                 <label for="location-lng-input">Longitude</label>
                 <input id="location-lng-input" type="number" step="0.000001" min="-180" max="180" placeholder="126.570667" required>
                 <div class="auth-actions">
-                    <button class="btn-primary" type="submit">위치 저장</button>
+                    <button class="btn-primary" type="submit">수정 저장</button>
                     <button class="btn-secondary" data-close-modal type="button">취소</button>
                 </div>
             </form>
