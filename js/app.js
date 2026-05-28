@@ -33,6 +33,7 @@ import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
+import { getShareCompletionHash } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -844,7 +845,11 @@ async function saveShareSettings() {
             : '비공개 상태로 저장했습니다.';
     showToast(message);
     if (['public', 'link'].includes(state.visibility)) await copyCurrentShareLink();
-    if (state.visibility === 'public') routeTo('trip');
+    const completionHash = getShareCompletionHash(state.visibility, updatedAlbum?.id || latestOwnAlbum.id);
+    if (completionHash !== '#/share') {
+        window.location.hash = completionHash;
+        renderRoute('trip');
+    }
 }
 
 function setProfileTab(tab) {
