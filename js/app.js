@@ -32,7 +32,7 @@ import {
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter } from './public-profile-albums.mjs';
-import { buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
+import { buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
     getTravelDraftPhotoIds,
@@ -98,6 +98,15 @@ function routeTo(section, { replace = false } = {}) {
     renderRoute(normalized);
 }
 
+function routeToTrip(albumId, { replace = false } = {}) {
+    const selectedAlbumId = albumId || getSelectedPublicAlbum()?.id || state.selectedPublicAlbumId;
+    const hash = buildTripHash(selectedAlbumId);
+    if (selectedAlbumId) state.selectedPublicAlbumId = selectedAlbumId;
+    if (replace) window.history.replaceState(null, '', hash);
+    else if (window.location.hash !== hash) window.location.hash = hash;
+    renderRoute('trip');
+}
+
 function renderRoute(section) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const navSection = ['upload', 'album', 'review', 'share'].includes(normalized)
@@ -118,7 +127,18 @@ function renderRoute(section) {
 function applyRouteHash(hash, options = {}) {
     const sharedRoute = getSharedRouteState(hash);
     if (sharedRoute.albumId) state.selectedPublicAlbumId = sharedRoute.albumId;
-    routeTo(sharedRoute.route || parseRouteHash(hash), options);
+    const route = sharedRoute.route || parseRouteHash(hash);
+    const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
+    if (options.replace) {
+        const nextHash = hash && hash.startsWith('#/')
+            ? hash
+            : normalized === 'home'
+                ? '#/'
+                : `#/${normalized}`;
+        window.history.replaceState(null, '', nextHash);
+    }
+    renderRoute(normalized);
+    if (sharedRoute.albumId) renderPublicSurfaces();
 }
 
 function openModal(id) {
@@ -524,7 +544,7 @@ function renderPublicSurfaces() {
     $$('[data-public-album-id]').forEach((item) => {
         item.addEventListener('click', () => {
             setSelectedPublicAlbum(item.dataset.publicAlbumId);
-            if (item.hasAttribute('data-go-trip')) routeTo('trip');
+            if (item.hasAttribute('data-go-trip')) routeToTrip(item.dataset.publicAlbumId);
         });
     });
     $$('#public-trip-photo-grid [data-open-photo-detail]').forEach((item) => {
@@ -1242,7 +1262,9 @@ function bindEvents() {
     $$('[data-go-album]').forEach((button) => button.addEventListener('click', () => routeTo('album')));
     $$('[data-go-review]').forEach((button) => button.addEventListener('click', () => routeTo('review')));
     $$('[data-go-share]').forEach((button) => button.addEventListener('click', () => routeTo('share')));
-    $$('[data-go-trip]').forEach((button) => button.addEventListener('click', () => routeTo('trip')));
+    $$('[data-go-trip]').forEach((button) => {
+        button.addEventListener('click', () => routeToTrip(button.dataset.publicAlbumId));
+    });
     $$('[data-go-profile]').forEach((button) => button.addEventListener('click', () => routeTo('profile')));
     $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => {
         updatePhotoDetailModal(getDefaultDetailPhoto());

@@ -1,7 +1,11 @@
+export function buildTripHash(albumId) {
+    if (!albumId) return '#/trip';
+    return `#/trip?album=${encodeURIComponent(albumId)}`;
+}
+
 export function buildTripShareUrl(origin, albumId) {
     const base = String(origin || '').replace(/\/+$/, '');
-    if (!albumId) return `${base}/#/trip`;
-    return `${base}/#/trip?album=${encodeURIComponent(albumId)}`;
+    return `${base}/${buildTripHash(albumId)}`;
 }
 
 export function parseSharedAlbumId(hash) {

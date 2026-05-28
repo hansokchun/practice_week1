@@ -2,10 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    buildTripHash,
     buildTripShareUrl,
     getSharedRouteState,
     parseSharedAlbumId
 } from '../js/share-link.mjs';
+
+test('buildTripHash keeps album id in the trip route hash', () => {
+    assert.equal(buildTripHash('album 1'), '#/trip?album=album%201');
+});
+
+test('buildTripHash falls back to the trip route without an album id', () => {
+    assert.equal(buildTripHash(null), '#/trip');
+});
 
 test('buildTripShareUrl points at the public trip route for an album', () => {
     assert.equal(
