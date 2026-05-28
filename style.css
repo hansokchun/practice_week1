@@ -950,9 +950,61 @@ img {
     box-shadow: var(--shadow);
 }
 
+.upload-dropzone[hidden] {
+    display: none;
+}
+
 .upload-dropzone.is-dragging {
     border-color: var(--teal);
     background: rgba(45, 142, 151, 0.08);
+}
+
+.upload-thumbnail-zone {
+    align-items: stretch;
+    justify-items: stretch;
+    min-height: 360px;
+    padding: 18px;
+}
+
+.upload-thumbnail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 14px;
+    width: 100%;
+}
+
+.upload-thumbnail {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 3px solid transparent;
+    border-radius: 16px;
+    background: var(--surface-soft);
+    padding: 0;
+}
+
+.upload-thumbnail.is-selected {
+    border-color: var(--teal);
+}
+
+.upload-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-thumbnail .material-symbols-outlined {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--teal);
+    font-size: 22px;
 }
 
 .upload-dropzone input {
@@ -1001,6 +1053,13 @@ img {
 
 .upload-result-panel.is-visible {
     display: grid;
+}
+
+.upload-result-panel > div:first-child:not(.result-stats):not(.result-actions):not(.help-note),
+.upload-review-list,
+#btn-upload-retry,
+.upload-step-list {
+    display: none;
 }
 
 .upload-result-panel h2,
@@ -1109,6 +1168,10 @@ img {
     margin: 6px 0 0;
     color: var(--muted);
     line-height: 1.55;
+}
+
+.upload-review-list {
+    display: none;
 }
 
 .analysis-layout {

@@ -54,6 +54,11 @@ import {
 import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
+import {
+    countSelectedUploadPhotos,
+    getSelectedUploadPhotos,
+    toggleUploadPhotoSelection
+} from './upload-photo-selection.mjs';
 
 const state = {
     currentUser: null,
@@ -850,20 +855,28 @@ function renderStagedPhotos() {
     const grid = $('#staged-photos');
     if (!grid) return;
     const uploadDropzone = $('#upload-dropzone');
-    const uploadReviewList = $('#upload-review-list');
     const reviewButton = $('#btn-review-upload');
+    const selectedCount = countSelectedUploadPhotos(state.stagedPhotos);
     $('#album-count-label') && ($('#album-count-label').textContent = `${state.stagedPhotos.length} photos`);
     $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${state.stagedPhotos.length} photos · ${state.albumDrafts.length} albums`);
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${state.stagedPhotos.length}장`);
-    $('#upload-success-count') && ($('#upload-success-count').textContent = `${state.stagedPhotos.length}장`);
+    $('#upload-success-count') && ($('#upload-success-count').textContent = `${selectedCount}장`);
     $('#upload-missing-location-count') && ($('#upload-missing-location-count').textContent = `${state.stagedPhotos.length}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
-    uploadDropzone?.toggleAttribute('hidden', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
     renderTravelDraftSurfaces();
 
     if (!state.stagedPhotos.length) {
-        if (uploadReviewList) uploadReviewList.innerHTML = '';
+        if (uploadDropzone) {
+            uploadDropzone.className = 'upload-dropzone';
+            uploadDropzone.innerHTML = `
+                <input id="photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp">
+                <span class="material-symbols-outlined">cloud_upload</span>
+                <strong>사진 파일 선택</strong>
+                <small>JPG, PNG, WEBP 파일을 선택하거나 이곳에 끌어다 놓을 수 있습니다.</small>
+            `;
+            bindPhotoInput();
+        }
         grid.className = 'photo-grid empty';
         grid.innerHTML = `
             <div class="empty-state">
@@ -875,16 +888,20 @@ function renderStagedPhotos() {
     }
 
     grid.className = 'photo-grid';
-    if (uploadReviewList) {
-        uploadReviewList.innerHTML = state.stagedPhotos.map((photo) => `
-            <article>
-                <span class="material-symbols-outlined">image</span>
-                <div>
-                    <strong>${escapeHtml(photo.name)}</strong>
-                    <small>기본 비공개 · 위치 정보는 저장 후 개별사진에서 확인</small>
-                </div>
-            </article>
-        `).join('');
+    if (uploadDropzone) {
+        uploadDropzone.className = 'upload-dropzone upload-thumbnail-zone';
+        uploadDropzone.innerHTML = `
+            <input id="photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp">
+            <div class="upload-thumbnail-grid" aria-label="업로드할 사진 선택">
+                ${state.stagedPhotos.map((photo) => `
+                    <button class="upload-thumbnail${photo.selected === false ? '' : ' is-selected'}" type="button" data-upload-photo-id="${escapeHtml(photo.localId)}" aria-pressed="${photo.selected === false ? 'false' : 'true'}">
+                        <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                        <span class="material-symbols-outlined">${photo.selected === false ? 'radio_button_unchecked' : 'check_circle'}</span>
+                    </button>
+                `).join('')}
+            </div>
+        `;
+        bindPhotoInput();
     }
     grid.innerHTML = state.stagedPhotos.map((photo) => `
         <article class="photo-card">
@@ -1118,14 +1135,20 @@ function handlePhotoFiles(files) {
     if (!selected.length) return;
     state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
     state.stagedPhotos = selected.map((file) => ({
+        localId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         name: file.name,
         url: URL.createObjectURL(file),
-        file
+        file,
+        selected: true
     }));
     renderStagedPhotos();
     routeTo('upload');
     closeModals();
     showToast(`${selected.length}장의 사진을 업로드 초안에 추가했습니다.`);
+}
+
+function bindPhotoInput() {
+    $('#photo-input')?.addEventListener('change', (event) => handlePhotoFiles(event.target.files));
 }
 
 function safeFileName(value) {
@@ -1138,7 +1161,8 @@ function safeFileName(value) {
 }
 
 async function persistStagedPhotos() {
-    if (!state.stagedPhotos.length) {
+    const selectedPhotos = getSelectedUploadPhotos(state.stagedPhotos);
+    if (!selectedPhotos.length) {
         routeTo(getUploadNextRoute(0));
         showToast('사진을 먼저 선택해주세요.');
         return;
@@ -1159,7 +1183,7 @@ async function persistStagedPhotos() {
     try {
         const timestamp = Date.now();
         const saved = [];
-        for (const [index, photo] of state.stagedPhotos.entries()) {
+        for (const [index, photo] of selectedPhotos.entries()) {
             const id = `${timestamp}-${index}`;
             const fileName = `${state.currentUser.id}/${id}-${safeFileName(photo.name)}`;
             const { url, error: uploadError } = await uploadImage(photo.file, fileName);
@@ -1548,7 +1572,6 @@ function bindEvents() {
     $('#btn-copy-share-link')?.addEventListener('click', copyCurrentShareLink);
     $('#btn-copy-trip-link')?.addEventListener('click', copyCurrentShareLink);
     $('#btn-review-upload')?.addEventListener('click', persistStagedPhotos);
-    $('#btn-upload-retry')?.addEventListener('click', () => $('#photo-input')?.click());
     $('#btn-clear-staged')?.addEventListener('click', () => {
         state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
         state.stagedPhotos = [];
@@ -1556,9 +1579,24 @@ function bindEvents() {
         showToast('업로드 초안을 비웠습니다.');
     });
     $('#btn-save-album-draft')?.addEventListener('click', saveAlbumDraft);
-    $('#photo-input')?.addEventListener('change', (event) => handlePhotoFiles(event.target.files));
+    bindPhotoInput();
     const uploadDropzone = $('#upload-dropzone');
     if (uploadDropzone) {
+        uploadDropzone.addEventListener('click', (event) => {
+            const thumbnail = event.target instanceof Element ? event.target.closest('[data-upload-photo-id]') : null;
+            if (thumbnail) {
+                state.stagedPhotos = toggleUploadPhotoSelection(state.stagedPhotos, thumbnail.dataset.uploadPhotoId);
+                renderStagedPhotos();
+                return;
+            }
+            $('#photo-input')?.click();
+        });
+        uploadDropzone.addEventListener('keydown', (event) => {
+            if (event.target instanceof Element && event.target.closest('[data-upload-photo-id]')) return;
+            if (!['Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            $('#photo-input')?.click();
+        });
         ['dragenter', 'dragover'].forEach((eventName) => {
             uploadDropzone.addEventListener(eventName, (event) => {
                 event.preventDefault();
