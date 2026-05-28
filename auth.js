@@ -401,6 +401,28 @@ export async function createAlbum(album) {
     }
 }
 
+export async function updateAlbum(albumId, album) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('albums')
+            .update({
+                title: album.title,
+                note: album.note || '',
+                visibility: album.visibility || 'private',
+                cover_url: album.cover_url || null,
+                photo_count: Number(album.photo_count || 0)
+            })
+            .eq('id', albumId)
+            .select('*')
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
 export async function attachPhotosToAlbum(albumId, photoIds) {
     try {
         const ids = [...new Set((photoIds || []).filter(Boolean))];
@@ -421,6 +443,24 @@ export async function attachPhotosToAlbum(albumId, photoIds) {
             .update({ album_id: albumId })
             .in('id', ids.map((id) => id.toString()));
         return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
+export async function replaceAlbumPhotos(albumId, photoIds) {
+    try {
+        const sb = getSupabase();
+        const ids = [...new Set((photoIds || []).filter(Boolean).map((id) => id.toString()))];
+        await sb
+            .from('album_photos')
+            .delete()
+            .eq('album_id', albumId);
+        await sb
+            .from('photos')
+            .update({ album_id: null })
+            .eq('album_id', albumId);
+        return attachPhotosToAlbum(albumId, ids);
     } catch (error) {
         return { data: [], error };
     }

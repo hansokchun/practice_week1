@@ -1481,11 +1481,40 @@ img {
     margin-top: 12px;
 }
 
+.album-day-thumbs figure {
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    border-radius: 6px;
+}
+
 .album-day-thumbs img {
     width: 100%;
     aspect-ratio: 1;
-    border-radius: 6px;
     object-fit: cover;
+}
+
+.album-photo-remove {
+    position: absolute;
+    z-index: 2;
+    top: 6px;
+    right: 6px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(10, 24, 24, 0.74);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.album-add-button {
+    width: max-content;
+    margin: 16px 0 0;
 }
 
 .album-add-photos {
@@ -1543,6 +1572,79 @@ img {
 .album-map-pin.pin-6 { top: 48%; left: 24%; }
 .album-map-pin.pin-7 { top: 74%; left: 36%; }
 .album-map-pin.pin-8 { top: 18%; left: 48%; }
+
+.album-photo-picker-panel {
+    margin-top: 24px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.album-photo-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.album-photo-picker-card {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--teal);
+    text-align: left;
+    padding: 8px;
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.album-photo-picker-card.is-selected {
+    border-color: var(--teal);
+    box-shadow: inset 0 0 0 1px var(--teal), 0 12px 24px rgba(26, 77, 78, 0.12);
+}
+
+.album-photo-picker-card::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+    background: rgba(10, 24, 24, 0.35);
+}
+
+.album-photo-picker-card.is-selected::after {
+    content: "check";
+    display: grid;
+    place-items: center;
+    background: var(--teal);
+    color: #ffffff;
+    font-family: "Material Symbols Outlined";
+    font-size: 18px;
+    line-height: 1;
+}
+
+.album-photo-picker-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.album-photo-picker-card span {
+    overflow: hidden;
+    color: var(--teal);
+    font-size: 13px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 .route-line {
     position: absolute;
@@ -2963,6 +3065,7 @@ img {
     .album-compose-header,
     .album-compose-bar,
     .album-compose-layout,
+    .album-photo-picker-grid,
     .result-stats,
     .share-layout,
     .share-photo-grid,

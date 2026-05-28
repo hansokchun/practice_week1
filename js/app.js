@@ -13,8 +13,10 @@ import {
     updatePhotoLocation,
     updatePhotosVisibility,
     uploadImage,
+    updateAlbum,
     updateAlbumVisibility,
     deletePhoto,
+    replaceAlbumPhotos,
     upsertPhoto
 } from '../auth.js';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
@@ -82,6 +84,9 @@ const state = {
     selectedPublicAlbumId: null,
     selectedPhotoId: null,
     selectedPersonalPhotoIds: [],
+    albumBuilderPhotoIds: [],
+    albumPhotoPickerIds: [],
+    editingAlbumId: null,
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     exploreZoom: 7,
@@ -91,7 +96,7 @@ const state = {
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
-const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'trip', 'profile']);
+const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'album-photos', 'trip', 'profile']);
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
@@ -156,7 +161,7 @@ function renderRoute(section) {
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
     }
-    const navSection = ['upload', 'photos', 'album'].includes(normalized)
+    const navSection = ['upload', 'photos', 'album', 'album-photos'].includes(normalized)
         ? APP_SECTIONS.MYPHOTO
         : ['trip', 'profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -168,6 +173,7 @@ function renderRoute(section) {
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
+    if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
     if (normalized === APP_SECTIONS.EXPLORE) syncExploreGoogleMap();
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 }
@@ -301,7 +307,8 @@ function getDraftPhotos() {
 }
 
 function getAlbumCandidatePhotos() {
-    return state.stagedPhotos.length ? state.stagedPhotos : getMySavedPhotos();
+    const selectedIds = new Set(state.albumBuilderPhotoIds);
+    return getMySavedPhotos().filter((photo) => selectedIds.has(photo.id));
 }
 
 function getDemoDraftPhotos() {
@@ -356,10 +363,10 @@ function getFallbackPublicAlbums() {
 
 function getPublicAlbums() {
     const publicAlbums = state.savedAlbums
-        .filter((album) => ['public', 'link'].includes(album.visibility))
+        .filter((album) => ['public', 'link'].includes(album.visibility) || album.owner_id === state.currentUser?.id)
         .map((album, index) => {
             const photos = state.savedPhotos.filter((photo) => {
-                const publicPhoto = photo.shared || ['public', 'link'].includes(photo.visibility);
+                const publicPhoto = photo.owner_id === state.currentUser?.id || photo.shared || ['public', 'link'].includes(photo.visibility);
                 const sameAlbum = photo.album_id === album.id || photo.album === album.title;
                 return publicPhoto && sameAlbum;
             });
@@ -514,6 +521,7 @@ function renderPublicSurfaces() {
     const tripHeroImage = $('.public-trip-hero > img');
     const tripTitle = $('#trip-title');
     const tripCopy = $('.public-trip-copy > p:not(.eyebrow)');
+    const tripActions = $('.public-trip-copy .trip-actions');
     const routeMeta = $('.trip-route-card .compact-heading p');
     if (tripHeroImage) {
         tripHeroImage.src = cover;
@@ -521,6 +529,14 @@ function renderPublicSurfaces() {
     }
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
+    if (tripActions) {
+        const isOwnAlbum = selected.owner_id && selected.owner_id === state.currentUser?.id;
+        tripActions.innerHTML = `
+            <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
+            ${isOwnAlbum ? '<button id="btn-edit-album" class="btn-secondary" type="button">수정하기</button>' : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
+            <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
+        `;
+    }
     if (routeMeta) routeMeta.textContent = getPublicTripRouteMeta(tripSummary);
 
     $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
@@ -970,6 +986,9 @@ function renderStagedPhotos() {
 function renderAlbumComposePage() {
     const page = $('#page-album .flow-page');
     if (!page) return;
+    const editingAlbum = state.editingAlbumId
+        ? state.savedAlbums.find((album) => album.id === state.editingAlbumId)
+        : null;
     page.innerHTML = `
         <button class="back-link" data-go-myphoto type="button">
             <span class="material-symbols-outlined">arrow_back</span>
@@ -978,15 +997,15 @@ function renderAlbumComposePage() {
         <div class="album-compose-header">
             <div>
                 <p class="eyebrow">Album Builder</p>
-                <h1 id="album-title">앨범 만들기</h1>
+                <h1 id="album-title">${editingAlbum ? '앨범 수정하기' : '앨범 만들기'}</h1>
             </div>
             <button id="btn-save-album-draft" class="btn-primary" type="button">저장하기</button>
         </div>
         <section class="album-compose-bar" aria-label="앨범 기본 정보">
             <label for="album-name-input">앨범 이름</label>
-            <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행">
+            <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행" value="${escapeHtml(editingAlbum?.title || '')}">
             <label for="album-note-input">설명</label>
-            <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요."></textarea>
+            <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요.">${escapeHtml(editingAlbum?.note || '')}</textarea>
             <div class="album-visibility-toggle" aria-label="공개 여부">
                 <button class="${state.visibility === 'private' ? 'active' : ''}" data-visibility="private" type="button">비공개</button>
                 <button class="${state.visibility === 'public' ? 'active' : ''}" data-visibility="public" type="button">공개</button>
@@ -1005,6 +1024,7 @@ function renderAlbumComposePage() {
                     <span><strong id="analysis-place-count">0</strong> Places</span>
                     <span><strong id="analysis-day-count">0 days</strong> Timeline</span>
                 </div>
+                <button id="btn-open-album-photo-picker" class="btn-secondary album-add-button" type="button">사진 추가</button>
                 <div id="album-day-photo-list" class="album-day-photo-list"></div>
             </section>
             <section class="album-compose-map" aria-label="앨범 지도">
@@ -1031,6 +1051,43 @@ function getAlbumPhotoDayGroups(photos = []) {
         photos: items,
         places: items.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng))).length
     }));
+}
+
+function renderAlbumPhotoPickerPage() {
+    const root = $('#album-photo-picker-root');
+    if (!root) return;
+    const photos = getMySavedPhotos();
+    const selected = new Set(state.albumPhotoPickerIds);
+    root.innerHTML = `
+        <div class="album-compose-header">
+            <div>
+                <p class="eyebrow">Album Photos</p>
+                <h1 id="album-photos-title">앨범에 추가할 사진 선택</h1>
+            </div>
+            <button id="btn-add-selected-album-photos" class="btn-primary" type="button">선택 사진 추가</button>
+        </div>
+        <section class="album-photo-picker-panel">
+            ${photos.length ? `
+                <div class="album-photo-picker-grid">
+                    ${photos.map((photo) => {
+                        const isSelected = selected.has(photo.id);
+                        return `
+                            <button class="album-photo-picker-card ${isSelected ? 'is-selected' : ''}" data-toggle-album-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}">
+                                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                                <span>${escapeHtml(photo.name)}</span>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            ` : `
+                <button class="album-add-photos" id="btn-picker-upload-photos" type="button">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                    <strong>개별사진 저장소가 비어 있습니다</strong>
+                    <small>먼저 사진을 업로드한 뒤 앨범에 추가할 수 있습니다.</small>
+                </button>
+            `}
+        </section>
+    `;
 }
 
 function renderTravelDraftSurfaces() {
@@ -1102,7 +1159,12 @@ function renderTravelDraftSurfaces() {
                             <small>${day.photos.length} photos · ${day.places} places</small>
                         </div>
                         <div class="album-day-thumbs">
-                            ${day.photos.slice(0, 6).map((photo) => `<img src="${photo.url}" alt="${escapeHtml(photo.name)}">`).join('')}
+                            ${day.photos.slice(0, 6).map((photo) => `
+                                <figure>
+                                    <button class="album-photo-remove" data-remove-album-photo="${escapeHtml(photo.id)}" type="button" aria-label="앨범에서 사진 제거">×</button>
+                                    <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                                </figure>
+                            `).join('')}
                         </div>
                     </article>
                 `).join('')
@@ -1243,6 +1305,25 @@ function openMyphotoAlbum(albumRow) {
     if (action.albumId) state.selectedPublicAlbumId = action.albumId;
     if (action.route === 'trip') routeToTrip(action.albumId);
     else routeTo('album');
+}
+
+function startNewAlbum() {
+    state.editingAlbumId = null;
+    state.albumBuilderPhotoIds = [];
+    state.albumPhotoPickerIds = [];
+    state.visibility = 'private';
+    routeTo('album');
+}
+
+function startEditSelectedAlbum() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    state.editingAlbumId = album.id;
+    state.selectedPublicAlbumId = album.id;
+    state.visibility = album.visibility || 'private';
+    state.albumBuilderPhotoIds = (album.photos || []).map((photo) => photo.id).filter(Boolean);
+    state.albumPhotoPickerIds = [...state.albumBuilderPhotoIds];
+    routeTo('album');
 }
 
 function renderAlbumDrafts() {
@@ -1453,15 +1534,20 @@ async function saveAlbumAndOpenDetail() {
 
     const note = noteInput?.value.trim() || '';
     const draftPhotos = getAlbumCandidatePhotos();
-    const draftPhotoIds = getSharePhotoIds();
-    const { data: album, error } = await createAlbum({
+    const draftPhotoIds = [...state.albumBuilderPhotoIds];
+    const editingAlbumId = state.editingAlbumId;
+    const payload = {
         owner_id: state.currentUser.id,
         title: name,
         note,
         visibility: state.visibility,
         cover_url: draftPhotos[0]?.url || null,
-        photo_count: draftPhotoIds.length || draftPhotos.length
-    });
+        photo_count: draftPhotoIds.length
+    };
+    const result = editingAlbumId
+        ? await updateAlbum(editingAlbumId, payload)
+        : await createAlbum(payload);
+    const { data: album, error } = result;
 
     if (error || !album) {
         showToast('앨범 저장에 실패했습니다.');
@@ -1469,16 +1555,30 @@ async function saveAlbumAndOpenDetail() {
     }
 
     const savedAlbum = normalizeSavedAlbum(album);
-    state.savedAlbums.unshift(savedAlbum);
+    state.savedAlbums = [
+        savedAlbum,
+        ...state.savedAlbums.filter((albumItem) => albumItem.id !== savedAlbum.id)
+    ];
     state.selectedPublicAlbumId = savedAlbum.id;
-    if (draftPhotoIds.length) {
-        await attachPhotosToAlbum(savedAlbum.id, draftPhotoIds);
+    {
+        await replaceAlbumPhotos(savedAlbum.id, draftPhotoIds);
+        const selectedPhotoIds = new Set(draftPhotoIds);
+        state.savedPhotos = state.savedPhotos.map((photo) => {
+            if (photo.album_id === savedAlbum.id && !selectedPhotoIds.has(photo.id)) {
+                return { ...photo, album_id: null };
+            }
+            if (selectedPhotoIds.has(photo.id)) {
+                return { ...photo, album_id: savedAlbum.id, album: savedAlbum.title };
+            }
+            return photo;
+        });
         const { data: updatedPhotos } = await updatePhotosVisibility(draftPhotoIds, state.visibility);
         if (updatedPhotos?.length) {
             const normalized = updatedPhotos.map(normalizeSavedPhoto);
             state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
         }
     }
+    state.editingAlbumId = null;
     await loadPublicProfileNames();
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
@@ -1717,9 +1817,9 @@ function bindEvents() {
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
-    $('#btn-open-album')?.addEventListener('click', () => routeTo('album'));
-    $('#btn-open-album-inline')?.addEventListener('click', () => routeTo('album'));
-    $('#btn-new-trip')?.addEventListener('click', () => routeTo('album'));
+    $('#btn-open-album')?.addEventListener('click', startNewAlbum);
+    $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
+    $('#btn-new-trip')?.addEventListener('click', startNewAlbum);
     $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO)));
     $$('[data-go-album]').forEach((button) => button.addEventListener('click', () => routeTo('album')));
     $$('[data-go-trip]').forEach((button) => {
@@ -1738,6 +1838,68 @@ function bindEvents() {
         const goMyphotoButton = event.target.closest('[data-go-myphoto]');
         if (goMyphotoButton) {
             routeTo(APP_SECTIONS.MYPHOTO);
+            return;
+        }
+
+        const goAlbumButton = event.target.closest('[data-go-album]');
+        if (goAlbumButton) {
+            routeTo('album');
+            return;
+        }
+
+        const editAlbumButton = event.target.closest('#btn-edit-album');
+        if (editAlbumButton) {
+            startEditSelectedAlbum();
+            return;
+        }
+
+        const openAlbumPhotoPickerButton = event.target.closest('#btn-open-album-photo-picker');
+        if (openAlbumPhotoPickerButton) {
+            state.albumPhotoPickerIds = [...state.albumBuilderPhotoIds];
+            routeTo('album-photos');
+            return;
+        }
+
+        const toggleAlbumPhotoButton = event.target.closest('[data-toggle-album-photo]');
+        if (toggleAlbumPhotoButton) {
+            state.albumPhotoPickerIds = togglePersonalPhotoSelection(
+                state.albumPhotoPickerIds,
+                toggleAlbumPhotoButton.dataset.toggleAlbumPhoto
+            );
+            renderAlbumPhotoPickerPage();
+            return;
+        }
+
+        const addSelectedAlbumPhotosButton = event.target.closest('#btn-add-selected-album-photos');
+        if (addSelectedAlbumPhotosButton) {
+            state.albumBuilderPhotoIds = [...state.albumPhotoPickerIds];
+            routeTo('album');
+            return;
+        }
+
+        const removeAlbumPhotoButton = event.target.closest('[data-remove-album-photo]');
+        if (removeAlbumPhotoButton) {
+            state.albumBuilderPhotoIds = state.albumBuilderPhotoIds.filter((id) => id !== removeAlbumPhotoButton.dataset.removeAlbumPhoto);
+            state.albumPhotoPickerIds = state.albumPhotoPickerIds.filter((id) => id !== removeAlbumPhotoButton.dataset.removeAlbumPhoto);
+            renderTravelDraftSurfaces();
+            return;
+        }
+
+        const pickerUploadButton = event.target.closest('#btn-picker-upload-photos');
+        if (pickerUploadButton) {
+            routeTo('upload');
+            return;
+        }
+
+        const copyTripLinkButton = event.target.closest('#btn-copy-trip-link');
+        if (copyTripLinkButton) {
+            copyCurrentShareLink();
+            return;
+        }
+
+        const goProfileButton = event.target.closest('[data-go-profile]');
+        if (goProfileButton) {
+            routeToPublic('profile', goProfileButton.dataset.publicAlbumId);
             return;
         }
 
@@ -1779,6 +1941,13 @@ function bindEvents() {
         if (photoCard) {
             const photo = getAllDisplayPhotos().find((candidate) => candidate.id === photoCard.dataset.photoId);
             updatePhotoDetailModal(photo || getDefaultDetailPhoto());
+            openModal('#photo-detail-modal');
+            return;
+        }
+
+        const photoDetailButton = event.target.closest('[data-open-photo-detail]');
+        if (photoDetailButton) {
+            updatePhotoDetailModal(getDefaultDetailPhoto());
             openModal('#photo-detail-modal');
             return;
         }

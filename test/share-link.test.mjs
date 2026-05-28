@@ -61,6 +61,10 @@ test('getSharedRouteState returns normalized route and optional album id', () =>
         route: 'explore',
         albumId: 'demo-jeju'
     });
+    assert.deepEqual(getSharedRouteState('#/album-photos'), {
+        route: 'album-photos',
+        albumId: null
+    });
     assert.deepEqual(getSharedRouteState('#/unknown?album=demo-jeju'), {
         route: 'home',
         albumId: 'demo-jeju'
