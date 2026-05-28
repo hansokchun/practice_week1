@@ -12,6 +12,10 @@ test('getShareCompletionHash stays on share settings for private and link visibi
     assert.equal(getShareCompletionHash('link', 'album 1'), '#/share');
 });
 
+test('getShareCompletionHash falls back to share settings without an album id', () => {
+    assert.equal(getShareCompletionHash('public', null), '#/share');
+});
+
 test('getShareTargetAlbumId prefers the updated album then falls back to the draft album', () => {
     assert.equal(getShareTargetAlbumId({ id: 'updated' }, { id: 'draft' }), 'updated');
     assert.equal(getShareTargetAlbumId(null, { id: 'draft' }), 'draft');

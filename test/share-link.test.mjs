@@ -6,6 +6,7 @@ import {
     buildTripHash,
     buildTripShareUrl,
     getSharedRouteState,
+    getShareUrlAlbumId,
     parseSharedAlbumId
 } from '../js/share-link.mjs';
 
@@ -16,6 +17,14 @@ test('buildAlbumRouteHash keeps album id on public routes', () => {
 
 test('buildAlbumRouteHash falls back to the route without an album id', () => {
     assert.equal(buildAlbumRouteHash('profile', null), '#/profile');
+});
+
+test('getShareUrlAlbumId prefers the explicit selected album id', () => {
+    assert.equal(getShareUrlAlbumId('private-album', { id: 'public-demo' }), 'private-album');
+});
+
+test('getShareUrlAlbumId falls back to the selected public album', () => {
+    assert.equal(getShareUrlAlbumId(null, { id: 'public-demo' }), 'public-demo');
 });
 
 test('buildTripHash keeps album id in the trip route hash', () => {

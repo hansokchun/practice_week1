@@ -32,7 +32,8 @@ export function storePendingAuthContext(storage, state, context = {}) {
     const payload = {
         action,
         route: context.route || null,
-        visibility: context.visibility || null
+        visibility: context.visibility || null,
+        albumId: context.albumId || null
     };
     storage.setItem(STORAGE_KEY, JSON.stringify(payload));
     return payload;
@@ -51,7 +52,8 @@ export function restorePendingAuthContext(storage, state) {
         return {
             action: parsed.action,
             route: typeof parsed.route === 'string' ? parsed.route : null,
-            visibility: ['private', 'link', 'public'].includes(parsed.visibility) ? parsed.visibility : null
+            visibility: ['private', 'link', 'public'].includes(parsed.visibility) ? parsed.visibility : null,
+            albumId: typeof parsed.albumId === 'string' ? parsed.albumId : null
         };
     } catch {
         return null;

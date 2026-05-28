@@ -14,6 +14,10 @@ export function buildTripShareUrl(origin, albumId) {
     return `${base}/${buildTripHash(albumId)}`;
 }
 
+export function getShareUrlAlbumId(selectedPublicAlbumId, selectedAlbum) {
+    return selectedPublicAlbumId || selectedAlbum?.id || null;
+}
+
 export function parseSharedAlbumId(hash) {
     const query = String(hash || '').split('?')[1];
     if (!query) return null;

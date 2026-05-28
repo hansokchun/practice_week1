@@ -38,13 +38,14 @@ test('pending auth context can be stored and restored after OAuth redirect', () 
     };
 
     setPendingAuthAction(state, 'save-share');
-    storePendingAuthContext(adapter, state, { route: 'share', visibility: 'public' });
+    storePendingAuthContext(adapter, state, { route: 'share', visibility: 'public', albumId: 'album-1' });
 
     const restored = createPendingAuthState();
     assert.deepEqual(restorePendingAuthContext(adapter, restored), {
         action: 'save-share',
         route: 'share',
-        visibility: 'public'
+        visibility: 'public',
+        albumId: 'album-1'
     });
     assert.equal(getPendingAuthAction(restored), 'save-share');
     assert.equal(adapter.getItem('ikkyee.pendingAuth'), null);

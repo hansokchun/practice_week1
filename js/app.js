@@ -40,7 +40,7 @@ import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
-import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
+import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
 import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
 import {
@@ -366,7 +366,7 @@ function setSelectedPublicAlbum(albumId) {
 }
 
 function getCurrentShareUrl() {
-    return buildTripShareUrl(window.location.origin, getSelectedPublicAlbum()?.id || state.selectedPublicAlbumId);
+    return buildTripShareUrl(window.location.origin, getShareUrlAlbumId(state.selectedPublicAlbumId, getSelectedPublicAlbum()));
 }
 
 async function copyCurrentShareLink() {
@@ -1315,7 +1315,8 @@ async function handleSocialLogin(provider) {
     if (message) message.textContent = `${provider === 'google' ? 'Google' : 'Kakao'} 로그인으로 이동합니다...`;
     storePendingAuthContext(window.sessionStorage, state, {
         route: getCurrentRoute(),
-        visibility: state.visibility
+        visibility: state.visibility,
+        albumId: state.selectedPublicAlbumId
     });
     const { error } = provider === 'google'
         ? await signInWithGoogle()
@@ -1455,6 +1456,7 @@ function bindEvents() {
 document.addEventListener('DOMContentLoaded', async () => {
     const restoredAuthContext = restorePendingAuthContext(window.sessionStorage, state);
     if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
+    if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
     const sharedAlbumId = parseSharedAlbumId(window.location.hash);
     if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
     state.currentUser = await getCurrentUser();
