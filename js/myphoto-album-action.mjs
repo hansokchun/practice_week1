@@ -1,5 +1,5 @@
 export function getMyphotoAlbumAction({ albumId = null, visibility = 'private', isDraft = false } = {}) {
-    if (!isDraft && ['public', 'link'].includes(visibility) && albumId) {
+    if (!isDraft && albumId) {
         return {
             route: 'trip',
             albumId
@@ -7,7 +7,7 @@ export function getMyphotoAlbumAction({ albumId = null, visibility = 'private', 
     }
 
     return {
-        route: 'share',
+        route: 'album',
         albumId: albumId || null
     };
 }

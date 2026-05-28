@@ -326,8 +326,6 @@
                             <textarea id="album-note-input" rows="5" placeholder="이 여행을 어떻게 기억하고 싶은지 적어보세요."></textarea>
                             <button id="btn-save-album-draft" class="btn-primary" type="button">앨범 초안 저장</button>
                         </div>
-                        <button class="btn-primary wide-button" data-go-review type="button">지도에서 검토하기</button>
-                        <button id="btn-open-share-settings" class="btn-secondary wide-button" type="button">공개 설정으로 이동</button>
                     </section>
                     <section class="analysis-map">
                         <iframe class="google-map-frame" title="Google map album analysis preview" src="https://www.google.com/maps?q=33.38,126.55&z=10&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -348,7 +346,6 @@
                     <h1 id="review-title">지도에서 사진 위치 검토</h1>
                     <p>위치가 정확하지 않은 사진은 공개 전에 직접 조정할 수 있습니다.</p>
                     <div class="review-toolbar">
-                        <button class="btn-primary" id="btn-open-share-settings-review" data-go-share type="button">공개 설정</button>
                         <button class="btn-secondary" data-open-photo-detail type="button">사진 상세</button>
                         <button class="btn-secondary" data-open-location-editor type="button">위치 수정</button>
                     </div>
@@ -381,10 +378,6 @@
 
         <section id="page-share" class="page page-share" aria-labelledby="share-title">
             <div class="page-container flow-page">
-                <button class="back-link" data-go-review type="button">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    지도 검토
-                </button>
                 <div class="share-layout">
                     <section class="share-main">
                         <p class="eyebrow">공개 설정</p>

@@ -66,3 +66,14 @@ test('getSharedRouteState returns normalized route and optional album id', () =>
         albumId: 'demo-jeju'
     });
 });
+
+test('getSharedRouteState no longer exposes removed review and share pages', () => {
+    assert.deepEqual(getSharedRouteState('#/review?album=demo-jeju'), {
+        route: 'home',
+        albumId: 'demo-jeju'
+    });
+    assert.deepEqual(getSharedRouteState('#/share?album=demo-jeju'), {
+        route: 'home',
+        albumId: 'demo-jeju'
+    });
+});

@@ -17,13 +17,13 @@ test('getMyphotoAlbumAction opens public trip for link albums', () => {
     });
 });
 
-test('getMyphotoAlbumAction opens share settings for private albums and drafts', () => {
+test('getMyphotoAlbumAction opens trip for private albums and album builder for drafts', () => {
     assert.deepEqual(getMyphotoAlbumAction({ albumId: 'a1', visibility: 'private' }), {
-        route: 'share',
+        route: 'trip',
         albumId: 'a1'
     });
     assert.deepEqual(getMyphotoAlbumAction({ isDraft: true }), {
-        route: 'share',
+        route: 'album',
         albumId: null
     });
 });

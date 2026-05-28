@@ -1,4 +1,4 @@
-const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share']);
+const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album']);
 const STORAGE_KEY = 'ikkyee.pendingAuth';
 
 export function createPendingAuthState() {

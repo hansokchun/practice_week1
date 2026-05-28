@@ -15,6 +15,8 @@ test('pending auth actions accept only supported follow-up actions', () => {
 
     assert.equal(setPendingAuthAction(state, 'persist-upload'), 'persist-upload');
     assert.equal(getPendingAuthAction(state), 'persist-upload');
+    assert.equal(setPendingAuthAction(state, 'save-album'), 'save-album');
+    assert.equal(getPendingAuthAction(state), 'save-album');
     assert.equal(setPendingAuthAction(state, 'unknown'), null);
     assert.equal(getPendingAuthAction(state), null);
 });

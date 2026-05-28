@@ -91,7 +91,7 @@ const state = {
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
-const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'review', 'share', 'trip', 'profile']);
+const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'trip', 'profile']);
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
@@ -156,7 +156,7 @@ function renderRoute(section) {
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
     }
-    const navSection = ['upload', 'photos', 'album', 'review', 'share'].includes(normalized)
+    const navSection = ['upload', 'photos', 'album'].includes(normalized)
         ? APP_SECTIONS.MYPHOTO
         : ['trip', 'profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -167,6 +167,7 @@ function renderRoute(section) {
     $(`#page-${normalized}`)?.classList.add('active');
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
+    if (normalized === 'album') renderAlbumComposePage();
     if (normalized === APP_SECTIONS.EXPLORE) syncExploreGoogleMap();
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 }
@@ -297,6 +298,10 @@ function getDraftPhotos() {
         saved: getMySavedPhotos(),
         demos: getDemoDraftPhotos()
     });
+}
+
+function getAlbumCandidatePhotos() {
+    return state.stagedPhotos.length ? state.stagedPhotos : getMySavedPhotos();
 }
 
 function getDemoDraftPhotos() {
@@ -962,8 +967,75 @@ function renderStagedPhotos() {
     `).join('');
 }
 
+function renderAlbumComposePage() {
+    const page = $('#page-album .flow-page');
+    if (!page) return;
+    page.innerHTML = `
+        <button class="back-link" data-go-myphoto type="button">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Myphoto
+        </button>
+        <div class="album-compose-header">
+            <div>
+                <p class="eyebrow">Album Builder</p>
+                <h1 id="album-title">앨범 만들기</h1>
+            </div>
+            <button id="btn-save-album-draft" class="btn-primary" type="button">저장하기</button>
+        </div>
+        <section class="album-compose-bar" aria-label="앨범 기본 정보">
+            <label for="album-name-input">앨범 이름</label>
+            <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행">
+            <label for="album-note-input">설명</label>
+            <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요."></textarea>
+            <div class="album-visibility-toggle" aria-label="공개 여부">
+                <button class="${state.visibility === 'private' ? 'active' : ''}" data-visibility="private" type="button">비공개</button>
+                <button class="${state.visibility === 'public' ? 'active' : ''}" data-visibility="public" type="button">공개</button>
+            </div>
+        </section>
+        <div class="album-compose-layout">
+            <section class="album-compose-photos">
+                <div class="panel-topline">
+                    <div>
+                        <p class="eyebrow">Album Photos</p>
+                        <h2 id="analysis-title">나의 여행 앨범</h2>
+                    </div>
+                    <span><strong id="analysis-photo-count">0</strong> Photos</span>
+                </div>
+                <div class="analysis-stats">
+                    <span><strong id="analysis-place-count">0</strong> Places</span>
+                    <span><strong id="analysis-day-count">0 days</strong> Timeline</span>
+                </div>
+                <div id="album-day-photo-list" class="album-day-photo-list"></div>
+            </section>
+            <section class="album-compose-map" aria-label="앨범 지도">
+                <iframe id="album-map-frame" class="google-map-frame" title="Google map album photo locations" src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <div id="album-map-pins" class="album-map-pins" aria-hidden="true"></div>
+            </section>
+        </div>
+    `;
+    renderTravelDraftSurfaces();
+}
+
+function getAlbumPhotoDayGroups(photos = []) {
+    const groups = new Map();
+    photos.forEach((photo) => {
+        const date = photo.date ? new Date(photo.date) : null;
+        const key = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(photo);
+    });
+    return [...groups.entries()].map(([date, items], index) => ({
+        date,
+        label: date === '날짜 없음' ? '날짜 없음' : `Day ${index + 1}`,
+        title: date === '날짜 없음' ? '날짜별 분류를 기다리는 사진' : date.replaceAll('-', '.'),
+        photos: items,
+        places: items.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng))).length
+    }));
+}
+
 function renderTravelDraftSurfaces() {
     const draftPhotos = getDraftPhotos();
+    const albumPhotos = getAlbumCandidatePhotos();
     const fallbackPhotoCount = getDraftPhotoCount({
         staged: state.stagedPhotos,
         saved: getMySavedPhotos(),
@@ -975,11 +1047,12 @@ function renderTravelDraftSurfaces() {
         selectedAlbum: state.selectedPublicAlbumId ? getSelectedPublicAlbum() : null
     });
     const photoCount = summary.photoCount || fallbackPhotoCount;
+    const albumLocatedPhotos = albumPhotos.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng)));
 
     $('#analysis-title') && ($('#analysis-title').textContent = summary.title);
-    $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(photoCount));
-    $('#analysis-place-count') && ($('#analysis-place-count').textContent = String(summary.places));
-    $('#analysis-day-count') && ($('#analysis-day-count').textContent = `${summary.days} days`);
+    $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(albumPhotos.length));
+    $('#analysis-place-count') && ($('#analysis-place-count').textContent = String(albumLocatedPhotos.length));
+    $('#analysis-day-count') && ($('#analysis-day-count').textContent = `${Math.max(0, getTravelDaySummaries(albumPhotos).length)} days`);
     $('#review-day-one-count') && ($('#review-day-one-count').textContent = `${Math.min(photoCount, 18)} photos · ${summary.places} places`);
     $('#share-title') && ($('#share-title').textContent = summary.title);
     $('#share-preview-title') && ($('#share-preview-title').textContent = summary.title);
@@ -1014,6 +1087,46 @@ function renderTravelDraftSurfaces() {
                 <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
                 <span>${index === 0 ? 'Cover' : index === 1 ? 'Route' : 'Photo'}</span>
             </article>
+        `).join('');
+    }
+
+    const albumDayList = $('#album-day-photo-list');
+    if (albumDayList) {
+        const dayGroups = getAlbumPhotoDayGroups(albumPhotos);
+        albumDayList.innerHTML = albumPhotos.length
+            ? dayGroups.map((day) => `
+                    <article>
+                        <div>
+                            <span>${day.label}</span>
+                            <strong>${day.title}</strong>
+                            <small>${day.photos.length} photos · ${day.places} places</small>
+                        </div>
+                        <div class="album-day-thumbs">
+                            ${day.photos.slice(0, 6).map((photo) => `<img src="${photo.url}" alt="${escapeHtml(photo.name)}">`).join('')}
+                        </div>
+                    </article>
+                `).join('')
+            : `
+                <button class="album-add-photos" id="btn-album-add-photos" type="button">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                    <strong>사진 추가하기</strong>
+                    <small>개별사진을 업로드하면 이곳에서 앨범으로 묶을 수 있습니다.</small>
+                </button>
+            `;
+    }
+
+    const albumMap = $('#album-map-frame');
+    const albumPins = $('#album-map-pins');
+    if (albumMap) {
+        const center = albumLocatedPhotos[0] || { lat: 36.45, lng: 127.85 };
+        const zoom = albumLocatedPhotos.length ? 9 : 7;
+        albumMap.src = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=${zoom}&output=embed`;
+    }
+    if (albumPins) {
+        albumPins.innerHTML = albumLocatedPhotos.slice(0, 8).map((photo, index) => `
+            <button class="album-map-pin pin-${index + 1}" type="button" data-open-photo-detail data-photo-id="${escapeHtml(photo.id || photo.localId)}">
+                <img src="${photo.url}" alt="">
+            </button>
         `).join('');
     }
 
@@ -1129,7 +1242,7 @@ function openMyphotoAlbum(albumRow) {
 
     if (action.albumId) state.selectedPublicAlbumId = action.albumId;
     if (action.route === 'trip') routeToTrip(action.albumId);
-    else routeTo('share');
+    else routeTo('album');
 }
 
 function renderAlbumDrafts() {
@@ -1320,6 +1433,57 @@ function getSharePhotoIds() {
         lastSavedPhotoIds: state.lastSavedPhotoIds,
         saved: getMySavedPhotos()
     });
+}
+
+async function saveAlbumAndOpenDetail() {
+    const nameInput = $('#album-name-input');
+    const noteInput = $('#album-note-input');
+    const name = nameInput?.value.trim();
+    if (!name) {
+        showToast('앨범 이름을 입력해주세요.');
+        nameInput?.focus();
+        return;
+    }
+    if (!state.currentUser) {
+        setPendingAuthAction(state, 'save-album');
+        openModal('#auth-modal');
+        showToast('앨범을 저장하려면 먼저 로그인해주세요.');
+        return;
+    }
+
+    const note = noteInput?.value.trim() || '';
+    const draftPhotos = getAlbumCandidatePhotos();
+    const draftPhotoIds = getSharePhotoIds();
+    const { data: album, error } = await createAlbum({
+        owner_id: state.currentUser.id,
+        title: name,
+        note,
+        visibility: state.visibility,
+        cover_url: draftPhotos[0]?.url || null,
+        photo_count: draftPhotoIds.length || draftPhotos.length
+    });
+
+    if (error || !album) {
+        showToast('앨범 저장에 실패했습니다.');
+        return;
+    }
+
+    const savedAlbum = normalizeSavedAlbum(album);
+    state.savedAlbums.unshift(savedAlbum);
+    state.selectedPublicAlbumId = savedAlbum.id;
+    if (draftPhotoIds.length) {
+        await attachPhotosToAlbum(savedAlbum.id, draftPhotoIds);
+        const { data: updatedPhotos } = await updatePhotosVisibility(draftPhotoIds, state.visibility);
+        if (updatedPhotos?.length) {
+            const normalized = updatedPhotos.map(normalizeSavedPhoto);
+            state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
+        }
+    }
+    await loadPublicProfileNames();
+    renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
+    showToast('앨범을 저장했습니다.');
+    routeToTrip(savedAlbum.id);
 }
 
 function getDraftAlbumInput() {
@@ -1532,6 +1696,10 @@ async function runPendingAuthAction() {
         await persistStagedPhotos();
         return;
     }
+    if (action === 'save-album') {
+        await saveAlbumAndOpenDetail();
+        return;
+    }
     if (action === 'save-share') await saveShareSettings();
 }
 
@@ -1554,8 +1722,6 @@ function bindEvents() {
     $('#btn-new-trip')?.addEventListener('click', () => routeTo('album'));
     $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO)));
     $$('[data-go-album]').forEach((button) => button.addEventListener('click', () => routeTo('album')));
-    $$('[data-go-review]').forEach((button) => button.addEventListener('click', () => routeTo('review')));
-    $$('[data-go-share]').forEach((button) => button.addEventListener('click', () => routeTo('share')));
     $$('[data-go-trip]').forEach((button) => {
         button.addEventListener('click', () => routeToTrip(button.dataset.publicAlbumId));
     });
@@ -1568,6 +1734,30 @@ function bindEvents() {
     }));
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
+
+        const goMyphotoButton = event.target.closest('[data-go-myphoto]');
+        if (goMyphotoButton) {
+            routeTo(APP_SECTIONS.MYPHOTO);
+            return;
+        }
+
+        const visibilityButton = event.target.closest('[data-visibility]');
+        if (visibilityButton) {
+            setVisibilityMode(visibilityButton.dataset.visibility);
+            return;
+        }
+
+        const saveAlbumButton = event.target.closest('#btn-save-album-draft');
+        if (saveAlbumButton) {
+            saveAlbumAndOpenDetail();
+            return;
+        }
+
+        const addAlbumPhotosButton = event.target.closest('#btn-album-add-photos');
+        if (addAlbumPhotosButton) {
+            routeTo('upload');
+            return;
+        }
 
         const personalPhotoToggle = event.target.closest('[data-toggle-personal-photo]');
         if (personalPhotoToggle) {
@@ -1618,7 +1808,6 @@ function bindEvents() {
         document.body.classList.remove('explore-pin-selected');
         $('#explore-pin-preview')?.setAttribute('hidden', '');
     });
-    $('#btn-open-share-settings')?.addEventListener('click', () => routeTo('share'));
     $$('[data-visibility]').forEach((button) => button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility)));
     $$('[data-visibility-shortcut]').forEach((button) => {
         button.addEventListener('click', async () => {
@@ -1638,7 +1827,7 @@ function bindEvents() {
         renderStagedPhotos();
         showToast('업로드 초안을 비웠습니다.');
     });
-    $('#btn-save-album-draft')?.addEventListener('click', saveAlbumDraft);
+    $('#btn-save-album-draft')?.addEventListener('click', saveAlbumAndOpenDetail);
     bindPhotoInput();
     const uploadDropzone = $('#upload-dropzone');
     if (uploadDropzone) {
