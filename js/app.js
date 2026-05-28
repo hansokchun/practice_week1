@@ -42,6 +42,7 @@ import {
     getTravelDraftPhotoIds,
     getTravelDraftPhotos
 } from './travel-draft-photos.mjs';
+import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 
 const state = {
@@ -781,6 +782,26 @@ function renderTravelDraftSurfaces() {
     $('#share-date-range') && ($('#share-date-range').textContent = summary.dateRange);
     $('#share-trip-photo-count') && ($('#share-trip-photo-count').textContent = `${photoCount} photos`);
     $('#share-preview-count') && ($('#share-preview-count').textContent = `공개 사진 ${summary.publicCount}장`);
+
+    const reviewDayList = $('#review-day-list');
+    if (reviewDayList) {
+        const daySummaries = getTravelDaySummaries(draftPhotos);
+        reviewDayList.innerHTML = daySummaries.length
+            ? daySummaries.map((day) => `
+                <article>
+                    <span>${day.dayLabel}</span>
+                    <strong>${day.title}</strong>
+                    <small>${day.photoCount} photos · ${day.places} places</small>
+                </article>
+            `).join('')
+            : `
+                <article>
+                    <span>Draft</span>
+                    <strong>날짜 정보가 있는 사진이 없습니다</strong>
+                    <small>${photoCount} photos · ${summary.places} places</small>
+                </article>
+            `;
+    }
 
     const analysisStrip = $('#analysis-selected-strip');
     if (analysisStrip) {
