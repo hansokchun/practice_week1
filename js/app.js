@@ -35,6 +35,7 @@ import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelated
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
+import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
 import {
     getDraftPhotoCount,
@@ -815,10 +816,7 @@ function setVisibilityMode(mode) {
         button.classList.toggle('active', button.dataset.visibility === state.visibility);
     });
     const status = $('[data-visibility-status]');
-    if (status) {
-        const label = state.visibility === 'public' ? '공개' : state.visibility === 'link' ? '링크 공유' : '비공개';
-        status.textContent = `현재 상태: ${label}`;
-    }
+    if (status) status.textContent = getVisibilityStatusText(state.visibility);
 }
 
 async function saveShareSettings() {
