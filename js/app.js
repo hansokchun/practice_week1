@@ -55,6 +55,7 @@ import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import {
+    appendUploadPhotos,
     countSelectedUploadPhotos,
     getSelectedUploadPhotos,
     toggleUploadPhotoSelection
@@ -1133,14 +1134,11 @@ function handlePhotoFiles(files) {
         showToast(message);
     }
     if (!selected.length) return;
-    state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
-    state.stagedPhotos = selected.map((file) => ({
-        localId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        name: file.name,
-        url: URL.createObjectURL(file),
-        file,
-        selected: true
-    }));
+    const uploadBatchId = Date.now();
+    state.stagedPhotos = appendUploadPhotos(state.stagedPhotos, selected, {
+        createLocalId: (file, index) => `${uploadBatchId}-${index}-${Math.random().toString(36).slice(2)}`,
+        createObjectUrl: (file) => URL.createObjectURL(file)
+    });
     renderStagedPhotos();
     routeTo('upload');
     closeModals();

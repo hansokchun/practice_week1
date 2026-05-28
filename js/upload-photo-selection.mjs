@@ -13,3 +13,19 @@ export function toggleUploadPhotoSelection(photos = [], localId) {
             : photo
     ));
 }
+
+export function appendUploadPhotos(existingPhotos = [], files = [], {
+    createLocalId = (file, index) => `${Date.now()}-${index}`,
+    createObjectUrl = (file) => URL.createObjectURL(file)
+} = {}) {
+    return [
+        ...existingPhotos,
+        ...Array.from(files).map((file, index) => ({
+            localId: createLocalId(file, index),
+            name: file.name,
+            url: createObjectUrl(file),
+            file,
+            selected: true
+        }))
+    ];
+}

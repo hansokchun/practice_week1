@@ -987,6 +987,11 @@ img {
     border-color: var(--teal);
 }
 
+.upload-thumbnail:not(.is-selected) img {
+    filter: grayscale(1);
+    opacity: 0.48;
+}
+
 .upload-thumbnail img {
     width: 100%;
     height: 100%;
