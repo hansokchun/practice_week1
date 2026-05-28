@@ -32,6 +32,7 @@ import {
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelatedAlbums } from './public-profile-albums.mjs';
+import { getMyphotoStats } from './myphoto-stats.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -605,26 +606,27 @@ async function loadPublicProfileNames() {
 function renderSavedPhotoSurfaces() {
     const myPhotos = getMySavedPhotos();
     const missingLocationPhotos = getMissingLocationPhotos(myPhotos);
-    const located = myPhotos.length - missingLocationPhotos.length;
-    const albumNames = new Set(myPhotos.map((photo) => photo.album).filter(Boolean));
     const savedAlbums = state.currentUser
         ? state.savedAlbums.filter((album) => album.owner_id === state.currentUser.id)
         : [];
+    const stats = getMyphotoStats(myPhotos, savedAlbums);
     const recentGrid = $('#recent-photo-grid');
 
-    $('#stat-photo-count') && ($('#stat-photo-count').textContent = myPhotos.length ? String(myPhotos.length) : '48');
-    $('#stat-located-count') && ($('#stat-located-count').textContent = myPhotos.length ? String(located) : '36');
-    $('#stat-missing-count') && ($('#stat-missing-count').textContent = myPhotos.length ? String(missingLocationPhotos.length) : '12');
-    $('#stat-album-count') && ($('#stat-album-count').textContent = savedAlbums.length || myPhotos.length ? String(Math.max(savedAlbums.length, albumNames.size, 1)) : '5');
+    $('#stat-photo-count') && ($('#stat-photo-count').textContent = String(stats.photoCount));
+    $('#stat-located-count') && ($('#stat-located-count').textContent = String(stats.locatedCount));
+    $('#stat-missing-count') && ($('#stat-missing-count').textContent = String(stats.missingLocationCount));
+    $('#stat-album-count') && ($('#stat-album-count').textContent = String(stats.albumCount));
     renderMissingLocationTasks(missingLocationPhotos);
 
-    if (recentGrid && myPhotos.length) {
-        recentGrid.innerHTML = myPhotos.slice(0, 8).map((photo) => `
+    if (recentGrid) {
+        recentGrid.innerHTML = myPhotos.length
+            ? myPhotos.slice(0, 8).map((photo) => `
             <article>
                 <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
                 <span class="material-symbols-outlined">${photo.shared ? 'public' : 'lock'}</span>
             </article>
-        `).join('');
+        `).join('')
+            : '<article class="photo-placeholder"></article>';
     }
 
     if (state.albumDrafts.length) {
