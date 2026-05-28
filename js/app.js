@@ -76,7 +76,7 @@ const state = {
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
-const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'album', 'review', 'share', 'trip', 'profile']);
+const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'review', 'share', 'trip', 'profile']);
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
@@ -131,7 +131,7 @@ function routeToTrip(albumId, options = {}) {
 
 function renderRoute(section) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
-    const navSection = ['upload', 'album', 'review', 'share'].includes(normalized)
+    const navSection = ['upload', 'photos', 'album', 'review', 'share'].includes(normalized)
         ? APP_SECTIONS.MYPHOTO
         : ['trip', 'profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -717,6 +717,7 @@ function renderSavedPhotoSurfaces() {
             : '새로 추가한 사진 중 위치가 빠진 항목이 생기면 여기에서 알려드릴게요.';
     }
     renderMissingLocationTasks(missingLocationPhotos);
+    renderPersonalPhotosPage(myPhotos);
 
     if (recentGrid) {
         recentGrid.innerHTML = myPhotos.length
@@ -738,6 +739,36 @@ function renderSavedPhotoSurfaces() {
     } else {
         renderAlbumDrafts();
     }
+}
+
+function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
+    const grid = $('#personal-photo-grid');
+    const summary = $('#personal-photo-summary');
+    if (summary) summary.textContent = `${photos.length} photos`;
+    if (!grid) return;
+
+    if (!photos.length) {
+        grid.innerHTML = `
+            <article class="empty-state">
+                <strong>아직 올린 개별사진이 없습니다</strong>
+                <span>마이포토에서 사진 올리기를 누르면 이곳에 개인 사진이 쌓입니다.</span>
+            </article>
+        `;
+        return;
+    }
+
+    grid.innerHTML = photos.map((photo) => {
+        const hasLocation = Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng));
+        return `
+            <article class="personal-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <div>
+                    <strong>${escapeHtml(photo.name)}</strong>
+                    <span>${hasLocation ? '위치 확인됨' : '위치 확인 필요'} · ${photo.visibility === 'public' ? '공개' : '비공개'}</span>
+                </div>
+            </article>
+        `;
+    }).join('');
 }
 
 function renderMissingLocationTasks(photos) {
@@ -818,14 +849,21 @@ function renderSavedPhotoAlbums(photos) {
 function renderStagedPhotos() {
     const grid = $('#staged-photos');
     if (!grid) return;
+    const uploadDropzone = $('#upload-dropzone');
+    const uploadReviewList = $('#upload-review-list');
+    const reviewButton = $('#btn-review-upload');
     $('#album-count-label') && ($('#album-count-label').textContent = `${state.stagedPhotos.length} photos`);
     $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${state.stagedPhotos.length} photos · ${state.albumDrafts.length} albums`);
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${state.stagedPhotos.length}장`);
     $('#upload-success-count') && ($('#upload-success-count').textContent = `${state.stagedPhotos.length}장`);
+    $('#upload-missing-location-count') && ($('#upload-missing-location-count').textContent = `${state.stagedPhotos.length}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
+    uploadDropzone?.toggleAttribute('hidden', state.stagedPhotos.length > 0);
+    if (reviewButton) reviewButton.textContent = '업로드하기';
     renderTravelDraftSurfaces();
 
     if (!state.stagedPhotos.length) {
+        if (uploadReviewList) uploadReviewList.innerHTML = '';
         grid.className = 'photo-grid empty';
         grid.innerHTML = `
             <div class="empty-state">
@@ -837,6 +875,17 @@ function renderStagedPhotos() {
     }
 
     grid.className = 'photo-grid';
+    if (uploadReviewList) {
+        uploadReviewList.innerHTML = state.stagedPhotos.map((photo) => `
+            <article>
+                <span class="material-symbols-outlined">image</span>
+                <div>
+                    <strong>${escapeHtml(photo.name)}</strong>
+                    <small>기본 비공개 · 위치 정보는 저장 후 개별사진에서 확인</small>
+                </div>
+            </article>
+        `).join('');
+    }
     grid.innerHTML = state.stagedPhotos.map((photo) => `
         <article class="photo-card">
             <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
@@ -1140,7 +1189,7 @@ async function persistStagedPhotos() {
             ...state.savedPhotos.filter((photo) => photo.owner_id !== state.currentUser.id || !saved.some((next) => next.id === photo.id))
         ];
         renderSavedPhotoSurfaces();
-        if (status) status.textContent = `${saved.length}장의 사진을 저장했습니다. 다음 단계에서 사진 정보를 확인하세요.`;
+        if (status) status.textContent = `${saved.length}장의 사진을 개별사진 보관함에 저장했습니다.`;
         showToast(`${saved.length}장의 사진을 저장했습니다.`);
         routeTo(getUploadNextRoute(saved.length));
     } catch (error) {
@@ -1424,6 +1473,8 @@ function bindEvents() {
     $('#btn-home-myphoto')?.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO));
     $('#btn-home-explore')?.addEventListener('click', () => routeTo(APP_SECTIONS.EXPLORE));
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
+    $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
+    $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-album')?.addEventListener('click', () => routeTo('album'));
     $('#btn-open-album-inline')?.addEventListener('click', () => routeTo('album'));
     $('#btn-new-trip')?.addEventListener('click', () => routeTo('album'));
@@ -1447,6 +1498,14 @@ function bindEvents() {
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
         if (albumRow) {
             openMyphotoAlbum(albumRow);
+            return;
+        }
+
+        const photoCard = event.target.closest('[data-open-photo-detail][data-photo-id]');
+        if (photoCard) {
+            const photo = getAllDisplayPhotos().find((candidate) => candidate.id === photoCard.dataset.photoId);
+            updatePhotoDetailModal(photo || getDefaultDetailPhoto());
+            openModal('#photo-detail-modal');
             return;
         }
 

@@ -27,7 +27,7 @@ export function parseSharedAlbumId(hash) {
 
 export function getSharedRouteState(hash) {
     const path = String(hash || '').replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
-    const route = ['home', 'myphoto', 'explore', 'upload', 'album', 'review', 'share', 'trip', 'profile'].includes(path)
+    const route = ['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'review', 'share', 'trip', 'profile'].includes(path)
         ? path || 'home'
         : 'home';
     return {

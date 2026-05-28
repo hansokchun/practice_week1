@@ -7,6 +7,6 @@ test('getUploadNextRoute keeps upload flow on upload without selected photos', (
     assert.equal(getUploadNextRoute(0), 'upload');
 });
 
-test('getUploadNextRoute moves uploaded personal photos to review', () => {
-    assert.equal(getUploadNextRoute(3), 'review');
+test('getUploadNextRoute moves uploaded personal photos to individual photos', () => {
+    assert.equal(getUploadNextRoute(3), 'photos');
 });

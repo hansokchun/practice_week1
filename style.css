@@ -702,6 +702,40 @@ img {
     filter: drop-shadow(0 2px 5px rgba(0,0,0,0.28));
 }
 
+.personal-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.personal-photo-card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.personal-photo-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.personal-photo-card div {
+    padding: 12px;
+}
+
+.personal-photo-card strong,
+.personal-photo-card span {
+    display: block;
+}
+
+.personal-photo-card span {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
 .photo-placeholder {
     background: linear-gradient(90deg, var(--surface-soft), #f6f6f4, var(--surface-soft));
     animation: pulse 1.8s infinite;
@@ -1016,6 +1050,30 @@ img {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.upload-review-list {
+    display: grid;
+    gap: 10px;
+}
+
+.upload-review-list article {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(45, 142, 151, 0.06);
+    padding: 12px;
+}
+
+.upload-review-list strong,
+.upload-review-list small {
+    display: block;
+}
+
+.upload-review-list small {
+    color: var(--muted);
 }
 
 .help-note,
@@ -2576,6 +2634,7 @@ img {
     .dashboard-grid,
     .stats-grid,
     .recent-photo-grid,
+    .personal-photo-grid,
     .album-row,
     .attention-banner,
     .upload-step-list,
