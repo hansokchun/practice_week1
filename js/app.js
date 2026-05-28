@@ -3,6 +3,7 @@ import {
     createAlbum,
     fetchAlbums,
     fetchPhotos,
+    fetchProfilesByIds,
     getCurrentUser,
     signInWithEmail,
     signOut,
@@ -29,6 +30,7 @@ import {
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
+import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
 import { buildTripShareUrl, getSharedRouteState, parseSharedAlbumId } from './share-link.mjs';
 import {
     getDraftPhotoCount,
@@ -41,6 +43,7 @@ const state = {
     stagedPhotos: [],
     savedPhotos: [],
     savedAlbums: [],
+    profileNames: {},
     lastSavedPhotoIds: [],
     albumDrafts: [],
     visibility: 'private',
@@ -312,6 +315,13 @@ function getSelectedPublicAlbum() {
     return albums.find((album) => album.id === state.selectedPublicAlbumId) || albums[0];
 }
 
+function getSelectedAuthorName(album = getSelectedPublicAlbum()) {
+    return getPublicAuthorName(album, {
+        currentUser: state.currentUser,
+        profileNames: state.profileNames
+    });
+}
+
 function setSelectedPublicAlbum(albumId) {
     state.selectedPublicAlbumId = albumId;
     renderPublicSurfaces();
@@ -342,6 +352,8 @@ function renderPublicSurfaces() {
     const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
     const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
+    const authorName = getSelectedAuthorName(selected);
+    const authorInitials = getAuthorInitials(authorName);
     const preview = $('#explore-pin-preview');
     const previewImage = preview?.querySelector('img');
     const previewTitle = preview?.querySelector('.pin-preview-copy h2');
@@ -374,6 +386,13 @@ function renderPublicSurfaces() {
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
     if (routeMeta) routeMeta.textContent = `공개 앨범 · ${places} places · ${photoCount || 1} public photos`;
+
+    $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
+        avatar.textContent = authorInitials;
+    });
+    $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((nameNode) => {
+        nameNode.textContent = authorName;
+    });
 
     const routeStrip = $('.route-strip');
     if (routeStrip) {
@@ -535,6 +554,18 @@ async function loadSavedAlbums() {
         .filter((album) => !state.currentUser || album.owner_id === state.currentUser.id || ['public', 'link'].includes(album.visibility))
         .map(normalizeSavedAlbum);
     renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
+}
+
+async function loadPublicProfileNames() {
+    const ownerIds = [...new Set(state.savedAlbums.map((album) => album.owner_id).filter((id) => id && id !== 'demo'))];
+    if (!ownerIds.length) return;
+    const { data, error } = await fetchProfilesByIds(ownerIds);
+    if (error) return;
+    state.profileNames = (data || []).reduce((names, profile) => {
+        if (profile.id && profile.nickname) names[profile.id] = profile.nickname;
+        return names;
+    }, { ...state.profileNames });
     renderPublicSurfaces();
 }
 
@@ -949,6 +980,7 @@ async function saveAlbumDraft() {
         } else if (album) {
             state.savedAlbums.unshift(normalizeSavedAlbum(album));
             if (draftPhotoIds.length) await attachPhotosToAlbum(album.id, draftPhotoIds);
+            await loadPublicProfileNames();
         }
     }
 
@@ -1000,6 +1032,7 @@ async function ensureAlbumForSharing() {
     const album = normalizeSavedAlbum(data);
     state.savedAlbums.unshift(album);
     if (photoIds.length) await attachPhotosToAlbum(album.id, photoIds);
+    await loadPublicProfileNames();
     return album;
 }
 
@@ -1292,6 +1325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateAccountUI();
     await loadSavedPhotos();
     await loadSavedAlbums();
+    await loadPublicProfileNames();
     bindEvents();
     renderStagedPhotos();
     renderSavedPhotoSurfaces();
