@@ -778,6 +778,7 @@ function renderTravelDraftSurfaces() {
     $('#review-day-one-count') && ($('#review-day-one-count').textContent = `${Math.min(photoCount, 18)} photos · ${summary.places} places`);
     $('#share-title') && ($('#share-title').textContent = summary.title);
     $('#share-preview-title') && ($('#share-preview-title').textContent = summary.title);
+    $('#share-date-range') && ($('#share-date-range').textContent = summary.dateRange);
     $('#share-trip-photo-count') && ($('#share-trip-photo-count').textContent = `${photoCount} photos`);
     $('#share-preview-count') && ($('#share-preview-count').textContent = `공개 사진 ${summary.publicCount}장`);
 

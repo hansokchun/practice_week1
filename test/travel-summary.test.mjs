@@ -18,6 +18,7 @@ test('getTravelSummary uses the latest album draft title and photo metadata', ()
         photoCount: 3,
         places: 2,
         days: 2,
+        dateRange: '2026.05.01 - 2026.05.02',
         publicCount: 1
     });
 });
@@ -32,6 +33,7 @@ test('getTravelSummary prefers the selected album when present', () => {
         photoCount: 42,
         places: 11,
         days: 2,
+        dateRange: '2026.05.01 - 2026.05.02',
         publicCount: 40
     });
 });
@@ -42,6 +44,13 @@ test('getTravelSummary handles an empty draft without demo counts', () => {
         photoCount: 0,
         places: 0,
         days: 0,
+        dateRange: '날짜 미정',
         publicCount: 0
     });
+});
+
+test('getTravelSummary compresses a single travel day', () => {
+    assert.equal(getTravelSummary({
+        draftPhotos: [{ id: 'p1', date: '2026-05-01T10:00:00Z' }]
+    }).dateRange, '2026.05.01');
 });
