@@ -317,7 +317,7 @@ function updateExplorePhotoPreview(photo) {
 }
 
 function getGoogleMapsApiKey() {
-    return window.GOOGLE_MAPS_API_KEY || import.meta.env?.VITE_GOOGLE_MAPS_API_KEY || '';
+    return window.GOOGLE_MAPS_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 }
 
 function loadGoogleMapsApi() {
