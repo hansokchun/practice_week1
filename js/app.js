@@ -96,6 +96,8 @@ const state = {
     exploreMarkers: [],
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
+    googleMapsApiKey: null,
+    googleMapsApiKeyPromise: null,
     isPersistingUpload: false,
     isSavingShare: false
 };
@@ -316,29 +318,54 @@ function updateExplorePhotoPreview(photo) {
     updatePhotoDetailModal(photo);
 }
 
-function getGoogleMapsApiKey() {
-    return window.GOOGLE_MAPS_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+async function getGoogleMapsApiKey() {
+    if (window.GOOGLE_MAPS_API_KEY) return window.GOOGLE_MAPS_API_KEY;
+    if (state.googleMapsApiKey !== null) return state.googleMapsApiKey;
+    if (state.googleMapsApiKeyPromise) return state.googleMapsApiKeyPromise;
+
+    const buildTimeKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+    if (buildTimeKey) {
+        state.googleMapsApiKey = buildTimeKey;
+        return state.googleMapsApiKey;
+    }
+
+    state.googleMapsApiKeyPromise = fetch('/api/config', { cache: 'no-store' })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((config) => {
+            state.googleMapsApiKey = config?.googleMapsApiKey || '';
+            return state.googleMapsApiKey;
+        })
+        .catch(() => {
+            state.googleMapsApiKey = '';
+            return '';
+        })
+        .finally(() => {
+            state.googleMapsApiKeyPromise = null;
+        });
+
+    return state.googleMapsApiKeyPromise;
 }
 
 function loadGoogleMapsApi() {
     if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
     if (state.exploreMapLoadPromise) return state.exploreMapLoadPromise;
 
-    const key = getGoogleMapsApiKey();
-    if (!key) return Promise.resolve(null);
+    state.exploreMapLoadPromise = getGoogleMapsApiKey().then((key) => {
+        if (!key) return null;
 
-    state.exploreMapLoadPromise = new Promise((resolve, reject) => {
-        const callbackName = `initTravelgramGoogleMap${Date.now()}`;
-        window[callbackName] = () => {
-            resolve(window.google.maps);
-            delete window[callbackName];
-        };
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=${callbackName}`;
-        script.async = true;
-        script.defer = true;
-        script.onerror = () => reject(new Error('Google Maps API failed to load'));
-        document.head.appendChild(script);
+        return new Promise((resolve, reject) => {
+            const callbackName = `initTravelgramGoogleMap${Date.now()}`;
+            window[callbackName] = () => {
+                resolve(window.google.maps);
+                delete window[callbackName];
+            };
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=${callbackName}`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = () => reject(new Error('Google Maps API failed to load'));
+            document.head.appendChild(script);
+        });
     }).catch((error) => {
         showToast('Google 지도 로드에 실패했습니다.');
         return null;
