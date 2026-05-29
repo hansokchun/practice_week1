@@ -1000,7 +1000,6 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         deleteButton.disabled = selectedCount === 0;
         deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
     }
-    if (!grid) return;
 
     if (!photos.length) {
         grid.innerHTML = `
@@ -1130,7 +1129,6 @@ function renderSavedPhotoAlbums(photos) {
 
 function renderStagedPhotos() {
     const grid = $('#staged-photos');
-    if (!grid) return;
     const uploadDropzone = $('#upload-dropzone');
     const reviewButton = $('#btn-review-upload');
     const selectedUploadCount = countSelectedUploadPhotos(state.stagedPhotos);
@@ -1152,8 +1150,8 @@ function renderStagedPhotos() {
             `;
             bindPhotoInput();
         }
-        grid.className = 'photo-grid empty';
-        grid.innerHTML = `
+        if (grid) grid.className = 'photo-grid empty';
+        if (grid) grid.innerHTML = `
             <div class="empty-state">
                 <strong>아직 선택한 사진이 없습니다.</strong>
                 <span>사진 올리기를 누르면 업로드 초안을 확인합니다.</span>
@@ -1162,7 +1160,7 @@ function renderStagedPhotos() {
         return;
     }
 
-    grid.className = 'photo-grid';
+    if (grid) grid.className = 'photo-grid';
     if (uploadDropzone) {
         uploadDropzone.className = 'upload-dropzone upload-thumbnail-zone';
         uploadDropzone.innerHTML = `
@@ -1177,7 +1175,7 @@ function renderStagedPhotos() {
         `;
         bindPhotoInput();
     }
-    grid.innerHTML = state.stagedPhotos.map((photo) => `
+    if (grid) grid.innerHTML = state.stagedPhotos.map((photo) => `
         <article class="photo-card">
             <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
             <span>${escapeHtml(photo.name)}</span>
