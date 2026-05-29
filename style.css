@@ -2005,45 +2005,20 @@ img {
     background: var(--surface-muted);
 }
 
-.explore-map .leaflet-control-attribution {
-    font-size: 10px;
-}
-
-.leaflet-photo-marker {
+.map-api-warning {
     display: grid;
-    place-items: center;
-    border: 2px solid #ffffff;
-    border-radius: 999px 999px 999px 10px;
-    background: var(--teal);
-    box-shadow: 0 16px 34px rgba(26, 77, 78, 0.24);
-    padding: 4px;
+    place-content: center;
+    gap: 8px;
+    height: 100%;
+    color: var(--muted);
+    text-align: center;
+    padding: 24px;
 }
 
-.leaflet-photo-marker::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -7px;
-    width: 14px;
-    height: 14px;
-    transform: translateX(-50%) rotate(45deg);
-    border-right: 2px solid #ffffff;
-    border-bottom: 2px solid #ffffff;
-    background: var(--teal);
-}
-
-.leaflet-photo-marker img {
-    position: relative;
-    z-index: 1;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    object-fit: cover;
-}
-
-.leaflet-photo-marker.is-selected {
-    outline: 3px solid var(--coral);
-    outline-offset: 5px;
+.map-api-warning strong {
+    color: var(--teal);
+    font-family: var(--headline);
+    font-size: 24px;
 }
 
 .map-search {

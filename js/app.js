@@ -94,7 +94,8 @@ const state = {
     exploreZoom: 7,
     exploreMap: null,
     exploreMarkers: [],
-    exploreSearchMarker: null,
+    exploreSearchBox: null,
+    exploreMapLoadPromise: null,
     isPersistingUpload: false,
     isSavingShare: false
 };
@@ -181,7 +182,6 @@ function renderRoute(section) {
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
     if (normalized === APP_SECTIONS.EXPLORE) {
         ensureExploreMap();
-        window.setTimeout(() => state.exploreMap?.invalidateSize(), 0);
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 }
@@ -316,50 +316,91 @@ function updateExplorePhotoPreview(photo) {
     updatePhotoDetailModal(photo);
 }
 
-function getLeaflet() {
-    return window.L || null;
+function getGoogleMapsApiKey() {
+    return window.GOOGLE_MAPS_API_KEY || import.meta.env?.VITE_GOOGLE_MAPS_API_KEY || '';
 }
 
-function createPhotoMarkerIcon(photo, selected = false) {
-    const L = getLeaflet();
-    if (!L) return null;
-    return L.divIcon({
-        className: `leaflet-photo-marker ${selected ? 'is-selected' : ''}`,
-        html: `<img src="${photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg'}" alt="">`,
-        iconSize: [54, 64],
-        iconAnchor: [27, 62],
-        popupAnchor: [0, -56]
+function loadGoogleMapsApi() {
+    if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
+    if (state.exploreMapLoadPromise) return state.exploreMapLoadPromise;
+
+    const key = getGoogleMapsApiKey();
+    if (!key) return Promise.resolve(null);
+
+    state.exploreMapLoadPromise = new Promise((resolve, reject) => {
+        const callbackName = `initTravelgramGoogleMap${Date.now()}`;
+        window[callbackName] = () => {
+            resolve(window.google.maps);
+            delete window[callbackName];
+        };
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=${callbackName}`;
+        script.async = true;
+        script.defer = true;
+        script.onerror = () => reject(new Error('Google Maps API failed to load'));
+        document.head.appendChild(script);
+    }).catch((error) => {
+        showToast('Google 지도 로드에 실패했습니다.');
+        return null;
     });
+    return state.exploreMapLoadPromise;
 }
 
-function ensureExploreMap() {
-    const L = getLeaflet();
+async function ensureExploreMap() {
     const container = $('#explore-map');
-    if (!L || !container) return null;
+    if (!container) return null;
     if (state.exploreMap) return state.exploreMap;
 
-    state.exploreMap = L.map(container, {
-        zoomControl: true,
-        scrollWheelZoom: true
-    }).setView([36.45, 127.85], state.exploreZoom);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(state.exploreMap);
+    const maps = await loadGoogleMapsApi();
+    if (!maps) {
+        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>VITE_GOOGLE_MAPS_API_KEY를 설정하면 Google 지도와 Places 검색이 표시됩니다.</span></div>';
+        return null;
+    }
+
+    state.exploreMap = new maps.Map(container, {
+        center: { lat: 36.45, lng: 127.85 },
+        zoom: state.exploreZoom,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
+        gestureHandling: 'greedy'
+    });
+
+    const input = $('#explore-map-search-input');
+    if (input && maps.places?.SearchBox) {
+        state.exploreSearchBox = new maps.places.SearchBox(input);
+        state.exploreMap.addListener('bounds_changed', () => {
+            state.exploreSearchBox.setBounds(state.exploreMap.getBounds());
+        });
+        state.exploreSearchBox.addListener('places_changed', () => {
+            const [place] = state.exploreSearchBox.getPlaces() || [];
+            if (!place?.geometry?.location) return;
+            state.exploreMap.panTo(place.geometry.location);
+            state.exploreMap.setZoom(13);
+        });
+    }
     return state.exploreMap;
 }
 
-function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
-    const L = getLeaflet();
-    const map = ensureExploreMap();
-    if (!L || !map) return;
+async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
+    const map = await ensureExploreMap();
+    const maps = window.google?.maps;
+    if (!map || !maps) return;
 
-    state.exploreMarkers.forEach((marker) => marker.remove());
+    state.exploreMarkers.forEach((marker) => marker.setMap(null));
     state.exploreMarkers = locatedPhotos.map((photo) => {
-        const marker = L.marker([Number(photo.lat), Number(photo.lng)], {
-            icon: createPhotoMarkerIcon(photo, photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId)
-        }).addTo(map);
-        marker.on('click', () => {
+        const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
+        const marker = new maps.Marker({
+            map,
+            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+            title: photo.name || photo.albumTitle || 'Public photo',
+            icon: {
+                url: photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg',
+                scaledSize: new maps.Size(selected ? 58 : 48, selected ? 58 : 48),
+                anchor: new maps.Point(selected ? 29 : 24, selected ? 58 : 48)
+            }
+        });
+        marker.addListener('click', () => {
             if (photo.album_id) setSelectedPublicAlbum(photo.album_id);
             updateExplorePhotoPreview(photo);
             renderExploreMapMarkers(locatedPhotos, photo.album_id);
@@ -371,7 +412,8 @@ function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
 
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selectedAlbumId) || locatedPhotos[0];
     if (selectedPhoto) {
-        map.setView([Number(selectedPhoto.lat), Number(selectedPhoto.lng)], Math.max(map.getZoom(), state.exploreZoom));
+        map.panTo({ lat: Number(selectedPhoto.lat), lng: Number(selectedPhoto.lng) });
+        if (map.getZoom() < state.exploreZoom) map.setZoom(state.exploreZoom);
     }
 }
 
@@ -670,7 +712,7 @@ function renderEmptyPublicSurfaces() {
     const photoPinLayer = $('#explore-photo-pins');
     if (photoPinLayer) photoPinLayer.innerHTML = '';
     if (state.exploreMarkers.length) {
-        state.exploreMarkers.forEach((marker) => marker.remove());
+        state.exploreMarkers.forEach((marker) => marker.setMap?.(null));
         state.exploreMarkers = [];
     }
 }
@@ -1544,7 +1586,13 @@ function handlePhotoFiles(files) {
 }
 
 function bindPhotoInput() {
-    $('#photo-input')?.addEventListener('change', (event) => handlePhotoFiles(event.target.files));
+    $('#photo-input')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+    $('#photo-input')?.addEventListener('change', (event) => {
+        handlePhotoFiles(event.target.files);
+        event.target.value = '';
+    });
 }
 
 function safeFileName(value) {
@@ -1910,27 +1958,22 @@ async function searchExploreMap(event) {
     event.preventDefault();
     const input = $('#explore-map-search-input');
     const query = input?.value.trim();
-    const map = ensureExploreMap();
-    const L = getLeaflet();
-    if (!query || !map || !L) return;
+    const map = await ensureExploreMap();
+    const maps = window.google?.maps;
+    if (!query || !map || !maps) return;
 
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`, {
-            headers: { Accept: 'application/json' }
-        });
-        const [place] = await response.json();
-        if (!place) {
+    const service = new maps.places.PlacesService(map);
+    service.findPlaceFromQuery({
+        query,
+        fields: ['name', 'geometry']
+    }, (results, status) => {
+        if (status !== maps.places.PlacesServiceStatus.OK || !results?.[0]?.geometry?.location) {
             showToast('검색 결과를 찾지 못했습니다.');
             return;
         }
-        const lat = Number(place.lat);
-        const lng = Number(place.lon);
-        map.setView([lat, lng], 13);
-        if (state.exploreSearchMarker) state.exploreSearchMarker.remove();
-        state.exploreSearchMarker = L.marker([lat, lng]).addTo(map);
-    } catch (error) {
-        showToast('장소 검색에 실패했습니다.');
-    }
+        map.panTo(results[0].geometry.location);
+        map.setZoom(13);
+    });
 }
 
 function renderExploreList() {
@@ -2222,6 +2265,7 @@ function bindEvents() {
     const uploadDropzone = $('#upload-dropzone');
     if (uploadDropzone) {
         uploadDropzone.addEventListener('click', (event) => {
+            if (event.target instanceof HTMLInputElement) return;
             const thumbnail = event.target instanceof Element ? event.target.closest('[data-upload-photo-id]') : null;
             if (thumbnail) {
                 state.stagedPhotos = toggleUploadPhotoSelection(state.stagedPhotos, thumbnail.dataset.uploadPhotoId);
