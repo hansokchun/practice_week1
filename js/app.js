@@ -80,6 +80,7 @@ import {
     mergeAlbumPhotoIds,
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
+import { getExploreMarkerClusters } from './explore-marker-clusters.mjs';
 
 const state = {
     currentUser: null,
@@ -107,6 +108,9 @@ const state = {
     exploreZoom: 7,
     exploreMap: null,
     exploreMarkers: [],
+    exploreClusterListener: null,
+    exploreMarkerPhotos: [],
+    exploreSelectedAlbumId: null,
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
     tripReviewMap: null,
@@ -426,33 +430,69 @@ async function ensureExploreMap() {
     return state.exploreMap;
 }
 
+function getExplorePinIcon(maps, { selected = false, isCluster = false } = {}) {
+    const size = isCluster ? 46 : selected ? 42 : 34;
+    const fill = isCluster ? '#0e5a5c' : selected ? '#f28a72' : '#155659';
+    const stroke = '#ffffff';
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 48 48">
+            <path d="M24 45s15-13.4 15-27A15 15 0 0 0 9 18c0 13.6 15 27 15 27Z" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+            <circle cx="24" cy="18" r="${isCluster ? 13 : 6}" fill="${isCluster ? fill : stroke}"/>
+        </svg>
+    `.trim();
+    return {
+        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+        scaledSize: new maps.Size(size, size),
+        anchor: new maps.Point(size / 2, size)
+    };
+}
+
 async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     const map = await ensureExploreMap();
     const maps = window.google?.maps;
     if (!map || !maps) return;
 
+    state.exploreMarkerPhotos = locatedPhotos;
+    state.exploreSelectedAlbumId = selectedAlbumId;
     state.exploreMarkers.forEach((marker) => marker.setMap(null));
-    state.exploreMarkers = locatedPhotos.map((photo) => {
-        const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
+    const clusters = getExploreMarkerClusters(locatedPhotos, map.getZoom() || state.exploreZoom);
+    state.exploreMarkers = clusters.map((cluster) => {
+        const photo = cluster.photos[0];
+        const selected = cluster.photos.some((item) => item.album_id === selectedAlbumId || item.id === state.selectedPhotoId);
+        const isCluster = cluster.count > 1;
         const marker = new maps.Marker({
             map,
-            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
-            title: photo.name || photo.albumTitle || 'Public photo',
-            icon: {
-                url: photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg',
-                scaledSize: new maps.Size(selected ? 58 : 48, selected ? 58 : 48),
-                anchor: new maps.Point(selected ? 29 : 24, selected ? 58 : 48)
-            }
+            position: cluster.position,
+            title: isCluster ? `${cluster.count} photos` : (photo.name || photo.albumTitle || 'Public photo'),
+            icon: getExplorePinIcon(maps, { selected, isCluster }),
+            label: isCluster ? {
+                text: String(cluster.count),
+                color: '#ffffff',
+                fontSize: '13px',
+                fontWeight: '900'
+            } : null,
+            zIndex: selected ? 20 : isCluster ? 15 : 10
         });
         marker.addListener('click', () => {
-            if (photo.album_id) setSelectedPublicAlbum(photo.album_id);
-            updateExplorePhotoPreview(photo);
-            renderExploreMapMarkers(locatedPhotos, photo.album_id);
+            const previewPhoto = cluster.photos.find((item) => item.album_id === selectedAlbumId) || photo;
+            if (isCluster && map.getZoom() < 15) {
+                map.panTo(cluster.position);
+                map.setZoom((map.getZoom() || state.exploreZoom) + 2);
+                return;
+            }
+            if (previewPhoto.album_id) setSelectedPublicAlbum(previewPhoto.album_id);
+            updateExplorePhotoPreview(previewPhoto);
+            renderExploreMapMarkers(locatedPhotos, previewPhoto.album_id);
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
         });
         return marker;
     });
+    if (!state.exploreClusterListener) {
+        state.exploreClusterListener = map.addListener('zoom_changed', () => {
+            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+        });
+    }
 
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selectedAlbumId) || locatedPhotos[0];
     if (selectedPhoto) {
