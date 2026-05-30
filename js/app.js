@@ -89,7 +89,8 @@ import {
     formatPhotoPlaceMeta,
     formatPlaceCount
 } from './copy-formatters.mjs';
-import { getPublicDemoAlbums, getPublicDemoPhotos } from './public-demo-data.mjs';
+import { getPublicDemoAlbumEntries, getPublicDemoAlbums, getPublicDemoPhotos } from './public-demo-data.mjs';
+import { combinePublicAlbumsWithDemoEntries } from './public-album-entries.mjs';
 
 const state = {
     currentUser: null,
@@ -122,6 +123,7 @@ const state = {
     exploreSelectedAlbumId: null,
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
+    exploreLastBoundsKey: null,
     tripReviewMap: null,
     tripReviewMarkers: [],
     googleMapsApiKey: null,
@@ -504,7 +506,13 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     }
 
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selectedAlbumId) || locatedPhotos[0];
-    if (selectedPhoto) {
+    const boundsKey = locatedPhotos.map((photo) => `${photo.id}:${photo.lat}:${photo.lng}`).join('|');
+    if (locatedPhotos.length > 1 && boundsKey && boundsKey !== state.exploreLastBoundsKey) {
+        const bounds = new maps.LatLngBounds();
+        locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+        state.exploreLastBoundsKey = boundsKey;
+        map.fitBounds(bounds, 96);
+    } else if (selectedPhoto) {
         map.panTo({ lat: Number(selectedPhoto.lat), lng: Number(selectedPhoto.lng) });
         if (map.getZoom() < state.exploreZoom) map.setZoom(state.exploreZoom);
     }
@@ -669,16 +677,7 @@ function getPublicAlbums() {
                 photos
             };
         });
-    if (publicAlbums.length) return publicAlbums;
-    return getFallbackPublicAlbums().map((album) => {
-        const photos = getFallbackPublicPhotos(album);
-        return {
-            ...album,
-            photo_count: photos.length,
-            places: photos.length,
-            photos
-        };
-    });
+    return combinePublicAlbumsWithDemoEntries(publicAlbums, getPublicDemoAlbumEntries());
 }
 
 function getSelectedPublicAlbum() {

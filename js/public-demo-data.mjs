@@ -69,3 +69,15 @@ export function getPublicDemoPhotos(album) {
         shared: true
     }));
 }
+
+export function getPublicDemoAlbumEntries() {
+    return getPublicDemoAlbums().map((album) => {
+        const photos = getPublicDemoPhotos(album);
+        return {
+            ...album,
+            photo_count: photos.length,
+            places: photos.length,
+            photos
+        };
+    });
+}
