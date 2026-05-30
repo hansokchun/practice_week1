@@ -71,6 +71,7 @@ import {
     shouldClearUploadQueue,
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
+import { getAlbumReviewDaySections } from './album-review-layout.mjs';
 
 const state = {
     currentUser: null,
@@ -96,6 +97,8 @@ const state = {
     exploreMarkers: [],
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
+    tripReviewMap: null,
+    tripReviewMarkers: [],
     googleMapsApiKey: null,
     googleMapsApiKeyPromise: null,
     isPersistingUpload: false,
@@ -182,6 +185,7 @@ function renderRoute(section) {
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
+    if (normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
         ensureExploreMap();
     }
@@ -744,6 +748,136 @@ function renderEmptyPublicSurfaces() {
     }
 }
 
+function renderTripReviewShell() {
+    const page = $('#page-trip');
+    if (!page) return;
+    page.innerHTML = `
+        <div class="trip-review-shell">
+            <header class="trip-review-header">
+                <button class="back-link" data-route="explore" type="button">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span id="trip-review-back-label">Explore</span>
+                </button>
+                <div class="trip-review-title-block">
+                    <p class="eyebrow">Album Review Map</p>
+                    <h1 id="trip-title">Album</h1>
+                    <p id="trip-review-description">사진이 날짜별로 정리된 앨범 지도입니다.</p>
+                    <div id="trip-review-meta" class="trip-review-meta"></div>
+                </div>
+                <div class="trip-actions">
+                    <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
+                    <button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>
+                    <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
+                </div>
+            </header>
+            <div class="trip-review-layout">
+                <main class="trip-review-timeline" aria-labelledby="trip-photo-title">
+                    <h2 id="trip-photo-title">Photos by Date</h2>
+                    <div id="public-trip-photo-grid" class="public-trip-photo-grid trip-review-photo-flow"></div>
+                </main>
+                <aside class="trip-review-map-panel" aria-label="앨범 사진 위치 지도">
+                    <div class="trip-review-map-search">
+                        <span class="material-symbols-outlined">search</span>
+                        <span id="trip-review-location-label">Album map</span>
+                    </div>
+                    <div id="trip-review-map" class="trip-review-map"></div>
+                </aside>
+            </div>
+        </div>
+    `;
+}
+
+function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
+    const grid = $('#public-trip-photo-grid');
+    if (!grid) return;
+    const sections = getAlbumReviewDaySections(albumPhotos);
+    if (!sections.length) {
+        grid.innerHTML = `
+            <article class="empty-state">
+                <strong>${escapeHtml(albumTitle)}</strong>
+                <span>앨범에 표시할 사진이 아직 없습니다.</span>
+            </article>
+        `;
+        return;
+    }
+
+    grid.innerHTML = sections.map((section) => `
+        <section class="trip-review-day">
+            <div class="trip-review-day-divider">
+                <strong>${escapeHtml(section.dayLabel)}</strong>
+                <span>${escapeHtml(section.dateLabel)}</span>
+                <small>${section.photoCount} photos</small>
+            </div>
+            <div class="trip-review-day-rows">
+                ${section.rows.map((row) => `
+                    <div class="trip-review-photo-row">
+                        ${row.map((photo) => `
+                            <article
+                                class="trip-review-photo-card"
+                                style="--photo-ratio: ${Number(photo.aspectRatio || 1)};"
+                                data-open-photo-detail
+                                data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
+                            >
+                                <img src="${photo.url || cover}" alt="${escapeHtml(photo.name || albumTitle)}">
+                                <span>${escapeHtml(photo.name || 'Travel photo')}</span>
+                            </article>
+                        `).join('')}
+                    </div>
+                `).join('')}
+            </div>
+        </section>
+    `).join('');
+}
+
+async function renderTripReviewMap(albumPhotos) {
+    const container = $('#trip-review-map');
+    if (!container) return;
+    const located = albumPhotos.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng)));
+    if (!located.length) {
+        state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
+        state.tripReviewMarkers = [];
+        state.tripReviewMap = null;
+        container.innerHTML = '<div class="map-api-warning"><strong>위치 정보가 있는 사진이 없습니다.</strong><span>위치가 저장된 사진을 추가하면 지도에 표시됩니다.</span></div>';
+        return;
+    }
+
+    const maps = await loadGoogleMapsApi();
+    if (!maps) {
+        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>지도 설정이 완료되면 앨범 위치가 표시됩니다.</span></div>';
+        return;
+    }
+
+    const center = { lat: Number(located[0].lat), lng: Number(located[0].lng) };
+    state.tripReviewMap = new maps.Map(container, {
+        center,
+        zoom: located.length > 1 ? 11 : 13,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
+        gestureHandling: 'greedy'
+    });
+
+    state.tripReviewMarkers.forEach((marker) => marker.setMap(null));
+    state.tripReviewMarkers = located.map((photo) => {
+        const marker = new maps.Marker({
+            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+            map: state.tripReviewMap,
+            title: photo.name || 'Travel photo'
+        });
+        marker.addListener('click', () => updatePhotoDetailModal(photo));
+        return marker;
+    });
+
+    if (located.length > 1) {
+        const bounds = new maps.LatLngBounds();
+        located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+        state.tripReviewMap.fitBounds(bounds, 72);
+    }
+
+    const label = $('#trip-review-location-label');
+    if (label) label.textContent = `${located.length} pinned photos`;
+}
+
 function renderPublicSurfaces() {
     const albums = getPublicAlbums();
     const selected = getSelectedPublicAlbum();
@@ -751,6 +885,7 @@ function renderPublicSurfaces() {
         renderEmptyPublicSurfaces();
         return;
     }
+    renderTripReviewShell();
     const cover = selected.cover_url || 'images/main_bg2.jpg';
     const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
@@ -762,6 +897,7 @@ function renderPublicSurfaces() {
     });
     const authorName = getSelectedAuthorName(selected);
     const authorInitials = getAuthorInitials(authorName);
+    const isOwnAlbum = selected.owner_id && selected.owner_id === state.currentUser?.id;
     const preview = $('#explore-pin-preview');
     const previewImage = preview?.querySelector('img');
     const previewTitle = preview?.querySelector('.pin-preview-copy h2');
@@ -787,6 +923,9 @@ function renderPublicSurfaces() {
     const tripTitle = $('#trip-title');
     const tripCopy = $('.public-trip-copy > p:not(.eyebrow)');
     const tripActions = $('.public-trip-copy .trip-actions');
+    const tripReviewDescription = $('#trip-review-description');
+    const tripReviewMeta = $('#trip-review-meta');
+    const tripReviewActions = $('.trip-review-header .trip-actions');
     const routeMeta = $('.trip-route-card .compact-heading p');
     if (tripHeroImage) {
         tripHeroImage.src = cover;
@@ -794,6 +933,25 @@ function renderPublicSurfaces() {
     }
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
+    if (tripReviewDescription) tripReviewDescription.textContent = note;
+    const reviewBackButton = $('.trip-review-header .back-link');
+    const reviewBackLabel = $('#trip-review-back-label');
+    if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'myphoto' : 'explore';
+    if (reviewBackLabel) reviewBackLabel.textContent = isOwnAlbum ? 'Myphoto' : 'Explore';
+    if (tripReviewMeta) {
+        tripReviewMeta.innerHTML = `
+            <span>${tripSummary.dateRange || '날짜 없음'}</span>
+            <span>${places} places</span>
+            <span>${photoCount || tripPhotos.length} photos</span>
+        `;
+    }
+    if (tripReviewActions) {
+        tripReviewActions.innerHTML = `
+            <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
+            ${isOwnAlbum ? '<button id="btn-edit-album" class="btn-secondary" type="button">수정하기</button>' : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
+            <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
+        `;
+    }
     if (tripActions) {
         const isOwnAlbum = selected.owner_id && selected.owner_id === state.currentUser?.id;
         tripActions.innerHTML = `
@@ -838,16 +996,11 @@ function renderPublicSurfaces() {
 
     const tripPhotoGrid = $('#public-trip-photo-grid');
     if (tripPhotoGrid) {
-        const tripPhotos = selected.photos?.length ? selected.photos : getDraftPhotos();
-        tripPhotoGrid.innerHTML = tripPhotos.slice(0, 8).map((photo, index) => `
-            <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id || `public-${index}`)}">
-                <img src="${photo.url || cover}" alt="${escapeHtml(photo.name || selected.title)}">
-                <span>${escapeHtml(photo.name || `Photo ${index + 1}`)}</span>
-            </article>
-        `).join('');
+        renderTripReviewPhotoFlow(tripPhotos, selected.title, cover);
     }
 
     const locatedPhotos = getLocatedPublicPhotos(albums);
+    renderTripReviewMap(tripPhotos);
     renderExploreMapMarkers(locatedPhotos, selected.id);
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
     if (selectedPhoto) updateExplorePhotoPreview(selectedPhoto);

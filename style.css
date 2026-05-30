@@ -2577,6 +2577,187 @@ img {
     padding: 6px 10px;
 }
 
+.trip-review-shell {
+    min-height: calc(100vh - 60px);
+    background: var(--warm);
+    color: var(--ink);
+}
+
+.trip-review-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 28px;
+    padding: 28px 40px 22px;
+    border-bottom: 1px solid rgba(26, 77, 78, 0.12);
+    background: rgba(249, 247, 242, 0.96);
+}
+
+.trip-review-title-block h1 {
+    margin: 8px 0 0;
+    color: var(--teal);
+    font-family: var(--headline);
+    font-size: 38px;
+    line-height: 1.08;
+}
+
+.trip-review-title-block > p:not(.eyebrow) {
+    max-width: 780px;
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.trip-review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.trip-review-meta span {
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--teal);
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.trip-review-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(390px, 42vw);
+    align-items: start;
+}
+
+.trip-review-timeline {
+    padding: 28px 20px 52px 40px;
+}
+
+.trip-review-timeline > h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.trip-review-photo-flow {
+    display: grid;
+    gap: 30px;
+}
+
+.trip-review-day {
+    display: grid;
+    gap: 16px;
+}
+
+.trip-review-day-divider {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: end;
+    gap: 10px;
+    color: var(--teal);
+}
+
+.trip-review-day-divider strong {
+    font-family: var(--headline);
+    font-size: 20px;
+}
+
+.trip-review-day-divider span {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.trip-review-day-divider small {
+    justify-self: end;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.trip-review-day-rows {
+    display: grid;
+    gap: 12px;
+}
+
+.trip-review-photo-row {
+    display: flex;
+    gap: 10px;
+    height: 220px;
+}
+
+.trip-review-photo-card {
+    position: relative;
+    flex: var(--photo-ratio, 1) 1 0;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 14px 28px rgba(26, 77, 78, 0.08);
+    cursor: pointer;
+}
+
+.trip-review-photo-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.trip-review-photo-card span {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 999px;
+    background: rgba(249, 247, 242, 0.92);
+    color: var(--teal);
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.trip-review-map-panel {
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    border-left: 1px solid rgba(26, 77, 78, 0.14);
+    background: #ffffff;
+}
+
+.trip-review-map-search {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.12);
+    color: var(--muted);
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.trip-review-map {
+    width: 100%;
+    height: 100%;
+    background: #edf2ef;
+}
+
 .public-author-card {
     justify-content: space-between;
 }
@@ -3315,5 +3496,30 @@ img {
 
     .photo-detail-card > img {
         min-height: 320px;
+    }
+
+    .trip-review-header,
+    .trip-review-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .trip-review-header {
+        padding: 20px 16px;
+    }
+
+    .trip-review-timeline {
+        padding: 22px 16px;
+    }
+
+    .trip-review-photo-row {
+        height: 172px;
+    }
+
+    .trip-review-map-panel {
+        position: relative;
+        top: auto;
+        height: 420px;
+        border-left: 0;
+        border-top: 1px solid rgba(26, 77, 78, 0.14);
     }
 }

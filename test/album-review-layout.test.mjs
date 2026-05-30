@@ -1,0 +1,36 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { getAlbumReviewDaySections } from '../js/album-review-layout.mjs';
+
+test('getAlbumReviewDaySections groups photos by capture date and balances rows between two and four photos', () => {
+    const sections = getAlbumReviewDaySections([
+        { id: 'p6', date: '2026-05-13T09:00:00Z', width: 1200, height: 800 },
+        { id: 'p1', date: '2026-05-12T09:00:00Z', width: 1600, height: 900 },
+        { id: 'p2', date: '2026-05-12T10:00:00Z', width: 900, height: 1200 },
+        { id: 'p3', date: '2026-05-12T11:00:00Z', width: 1200, height: 1200 },
+        { id: 'p4', date: '2026-05-12T12:00:00Z', width: 1400, height: 900 },
+        { id: 'p5', date: '2026-05-12T13:00:00Z', width: 900, height: 900 }
+    ]);
+
+    assert.equal(sections.length, 2);
+    assert.equal(sections[0].dayLabel, 'Day 1');
+    assert.equal(sections[0].dateLabel, '2026.05.12');
+    assert.deepEqual(sections[0].rows.map((row) => row.map((photo) => photo.id)), [
+        ['p1', 'p2', 'p3'],
+        ['p4', 'p5']
+    ]);
+    assert.deepEqual(sections[0].rows[0].map((photo) => photo.aspectRatio), [1.78, 0.75, 1]);
+    assert.equal(sections[1].dayLabel, 'Day 2');
+    assert.deepEqual(sections[1].rows.map((row) => row.map((photo) => photo.id)), [['p6']]);
+});
+
+test('getAlbumReviewDaySections falls back to created date and keeps undated photos in a final section', () => {
+    const sections = getAlbumReviewDaySections([
+        { id: 'created', created_at: '2026-05-14T08:00:00Z' },
+        { id: 'missing' }
+    ]);
+
+    assert.deepEqual(sections.map((section) => section.dateLabel), ['2026.05.14', '날짜 없음']);
+    assert.deepEqual(sections[1].rows.map((row) => row.map((photo) => photo.id)), [['missing']]);
+});
