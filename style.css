@@ -2608,6 +2608,32 @@ img {
     line-height: 1.55;
 }
 
+.trip-edit-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+    gap: 8px 12px;
+    max-width: 780px;
+    margin-top: 14px;
+}
+
+.trip-edit-fields label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.trip-edit-fields input,
+.trip-edit-fields textarea {
+    grid-column: 1 / -1;
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--ink);
+    font: inherit;
+    padding: 10px 12px;
+}
+
 .trip-review-meta {
     display: flex;
     flex-wrap: wrap;

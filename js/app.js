@@ -1013,6 +1013,18 @@ function renderPublicSurfaces() {
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
     if (tripReviewDescription) tripReviewDescription.textContent = note;
+    const titleBlock = $('.trip-review-title-block');
+    if (titleBlock && isOwnAlbum && state.albumDetailEditMode) {
+        const form = document.createElement('div');
+        form.className = 'trip-edit-fields';
+        form.innerHTML = `
+            <label for="trip-edit-title">앨범 이름</label>
+            <input id="trip-edit-title" type="text" value="${escapeHtml(selected.title || '')}">
+            <label for="trip-edit-note">설명</label>
+            <textarea id="trip-edit-note" rows="2">${escapeHtml(selected.note || '')}</textarea>
+        `;
+        titleBlock.appendChild(form);
+    }
     const reviewBackButton = $('.trip-review-header .back-link');
     const reviewBackLabel = $('#trip-review-back-label');
     if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'myphoto' : 'explore';
@@ -1774,8 +1786,41 @@ function startNewAlbum() {
 function startEditSelectedAlbum() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
-    state.albumDetailEditMode = !state.albumDetailEditMode;
+    if (state.albumDetailEditMode) saveSelectedAlbumTextEdits();
+    else {
+        state.albumDetailEditMode = true;
+        renderPublicSurfaces();
+    }
+}
+
+async function saveSelectedAlbumTextEdits() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const title = $('#trip-edit-title')?.value.trim();
+    const note = $('#trip-edit-note')?.value.trim() || '';
+    if (!title) {
+        showToast('앨범 이름을 입력해주세요.');
+        return;
+    }
+    const { data, error } = await updateAlbum(album.id, {
+        title,
+        note,
+        visibility: album.visibility,
+        cover_url: album.cover_url || null,
+        photo_count: state.albumDetailPhotos.length || album.photo_count || 0
+    });
+    if (error) {
+        showToast('앨범 정보를 저장하지 못했습니다.');
+        return;
+    }
+    updateSavedAlbumLocally(album.id, normalizeSavedAlbum(data || { ...album, title, note }));
+    state.savedPhotos = state.savedPhotos.map((photo) => (
+        photo.album_id === album.id ? { ...photo, album: title } : photo
+    ));
+    state.albumDetailEditMode = false;
+    renderSavedPhotoSurfaces();
     renderPublicSurfaces();
+    showToast('앨범 정보를 저장했습니다.');
 }
 
 function openTripPhotoPicker() {
@@ -1840,6 +1885,7 @@ async function setSelectedAlbumCoverFromFirstPhoto() {
 async function deleteSelectedAlbum() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
+    if (!window.confirm(`'${album.title}' 앨범을 삭제할까요? 원본 사진은 삭제되지 않습니다.`)) return;
     const { error } = await deleteAlbum(album.id);
     if (error) {
         showToast('앨범을 삭제하지 못했습니다.');
