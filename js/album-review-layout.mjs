@@ -7,7 +7,9 @@ function getPhotoDateKey(photo) {
 }
 
 function formatDateLabel(dateKey) {
-    return dateKey ? dateKey.replaceAll('-', '.') : '날짜 없음';
+    if (!dateKey) return '\uB0A0\uC9DC \uC5C6\uC74C';
+    const [, month, day] = dateKey.split('-').map(Number);
+    return `${month}\uC6D4 ${day}\uC77C`;
 }
 
 function getAspectRatio(photo) {
@@ -54,8 +56,7 @@ export function getAlbumReviewDaySections(photos = []) {
             if (b === '__undated') return -1;
             return a.localeCompare(b);
         })
-        .map(([dateKey, dayPhotos], index) => ({
-            dayLabel: dateKey === '__undated' ? 'No date' : `Day ${index + 1}`,
+        .map(([dateKey, dayPhotos]) => ({
             dateLabel: formatDateLabel(dateKey === '__undated' ? null : dateKey),
             photoCount: dayPhotos.length,
             rows: buildRows(dayPhotos.sort((a, b) => a._albumReviewIndex - b._albumReviewIndex))

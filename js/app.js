@@ -802,8 +802,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
     grid.innerHTML = sections.map((section) => `
         <section class="trip-review-day">
             <div class="trip-review-day-divider">
-                <strong>${escapeHtml(section.dayLabel)}</strong>
-                <span>${escapeHtml(section.dateLabel)}</span>
+                <strong>${escapeHtml(section.dateLabel)}</strong>
                 <small>${section.photoCount} photos</small>
             </div>
             <div class="trip-review-day-rows">

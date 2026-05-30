@@ -14,14 +14,13 @@ test('getAlbumReviewDaySections groups photos by capture date and balances rows 
     ]);
 
     assert.equal(sections.length, 2);
-    assert.equal(sections[0].dayLabel, 'Day 1');
-    assert.equal(sections[0].dateLabel, '2026.05.12');
+    assert.equal(sections[0].dateLabel, '5\uC6D4 12\uC77C');
     assert.deepEqual(sections[0].rows.map((row) => row.map((photo) => photo.id)), [
         ['p1', 'p2', 'p3'],
         ['p4', 'p5']
     ]);
     assert.deepEqual(sections[0].rows[0].map((photo) => photo.aspectRatio), [1.78, 0.75, 1]);
-    assert.equal(sections[1].dayLabel, 'Day 2');
+    assert.equal(sections[1].dateLabel, '5\uC6D4 13\uC77C');
     assert.deepEqual(sections[1].rows.map((row) => row.map((photo) => photo.id)), [['p6']]);
 });
 
@@ -31,7 +30,7 @@ test('getAlbumReviewDaySections falls back to created date and keeps undated pho
         { id: 'missing' }
     ]);
 
-    assert.deepEqual(sections.map((section) => section.dateLabel), ['2026.05.14', '날짜 없음']);
+    assert.deepEqual(sections.map((section) => section.dateLabel), ['5\uC6D4 14\uC77C', '\uB0A0\uC9DC \uC5C6\uC74C']);
     assert.deepEqual(sections[1].rows.map((row) => row.map((photo) => photo.id)), [['missing']]);
 });
 
@@ -42,7 +41,7 @@ test('getAlbumReviewDaySections never mixes different dates in the same photo ro
         { id: 'day-3', date: '2026-05-14T09:00:00Z' }
     ]);
 
-    assert.deepEqual(sections.map((section) => section.dayLabel), ['Day 1', 'Day 2', 'Day 3']);
+    assert.deepEqual(sections.map((section) => section.dateLabel), ['5\uC6D4 12\uC77C', '5\uC6D4 13\uC77C', '5\uC6D4 14\uC77C']);
     assert.deepEqual(sections.map((section) => section.rows.map((row) => row.map((photo) => photo.id))), [
         [['day-1']],
         [['day-2']],
