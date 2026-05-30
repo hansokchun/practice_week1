@@ -73,7 +73,7 @@ import {
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
 import { getAlbumReviewDaySections } from './album-review-layout.mjs';
-import { getAlbumEditorPhotoIds, getAlbumEditorPhotos } from './album-editor-state.mjs';
+import { getAlbumPhotoIdsAfterRemoval } from './album-detail-edit-state.mjs';
 
 const state = {
     currentUser: null,
@@ -91,6 +91,7 @@ const state = {
     albumBuilderPhotoIds: [],
     albumPhotoPickerIds: [],
     editingAlbumId: null,
+    albumDetailEditMode: false,
     editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
@@ -101,8 +102,6 @@ const state = {
     exploreMapLoadPromise: null,
     tripReviewMap: null,
     tripReviewMarkers: [],
-    albumBuilderMap: null,
-    albumBuilderMarkers: [],
     googleMapsApiKey: null,
     googleMapsApiKeyPromise: null,
     isPersistingUpload: false,
@@ -176,6 +175,7 @@ function renderRoute(section) {
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
     }
+    if (normalized !== 'trip') state.albumDetailEditMode = false;
     const navSection = ['upload', 'photos', 'album', 'album-photos', 'trip'].includes(normalized)
         ? APP_SECTIONS.MYPHOTO
         : ['profile'].includes(normalized)
@@ -542,7 +542,8 @@ function getDraftPhotos() {
 }
 
 function getAlbumCandidatePhotos() {
-    return getAlbumEditorPhotos(state.albumBuilderPhotoIds, getMySavedPhotos());
+    const selectedIds = new Set(state.albumBuilderPhotoIds);
+    return getMySavedPhotos().filter((photo) => selectedIds.has(photo.id));
 }
 
 function getDemoDraftPhotos() {
@@ -787,7 +788,7 @@ function renderTripReviewShell() {
     `;
 }
 
-function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
+function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing = false } = {}) {
     const grid = $('#public-trip-photo-grid');
     if (!grid) return;
     const sections = getAlbumReviewDaySections(albumPhotos);
@@ -812,11 +813,12 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
                     <div class="trip-review-photo-row">
                         ${row.map((photo) => `
                             <article
-                                class="trip-review-photo-card"
+                                class="trip-review-photo-card ${isEditing ? 'is-editing' : ''}"
                                 style="--photo-width: ${Math.round(Number(photo.aspectRatio || 1) * 220)}px;"
                                 data-open-photo-detail
                                 data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
                             >
+                                ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photo.id || photo.localId || '')}" type="button" aria-label="앨범에서 사진 삭제">×</button>` : ''}
                                 <img src="${photo.url || cover}" alt="${escapeHtml(photo.name || albumTitle)}">
                             </article>
                         `).join('')}
@@ -874,66 +876,15 @@ async function renderTripReviewMap(albumPhotos) {
 
 }
 
-async function renderAlbumBuilderMap(albumPhotos) {
-    const container = $('#album-map-frame');
-    if (!container) return;
-    const located = albumPhotos.filter(hasPhotoLocation);
-    state.albumBuilderMarkers.forEach((marker) => marker.setMap?.(null));
-    state.albumBuilderMarkers = [];
-
-    if (!located.length) {
-        state.albumBuilderMap = null;
-        container.innerHTML = '<div class="map-api-warning"><strong>위치 정보가 있는 사진이 없습니다.</strong><span>위치가 있는 사진을 추가하면 지도에 핀이 표시됩니다.</span></div>';
-        return;
-    }
-
-    const maps = await loadGoogleMapsApi();
-    if (!maps) {
-        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>지도 설정이 완료되면 앨범 사진 위치가 표시됩니다.</span></div>';
-        return;
-    }
-
-    const center = { lat: Number(located[0].lat), lng: Number(located[0].lng) };
-    state.albumBuilderMap = new maps.Map(container, {
-        center,
-        zoom: located.length > 1 ? 11 : 13,
-        mapTypeControl: false,
-        fullscreenControl: false,
-        streetViewControl: false,
-        gestureHandling: 'greedy'
-    });
-
-    state.albumBuilderMarkers = located.map((photo) => {
-        const marker = new maps.Marker({
-            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
-            map: state.albumBuilderMap,
-            title: photo.name || 'Album photo',
-            icon: {
-                url: photo.url,
-                scaledSize: new maps.Size(42, 42),
-                anchor: new maps.Point(21, 21)
-            }
-        });
-        marker.addListener('click', () => {
-            updatePhotoDetailModal(photo);
-            openModal('#photo-detail-modal');
-        });
-        return marker;
-    });
-
-    if (located.length > 1) {
-        const bounds = new maps.LatLngBounds();
-        located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
-        state.albumBuilderMap.fitBounds(bounds, 72);
-    }
-}
-
 function renderPublicSurfaces() {
     const albums = getPublicAlbums();
     const selected = getSelectedPublicAlbum();
     if (!selected) {
         renderEmptyPublicSurfaces();
         return;
+    }
+    if (state.albumDetailEditMode && selected.owner_id !== state.currentUser?.id) {
+        state.albumDetailEditMode = false;
     }
     renderTripReviewShell();
     const cover = selected.cover_url || 'images/main_bg2.jpg';
@@ -998,7 +949,7 @@ function renderPublicSurfaces() {
     if (tripReviewActions) {
         tripReviewActions.innerHTML = `
             <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
-            ${isOwnAlbum ? '<button id="btn-edit-album" class="btn-secondary" type="button">수정하기</button>' : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
+            ${isOwnAlbum ? `<button id="btn-edit-album" class="btn-secondary ${state.albumDetailEditMode ? 'active' : ''}" type="button">${state.albumDetailEditMode ? '수정 완료' : '수정하기'}</button>` : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
             <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
         `;
     }
@@ -1046,7 +997,9 @@ function renderPublicSurfaces() {
 
     const tripPhotoGrid = $('#public-trip-photo-grid');
     if (tripPhotoGrid) {
-        renderTripReviewPhotoFlow(tripPhotos, selected.title, cover);
+        renderTripReviewPhotoFlow(tripPhotos, selected.title, cover, {
+            isEditing: isOwnAlbum && state.albumDetailEditMode
+        });
     }
 
     const locatedPhotos = getLocatedPublicPhotos(albums);
@@ -1458,7 +1411,8 @@ function renderAlbumComposePage() {
                 <div id="album-day-photo-list" class="album-day-photo-list"></div>
             </section>
             <section class="album-compose-map" aria-label="앨범 지도">
-                <div id="album-map-frame" class="album-map-canvas" role="img" aria-label="앨범 사진 위치 지도"></div>
+                <iframe id="album-map-frame" class="google-map-frame" title="Google map album photo locations" src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <div id="album-map-pins" class="album-map-pins" aria-hidden="true"></div>
             </section>
         </div>
     `;
@@ -1588,7 +1542,7 @@ function renderTravelDraftSurfaces() {
                             <small>${day.photos.length} photos · ${day.places} places</small>
                         </div>
                         <div class="album-day-thumbs">
-                            ${day.photos.map((photo) => `
+                            ${day.photos.slice(0, 6).map((photo) => `
                                 <figure>
                                     <button class="album-photo-remove" data-remove-album-photo="${escapeHtml(photo.id)}" type="button" aria-label="앨범에서 사진 제거">×</button>
                                     <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
@@ -1600,7 +1554,20 @@ function renderTravelDraftSurfaces() {
             : '';
     }
 
-    renderAlbumBuilderMap(albumLocatedPhotos);
+    const albumMap = $('#album-map-frame');
+    const albumPins = $('#album-map-pins');
+    if (albumMap) {
+        const center = albumLocatedPhotos[0] || { lat: 36.45, lng: 127.85 };
+        const zoom = albumLocatedPhotos.length ? 9 : 7;
+        albumMap.src = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=${zoom}&output=embed`;
+    }
+    if (albumPins) {
+        albumPins.innerHTML = albumLocatedPhotos.slice(0, 8).map((photo, index) => `
+            <button class="album-map-pin pin-${index + 1}" type="button" data-open-photo-detail data-photo-id="${escapeHtml(photo.id || photo.localId)}">
+                <img src="${photo.url}" alt="">
+            </button>
+        `).join('');
+    }
 
     const shareGrid = $('#share-photo-grid');
     if (shareGrid) {
@@ -1728,12 +1695,33 @@ function startNewAlbum() {
 function startEditSelectedAlbum() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
-    state.editingAlbumId = album.id;
-    state.selectedPublicAlbumId = album.id;
-    state.visibility = album.visibility || 'private';
-    state.albumBuilderPhotoIds = getAlbumEditorPhotoIds(album, getMySavedPhotos());
-    state.albumPhotoPickerIds = [...state.albumBuilderPhotoIds];
-    routeTo('album');
+    state.albumDetailEditMode = !state.albumDetailEditMode;
+    renderPublicSurfaces();
+}
+
+async function removePhotoFromSelectedAlbum(photoId) {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id || !photoId) return;
+    const nextPhotoIds = getAlbumPhotoIdsAfterRemoval(album.photos || [], photoId);
+    const { error } = await replaceAlbumPhotos(album.id, nextPhotoIds);
+    if (error) {
+        showToast('사진을 앨범에서 삭제하지 못했습니다.');
+        return;
+    }
+
+    state.savedPhotos = state.savedPhotos.map((photo) => (
+        photo.id === photoId && photo.album_id === album.id
+            ? { ...photo, album_id: null }
+            : photo
+    ));
+    state.savedAlbums = state.savedAlbums.map((savedAlbum) => (
+        savedAlbum.id === album.id
+            ? { ...savedAlbum, photo_count: nextPhotoIds.length, cover_url: album.photos?.find((photo) => photo.id !== photoId)?.url || savedAlbum.cover_url }
+            : savedAlbum
+    ));
+    renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
+    showToast('사진을 앨범에서 삭제했습니다.');
 }
 
 function renderAlbumDrafts() {
@@ -2319,6 +2307,14 @@ function bindEvents() {
         const editAlbumButton = event.target.closest('#btn-edit-album');
         if (editAlbumButton) {
             startEditSelectedAlbum();
+            return;
+        }
+
+        const removeTripPhotoButton = event.target.closest('[data-remove-trip-photo]');
+        if (removeTripPhotoButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            removePhotoFromSelectedAlbum(removeTripPhotoButton.dataset.removeTripPhoto);
             return;
         }
 
