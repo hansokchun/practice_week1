@@ -2970,12 +2970,6 @@ img {
     line-height: 1.55;
 }
 
-.photo-detail-card dl {
-    display: grid;
-    gap: 12px;
-    margin: 0;
-}
-
 .photo-detail-map,
 .location-editor-map {
     position: relative;
@@ -3019,24 +3013,15 @@ img {
     padding: 0;
 }
 
-.photo-detail-card dl div {
+.photo-detail-visibility {
+    width: fit-content;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 999px;
     background: var(--bg);
-    padding: 14px;
-}
-
-.photo-detail-card dt {
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
-.photo-detail-card dd {
-    margin: 4px 0 0;
     color: var(--teal);
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 10px 14px;
 }
 
 .detail-actions {

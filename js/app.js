@@ -517,9 +517,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     const meta = modal?.querySelector('.photo-detail-card section > p:not(.eyebrow)');
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
-    const albumValue = modal?.querySelector('dl div:nth-child(1) dd');
-    const visibilityValue = modal?.querySelector('dl div:nth-child(2) dd');
-    const originalValue = modal?.querySelector('dl div:nth-child(3) dd');
+    const visibilityValue = $('#photo-detail-visibility');
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
 
@@ -539,9 +537,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
             map.setAttribute('hidden', '');
         }
     }
-    if (albumValue) albumValue.textContent = photo.album || getSelectedPublicAlbum().title || '내 개별사진';
-    if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개 사진 · 대략 위치' : '비공개 사진';
-    if (originalValue) originalValue.textContent = photo.description || '사진 정보는 내 보관함에 저장됩니다.';
+    if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
 }
 
 function updateAccountUI() {
