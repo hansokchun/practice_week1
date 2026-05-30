@@ -172,9 +172,9 @@ function renderRoute(section) {
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
     }
-    const navSection = ['upload', 'photos', 'album', 'album-photos'].includes(normalized)
+    const navSection = ['upload', 'photos', 'album', 'album-photos', 'trip'].includes(normalized)
         ? APP_SECTIONS.MYPHOTO
-        : ['trip', 'profile'].includes(normalized)
+        : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
             : normalized;
 
@@ -776,10 +776,6 @@ function renderTripReviewShell() {
                     <div id="public-trip-photo-grid" class="public-trip-photo-grid trip-review-photo-flow"></div>
                 </main>
                 <aside class="trip-review-map-panel" aria-label="앨범 사진 위치 지도">
-                    <div class="trip-review-map-search">
-                        <span class="material-symbols-outlined">search</span>
-                        <span id="trip-review-location-label">Album map</span>
-                    </div>
                     <div id="trip-review-map" class="trip-review-map"></div>
                 </aside>
             </div>
@@ -819,7 +815,6 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
                                 data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
                             >
                                 <img src="${photo.url || cover}" alt="${escapeHtml(photo.name || albumTitle)}">
-                                <span>${escapeHtml(photo.name || 'Travel photo')}</span>
                             </article>
                         `).join('')}
                     </div>
@@ -874,8 +869,6 @@ async function renderTripReviewMap(albumPhotos) {
         state.tripReviewMap.fitBounds(bounds, 72);
     }
 
-    const label = $('#trip-review-location-label');
-    if (label) label.textContent = `${located.length} pinned photos`;
 }
 
 function renderPublicSurfaces() {
