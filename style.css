@@ -2645,7 +2645,6 @@ img {
 
 .trip-review-photo-flow {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
 }
 
@@ -2694,14 +2693,16 @@ img {
 
 .trip-review-photo-row {
     display: flex;
+    justify-content: flex-start;
     gap: 6px;
     height: 220px;
 }
 
 .trip-review-photo-card {
     position: relative;
-    flex: var(--photo-ratio, 1) 1 0;
-    min-width: 0;
+    flex: 0 1 var(--photo-width, 220px);
+    min-width: 120px;
+    max-width: 100%;
     overflow: hidden;
     border: 0;
     border-radius: 0;

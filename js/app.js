@@ -775,7 +775,7 @@ function renderTripReviewShell() {
             <div class="trip-review-layout">
                 <main class="trip-review-timeline" aria-labelledby="trip-photo-title">
                     <h2 id="trip-photo-title">Photos by Date</h2>
-                    <div id="public-trip-photo-grid" class="public-trip-photo-grid trip-review-photo-flow"></div>
+                    <div id="public-trip-photo-grid" class="trip-review-photo-flow"></div>
                 </main>
                 <aside class="trip-review-map-panel" aria-label="앨범 사진 위치 지도">
                     <div id="trip-review-map" class="trip-review-map"></div>
@@ -811,7 +811,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
                         ${row.map((photo) => `
                             <article
                                 class="trip-review-photo-card"
-                                style="--photo-ratio: ${Number(photo.aspectRatio || 1)};"
+                                style="--photo-width: ${Math.round(Number(photo.aspectRatio || 1) * 220)}px;"
                                 data-open-photo-detail
                                 data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
                             >
