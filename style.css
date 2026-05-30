@@ -2645,6 +2645,7 @@ img {
 
 .trip-review-photo-flow {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
 }
 
