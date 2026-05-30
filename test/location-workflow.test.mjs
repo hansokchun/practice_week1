@@ -11,11 +11,12 @@ const photos = [
     { id: 'a', name: 'Jeju cafe', lat: null, lng: null },
     { id: 'b', name: 'Seongsan', lat: 33.4507, lng: 126.5707 },
     { id: 'c', name: 'Night walk', lat: null, lng: 127.0321 },
-    { id: 'd', name: 'Forest road', lat: 37.55, lng: null }
+    { id: 'd', name: 'Forest road', lat: 37.55, lng: null },
+    { id: 'e', name: 'Zero island', lat: 0, lng: 0 }
 ];
 
 test('getMissingLocationPhotos returns photos missing either coordinate', () => {
-    assert.deepEqual(getMissingLocationPhotos(photos).map((photo) => photo.id), ['a', 'c', 'd']);
+    assert.deepEqual(getMissingLocationPhotos(photos).map((photo) => photo.id), ['a', 'c', 'd', 'e']);
 });
 
 test('getLocationEditorPhoto prefers the selected missing-location photo', () => {
@@ -29,5 +30,6 @@ test('getLocationEditorPhoto falls back to first missing photo before located ph
 
 test('normalizeLocationDraft keeps valid coordinates and defaults missing values', () => {
     assert.deepEqual(normalizeLocationDraft({ lat: 33.3, lng: null }), { lat: '33.3', lng: '126.570667' });
+    assert.deepEqual(normalizeLocationDraft({ lat: 0, lng: 0 }), { lat: '33.450701', lng: '126.570667' });
     assert.deepEqual(normalizeLocationDraft(null), { lat: '33.450701', lng: '126.570667' });
 });

@@ -1,15 +1,12 @@
+import { hasUsableCoordinates } from './photo-location.mjs';
+
 const DEFAULT_LOCATION = {
     lat: '33.450701',
     lng: '126.570667'
 };
 
 export function hasCompleteLocation(photo) {
-    return photo?.lat !== null
-        && photo?.lat !== undefined
-        && photo?.lng !== null
-        && photo?.lng !== undefined
-        && Number.isFinite(Number(photo.lat))
-        && Number.isFinite(Number(photo.lng));
+    return hasUsableCoordinates(photo?.lat, photo?.lng);
 }
 
 export function getMissingLocationPhotos(photos = []) {
@@ -24,11 +21,18 @@ export function getLocationEditorPhoto(photos = [], selectedPhotoId = null) {
 }
 
 export function normalizeLocationDraft(photo) {
+    const latitude = Number(photo?.lat);
+    const longitude = Number(photo?.lng);
+    const isZeroPair = latitude === 0 && longitude === 0;
+    const hasLat = photo?.lat !== null && photo?.lat !== undefined
+        && !isZeroPair && Number.isFinite(latitude) && latitude >= -90 && latitude <= 90;
+    const hasLng = photo?.lng !== null && photo?.lng !== undefined
+        && !isZeroPair && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
     return {
-        lat: photo?.lat !== null && photo?.lat !== undefined && Number.isFinite(Number(photo.lat))
+        lat: hasLat
             ? String(photo.lat)
             : DEFAULT_LOCATION.lat,
-        lng: photo?.lng !== null && photo?.lng !== undefined && Number.isFinite(Number(photo.lng))
+        lng: hasLng
             ? String(photo.lng)
             : DEFAULT_LOCATION.lng
     };

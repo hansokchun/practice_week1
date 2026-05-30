@@ -28,6 +28,7 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
+import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import {
     restorePendingAuthContext,
@@ -246,7 +247,7 @@ function getDefaultDetailPhoto() {
 }
 
 function hasPhotoLocation(photo) {
-    return Number.isFinite(Number(photo?.lat)) && Number.isFinite(Number(photo?.lng));
+    return hasUsablePhotoLocation(photo);
 }
 
 function getPhotoMapUrl(photo, zoom = 14) {
@@ -494,14 +495,15 @@ function updateAccountUI() {
 }
 
 function normalizeSavedPhoto(photo) {
+    const hasLocation = hasUsableCoordinates(photo.lat, photo.lng);
     return {
         id: photo.id,
         name: photo.title || photo.description || 'Travel photo',
         description: photo.description || '',
         url: photo.url,
         date: photo.date || photo.created_at || new Date().toISOString(),
-        lat: Number.isFinite(Number(photo.lat)) ? Number(photo.lat) : null,
-        lng: Number.isFinite(Number(photo.lng)) ? Number(photo.lng) : null,
+        lat: hasLocation ? Number(photo.lat) : null,
+        lng: hasLocation ? Number(photo.lng) : null,
         shared: !!photo.shared || photo.visibility === 'public',
         owner_id: photo.owner_id,
         album_id: photo.album_id || null,
@@ -624,7 +626,7 @@ function getPublicAlbums() {
                 const sameAlbum = photo.album_id === album.id || photo.album === album.title;
                 return publicPhoto && sameAlbum;
             });
-            const locatedPhotos = photos.filter((photo) => photo.lat !== null && photo.lng !== null);
+            const locatedPhotos = photos.filter(hasPhotoLocation);
             const lat = locatedPhotos.length
                 ? locatedPhotos.reduce((sum, photo) => sum + photo.lat, 0) / locatedPhotos.length
                 : 33.4507 + (index * 0.9);
@@ -827,7 +829,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover) {
 async function renderTripReviewMap(albumPhotos) {
     const container = $('#trip-review-map');
     if (!container) return;
-    const located = albumPhotos.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng)));
+    const located = albumPhotos.filter(hasPhotoLocation);
     if (!located.length) {
         state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
         state.tripReviewMarkers = [];
@@ -964,7 +966,7 @@ function renderPublicSurfaces() {
 
     const routeStrip = $('.route-strip');
     if (routeStrip) {
-        const routeLabels = selected.photos?.filter((photo) => photo.lat !== null && photo.lng !== null).slice(0, 4).map((photo) => photo.name)
+        const routeLabels = selected.photos?.filter(hasPhotoLocation).slice(0, 4).map((photo) => photo.name)
             || ['Start', 'Walk', 'View', 'Finish'];
         const labels = routeLabels.length >= 2 ? routeLabels : [selected.title, 'Public map'];
         routeStrip.innerHTML = labels.slice(0, 4).map((label, index) => (
@@ -1185,7 +1187,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     }
 
     grid.innerHTML = photos.map((photo) => {
-        const hasLocation = Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng));
+        const hasLocation = hasPhotoLocation(photo);
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
@@ -1422,7 +1424,7 @@ function getAlbumPhotoDayGroups(photos = []) {
         label: date === '날짜 없음' ? '날짜 없음' : `Day ${index + 1}`,
         title: date === '날짜 없음' ? '날짜별 분류를 기다리는 사진' : date.replaceAll('-', '.'),
         photos: items,
-        places: items.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng))).length
+        places: items.filter(hasPhotoLocation).length
     }));
 }
 
@@ -1477,7 +1479,7 @@ function renderTravelDraftSurfaces() {
         selectedAlbum: state.selectedPublicAlbumId ? getSelectedPublicAlbum() : null
     });
     const photoCount = summary.photoCount || fallbackPhotoCount;
-    const albumLocatedPhotos = albumPhotos.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng)));
+    const albumLocatedPhotos = albumPhotos.filter(hasPhotoLocation);
 
     $('#analysis-title') && ($('#analysis-title').textContent = summary.title);
     $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(albumPhotos.length));
@@ -1802,6 +1804,7 @@ async function persistStagedPhotos() {
             const id = `${timestamp}-${index}`;
             const fileName = `${state.currentUser.id}/${id}-${safeFileName(photo.name)}`;
             const exif = await readPhotoExif(photo.file);
+            const hasExifLocation = hasUsableCoordinates(exif.lat, exif.lng);
             const { url, error: uploadError } = await uploadImage(photo.file, fileName);
             if (uploadError) throw uploadError;
             const record = {
@@ -1810,14 +1813,14 @@ async function persistStagedPhotos() {
                 date: exif.date || new Date().toISOString(),
                 title: photo.name,
                 description: '',
-                lat: exif.lat,
-                lng: exif.lng,
+                lat: hasExifLocation ? exif.lat : null,
+                lng: hasExifLocation ? exif.lng : null,
                 liked: 0,
                 shared: false,
                 owner_id: state.currentUser.id,
                 album: $('#album-name-input')?.value.trim() || '업로드 초안',
                 visibility: 'private',
-                geo_source: exif.lat !== null && exif.lng !== null ? 'exif' : 'unknown'
+                geo_source: hasExifLocation ? 'exif' : 'unknown'
             };
             const { error: dbError } = await upsertPhoto(record);
             if (dbError) throw dbError;

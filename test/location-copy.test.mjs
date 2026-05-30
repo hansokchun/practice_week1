@@ -15,5 +15,5 @@ test('formatGoogleMapsLocation rejects missing or invalid coordinates', () => {
     assert.equal(formatGoogleMapsLocation(null, 126.9779692), null);
     assert.equal(formatGoogleMapsLocation(37.566535, undefined), null);
     assert.equal(formatGoogleMapsLocation('abc', 126.9779692), null);
+    assert.equal(formatGoogleMapsLocation(0, 0), null);
 });
-

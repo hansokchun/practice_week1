@@ -1,6 +1,7 @@
+import { hasUsablePhotoLocation } from './photo-location.mjs';
+
 function hasLocation(photo) {
-    if (photo?.lat === null || photo?.lat === undefined || photo?.lng === null || photo?.lng === undefined) return false;
-    return Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng));
+    return hasUsablePhotoLocation(photo);
 }
 
 function getPhotoDay(photo) {

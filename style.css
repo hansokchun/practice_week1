@@ -2651,6 +2651,13 @@ img {
 .trip-review-day {
     display: grid;
     gap: 10px;
+    padding-top: 4px;
+}
+
+.trip-review-day + .trip-review-day {
+    margin-top: 8px;
+    border-top: 1px solid rgba(26, 77, 78, 0.12);
+    padding-top: 24px;
 }
 
 .trip-review-day-divider {
