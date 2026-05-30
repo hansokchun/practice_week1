@@ -77,6 +77,7 @@ import { getAlbumReviewDaySections } from './album-review-layout.mjs';
 import {
     getAlbumPhotoIdsAfterRemoval,
     getAlbumPhotoRemovalTarget,
+    mergeAlbumPhotoIds,
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 
@@ -95,6 +96,7 @@ const state = {
     selectedPersonalPhotoIds: [],
     albumBuilderPhotoIds: [],
     albumPhotoPickerIds: [],
+    albumPhotoPickerReturnRoute: null,
     editingAlbumId: null,
     albumDetailEditMode: false,
     albumDetailPhotos: [],
@@ -985,6 +987,7 @@ function renderPublicSurfaces() {
         tripReviewActions.innerHTML = `
             <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
             ${isOwnAlbum ? `<button id="btn-edit-album" class="btn-secondary ${state.albumDetailEditMode ? 'active' : ''}" type="button">${state.albumDetailEditMode ? '수정 완료' : '수정하기'}</button>` : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
+            ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-add-trip-photos" class="btn-secondary" type="button">사진 추가하기</button>' : ''}
             <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
         `;
     }
@@ -1735,6 +1738,54 @@ function startEditSelectedAlbum() {
     renderPublicSurfaces();
 }
 
+function openTripPhotoPicker() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    state.albumPhotoPickerReturnRoute = 'trip';
+    state.albumPhotoPickerIds = mergeAlbumPhotoIds(state.albumDetailPhotos, []);
+    routeTo('album-photos');
+}
+
+async function addSelectedPhotosToTripAlbum() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const selectedIds = mergeAlbumPhotoIds(state.albumDetailPhotos, state.albumPhotoPickerIds);
+    const selectedPhotos = getMySavedPhotos().filter((photo) => selectedIds.includes(photo.id));
+    const removedKeys = getRemovedAlbumPhotoKeys(album.id);
+    selectedPhotos.forEach((photo) => {
+        getAlbumPhotoRemovalKeys(photo).forEach((key) => removedKeys.delete(key));
+    });
+    state.removedAlbumPhotoKeys[String(album.id)] = [...removedKeys];
+    const { error } = await replaceAlbumPhotos(album.id, selectedIds);
+    if (error) {
+        showToast('사진을 앨범에 추가하지 못했습니다.');
+        return;
+    }
+    const cover = selectedPhotos[0]?.url || album.cover_url || null;
+    const { data: updatedAlbum } = await updateAlbum(album.id, {
+        title: album.title,
+        note: album.note,
+        visibility: album.visibility,
+        cover_url: cover,
+        photo_count: selectedIds.length
+    });
+    state.savedPhotos = state.savedPhotos.map((photo) => (
+        selectedIds.includes(photo.id)
+            ? { ...photo, album_id: album.id, album: album.title }
+            : photo
+    ));
+    state.savedAlbums = state.savedAlbums.map((savedAlbum) => (
+        savedAlbum.id === album.id
+            ? normalizeSavedAlbum(updatedAlbum || { ...savedAlbum, cover_url: cover, photo_count: selectedIds.length })
+            : savedAlbum
+    ));
+    state.albumPhotoPickerReturnRoute = null;
+    state.albumDetailEditMode = true;
+    renderSavedPhotoSurfaces();
+    routeToTrip(album.id);
+    showToast('사진을 앨범에 추가했습니다.');
+}
+
 async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
@@ -2379,6 +2430,12 @@ function bindEvents() {
             return;
         }
 
+        const addTripPhotosButton = event.target.closest('#btn-add-trip-photos');
+        if (addTripPhotosButton) {
+            openTripPhotoPicker();
+            return;
+        }
+
         const removeTripPhotoButton = event.target.closest('[data-remove-trip-photo]');
         if (removeTripPhotoButton) {
             event.preventDefault();
@@ -2392,6 +2449,7 @@ function bindEvents() {
 
         const openAlbumPhotoPickerButton = event.target.closest('#btn-open-album-photo-picker');
         if (openAlbumPhotoPickerButton) {
+            state.albumPhotoPickerReturnRoute = null;
             state.albumPhotoPickerIds = [...state.albumBuilderPhotoIds];
             routeTo('album-photos');
             return;
@@ -2409,6 +2467,10 @@ function bindEvents() {
 
         const addSelectedAlbumPhotosButton = event.target.closest('#btn-add-selected-album-photos');
         if (addSelectedAlbumPhotosButton) {
+            if (state.albumPhotoPickerReturnRoute === 'trip') {
+                addSelectedPhotosToTripAlbum();
+                return;
+            }
             state.albumBuilderPhotoIds = [...state.albumPhotoPickerIds];
             routeTo('album');
             return;

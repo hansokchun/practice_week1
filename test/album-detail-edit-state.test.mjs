@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
     getAlbumPhotoIdsAfterRemoval,
     getAlbumPhotoRemovalTarget,
+    mergeAlbumPhotoIds,
     shouldOpenAlbumDetailPhotoClick
 } from '../js/album-detail-edit-state.mjs';
 
@@ -81,4 +82,13 @@ test('shouldOpenAlbumDetailPhotoClick blocks detail opening while editing', () =
     };
 
     assert.equal(shouldOpenAlbumDetailPhotoClick(image, { isEditing: true }), false);
+});
+
+test('mergeAlbumPhotoIds keeps current album order and appends newly selected photos', () => {
+    const ids = mergeAlbumPhotoIds([
+        { id: 'p1' },
+        { localId: 'p2' }
+    ], ['p2', 'p3']);
+
+    assert.deepEqual(ids, ['p1', 'p2', 'p3']);
 });

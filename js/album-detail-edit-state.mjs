@@ -31,3 +31,10 @@ export function getAlbumPhotoRemovalTarget(photos = [], removedPhotoId, removedP
 export function shouldOpenAlbumDetailPhotoClick(target, { isEditing = false } = {}) {
     return !isEditing && !target?.closest?.('[data-remove-trip-photo]');
 }
+
+export function mergeAlbumPhotoIds(currentPhotos = [], selectedPhotoIds = []) {
+    const currentIds = currentPhotos
+        .map((photo) => photo?.id || photo?.localId)
+        .filter(Boolean);
+    return [...new Set([...currentIds, ...selectedPhotoIds.filter(Boolean)])];
+}
