@@ -34,3 +34,18 @@ test('getAlbumReviewDaySections falls back to created date and keeps undated pho
     assert.deepEqual(sections.map((section) => section.dateLabel), ['2026.05.14', '날짜 없음']);
     assert.deepEqual(sections[1].rows.map((row) => row.map((photo) => photo.id)), [['missing']]);
 });
+
+test('getAlbumReviewDaySections never mixes different dates in the same photo row', () => {
+    const sections = getAlbumReviewDaySections([
+        { id: 'day-1', date: '2026-05-12T09:00:00Z' },
+        { id: 'day-2', date: '2026-05-13T09:00:00Z' },
+        { id: 'day-3', date: '2026-05-14T09:00:00Z' }
+    ]);
+
+    assert.deepEqual(sections.map((section) => section.dayLabel), ['Day 1', 'Day 2', 'Day 3']);
+    assert.deepEqual(sections.map((section) => section.rows.map((row) => row.map((photo) => photo.id))), [
+        [['day-1']],
+        [['day-2']],
+        [['day-3']]
+    ]);
+});

@@ -2662,8 +2662,9 @@ img {
 
 .trip-review-day-divider {
     display: grid;
-    justify-items: start;
-    gap: 2px;
+    grid-template-columns: auto auto 1fr;
+    align-items: end;
+    gap: 10px;
     color: var(--teal);
 }
 
@@ -2679,6 +2680,7 @@ img {
 }
 
 .trip-review-day-divider small {
+    justify-self: end;
     color: var(--muted);
     font-size: 12px;
     font-weight: 800;
