@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
     getAlbumPhotoIdsAfterRemoval,
+    getAlbumPhotoRemovalTarget,
     shouldOpenAlbumDetailPhotoClick
 } from '../js/album-detail-edit-state.mjs';
 
@@ -33,6 +34,23 @@ test('getAlbumPhotoIdsAfterRemoval handles numeric and string id comparisons', (
     ], '2');
 
     assert.deepEqual(ids, [1]);
+});
+
+test('getAlbumPhotoIdsAfterRemoval falls back to the rendered photo index when ids do not match', () => {
+    const ids = getAlbumPhotoIdsAfterRemoval([
+        { id: 'p1' },
+        { id: 'p2' },
+        { id: 'p3' }
+    ], 'missing-render-id', 1);
+
+    assert.deepEqual(ids, ['p1', 'p3']);
+});
+
+test('getAlbumPhotoRemovalTarget falls back to the rendered photo index', () => {
+    assert.equal(getAlbumPhotoRemovalTarget([
+        { id: 'p1' },
+        { id: 'p2' }
+    ], 'missing-render-id', 1), 'p2');
 });
 
 test('shouldOpenAlbumDetailPhotoClick blocks detail opening from remove buttons', () => {
