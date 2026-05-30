@@ -97,6 +97,7 @@ const state = {
     albumPhotoPickerIds: [],
     editingAlbumId: null,
     albumDetailEditMode: false,
+    albumDetailPhotos: [],
     editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
@@ -899,6 +900,7 @@ function renderPublicSurfaces() {
     const photoCount = Number(selected.photo_count || 0);
     const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
     const tripPhotos = selected.photos?.length ? selected.photos : getDraftPhotos();
+    state.albumDetailPhotos = tripPhotos;
     const tripSummary = getTravelSummary({
         draftPhotos: tripPhotos,
         selectedAlbum: selected
@@ -1710,18 +1712,18 @@ function startEditSelectedAlbum() {
 async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
-    const albumPhotos = album.photos || [];
+    const albumPhotos = album.photos?.length ? album.photos : state.albumDetailPhotos;
     const targetPhotoId = getAlbumPhotoRemovalTarget(albumPhotos, photoId, photoIndex);
     if (!targetPhotoId) {
         showToast('삭제할 사진을 찾지 못했습니다.');
         return;
     }
     const nextPhotoIds = getAlbumPhotoIdsAfterRemoval(albumPhotos, targetPhotoId, photoIndex);
-    if (nextPhotoIds.length === (album.photos || []).length) {
+    if (nextPhotoIds.length === albumPhotos.length) {
         showToast('삭제할 사진을 찾지 못했습니다.');
         return;
     }
-    const cover = album.photos?.find((photo) => String(photo.id) !== String(targetPhotoId))?.url || null;
+    const cover = albumPhotos.find((photo) => String(photo.id || photo.localId) !== String(targetPhotoId))?.url || null;
     const { error } = await replaceAlbumPhotos(album.id, nextPhotoIds);
     if (error) {
         showToast('사진을 앨범에서 삭제하지 못했습니다.');

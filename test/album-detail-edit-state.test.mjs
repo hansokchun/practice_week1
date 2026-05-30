@@ -53,6 +53,16 @@ test('getAlbumPhotoRemovalTarget falls back to the rendered photo index', () => 
     ], 'missing-render-id', 1), 'p2');
 });
 
+test('album removal helpers support local ids from rendered photos', () => {
+    const photos = [
+        { localId: 'local-1' },
+        { localId: 'local-2' }
+    ];
+
+    assert.equal(getAlbumPhotoRemovalTarget(photos, 'local-2'), 'local-2');
+    assert.deepEqual(getAlbumPhotoIdsAfterRemoval(photos, 'local-2'), ['local-1']);
+});
+
 test('shouldOpenAlbumDetailPhotoClick blocks detail opening from remove buttons', () => {
     const removeButton = {
         closest: (selector) => (selector === '[data-remove-trip-photo]' ? {} : null)
