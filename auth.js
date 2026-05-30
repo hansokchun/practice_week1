@@ -486,7 +486,7 @@ export async function replaceAlbumPhotos(albumId, photoIds) {
             .eq('album_id', albumId);
         await sb
             .from('photos')
-            .update({ album_id: null })
+            .update({ album_id: null, album: null })
             .eq('album_id', albumId);
         return attachPhotosToAlbum(albumId, ids);
     } catch (error) {

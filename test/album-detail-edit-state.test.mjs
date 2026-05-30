@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getAlbumPhotoIdsAfterRemoval } from '../js/album-detail-edit-state.mjs';
+import {
+    getAlbumPhotoIdsAfterRemoval,
+    shouldOpenAlbumDetailPhotoClick
+} from '../js/album-detail-edit-state.mjs';
 
 test('getAlbumPhotoIdsAfterRemoval removes one selected photo from album detail order', () => {
     const ids = getAlbumPhotoIdsAfterRemoval([
@@ -30,4 +33,16 @@ test('getAlbumPhotoIdsAfterRemoval handles numeric and string id comparisons', (
     ], '2');
 
     assert.deepEqual(ids, [1]);
+});
+
+test('shouldOpenAlbumDetailPhotoClick blocks detail opening from remove buttons', () => {
+    const removeButton = {
+        closest: (selector) => (selector === '[data-remove-trip-photo]' ? {} : null)
+    };
+    const image = {
+        closest: () => null
+    };
+
+    assert.equal(shouldOpenAlbumDetailPhotoClick(removeButton), false);
+    assert.equal(shouldOpenAlbumDetailPhotoClick(image), true);
 });

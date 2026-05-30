@@ -73,7 +73,7 @@ import {
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
 import { getAlbumReviewDaySections } from './album-review-layout.mjs';
-import { getAlbumPhotoIdsAfterRemoval } from './album-detail-edit-state.mjs';
+import { getAlbumPhotoIdsAfterRemoval, shouldOpenAlbumDetailPhotoClick } from './album-detail-edit-state.mjs';
 
 const state = {
     currentUser: null,
@@ -626,7 +626,9 @@ function getPublicAlbums() {
         .map((album, index) => {
             const photos = state.savedPhotos.filter((photo) => {
                 const publicPhoto = photo.owner_id === state.currentUser?.id || photo.shared || ['public', 'link'].includes(photo.visibility);
-                const sameAlbum = photo.album_id === album.id || photo.album === album.title;
+                const sameAlbum = photo.album_id
+                    ? photo.album_id === album.id
+                    : photo.album === album.title;
                 return publicPhoto && sameAlbum;
             });
             const locatedPhotos = photos.filter(hasPhotoLocation);
@@ -1078,7 +1080,8 @@ function renderPublicSurfaces() {
         });
     });
     $$('#public-trip-photo-grid [data-open-photo-detail]').forEach((item) => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (event) => {
+            if (!shouldOpenAlbumDetailPhotoClick(event.target)) return;
             const photo = getAllDisplayPhotos().find((candidate) => candidate.id === item.dataset.photoId)
                 || getSelectedPublicAlbum().photos?.find((candidate) => candidate.id === item.dataset.photoId)
                 || getDefaultDetailPhoto();
@@ -1703,20 +1706,32 @@ async function removePhotoFromSelectedAlbum(photoId) {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id || !photoId) return;
     const nextPhotoIds = getAlbumPhotoIdsAfterRemoval(album.photos || [], photoId);
+    const cover = album.photos?.find((photo) => String(photo.id) !== String(photoId))?.url || null;
     const { error } = await replaceAlbumPhotos(album.id, nextPhotoIds);
     if (error) {
         showToast('사진을 앨범에서 삭제하지 못했습니다.');
         return;
     }
+    const { data: updatedAlbum } = await updateAlbum(album.id, {
+        title: album.title,
+        note: album.note,
+        visibility: album.visibility,
+        cover_url: cover,
+        photo_count: nextPhotoIds.length
+    });
 
     state.savedPhotos = state.savedPhotos.map((photo) => (
-        photo.id === photoId && photo.album_id === album.id
-            ? { ...photo, album_id: null }
+        String(photo.id) === String(photoId) && photo.album_id === album.id
+            ? { ...photo, album_id: null, album: null }
             : photo
     ));
     state.savedAlbums = state.savedAlbums.map((savedAlbum) => (
         savedAlbum.id === album.id
-            ? { ...savedAlbum, photo_count: nextPhotoIds.length, cover_url: album.photos?.find((photo) => photo.id !== photoId)?.url || savedAlbum.cover_url }
+            ? normalizeSavedAlbum(updatedAlbum || {
+                ...savedAlbum,
+                photo_count: nextPhotoIds.length,
+                cover_url: cover
+            })
             : savedAlbum
     ));
     renderSavedPhotoSurfaces();
