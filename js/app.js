@@ -82,6 +82,13 @@ import {
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 import { getExploreMarkerClusters } from './explore-marker-clusters.mjs';
+import {
+    formatAlbumCount,
+    formatDayCount,
+    formatPhotoCount,
+    formatPhotoPlaceMeta,
+    formatPlaceCount
+} from './copy-formatters.mjs';
 
 const state = {
     currentUser: null,
@@ -321,18 +328,18 @@ function updateExplorePhotoPreview(photo) {
     const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
     const date = photo.date ? new Date(photo.date) : null;
-    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : 'No date';
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
-        image.alt = photo.name || photo.albumTitle || 'Public photo';
+        image.alt = photo.name || photo.albumTitle || '공개 사진';
     }
-    if (title) title.textContent = photo.name || photo.albumTitle || 'Public photo';
+    if (title) title.textContent = photo.name || photo.albumTitle || '공개 사진';
     if (note) note.textContent = photo.description || photo.albumNote || photo.albumTitle || '';
     if (meta) {
         meta.innerHTML = `
             <span><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
             <span><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
-            <span><span class="material-symbols-outlined">public</span> ${photo.albumVisibility === 'link' ? 'link' : 'public'}</span>
+            <span><span class="material-symbols-outlined">public</span> ${photo.albumVisibility === 'link' ? '링크' : '공개'}</span>
         `;
     }
     if (tripButton) tripButton.dataset.publicAlbumId = photo.album_id || '';
@@ -464,7 +471,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         const marker = new maps.Marker({
             map,
             position: cluster.position,
-            title: isCluster ? `${cluster.count} photos` : (photo.name || photo.albumTitle || 'Public photo'),
+            title: isCluster ? formatPhotoCount(cluster.count) : (photo.name || photo.albumTitle || '공개 사진'),
             icon: getExplorePinIcon(maps, { selected, isCluster }),
             label: isCluster ? {
                 text: String(cluster.count),
@@ -533,7 +540,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
         }
     }
     if (albumValue) albumValue.textContent = photo.album || getSelectedPublicAlbum().title || '내 개별사진';
-    if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? 'Public photo · approximate location' : 'Private photo';
+    if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개 사진 · 대략 위치' : '비공개 사진';
     if (originalValue) originalValue.textContent = photo.description || '사진 정보는 내 보관함에 저장됩니다.';
 }
 
@@ -551,7 +558,7 @@ function normalizeSavedPhoto(photo) {
     const hasLocation = hasUsableCoordinates(photo.lat, photo.lng);
     return {
         id: photo.id,
-        name: photo.title || photo.description || 'Travel photo',
+        name: photo.title || photo.description || '여행 사진',
         description: photo.description || '',
         url: photo.url,
         date: photo.date || photo.created_at || new Date().toISOString(),
@@ -809,8 +816,8 @@ function renderEmptyPublicSurfaces() {
     $('.trip-day-grid') && ($('.trip-day-grid').innerHTML = emptyCard);
     $('.related-album-grid') && ($('.related-album-grid').innerHTML = '');
     $('.profile-album-grid') && ($('.profile-album-grid').innerHTML = emptyCard);
-    $('.route-strip') && ($('.route-strip').innerHTML = '<span>Public map</span>');
-    $('.profile-stats') && ($('.profile-stats').innerHTML = '<span><strong>0</strong> albums</span><span><strong>0</strong> photos</span><span><strong>0</strong> places</span>');
+    $('.route-strip') && ($('.route-strip').innerHTML = '<span>공개 지도</span>');
+    $('.profile-stats') && ($('.profile-stats').innerHTML = '<span><strong>0</strong>개 앨범</span><span><strong>0</strong>장</span><span><strong>0</strong>곳</span>');
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = 'Ikkyee';
     });
@@ -853,7 +860,7 @@ function renderTripReviewShell() {
             </header>
             <div class="trip-review-layout">
                 <main class="trip-review-timeline" aria-labelledby="trip-photo-title">
-                    <h2 id="trip-photo-title">Photos by Date</h2>
+                    <h2 id="trip-photo-title">날짜별 사진</h2>
                     <div id="public-trip-photo-grid" class="trip-review-photo-flow"></div>
                 </main>
                 <aside class="trip-review-map-panel" aria-label="앨범 사진 위치 지도">
@@ -882,7 +889,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
         <section class="trip-review-day">
             <div class="trip-review-day-divider">
                 <strong>${escapeHtml(section.dateLabel)}</strong>
-                <small>${section.photoCount} photos</small>
+                <small>${formatPhotoCount(section.photoCount)}</small>
             </div>
             <div class="trip-review-day-rows">
                 ${section.rows.map((row) => `
@@ -938,7 +945,7 @@ async function renderTripReviewMap(albumPhotos) {
         const marker = new maps.Marker({
             position: { lat: Number(photo.lat), lng: Number(photo.lng) },
             map: state.tripReviewMap,
-            title: photo.name || 'Travel photo'
+            title: photo.name || '여행 사진'
         });
         marker.addListener('click', () => updatePhotoDetailModal(photo));
         return marker;
@@ -990,9 +997,9 @@ function renderPublicSurfaces() {
     if (previewNote) previewNote.textContent = note;
     if (previewMeta) {
         previewMeta.innerHTML = `
-            <span><span class="material-symbols-outlined">photo_library</span> ${photoCount || 1} photos</span>
-            <span><span class="material-symbols-outlined">place</span> ${places} places</span>
-            <span><span class="material-symbols-outlined">public</span> ${selected.visibility === 'link' ? 'link' : 'public'}</span>
+            <span><span class="material-symbols-outlined">photo_library</span> ${formatPhotoCount(photoCount || 1)}</span>
+            <span><span class="material-symbols-outlined">place</span> ${formatPlaceCount(places)}</span>
+            <span><span class="material-symbols-outlined">public</span> ${selected.visibility === 'link' ? '링크' : '공개'}</span>
         `;
     }
     const shareOutput = $('#share-link-output');
@@ -1032,8 +1039,8 @@ function renderPublicSurfaces() {
     if (tripReviewMeta) {
         tripReviewMeta.innerHTML = `
             <span>${tripSummary.dateRange || '날짜 없음'}</span>
-            <span>${places} places</span>
-            <span>${photoCount || tripPhotos.length} photos</span>
+            <span>${formatPlaceCount(places)}</span>
+            <span>${formatPhotoCount(photoCount || tripPhotos.length)}</span>
         `;
     }
     if (tripReviewActions) {
@@ -1064,7 +1071,7 @@ function renderPublicSurfaces() {
     if (routeStrip) {
         const routeLabels = selected.photos?.filter(hasPhotoLocation).slice(0, 4).map((photo) => photo.name)
             || ['Start', 'Walk', 'View', 'Finish'];
-        const labels = routeLabels.length >= 2 ? routeLabels : [selected.title, 'Public map'];
+        const labels = routeLabels.length >= 2 ? routeLabels : [selected.title, '공개 지도'];
         routeStrip.innerHTML = labels.slice(0, 4).map((label, index) => (
             `${index ? '<i></i>' : ''}<span>${escapeHtml(label)}</span>`
         )).join('');
@@ -1104,7 +1111,7 @@ function renderPublicSurfaces() {
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>
-                <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
+                <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
         `).join('');
     }
@@ -1114,9 +1121,9 @@ function renderPublicSurfaces() {
     if (profileStats) {
         const stats = getProfileAlbumStats(profileAlbums);
         profileStats.innerHTML = `
-            <span><strong>${stats.albums}</strong> albums</span>
-            <span><strong>${stats.photos || stats.albums}</strong> photos</span>
-            <span><strong>${stats.places}</strong> places</span>
+            <span><strong>${stats.albums}</strong>개 앨범</span>
+            <span><strong>${stats.photos || stats.albums}</strong>장</span>
+            <span><strong>${stats.places}</strong>곳</span>
         `;
     }
 
@@ -1133,7 +1140,7 @@ function renderPublicSurfaces() {
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>
-                <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
+                <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
         `).join('');
     }
@@ -1149,7 +1156,7 @@ function renderPublicSurfaces() {
         list.innerHTML = albums.map((album) => `
             <article class="explore-item ${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}">
                 <strong>${escapeHtml(album.title)}</strong>
-                <span>${album.photo_count || 1} photos · ${album.places || 1} places</span>
+                <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
         `).join('');
     }
@@ -1269,7 +1276,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const deleteButton = $('#btn-delete-selected-photos');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
-    if (summary) summary.textContent = `${photos.length} photos`;
+    if (summary) summary.textContent = formatPhotoCount(photos.length);
     if (deleteButton) {
         deleteButton.disabled = selectedCount === 0;
         deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
@@ -1355,7 +1362,7 @@ function renderSavedAlbumRows(albums) {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
     if (!list) return;
-    if (summary) summary.textContent = `${albums.reduce((sum, album) => sum + album.photo_count, 0)} photos · ${albums.length} albums`;
+    if (summary) summary.textContent = `${formatPhotoCount(albums.reduce((sum, album) => sum + album.photo_count, 0))} · ${formatAlbumCount(albums.length)}`;
     list.innerHTML = albums.map((album) => {
         const visibilityLabel = album.visibility === 'public' ? '공개' : album.visibility === 'link' ? '링크 공유' : '비공개';
         return `
@@ -1365,7 +1372,7 @@ function renderSavedAlbumRows(albums) {
                     <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${visibilityLabel} · Supabase</span>
                     <strong>${escapeHtml(album.title)}</strong>
                     <p>${escapeHtml(album.note || '저장된 여행 앨범입니다.')}</p>
-                    <small>${album.photo_count} Photos · Album record</small>
+                    <small>${formatPhotoCount(album.photo_count)} · 앨범 기록</small>
                 </div>
             </article>
         `;
@@ -1383,7 +1390,7 @@ function renderSavedPhotoAlbums(photos) {
         return acc;
     }, {});
     const albums = Object.entries(grouped);
-    if (summary) summary.textContent = `${photos.length} photos · ${albums.length} albums`;
+    if (summary) summary.textContent = `${formatPhotoCount(photos.length)} · ${formatAlbumCount(albums.length)}`;
     list.innerHTML = albums.map(([name, albumPhotos]) => {
         const cover = albumPhotos[0];
         const shared = albumPhotos.some((photo) => photo.shared);
@@ -1394,7 +1401,7 @@ function renderSavedPhotoAlbums(photos) {
                     <span class="status-line"><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span> ${shared ? '공개' : '비공개'} · 저장됨</span>
                     <strong>${escapeHtml(name)}</strong>
                     <p>저장된 사진을 기준으로 구성한 여행 앨범입니다.</p>
-                    <small>${albumPhotos.length} Photos · Supabase</small>
+                    <small>${formatPhotoCount(albumPhotos.length)} · Supabase</small>
                 </div>
             </article>
         `;
@@ -1406,8 +1413,8 @@ function renderStagedPhotos() {
     const uploadDropzone = $('#upload-dropzone');
     const reviewButton = $('#btn-review-upload');
     const selectedUploadCount = countSelectedUploadPhotos(state.stagedPhotos);
-    $('#album-count-label') && ($('#album-count-label').textContent = `${state.stagedPhotos.length} photos`);
-    $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${state.stagedPhotos.length} photos · ${state.albumDrafts.length} albums`);
+    $('#album-count-label') && ($('#album-count-label').textContent = formatPhotoCount(state.stagedPhotos.length));
+    $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${formatPhotoCount(state.stagedPhotos.length)} · ${formatAlbumCount(state.albumDrafts.length)}`);
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${selectedUploadCount}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
@@ -1492,11 +1499,11 @@ function renderAlbumComposePage() {
                         <p class="eyebrow">Album Photos</p>
                         <h2 id="analysis-title">나의 여행 앨범</h2>
                     </div>
-                    <span><strong id="analysis-photo-count">0</strong> Photos</span>
+                    <span><strong id="analysis-photo-count">0</strong>장</span>
                 </div>
                 <div class="analysis-stats">
-                    <span><strong id="analysis-place-count">0</strong> Places</span>
-                    <span><strong id="analysis-day-count">0 days</strong> Timeline</span>
+                    <span><strong id="analysis-place-count">0</strong>곳</span>
+                    <span><strong id="analysis-day-count">0일</strong> 타임라인</span>
                 </div>
                 <button id="btn-open-album-photo-picker" class="btn-secondary album-add-button" type="button">사진 추가</button>
                 <div id="album-day-photo-list" class="album-day-photo-list"></div>
@@ -1583,12 +1590,12 @@ function renderTravelDraftSurfaces() {
     $('#analysis-title') && ($('#analysis-title').textContent = summary.title);
     $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(albumPhotos.length));
     $('#analysis-place-count') && ($('#analysis-place-count').textContent = String(albumLocatedPhotos.length));
-    $('#analysis-day-count') && ($('#analysis-day-count').textContent = `${Math.max(0, getTravelDaySummaries(albumPhotos).length)} days`);
-    $('#review-day-one-count') && ($('#review-day-one-count').textContent = `${Math.min(photoCount, 18)} photos · ${summary.places} places`);
+    $('#analysis-day-count') && ($('#analysis-day-count').textContent = formatDayCount(getTravelDaySummaries(albumPhotos).length));
+    $('#review-day-one-count') && ($('#review-day-one-count').textContent = formatPhotoPlaceMeta(Math.min(photoCount, 18), summary.places));
     $('#share-title') && ($('#share-title').textContent = summary.title);
     $('#share-preview-title') && ($('#share-preview-title').textContent = summary.title);
     $('#share-date-range') && ($('#share-date-range').textContent = summary.dateRange);
-    $('#share-trip-photo-count') && ($('#share-trip-photo-count').textContent = `${photoCount} photos`);
+    $('#share-trip-photo-count') && ($('#share-trip-photo-count').textContent = formatPhotoCount(photoCount));
     $('#share-preview-count') && ($('#share-preview-count').textContent = `공개 사진 ${summary.publicCount}장`);
 
     const reviewDayList = $('#review-day-list');
@@ -1599,14 +1606,14 @@ function renderTravelDraftSurfaces() {
                 <article>
                     <span>${day.dayLabel}</span>
                     <strong>${day.title}</strong>
-                    <small>${day.photoCount} photos · ${day.places} places</small>
+                    <small>${formatPhotoPlaceMeta(day.photoCount, day.places)}</small>
                 </article>
             `).join('')
             : `
                 <article>
                     <span>Draft</span>
                     <strong>날짜 정보가 있는 사진이 없습니다</strong>
-                    <small>${photoCount} photos · ${summary.places} places</small>
+                    <small>${formatPhotoPlaceMeta(photoCount, summary.places)}</small>
                 </article>
             `;
     }
@@ -1630,7 +1637,7 @@ function renderTravelDraftSurfaces() {
                         <div>
                             <span>${day.label}</span>
                             <strong>${day.title}</strong>
-                            <small>${day.photos.length} photos · ${day.places} places</small>
+                            <small>${formatPhotoPlaceMeta(day.photos.length, day.places)}</small>
                         </div>
                         <div class="album-day-thumbs">
                             ${day.photos.slice(0, 6).map((photo) => `
@@ -2004,7 +2011,7 @@ async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
 function renderAlbumDrafts() {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
-    if (summary) summary.textContent = `${state.stagedPhotos.length} photos · ${state.albumDrafts.length} albums`;
+    if (summary) summary.textContent = `${formatPhotoCount(state.stagedPhotos.length)} · ${formatAlbumCount(state.albumDrafts.length)}`;
     if (!list) return;
 
     if (!state.albumDrafts.length) {
@@ -2015,7 +2022,7 @@ function renderAlbumDrafts() {
                     <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.05.12 - 05.16</span>
                     <strong>제주 4박 5일</strong>
                     <p>사진을 업로드하거나 앨범 초안을 저장하면 이곳에 실제 앨범이 표시됩니다.</p>
-                    <small>128 Photos · Archival Quality</small>
+                    <small>128장 · 보관중</small>
                 </div>
             </article>
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
@@ -2024,7 +2031,7 @@ function renderAlbumDrafts() {
                     <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.04.20 - 04.22</span>
                     <strong>동해 새벽 여행</strong>
                     <p>공개 전까지는 Myphoto에서만 확인할 수 있는 개인 여행 기록입니다.</p>
-                    <small>42 Photos · Archival Quality</small>
+                    <small>42장 · 보관중</small>
                 </div>
             </article>
         `;
@@ -2038,7 +2045,7 @@ function renderAlbumDrafts() {
                 <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 방금 생성</span>
                 <strong>${escapeHtml(album.name)}</strong>
                 <p>${escapeHtml(album.note || '비공개 앨범 초안입니다.')}</p>
-                <small>${state.stagedPhotos.length} Photos · Draft</small>
+                <small>${formatPhotoCount(state.stagedPhotos.length)} · 초안</small>
             </div>
         </article>
     `).join('');
