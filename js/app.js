@@ -73,6 +73,7 @@ import {
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
 import { getAlbumReviewDaySections } from './album-review-layout.mjs';
+import { getAlbumEditorPhotoIds, getAlbumEditorPhotos } from './album-editor-state.mjs';
 
 const state = {
     currentUser: null,
@@ -100,6 +101,8 @@ const state = {
     exploreMapLoadPromise: null,
     tripReviewMap: null,
     tripReviewMarkers: [],
+    albumBuilderMap: null,
+    albumBuilderMarkers: [],
     googleMapsApiKey: null,
     googleMapsApiKeyPromise: null,
     isPersistingUpload: false,
@@ -539,8 +542,7 @@ function getDraftPhotos() {
 }
 
 function getAlbumCandidatePhotos() {
-    const selectedIds = new Set(state.albumBuilderPhotoIds);
-    return getMySavedPhotos().filter((photo) => selectedIds.has(photo.id));
+    return getAlbumEditorPhotos(state.albumBuilderPhotoIds, getMySavedPhotos());
 }
 
 function getDemoDraftPhotos() {
@@ -870,6 +872,60 @@ async function renderTripReviewMap(albumPhotos) {
         state.tripReviewMap.fitBounds(bounds, 72);
     }
 
+}
+
+async function renderAlbumBuilderMap(albumPhotos) {
+    const container = $('#album-map-frame');
+    if (!container) return;
+    const located = albumPhotos.filter(hasPhotoLocation);
+    state.albumBuilderMarkers.forEach((marker) => marker.setMap?.(null));
+    state.albumBuilderMarkers = [];
+
+    if (!located.length) {
+        state.albumBuilderMap = null;
+        container.innerHTML = '<div class="map-api-warning"><strong>위치 정보가 있는 사진이 없습니다.</strong><span>위치가 있는 사진을 추가하면 지도에 핀이 표시됩니다.</span></div>';
+        return;
+    }
+
+    const maps = await loadGoogleMapsApi();
+    if (!maps) {
+        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>지도 설정이 완료되면 앨범 사진 위치가 표시됩니다.</span></div>';
+        return;
+    }
+
+    const center = { lat: Number(located[0].lat), lng: Number(located[0].lng) };
+    state.albumBuilderMap = new maps.Map(container, {
+        center,
+        zoom: located.length > 1 ? 11 : 13,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
+        gestureHandling: 'greedy'
+    });
+
+    state.albumBuilderMarkers = located.map((photo) => {
+        const marker = new maps.Marker({
+            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+            map: state.albumBuilderMap,
+            title: photo.name || 'Album photo',
+            icon: {
+                url: photo.url,
+                scaledSize: new maps.Size(42, 42),
+                anchor: new maps.Point(21, 21)
+            }
+        });
+        marker.addListener('click', () => {
+            updatePhotoDetailModal(photo);
+            openModal('#photo-detail-modal');
+        });
+        return marker;
+    });
+
+    if (located.length > 1) {
+        const bounds = new maps.LatLngBounds();
+        located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+        state.albumBuilderMap.fitBounds(bounds, 72);
+    }
 }
 
 function renderPublicSurfaces() {
@@ -1402,8 +1458,7 @@ function renderAlbumComposePage() {
                 <div id="album-day-photo-list" class="album-day-photo-list"></div>
             </section>
             <section class="album-compose-map" aria-label="앨범 지도">
-                <iframe id="album-map-frame" class="google-map-frame" title="Google map album photo locations" src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                <div id="album-map-pins" class="album-map-pins" aria-hidden="true"></div>
+                <div id="album-map-frame" class="album-map-canvas" role="img" aria-label="앨범 사진 위치 지도"></div>
             </section>
         </div>
     `;
@@ -1533,7 +1588,7 @@ function renderTravelDraftSurfaces() {
                             <small>${day.photos.length} photos · ${day.places} places</small>
                         </div>
                         <div class="album-day-thumbs">
-                            ${day.photos.slice(0, 6).map((photo) => `
+                            ${day.photos.map((photo) => `
                                 <figure>
                                     <button class="album-photo-remove" data-remove-album-photo="${escapeHtml(photo.id)}" type="button" aria-label="앨범에서 사진 제거">×</button>
                                     <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
@@ -1545,20 +1600,7 @@ function renderTravelDraftSurfaces() {
             : '';
     }
 
-    const albumMap = $('#album-map-frame');
-    const albumPins = $('#album-map-pins');
-    if (albumMap) {
-        const center = albumLocatedPhotos[0] || { lat: 36.45, lng: 127.85 };
-        const zoom = albumLocatedPhotos.length ? 9 : 7;
-        albumMap.src = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=${zoom}&output=embed`;
-    }
-    if (albumPins) {
-        albumPins.innerHTML = albumLocatedPhotos.slice(0, 8).map((photo, index) => `
-            <button class="album-map-pin pin-${index + 1}" type="button" data-open-photo-detail data-photo-id="${escapeHtml(photo.id || photo.localId)}">
-                <img src="${photo.url}" alt="">
-            </button>
-        `).join('');
-    }
+    renderAlbumBuilderMap(albumLocatedPhotos);
 
     const shareGrid = $('#share-photo-grid');
     if (shareGrid) {
@@ -1689,7 +1731,7 @@ function startEditSelectedAlbum() {
     state.editingAlbumId = album.id;
     state.selectedPublicAlbumId = album.id;
     state.visibility = album.visibility || 'private';
-    state.albumBuilderPhotoIds = (album.photos || []).map((photo) => photo.id).filter(Boolean);
+    state.albumBuilderPhotoIds = getAlbumEditorPhotoIds(album, getMySavedPhotos());
     state.albumPhotoPickerIds = [...state.albumBuilderPhotoIds];
     routeTo('album');
 }
@@ -2227,6 +2269,7 @@ function bindEvents() {
     $$('[data-route]').forEach((link) => {
         link.addEventListener('click', (event) => {
             event.preventDefault();
+            event.stopPropagation();
             routeTo(link.dataset.route);
         });
     });
@@ -2253,6 +2296,13 @@ function bindEvents() {
     }));
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
+
+        const routeButton = event.target.closest('[data-route]');
+        if (routeButton) {
+            event.preventDefault();
+            routeTo(routeButton.dataset.route);
+            return;
+        }
 
         const goMyphotoButton = event.target.closest('[data-go-myphoto]');
         if (goMyphotoButton) {
