@@ -1,6 +1,7 @@
 import {
     attachPhotosToAlbum,
     createAlbum,
+    deleteAlbum,
     detachPhotosFromAlbum,
     fetchAlbums,
     fetchPhotos,
@@ -1025,18 +1026,17 @@ function renderPublicSurfaces() {
     }
     if (tripReviewActions) {
         tripReviewActions.innerHTML = `
-            <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
             ${isOwnAlbum ? `<button id="btn-edit-album" class="btn-secondary ${state.albumDetailEditMode ? 'active' : ''}" type="button">${state.albumDetailEditMode ? '수정 완료' : '수정하기'}</button>` : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
             ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-add-trip-photos" class="btn-secondary" type="button">사진 추가하기</button>' : ''}
-            <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
+            ${isOwnAlbum && state.albumDetailEditMode ? `<button id="btn-toggle-album-visibility" class="btn-secondary" type="button">${selected.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}</button>` : ''}
+            ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-set-album-cover" class="btn-secondary" type="button">대표사진 설정</button>' : ''}
+            ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-delete-album" class="btn-secondary danger" type="button">앨범 삭제</button>' : ''}
         `;
     }
     if (tripActions) {
         const isOwnAlbum = selected.owner_id && selected.owner_id === state.currentUser?.id;
         tripActions.innerHTML = `
-            <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
             ${isOwnAlbum ? '<button id="btn-edit-album" class="btn-secondary" type="button">수정하기</button>' : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
-            <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
         `;
     }
     if (routeMeta) routeMeta.textContent = getPublicTripRouteMeta(tripSummary);
@@ -1786,6 +1786,77 @@ function openTripPhotoPicker() {
     routeTo('album-photos');
 }
 
+function updateSavedAlbumLocally(albumId, updates = {}) {
+    state.savedAlbums = state.savedAlbums.map((album) => (
+        album.id === albumId ? { ...album, ...updates } : album
+    ));
+}
+
+async function toggleSelectedAlbumVisibility() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const nextVisibility = album.visibility === 'public' ? 'private' : 'public';
+    const { data, error } = await updateAlbumVisibility(album.id, nextVisibility);
+    if (error) {
+        showToast('앨범 공개 설정을 바꾸지 못했습니다.');
+        return;
+    }
+    updateSavedAlbumLocally(album.id, normalizeSavedAlbum(data || { ...album, visibility: nextVisibility }));
+    state.savedPhotos = state.savedPhotos.map((photo) => (
+        photo.album_id === album.id
+            ? { ...photo, visibility: nextVisibility, shared: nextVisibility === 'public' }
+            : photo
+    ));
+    renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
+    showToast(nextVisibility === 'public' ? '앨범을 공개로 전환했습니다.' : '앨범을 비공개로 전환했습니다.');
+}
+
+async function setSelectedAlbumCoverFromFirstPhoto() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const coverPhoto = state.albumDetailPhotos[0] || album.photos?.[0];
+    if (!coverPhoto?.url) {
+        showToast('대표사진으로 설정할 사진이 없습니다.');
+        return;
+    }
+    const { data, error } = await updateAlbum(album.id, {
+        title: album.title,
+        note: album.note,
+        visibility: album.visibility,
+        cover_url: coverPhoto.url,
+        photo_count: state.albumDetailPhotos.length || album.photo_count || 0
+    });
+    if (error) {
+        showToast('대표사진을 설정하지 못했습니다.');
+        return;
+    }
+    updateSavedAlbumLocally(album.id, normalizeSavedAlbum(data || { ...album, cover_url: coverPhoto.url }));
+    renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
+    showToast('대표사진을 설정했습니다.');
+}
+
+async function deleteSelectedAlbum() {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const { error } = await deleteAlbum(album.id);
+    if (error) {
+        showToast('앨범을 삭제하지 못했습니다.');
+        return;
+    }
+    state.savedAlbums = state.savedAlbums.filter((item) => item.id !== album.id);
+    state.savedPhotos = state.savedPhotos.map((photo) => (
+        photo.album_id === album.id ? { ...photo, album_id: null, album: null } : photo
+    ));
+    delete state.removedAlbumPhotoKeys[String(album.id)];
+    state.selectedPublicAlbumId = state.savedAlbums.find((item) => item.owner_id === state.currentUser?.id)?.id || null;
+    state.albumDetailEditMode = false;
+    renderSavedPhotoSurfaces();
+    routeTo(APP_SECTIONS.MYPHOTO);
+    showToast('앨범을 삭제했습니다.');
+}
+
 async function addSelectedPhotosToTripAlbum() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
@@ -2473,6 +2544,24 @@ function bindEvents() {
         const addTripPhotosButton = event.target.closest('#btn-add-trip-photos');
         if (addTripPhotosButton) {
             openTripPhotoPicker();
+            return;
+        }
+
+        const toggleAlbumVisibilityButton = event.target.closest('#btn-toggle-album-visibility');
+        if (toggleAlbumVisibilityButton) {
+            toggleSelectedAlbumVisibility();
+            return;
+        }
+
+        const setAlbumCoverButton = event.target.closest('#btn-set-album-cover');
+        if (setAlbumCoverButton) {
+            setSelectedAlbumCoverFromFirstPhoto();
+            return;
+        }
+
+        const deleteAlbumButton = event.target.closest('#btn-delete-album');
+        if (deleteAlbumButton) {
+            deleteSelectedAlbum();
             return;
         }
 

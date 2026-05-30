@@ -451,6 +451,28 @@ export async function updateAlbum(albumId, album) {
     }
 }
 
+export async function deleteAlbum(albumId) {
+    try {
+        const sb = getSupabase();
+        await sb
+            .from('album_photos')
+            .delete()
+            .eq('album_id', albumId);
+        await sb
+            .from('photos')
+            .update({ album_id: null, album: null })
+            .eq('album_id', albumId);
+        const { error } = await sb
+            .from('albums')
+            .delete()
+            .eq('id', albumId);
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
+    }
+}
+
 export async function attachPhotosToAlbum(albumId, photoIds) {
     try {
         const ids = [...new Set((photoIds || []).filter(Boolean))];
