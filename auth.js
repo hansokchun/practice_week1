@@ -494,6 +494,23 @@ export async function replaceAlbumPhotos(albumId, photoIds) {
     }
 }
 
+export async function detachPhotosFromAlbum(photoIds) {
+    try {
+        const ids = [...new Set((photoIds || []).filter(Boolean).map((id) => id.toString()))];
+        if (ids.length === 0) return { data: [], error: null };
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('photos')
+            .update({ album_id: null, album: null })
+            .in('id', ids)
+            .select('*');
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
 export async function updateAlbumVisibility(albumId, visibility) {
     try {
         const sb = getSupabase();

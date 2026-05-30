@@ -5,6 +5,6 @@ export function getAlbumPhotoIdsAfterRemoval(photos = [], removedPhotoId) {
         .filter((id) => id && String(id) !== targetId);
 }
 
-export function shouldOpenAlbumDetailPhotoClick(target) {
-    return !target?.closest?.('[data-remove-trip-photo]');
+export function shouldOpenAlbumDetailPhotoClick(target, { isEditing = false } = {}) {
+    return !isEditing && !target?.closest?.('[data-remove-trip-photo]');
 }

@@ -1,6 +1,7 @@
 import {
     attachPhotosToAlbum,
     createAlbum,
+    detachPhotosFromAlbum,
     fetchAlbums,
     fetchPhotos,
     fetchProfilesByIds,
@@ -511,7 +512,7 @@ function normalizeSavedPhoto(photo) {
         owner_id: photo.owner_id,
         album_id: photo.album_id || null,
         visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
-        album: photo.album || '나의 여행'
+        album: photo.album || null
     };
 }
 
@@ -817,7 +818,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
                             <article
                                 class="trip-review-photo-card ${isEditing ? 'is-editing' : ''}"
                                 style="--photo-width: ${Math.round(Number(photo.aspectRatio || 1) * 220)}px;"
-                                data-open-photo-detail
+                                ${isEditing ? '' : 'data-open-photo-detail'}
                                 data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
                             >
                                 ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photo.id || photo.localId || '')}" type="button" aria-label="앨범에서 사진 삭제">×</button>` : ''}
@@ -1081,7 +1082,7 @@ function renderPublicSurfaces() {
     });
     $$('#public-trip-photo-grid [data-open-photo-detail]').forEach((item) => {
         item.addEventListener('click', (event) => {
-            if (!shouldOpenAlbumDetailPhotoClick(event.target)) return;
+            if (!shouldOpenAlbumDetailPhotoClick(event.target, { isEditing: state.albumDetailEditMode })) return;
             const photo = getAllDisplayPhotos().find((candidate) => candidate.id === item.dataset.photoId)
                 || getSelectedPublicAlbum().photos?.find((candidate) => candidate.id === item.dataset.photoId)
                 || getDefaultDetailPhoto();
@@ -1706,9 +1707,18 @@ async function removePhotoFromSelectedAlbum(photoId) {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id || !photoId) return;
     const nextPhotoIds = getAlbumPhotoIdsAfterRemoval(album.photos || [], photoId);
+    if (nextPhotoIds.length === (album.photos || []).length) {
+        showToast('삭제할 사진을 찾지 못했습니다.');
+        return;
+    }
     const cover = album.photos?.find((photo) => String(photo.id) !== String(photoId))?.url || null;
     const { error } = await replaceAlbumPhotos(album.id, nextPhotoIds);
     if (error) {
+        showToast('사진을 앨범에서 삭제하지 못했습니다.');
+        return;
+    }
+    const { data: detachedPhotos, error: detachError } = await detachPhotosFromAlbum([photoId]);
+    if (detachError) {
         showToast('사진을 앨범에서 삭제하지 못했습니다.');
         return;
     }
@@ -1720,10 +1730,10 @@ async function removePhotoFromSelectedAlbum(photoId) {
         photo_count: nextPhotoIds.length
     });
 
+    const normalizedDetached = (detachedPhotos || []).map(normalizeSavedPhoto);
     state.savedPhotos = state.savedPhotos.map((photo) => (
-        String(photo.id) === String(photoId) && photo.album_id === album.id
-            ? { ...photo, album_id: null, album: null }
-            : photo
+        normalizedDetached.find((next) => next.id === photo.id)
+        || (String(photo.id) === String(photoId) ? { ...photo, album_id: null, album: null } : photo)
     ));
     state.savedAlbums = state.savedAlbums.map((savedAlbum) => (
         savedAlbum.id === album.id

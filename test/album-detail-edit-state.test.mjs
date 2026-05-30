@@ -46,3 +46,11 @@ test('shouldOpenAlbumDetailPhotoClick blocks detail opening from remove buttons'
     assert.equal(shouldOpenAlbumDetailPhotoClick(removeButton), false);
     assert.equal(shouldOpenAlbumDetailPhotoClick(image), true);
 });
+
+test('shouldOpenAlbumDetailPhotoClick blocks detail opening while editing', () => {
+    const image = {
+        closest: () => null
+    };
+
+    assert.equal(shouldOpenAlbumDetailPhotoClick(image, { isEditing: true }), false);
+});
