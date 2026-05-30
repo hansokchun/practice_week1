@@ -98,6 +98,7 @@ const state = {
     editingAlbumId: null,
     albumDetailEditMode: false,
     albumDetailPhotos: [],
+    removedAlbumPhotoKeys: {},
     editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
@@ -561,6 +562,29 @@ function getDemoDraftPhotos() {
     ];
 }
 
+function getAlbumPhotoRemovalKeys(photo = {}) {
+    return [photo.id, photo.localId, photo.url]
+        .filter(Boolean)
+        .map((value) => String(value));
+}
+
+function getRemovedAlbumPhotoKeys(albumId) {
+    return new Set(state.removedAlbumPhotoKeys[String(albumId)] || []);
+}
+
+function markAlbumPhotoRemoved(albumId, photo) {
+    if (!albumId || !photo) return;
+    const key = String(albumId);
+    const current = getRemovedAlbumPhotoKeys(albumId);
+    getAlbumPhotoRemovalKeys(photo).forEach((photoKey) => current.add(photoKey));
+    state.removedAlbumPhotoKeys[key] = [...current];
+}
+
+function isAlbumPhotoRemoved(albumId, photo) {
+    const removed = getRemovedAlbumPhotoKeys(albumId);
+    return getAlbumPhotoRemovalKeys(photo).some((photoKey) => removed.has(photoKey));
+}
+
 function getFallbackPublicPhotos(album) {
     const samples = {
         'demo-jeju': [
@@ -631,6 +655,7 @@ function getPublicAlbums() {
         .filter((album) => ['public', 'link'].includes(album.visibility) || album.owner_id === state.currentUser?.id)
         .map((album, index) => {
             const photos = state.savedPhotos.filter((photo) => {
+                if (isAlbumPhotoRemoved(album.id, photo)) return false;
                 const publicPhoto = photo.owner_id === state.currentUser?.id || photo.shared || ['public', 'link'].includes(photo.visibility);
                 const sameAlbum = photo.album_id
                     ? photo.album_id === album.id
@@ -899,7 +924,8 @@ function renderPublicSurfaces() {
     const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
     const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
-    const tripPhotos = selected.photos?.length ? selected.photos : getDraftPhotos();
+    const tripPhotos = (selected.photos?.length ? selected.photos : getDraftPhotos())
+        .filter((photo) => !isAlbumPhotoRemoved(selected.id, photo));
     state.albumDetailPhotos = tripPhotos;
     const tripSummary = getTravelSummary({
         draftPhotos: tripPhotos,
@@ -1718,6 +1744,12 @@ async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
         showToast('삭제할 사진을 찾지 못했습니다.');
         return;
     }
+    const targetPhoto = albumPhotos.find((photo, index) => (
+        String(photo.id || photo.localId || '') === String(targetPhotoId)
+        || (String(index) === String(photoIndex))
+    ));
+    markAlbumPhotoRemoved(album.id, targetPhoto);
+    state.albumDetailPhotos = albumPhotos.filter((photo) => !isAlbumPhotoRemoved(album.id, photo));
     const nextPhotoIds = getAlbumPhotoIdsAfterRemoval(albumPhotos, targetPhotoId, photoIndex);
     if (nextPhotoIds.length === albumPhotos.length) {
         showToast('삭제할 사진을 찾지 못했습니다.');
