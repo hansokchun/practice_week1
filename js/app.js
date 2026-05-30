@@ -629,21 +629,21 @@ function getPublicAlbums() {
             const locatedPhotos = photos.filter(hasPhotoLocation);
             const lat = locatedPhotos.length
                 ? locatedPhotos.reduce((sum, photo) => sum + photo.lat, 0) / locatedPhotos.length
-                : 33.4507 + (index * 0.9);
+                : null;
             const lng = locatedPhotos.length
                 ? locatedPhotos.reduce((sum, photo) => sum + photo.lng, 0) / locatedPhotos.length
-                : 126.5707 + (index * 1.2);
+                : null;
             return {
                 ...album,
                 cover_url: album.cover_url || photos[0]?.url || getDraftPhotos()[index % getDraftPhotos().length]?.url || 'images/main_bg2.jpg',
                 photo_count: Number(album.photo_count || photos.length || 1),
-                places: Math.max(1, locatedPhotos.length || Math.ceil(Number(album.photo_count || photos.length || 1) / 4)),
+                places: locatedPhotos.length,
                 lat,
                 lng,
                 photos
             };
         });
-    if (publicAlbums.some((album) => album.photos?.some(hasPhotoLocation))) return publicAlbums;
+    if (publicAlbums.length) return publicAlbums;
     return getFallbackPublicAlbums().map((album) => {
         const photos = getFallbackPublicPhotos(album);
         return {
