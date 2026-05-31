@@ -141,6 +141,8 @@ const state = {
     googleMapsApiKeyPromise: null,
     locationEditorMap: null,
     locationEditorMarker: null,
+    locationEditorMapClickListener: null,
+    locationEditorPickMode: false,
     isPersistingUpload: false,
     isSavingShare: false
 };
@@ -2285,6 +2287,23 @@ function getEditablePhoto() {
     return getLocationEditorPhoto(getMySavedPhotos(), state.selectedLocationPhotoId || state.selectedPhotoId);
 }
 
+function setLocationEditorCoordinateFields(lat, lng) {
+    const latInput = $('#location-lat-input');
+    const lngInput = $('#location-lng-input');
+    if (latInput) latInput.value = Number.isFinite(lat) ? lat.toFixed(6) : '';
+    if (lngInput) lngInput.value = Number.isFinite(lng) ? lng.toFixed(6) : '';
+}
+
+function setLocationEditorPickMode(enabled) {
+    state.locationEditorPickMode = Boolean(enabled);
+    $('#btn-pick-photo-location')?.classList.toggle('active', state.locationEditorPickMode);
+    state.locationEditorMarker?.setDraggable(state.locationEditorPickMode);
+    const message = $('#location-editor-message');
+    if (message && state.locationEditorPickMode) {
+        message.textContent = '지도에서 새 위치를 클릭하거나 핀을 드래그해 위치를 수정합니다.';
+    }
+}
+
 async function ensureLocationEditorMap(center) {
     const container = $('#location-editor-map-canvas');
     if (!container) return null;
@@ -2299,32 +2318,37 @@ async function ensureLocationEditorMap(center) {
         state.locationEditorMarker = new maps.Marker({
             map: state.locationEditorMap,
             position,
-            draggable: true
+            draggable: state.locationEditorPickMode
         });
         state.locationEditorMarker.addListener('dragend', () => {
+            if (!state.locationEditorPickMode) return;
             const next = state.locationEditorMarker.getPosition();
-            const latInput = $('#location-lat-input');
-            const lngInput = $('#location-lng-input');
-            if (latInput) latInput.value = next.lat().toFixed(6);
-            if (lngInput) lngInput.value = next.lng().toFixed(6);
+            applyLocationEditorPosition(next.lat(), next.lng(), { center: false });
+        });
+        state.locationEditorMapClickListener = state.locationEditorMap.addListener('click', (event) => {
+            if (!state.locationEditorPickMode || !event.latLng) return;
+            applyLocationEditorPosition(event.latLng.lat(), event.latLng.lng(), { center: false });
         });
     }
     return state.locationEditorMap;
 }
 
-async function updateLocationEditorMap(lat, lng) {
+async function applyLocationEditorPosition(lat, lng, options = {}) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     const position = { lat, lng };
+    setLocationEditorCoordinateFields(lat, lng);
     const map = await ensureLocationEditorMap(position);
     if (!map) return;
     state.locationEditorMarker?.setPosition(position);
-    map.setCenter(position);
+    if (options.center !== false) map.setCenter(position);
+}
+
+async function updateLocationEditorMap(lat, lng) {
+    return applyLocationEditorPosition(lat, lng);
 }
 
 function setLocationEditorPhoto(photoId) {
     const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
-    const latInput = $('#location-lat-input');
-    const lngInput = $('#location-lng-input');
     const nameInput = $('#photo-title-input');
     const descriptionInput = $('#photo-description-input');
     const dateInput = $('#photo-date-input');
@@ -2332,8 +2356,8 @@ function setLocationEditorPhoto(photoId) {
     const draft = normalizeLocationDraft(photo);
 
     state.selectedLocationPhotoId = photo?.id || null;
-    if (latInput) latInput.value = draft.lat;
-    if (lngInput) lngInput.value = draft.lng;
+    setLocationEditorPickMode(false);
+    setLocationEditorCoordinateFields(Number(draft.lat), Number(draft.lng));
     if (nameInput) nameInput.value = photo?.name || '';
     if (descriptionInput) descriptionInput.value = photo?.description || '';
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
@@ -2357,8 +2381,9 @@ function openLocationEditor(eventOrPhotoId) {
     const latInput = $('#location-lat-input');
     const lngInput = $('#location-lng-input');
     const message = $('#location-editor-message');
-    if (latInput) latInput.value = photo?.lat ?? '33.450701';
-    if (lngInput) lngInput.value = photo?.lng ?? '126.570667';
+    if (latInput || lngInput) {
+        setLocationEditorCoordinateFields(Number(photo?.lat ?? 33.450701), Number(photo?.lng ?? 126.570667));
+    }
     if (message) {
         message.textContent = photo
             ? `${photo.name}의 위치를 수정합니다.`
@@ -2373,6 +2398,15 @@ function syncLocationEditorMap() {
     const lng = Number($('#location-lng-input')?.value);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     updateLocationEditorMap(lat, lng);
+}
+
+async function startLocationEditorMapPick() {
+    setLocationEditorPickMode(true);
+    const lat = Number($('#location-lat-input')?.value);
+    const lng = Number($('#location-lng-input')?.value);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        await updateLocationEditorMap(lat, lng);
+    }
 }
 
 async function saveManualLocation(event) {
@@ -2834,8 +2868,7 @@ function bindEvents() {
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
-    $('#location-lat-input')?.addEventListener('change', syncLocationEditorMap);
-    $('#location-lng-input')?.addEventListener('change', syncLocationEditorMap);
+    $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModals));
     $$('.modal').forEach((modal) => {

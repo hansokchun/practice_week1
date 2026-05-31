@@ -11,8 +11,8 @@ test('photo info editor no longer shows a selected-photo picker block', () => {
 });
 
 test('photo info editor coordinate inputs avoid browser number validation bubbles', () => {
-    assert.match(html, /id="location-lat-input" type="text" inputmode="decimal"/);
-    assert.match(html, /id="location-lng-input" type="text" inputmode="decimal"/);
+    assert.match(html, /id="location-lat-input" type="text" inputmode="decimal"[^>]+readonly/);
+    assert.match(html, /id="location-lng-input" type="text" inputmode="decimal"[^>]+readonly/);
     assert.equal(html.includes('id="location-lat-input" type="number"'), false);
     assert.equal(html.includes('id="location-lng-input" type="number"'), false);
     assert.equal(html.includes('id="location-lat-input" type="text" inputmode="decimal" required'), false);
@@ -20,5 +20,6 @@ test('photo info editor coordinate inputs avoid browser number validation bubble
 
 test('photo info editor uses a real map container instead of an iframe embed', () => {
     assert.match(html, /<div id="location-editor-map-canvas" class="location-editor-map-canvas"/);
+    assert.match(html, /id="btn-pick-photo-location"[^>]*>지도에서 위치수정<\/button>/);
     assert.equal(html.includes('id="location-editor-map-frame"'), false);
 });

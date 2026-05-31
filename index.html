@@ -575,6 +575,7 @@
             <p>사진 이름, 설명, 촬영 날짜와 지도에 표시될 위치를 수정합니다.</p>
             <div id="location-editor-map" class="location-editor-map">
                 <div id="location-editor-map-canvas" class="location-editor-map-canvas" role="img" aria-label="수정할 사진 위치 지도"></div>
+                <button id="btn-pick-photo-location" class="map-pick-button" type="button">지도에서 위치수정</button>
             </div>
             <form id="location-editor-form" class="location-form">
                 <label for="photo-title-input">사진 이름</label>
@@ -591,9 +592,9 @@
                     </div>
                 </div>
                 <label for="location-lat-input">Latitude</label>
-                <input id="location-lat-input" type="text" inputmode="decimal" placeholder="33.450701">
+                <input id="location-lat-input" type="text" inputmode="decimal" placeholder="33.450701" readonly>
                 <label for="location-lng-input">Longitude</label>
-                <input id="location-lng-input" type="text" inputmode="decimal" placeholder="126.570667">
+                <input id="location-lng-input" type="text" inputmode="decimal" placeholder="126.570667" readonly>
                 <div class="auth-actions">
                     <button class="btn-primary" type="submit">수정 저장</button>
                     <button class="btn-secondary" data-close-modal type="button">취소</button>
