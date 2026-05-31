@@ -1687,40 +1687,44 @@ async function saveShareSettings() {
     state.isSavingShare = true;
     applyShareSaveState();
     try {
-    const latestOwnAlbum = await ensureAlbumForSharing();
-    if (!latestOwnAlbum) return;
-    let updatedAlbum = null;
-    if (latestOwnAlbum) {
-        const { data, error } = await updateAlbumVisibility(latestOwnAlbum.id, state.visibility);
-        if (!error && data) {
-            updatedAlbum = normalizeSavedAlbum(data);
-            state.savedAlbums = state.savedAlbums.map((album) => (
-                album.id === data.id ? updatedAlbum : album
-            ));
+        const latestOwnAlbum = await ensureAlbumForSharing();
+        if (!latestOwnAlbum) return;
+        let updatedAlbum = null;
+        if (latestOwnAlbum) {
+            const { data, error } = await updateAlbumVisibility(latestOwnAlbum.id, state.visibility);
+            if (error) throw error;
+            if (data) {
+                updatedAlbum = normalizeSavedAlbum(data);
+                state.savedAlbums = state.savedAlbums.map((album) => (
+                    album.id === data.id ? updatedAlbum : album
+                ));
+            }
         }
-    }
-    const photoIds = getSharePhotoIds();
-    const { data: updatedPhotos } = await updatePhotosVisibility(photoIds, state.visibility);
-    if (updatedPhotos?.length) {
-        const normalized = updatedPhotos.map(normalizeSavedPhoto);
-        state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
-    }
-    const shareTargetAlbumId = getShareTargetAlbumId(updatedAlbum, latestOwnAlbum);
-    if (shareTargetAlbumId) state.selectedPublicAlbumId = shareTargetAlbumId;
-    renderSavedPhotoSurfaces();
-    renderPublicSurfaces();
-    const message = state.visibility === 'public'
-        ? '공개 여행으로 전환했습니다.'
-        : state.visibility === 'link'
-            ? '공유 링크 설정을 준비했습니다.'
-            : '비공개 상태로 저장했습니다.';
-    showToast(message);
-    if (['public', 'link'].includes(state.visibility)) await copyCurrentShareLink();
-    const completionHash = getShareCompletionHash(state.visibility, shareTargetAlbumId);
-    if (completionHash !== '#/share') {
-        window.location.hash = completionHash;
-        renderRoute('trip');
-    }
+        const photoIds = getSharePhotoIds();
+        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(photoIds, state.visibility);
+        if (photoVisibilityError) throw photoVisibilityError;
+        if (updatedPhotos?.length) {
+            const normalized = updatedPhotos.map(normalizeSavedPhoto);
+            state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
+        }
+        const shareTargetAlbumId = getShareTargetAlbumId(updatedAlbum, latestOwnAlbum);
+        if (shareTargetAlbumId) state.selectedPublicAlbumId = shareTargetAlbumId;
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+        const message = state.visibility === 'public'
+            ? '공개 여행으로 전환했습니다.'
+            : state.visibility === 'link'
+                ? '공유 링크 설정을 준비했습니다.'
+                : '비공개 상태로 저장했습니다.';
+        showToast(message);
+        if (['public', 'link'].includes(state.visibility)) await copyCurrentShareLink();
+        const completionHash = getShareCompletionHash(state.visibility, shareTargetAlbumId);
+        if (completionHash !== '#/share') {
+            window.location.hash = completionHash;
+            renderRoute('trip');
+        }
+    } catch (error) {
+        showToast(error?.message || '공개 설정을 저장하지 못했습니다.');
     } finally {
         state.isSavingShare = false;
         applyShareSaveState();
@@ -2152,11 +2156,19 @@ async function saveAlbumDraft() {
         });
         if (error) {
             showToast('앨범 초안은 화면에 만들었지만 DB 저장에 실패했습니다.');
+            return;
         } else if (album) {
             const savedAlbum = normalizeSavedAlbum(album);
             state.savedAlbums.unshift(savedAlbum);
             state.selectedPublicAlbumId = savedAlbum.id;
-            if (draftPhotoIds.length) await attachPhotosToAlbum(album.id, draftPhotoIds);
+            if (draftPhotoIds.length) {
+                const { error: attachError } = await attachPhotosToAlbum(album.id, draftPhotoIds);
+                if (attachError) {
+                    await deleteAlbum(album.id);
+                    showToast('앨범 사진 연결에 실패했습니다.');
+                    return;
+                }
+            }
             await loadPublicProfileNames();
         }
     }
@@ -2220,7 +2232,12 @@ async function saveAlbumAndOpenDetail() {
     ];
     state.selectedPublicAlbumId = savedAlbum.id;
     {
-        await replaceAlbumPhotos(savedAlbum.id, draftPhotoIds);
+        const { error: replaceError } = await replaceAlbumPhotos(savedAlbum.id, draftPhotoIds);
+        if (replaceError) {
+            if (!editingAlbumId) await deleteAlbum(savedAlbum.id);
+            showToast('앨범 사진 연결에 실패했습니다.');
+            return;
+        }
         const selectedPhotoIds = new Set(draftPhotoIds);
         state.savedPhotos = state.savedPhotos.map((photo) => {
             if (photo.album_id === savedAlbum.id && !selectedPhotoIds.has(photo.id)) {
@@ -2231,7 +2248,11 @@ async function saveAlbumAndOpenDetail() {
             }
             return photo;
         });
-        const { data: updatedPhotos } = await updatePhotosVisibility(draftPhotoIds, state.visibility);
+        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(draftPhotoIds, state.visibility);
+        if (photoVisibilityError) {
+            showToast('앨범 공개 상태를 사진에 반영하지 못했습니다.');
+            return;
+        }
         if (updatedPhotos?.length) {
             const normalized = updatedPhotos.map(normalizeSavedPhoto);
             state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
@@ -2278,7 +2299,14 @@ async function ensureAlbumForSharing() {
 
     const album = normalizeSavedAlbum(data);
     state.savedAlbums.unshift(album);
-    if (photoIds.length) await attachPhotosToAlbum(album.id, photoIds);
+    if (photoIds.length) {
+        const { error: attachError } = await attachPhotosToAlbum(album.id, photoIds);
+        if (attachError) {
+            await deleteAlbum(album.id);
+            showToast('앨범 사진 연결에 실패했습니다.');
+            return null;
+        }
+    }
     await loadPublicProfileNames();
     return album;
 }
