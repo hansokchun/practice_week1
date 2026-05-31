@@ -91,6 +91,7 @@ import {
 } from './explore-marker-clusters.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
+import { getLocatedPublicAlbums } from './explore-album-markers.mjs';
 import {
     formatAlbumCount,
     formatDayCount,
@@ -130,6 +131,7 @@ const state = {
     exploreMarkers: [],
     exploreClusterListener: null,
     exploreMarkerPhotos: [],
+    exploreMarkerAlbums: [],
     exploreSelectedAlbumId: null,
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
@@ -360,6 +362,32 @@ function updateExplorePhotoPreview(photo) {
     updatePhotoDetailModal(photo);
 }
 
+function updateExploreAlbumPreview(album) {
+    const preview = $('#explore-pin-preview');
+    if (!preview || !album) return;
+    const image = preview.querySelector('img');
+    const title = preview.querySelector('.pin-preview-copy h2');
+    const note = preview.querySelector('.pin-preview-copy p:last-child');
+    const meta = preview.querySelector('.pin-preview-meta');
+    const tripButton = preview.querySelector('[data-go-trip]');
+    const profileButton = preview.querySelector('[data-go-profile]');
+    if (image) {
+        image.src = album.cover_url || 'images/main_bg2.jpg';
+        image.alt = album.title || 'Public album';
+    }
+    if (title) title.textContent = album.title || 'Public album';
+    if (note) note.textContent = album.note || '';
+    if (meta) {
+        meta.innerHTML = `
+            <span><span class="material-symbols-outlined">auto_stories</span> ${formatPhotoCount(album.photo_count || 0)}</span>
+            <span><span class="material-symbols-outlined">place</span> ${formatPlaceCount(album.places || 0)}</span>
+            <span><span class="material-symbols-outlined">public</span> ${album.visibility === 'link' ? 'Link' : 'Public'}</span>
+        `;
+    }
+    if (tripButton) tripButton.dataset.publicAlbumId = album.id || '';
+    if (profileButton) profileButton.dataset.publicAlbumId = album.id || '';
+}
+
 async function getGoogleMapsApiKey() {
     if (window.GOOGLE_MAPS_API_KEY) return window.GOOGLE_MAPS_API_KEY;
     if (state.googleMapsApiKey !== null) return state.googleMapsApiKey;
@@ -447,20 +475,21 @@ async function ensureExploreMap() {
     return state.exploreMap;
 }
 
-function getExplorePinIcon(maps, { selected = false } = {}) {
-    return getExplorePinSymbolIcon(maps);
+function getExplorePinIcon(maps, options = {}) {
+    return getExplorePinSymbolIcon(maps, options);
 }
 
-async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
+async function renderExploreMapMarkers(locatedPhotos, locatedAlbums = [], selectedAlbumId) {
     const map = await ensureExploreMap();
     const maps = window.google?.maps;
     if (!map || !maps) return;
 
     state.exploreMarkerPhotos = locatedPhotos;
+    state.exploreMarkerAlbums = locatedAlbums;
     state.exploreSelectedAlbumId = selectedAlbumId;
     state.exploreMarkers.forEach((marker) => marker.setMap(null));
     const clusters = getExploreMarkerClusters(locatedPhotos, map.getZoom() || state.exploreZoom);
-    state.exploreMarkers = clusters.map((cluster) => {
+    const photoMarkers = clusters.map((cluster) => {
         const photo = cluster.photos[0];
         const selected = cluster.photos.some((item) => item.album_id === selectedAlbumId || item.id === state.selectedPhotoId);
         const isCluster = cluster.count > 1;
@@ -468,7 +497,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             map,
             position: cluster.position,
             title: isCluster ? formatPhotoCount(cluster.count) : (photo.name || photo.albumTitle || '공개 사진'),
-            icon: getExplorePinIcon(maps, { selected, isCluster }),
+            icon: getExplorePinIcon(maps, { type: 'photo', selected, isCluster }),
             label: shouldShowExploreClusterLabel(cluster) ? {
                 text: String(cluster.count),
                 color: '#ffffff',
@@ -493,23 +522,41 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             if (previewPhoto.album_id) state.selectedPublicAlbumId = previewPhoto.album_id;
             updateExplorePhotoPreview(previewPhoto);
             if (shouldRerenderExploreMarkersAfterPinClick({ isCluster })) {
-                renderExploreMapMarkers(locatedPhotos, previewPhoto.album_id);
+                renderExploreMapMarkers(locatedPhotos, locatedAlbums, previewPhoto.album_id);
             }
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
         });
         return marker;
     });
+    const albumMarkers = locatedAlbums.map((album) => {
+        const marker = new maps.Marker({
+            map,
+            position: { lat: Number(album.lat), lng: Number(album.lng) },
+            title: album.title || 'Public album',
+            icon: getExplorePinIcon(maps, { type: 'album' }),
+            zIndex: album.id === selectedAlbumId ? 18 : 14
+        });
+        marker.addListener('click', () => {
+            state.selectedPublicAlbumId = album.id || state.selectedPublicAlbumId;
+            updateExploreAlbumPreview(album);
+            document.body.classList.add('explore-pin-selected');
+            $('#explore-pin-preview')?.removeAttribute('hidden');
+        });
+        return marker;
+    });
+    state.exploreMarkers = [...photoMarkers, ...albumMarkers];
     if (!state.exploreClusterListener) {
         state.exploreClusterListener = map.addListener('zoom_changed', () => {
-            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreMarkerAlbums, state.exploreSelectedAlbumId);
         });
     }
 
-    const viewportAction = getExploreViewportAction(locatedPhotos, state.exploreLastBoundsKey);
+    const viewportAction = getExploreViewportAction([...locatedPhotos, ...locatedAlbums], state.exploreLastBoundsKey);
     if (viewportAction.type === 'fit') {
         const bounds = new maps.LatLngBounds();
         locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+        locatedAlbums.forEach((album) => bounds.extend({ lat: Number(album.lat), lng: Number(album.lng) }));
         state.exploreLastBoundsKey = viewportAction.boundsKey;
         map.fitBounds(bounds, 96);
     }
@@ -1038,8 +1085,9 @@ function renderPublicSurfaces() {
     }
 
     const locatedPhotos = getLocatedPublicPhotos(albums);
+    const locatedAlbums = getLocatedPublicAlbums(albums);
     renderTripReviewMap(tripPhotos);
-    renderExploreMapMarkers(locatedPhotos, selected.id);
+    renderExploreMapMarkers(locatedPhotos, locatedAlbums, selected.id);
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
     if (selectedPhoto) updateExplorePhotoPreview(selectedPhoto);
 
