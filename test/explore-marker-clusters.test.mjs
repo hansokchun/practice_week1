@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
     getExploreMarkerClusters,
+    getExploreMarkerClusterBounds,
     getExploreMarkerExpansionZoom,
     getExploreViewportAction,
     shouldRerenderExploreMarkersAfterPinClick,
@@ -61,4 +62,19 @@ test('Explore viewport fits only when the marker data set changes', () => {
 test('normal pin clicks keep neighboring pins mounted', () => {
     assert.equal(shouldRerenderExploreMarkersAfterPinClick({ isCluster: false }), false);
     assert.equal(shouldRerenderExploreMarkersAfterPinClick({ isCluster: true }), true);
+});
+
+test('cluster click bounds include every grouped pin', () => {
+    const bounds = getExploreMarkerClusterBounds([
+        { id: 'a', lat: 37.5796, lng: 126.9770 },
+        { id: 'b', lat: 37.5826, lng: 126.9830 },
+        { id: 'c', lat: 37.5512, lng: 126.9882 }
+    ]);
+
+    assert.deepEqual(bounds, {
+        north: 37.5826,
+        south: 37.5512,
+        east: 126.9882,
+        west: 126.9770
+    });
 });

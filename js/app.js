@@ -83,12 +83,14 @@ import {
 } from './album-detail-edit-state.mjs';
 import {
     getExploreMarkerClusters,
+    getExploreMarkerClusterBounds,
     getExploreMarkerExpansionZoom,
     getExploreViewportAction,
     shouldRerenderExploreMarkersAfterPinClick,
     shouldShowExploreClusterLabel
 } from './explore-marker-clusters.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
+import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import {
     formatAlbumCount,
     formatDayCount,
@@ -221,7 +223,7 @@ function renderRoute(section) {
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
-    if (normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
+    if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
         ensureExploreMap();
     }
@@ -446,20 +448,7 @@ async function ensureExploreMap() {
 }
 
 function getExplorePinIcon(maps, { selected = false } = {}) {
-    const size = 34;
-    const fill = '#155659';
-    const stroke = '#ffffff';
-    const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 48 48">
-            <path d="M24 45s15-13.4 15-27A15 15 0 0 0 9 18c0 13.6 15 27 15 27Z" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
-            <circle cx="24" cy="18" r="6" fill="${stroke}"/>
-        </svg>
-    `.trim();
-    return {
-        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-        scaledSize: new maps.Size(size, size),
-        anchor: new maps.Point(size / 2, size)
-    };
+    return getExplorePinSymbolIcon(maps);
 }
 
 async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
@@ -491,10 +480,14 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         marker.addListener('click', () => {
             const previewPhoto = cluster.photos.find((item) => item.album_id === selectedAlbumId) || photo;
             if (isCluster) {
-                const targetZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom() || state.exploreZoom);
-                window.setTimeout(() => {
-                    map.setZoom(targetZoom);
-                }, 140);
+                const clusterBounds = getExploreMarkerClusterBounds(cluster.photos);
+                if (clusterBounds) {
+                    const bounds = new maps.LatLngBounds(
+                        { lat: clusterBounds.south, lng: clusterBounds.west },
+                        { lat: clusterBounds.north, lng: clusterBounds.east }
+                    );
+                    map.fitBounds(bounds, 112);
+                }
                 return;
             }
             if (previewPhoto.album_id) state.selectedPublicAlbumId = previewPhoto.album_id;

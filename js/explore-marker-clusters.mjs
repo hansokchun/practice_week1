@@ -44,6 +44,19 @@ export function getExploreMarkerExpansionZoom(photos = [], currentZoom = 7, { ra
     return maxZoom;
 }
 
+export function getExploreMarkerClusterBounds(photos = []) {
+    const located = photos.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng)));
+    if (!located.length) return null;
+    const lats = located.map((photo) => Number(photo.lat));
+    const lngs = located.map((photo) => Number(photo.lng));
+    return {
+        north: Math.max(...lats),
+        south: Math.min(...lats),
+        east: Math.max(...lngs),
+        west: Math.min(...lngs)
+    };
+}
+
 export function shouldShowExploreClusterLabel() {
     return false;
 }
