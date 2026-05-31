@@ -2759,12 +2759,6 @@ function bindEvents() {
             return;
         }
 
-        const photoEditorButton = event.target.closest('#btn-expand-photo-map');
-        if (photoEditorButton) {
-            openLocationEditor({ currentTarget: photoEditorButton });
-            return;
-        }
-
         const explorePhotoPin = event.target.closest('[data-explore-photo-pin]');
         if (explorePhotoPin) {
             const photo = getLocatedPublicPhotos().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);

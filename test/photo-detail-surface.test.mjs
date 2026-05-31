@@ -8,6 +8,8 @@ test('photo detail modal shows only the photo visibility status block', () => {
     assert.equal(html.includes('<dt>Album</dt>'), false);
     assert.equal(html.includes('<dt>Visibility</dt>'), false);
     assert.equal(html.includes('<dt>Original</dt>'), false);
+    assert.equal(html.includes('id="btn-expand-photo-map"'), false);
+    assert.equal(html.includes('class="map-expand-button"'), false);
     assert.match(html, /id="photo-detail-visibility"/);
 });
 
@@ -16,6 +18,7 @@ test('photo detail renderer writes only public or private visibility text', () =
 
     assert.equal(source.includes('albumValue'), false);
     assert.equal(source.includes('originalValue'), false);
+    assert.equal(source.includes('btn-expand-photo-map'), false);
     assert.match(source, /photo-detail-visibility/);
     assert.match(source, /공개/);
     assert.match(source, /비공개/);
