@@ -2296,11 +2296,18 @@ function setLocationEditorCoordinateFields(lat, lng) {
 
 function setLocationEditorPickMode(enabled) {
     state.locationEditorPickMode = Boolean(enabled);
-    $('#btn-pick-photo-location')?.classList.toggle('active', state.locationEditorPickMode);
+    const button = $('#btn-pick-photo-location');
+    button?.classList.toggle('active', state.locationEditorPickMode);
+    if (button) {
+        button.textContent = state.locationEditorPickMode ? '위치 지정 완료' : '지도에서 위치수정';
+        button.setAttribute('aria-pressed', state.locationEditorPickMode ? 'true' : 'false');
+    }
     state.locationEditorMarker?.setDraggable(state.locationEditorPickMode);
     const message = $('#location-editor-message');
     if (message && state.locationEditorPickMode) {
         message.textContent = '지도에서 새 위치를 클릭하거나 핀을 드래그해 위치를 수정합니다.';
+    } else if (message) {
+        message.textContent = '위치가 지정되었습니다. 다시 바꾸려면 지도에서 위치수정을 눌러주세요.';
     }
 }
 
@@ -2393,15 +2400,9 @@ function openLocationEditor(eventOrPhotoId) {
     setLocationEditorPhoto(photo?.id || null);
 }
 
-function syncLocationEditorMap() {
-    const lat = Number($('#location-lat-input')?.value);
-    const lng = Number($('#location-lng-input')?.value);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-    updateLocationEditorMap(lat, lng);
-}
-
 async function startLocationEditorMapPick() {
-    setLocationEditorPickMode(true);
+    const nextPickMode = !state.locationEditorPickMode;
+    setLocationEditorPickMode(nextPickMode);
     const lat = Number($('#location-lat-input')?.value);
     const lng = Number($('#location-lng-input')?.value);
     if (Number.isFinite(lat) && Number.isFinite(lng)) {

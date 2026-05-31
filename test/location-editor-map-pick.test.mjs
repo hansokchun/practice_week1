@@ -8,8 +8,11 @@ test('photo info editor enables map picking only from the map edit button', () =
     assert.match(app, /locationEditorPickMode:\s*false/);
     assert.match(app, /async function startLocationEditorMapPick\(\)/);
     assert.match(app, /#btn-pick-photo-location'\)\?\.addEventListener\('click', startLocationEditorMapPick\)/);
+    assert.match(app, /const nextPickMode = !state\.locationEditorPickMode;/);
+    assert.match(app, /button\.textContent = state\.locationEditorPickMode \? '위치 지정 완료' : '지도에서 위치수정';/);
     assert.match(app, /state\.locationEditorMap\.addListener\('click'/);
     assert.match(app, /if \(!state\.locationEditorPickMode \|\| !event\.latLng\) return;/);
+    assert.match(app, /state\.locationEditorMarker\?\.setDraggable\(state\.locationEditorPickMode\)/);
 });
 
 test('photo info editor map writes picked coordinates into read-only fields', () => {

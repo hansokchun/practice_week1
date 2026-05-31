@@ -10,5 +10,10 @@ test('photo info editor map allows wheel zoom without holding control', () => {
     assert.equal(options.zoom, 13);
     assert.equal(options.center.lat, 33.450701);
     assert.equal(options.center.lng, 126.570667);
+    assert.equal(options.disableDefaultUI, true);
     assert.equal(options.mapTypeControl, false);
+    assert.equal(options.zoomControl, false);
+    assert.equal(options.scaleControl, false);
+    assert.equal(options.keyboardShortcuts, false);
+    assert.equal(options.clickableIcons, false);
 });
