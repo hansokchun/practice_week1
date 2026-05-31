@@ -81,7 +81,11 @@ import {
     mergeAlbumPhotoIds,
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
-import { getExploreMarkerClusters } from './explore-marker-clusters.mjs';
+import {
+    getExploreMarkerClusters,
+    getExploreMarkerExpansionZoom,
+    shouldShowExploreClusterLabel
+} from './explore-marker-clusters.mjs';
 import {
     formatAlbumCount,
     formatDayCount,
@@ -441,14 +445,14 @@ async function ensureExploreMap() {
     return state.exploreMap;
 }
 
-function getExplorePinIcon(maps, { selected = false, isCluster = false } = {}) {
-    const size = isCluster ? 46 : selected ? 42 : 34;
-    const fill = isCluster ? '#0e5a5c' : selected ? '#f28a72' : '#155659';
+function getExplorePinIcon(maps, { selected = false } = {}) {
+    const size = selected ? 42 : 34;
+    const fill = selected ? '#f28a72' : '#155659';
     const stroke = '#ffffff';
     const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 48 48">
             <path d="M24 45s15-13.4 15-27A15 15 0 0 0 9 18c0 13.6 15 27 15 27Z" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
-            <circle cx="24" cy="18" r="${isCluster ? 13 : 6}" fill="${isCluster ? fill : stroke}"/>
+            <circle cx="24" cy="18" r="6" fill="${stroke}"/>
         </svg>
     `.trim();
     return {
@@ -476,7 +480,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             position: cluster.position,
             title: isCluster ? formatPhotoCount(cluster.count) : (photo.name || photo.albumTitle || '공개 사진'),
             icon: getExplorePinIcon(maps, { selected, isCluster }),
-            label: isCluster ? {
+            label: shouldShowExploreClusterLabel(cluster) ? {
                 text: String(cluster.count),
                 color: '#ffffff',
                 fontSize: '13px',
@@ -486,9 +490,12 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         });
         marker.addListener('click', () => {
             const previewPhoto = cluster.photos.find((item) => item.album_id === selectedAlbumId) || photo;
-            if (isCluster && map.getZoom() < 15) {
+            if (isCluster) {
+                const targetZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom() || state.exploreZoom);
                 map.panTo(cluster.position);
-                map.setZoom((map.getZoom() || state.exploreZoom) + 2);
+                window.setTimeout(() => {
+                    map.setZoom(targetZoom);
+                }, 140);
                 return;
             }
             if (previewPhoto.album_id) setSelectedPublicAlbum(previewPhoto.album_id);

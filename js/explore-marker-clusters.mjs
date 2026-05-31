@@ -35,3 +35,15 @@ export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
         position: averagePosition(items)
     }));
 }
+
+export function getExploreMarkerExpansionZoom(photos = [], currentZoom = 7, { radiusPx = 54, maxZoom = 18 } = {}) {
+    const startZoom = Math.max(0, Math.floor(Number(currentZoom) || 0));
+    for (let zoom = startZoom + 1; zoom <= maxZoom; zoom += 1) {
+        if (getExploreMarkerClusters(photos, zoom, radiusPx).length > 1) return zoom;
+    }
+    return maxZoom;
+}
+
+export function shouldShowExploreClusterLabel() {
+    return false;
+}
