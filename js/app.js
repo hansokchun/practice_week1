@@ -30,6 +30,7 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
+import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import {
@@ -138,6 +139,8 @@ const state = {
     tripReviewMarkers: [],
     googleMapsApiKey: null,
     googleMapsApiKeyPromise: null,
+    locationEditorMap: null,
+    locationEditorMarker: null,
     isPersistingUpload: false,
     isSavingShare: false
 };
@@ -2282,22 +2285,40 @@ function getEditablePhoto() {
     return getLocationEditorPhoto(getMySavedPhotos(), state.selectedLocationPhotoId || state.selectedPhotoId);
 }
 
-function renderLocationPhotoChoices(selectedPhotoId) {
-    const list = $('#location-photo-list');
-    if (!list) return;
-    const missingPhotos = getMissingLocationPhotos(getMySavedPhotos());
-
-    if (!missingPhotos.length) {
-        list.innerHTML = '';
-        return;
+async function ensureLocationEditorMap(center) {
+    const container = $('#location-editor-map-canvas');
+    if (!container) return null;
+    const maps = await loadGoogleMapsApi();
+    if (!maps) {
+        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API key is required.</strong><span>지도 설정이 완료되면 위치를 직접 확인할 수 있습니다.</span></div>';
+        return null;
     }
+    const position = { lat: Number(center.lat), lng: Number(center.lng) };
+    if (!state.locationEditorMap) {
+        state.locationEditorMap = new maps.Map(container, getLocationEditorMapOptions(position));
+        state.locationEditorMarker = new maps.Marker({
+            map: state.locationEditorMap,
+            position,
+            draggable: true
+        });
+        state.locationEditorMarker.addListener('dragend', () => {
+            const next = state.locationEditorMarker.getPosition();
+            const latInput = $('#location-lat-input');
+            const lngInput = $('#location-lng-input');
+            if (latInput) latInput.value = next.lat().toFixed(6);
+            if (lngInput) lngInput.value = next.lng().toFixed(6);
+        });
+    }
+    return state.locationEditorMap;
+}
 
-    list.innerHTML = missingPhotos.slice(0, 6).map((photo) => `
-        <button class="${photo.id === selectedPhotoId ? 'is-selected' : ''}" type="button" data-select-location-photo="${escapeHtml(photo.id)}">
-            <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-            <span>${escapeHtml(photo.name)}</span>
-        </button>
-    `).join('');
+async function updateLocationEditorMap(lat, lng) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const position = { lat, lng };
+    const map = await ensureLocationEditorMap(position);
+    if (!map) return;
+    state.locationEditorMarker?.setPosition(position);
+    map.setCenter(position);
 }
 
 function setLocationEditorPhoto(photoId) {
@@ -2307,9 +2328,7 @@ function setLocationEditorPhoto(photoId) {
     const nameInput = $('#photo-title-input');
     const descriptionInput = $('#photo-description-input');
     const dateInput = $('#photo-date-input');
-    const mapFrame = $('#location-editor-map-frame');
     const message = $('#location-editor-message');
-    const title = $('#location-selected-photo-title');
     const draft = normalizeLocationDraft(photo);
 
     state.selectedLocationPhotoId = photo?.id || null;
@@ -2318,18 +2337,16 @@ function setLocationEditorPhoto(photoId) {
     if (nameInput) nameInput.value = photo?.name || '';
     if (descriptionInput) descriptionInput.value = photo?.description || '';
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
-    if (mapFrame) mapFrame.src = getPhotoMapUrl({ lat: draft.lat, lng: draft.lng }, 13);
+    updateLocationEditorMap(Number(draft.lat), Number(draft.lng));
     state.editingPhotoVisibility = photo?.visibility === 'public' || photo?.shared ? 'public' : 'private';
     $$('[data-photo-visibility]').forEach((button) => {
         button.classList.toggle('active', button.dataset.photoVisibility === state.editingPhotoVisibility);
     });
-    if (title) title.textContent = photo ? photo.name : '저장된 사진 없음';
     if (message) {
         message.textContent = photo
             ? `${photo.name}의 위치를 직접 지정합니다.`
             : '저장된 사진이 없어서 화면 흐름만 확인할 수 있습니다.';
     }
-    renderLocationPhotoChoices(state.selectedLocationPhotoId);
 }
 
 function openLocationEditor(eventOrPhotoId) {
@@ -2347,16 +2364,15 @@ function openLocationEditor(eventOrPhotoId) {
             ? `${photo.name}의 위치를 수정합니다.`
             : '저장된 사진이 없으면 화면에서만 위치 지정 흐름을 확인할 수 있습니다.';
     }
-    setLocationEditorPhoto(photo?.id || null);
     openModal('#location-editor-modal');
+    setLocationEditorPhoto(photo?.id || null);
 }
 
 function syncLocationEditorMap() {
     const lat = Number($('#location-lat-input')?.value);
     const lng = Number($('#location-lng-input')?.value);
-    const mapFrame = $('#location-editor-map-frame');
-    if (!mapFrame || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
-    mapFrame.src = getPhotoMapUrl({ lat, lng }, 13);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    updateLocationEditorMap(lat, lng);
 }
 
 async function saveManualLocation(event) {
@@ -2726,8 +2742,6 @@ function bindEvents() {
             return;
         }
 
-        const selectorButton = event.target.closest('[data-select-location-photo]');
-        if (selectorButton) setLocationEditorPhoto(selectorButton.dataset.selectLocationPhoto);
     });
     document.addEventListener('keydown', (event) => {
         if (!['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) return;

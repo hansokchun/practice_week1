@@ -573,13 +573,8 @@
             <p class="eyebrow">Photo Edit</p>
             <h2 id="location-editor-title">사진 정보 수정</h2>
             <p>사진 이름, 설명, 촬영 날짜와 지도에 표시될 위치를 수정합니다.</p>
-            <div class="location-photo-picker">
-                <span>선택한 사진</span>
-                <strong id="location-selected-photo-title">저장된 사진 없음</strong>
-                <div id="location-photo-list" class="location-photo-list" aria-label="수정할 사진 선택"></div>
-            </div>
             <div id="location-editor-map" class="location-editor-map">
-                <iframe id="location-editor-map-frame" title="Editable photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <div id="location-editor-map-canvas" class="location-editor-map-canvas" role="img" aria-label="수정할 사진 위치 지도"></div>
             </div>
             <form id="location-editor-form" class="location-form">
                 <label for="photo-title-input">사진 이름</label>
@@ -596,9 +591,9 @@
                     </div>
                 </div>
                 <label for="location-lat-input">Latitude</label>
-                <input id="location-lat-input" type="number" step="0.000001" min="-90" max="90" placeholder="33.450701" required>
+                <input id="location-lat-input" type="text" inputmode="decimal" placeholder="33.450701">
                 <label for="location-lng-input">Longitude</label>
-                <input id="location-lng-input" type="number" step="0.000001" min="-180" max="180" placeholder="126.570667" required>
+                <input id="location-lng-input" type="text" inputmode="decimal" placeholder="126.570667">
                 <div class="auth-actions">
                     <button class="btn-primary" type="submit">수정 저장</button>
                     <button class="btn-secondary" data-close-modal type="button">취소</button>
