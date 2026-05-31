@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
+    getExploreViewportAction,
     shouldShowExploreClusterLabel
 } from '../js/explore-marker-clusters.mjs';
 
@@ -39,4 +40,19 @@ test('getExploreMarkerExpansionZoom finds the next zoom level that separates a c
 test('cluster pins use the same logo without numeric labels', () => {
     assert.equal(shouldShowExploreClusterLabel({ count: 4 }), false);
     assert.equal(shouldShowExploreClusterLabel({ count: 1 }), false);
+});
+
+test('Explore viewport fits only when the marker data set changes', () => {
+    const photos = [
+        { id: 'a', lat: 33.4, lng: 126.5 },
+        { id: 'b', lat: 35.6, lng: 139.7 }
+    ];
+    const action = getExploreViewportAction(photos, 'old-key');
+
+    assert.equal(action.type, 'fit');
+    assert.notEqual(action.boundsKey, 'old-key');
+    assert.deepEqual(getExploreViewportAction(photos, action.boundsKey), {
+        type: 'none',
+        boundsKey: action.boundsKey
+    });
 });

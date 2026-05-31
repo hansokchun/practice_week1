@@ -47,3 +47,11 @@ export function getExploreMarkerExpansionZoom(photos = [], currentZoom = 7, { ra
 export function shouldShowExploreClusterLabel() {
     return false;
 }
+
+export function getExploreViewportAction(photos = [], previousBoundsKey = null) {
+    const boundsKey = photos.map((photo) => `${photo.id}:${photo.lat}:${photo.lng}`).join('|');
+    if (photos.length > 1 && boundsKey && boundsKey !== previousBoundsKey) {
+        return { type: 'fit', boundsKey };
+    }
+    return { type: 'none', boundsKey: previousBoundsKey || boundsKey };
+}

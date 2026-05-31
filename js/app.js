@@ -84,6 +84,7 @@ import {
 import {
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
+    getExploreViewportAction,
     shouldShowExploreClusterLabel
 } from './explore-marker-clusters.mjs';
 import {
@@ -446,8 +447,8 @@ async function ensureExploreMap() {
 }
 
 function getExplorePinIcon(maps, { selected = false } = {}) {
-    const size = selected ? 42 : 34;
-    const fill = selected ? '#f28a72' : '#155659';
+    const size = 34;
+    const fill = '#155659';
     const stroke = '#ffffff';
     const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 48 48">
@@ -486,7 +487,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
                 fontSize: '13px',
                 fontWeight: '900'
             } : null,
-            zIndex: selected ? 20 : isCluster ? 15 : 10
+            zIndex: isCluster ? 15 : selected ? 12 : 10
         });
         marker.addListener('click', () => {
             const previewPhoto = cluster.photos.find((item) => item.album_id === selectedAlbumId) || photo;
@@ -512,16 +513,12 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         });
     }
 
-    const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selectedAlbumId) || locatedPhotos[0];
-    const boundsKey = locatedPhotos.map((photo) => `${photo.id}:${photo.lat}:${photo.lng}`).join('|');
-    if (locatedPhotos.length > 1 && boundsKey && boundsKey !== state.exploreLastBoundsKey) {
+    const viewportAction = getExploreViewportAction(locatedPhotos, state.exploreLastBoundsKey);
+    if (viewportAction.type === 'fit') {
         const bounds = new maps.LatLngBounds();
         locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
-        state.exploreLastBoundsKey = boundsKey;
+        state.exploreLastBoundsKey = viewportAction.boundsKey;
         map.fitBounds(bounds, 96);
-    } else if (selectedPhoto) {
-        map.panTo({ lat: Number(selectedPhoto.lat), lng: Number(selectedPhoto.lng) });
-        if (map.getZoom() < state.exploreZoom) map.setZoom(state.exploreZoom);
     }
 }
 
