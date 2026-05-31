@@ -85,8 +85,10 @@ import {
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
     getExploreViewportAction,
+    shouldRerenderExploreMarkersAfterPinClick,
     shouldShowExploreClusterLabel
 } from './explore-marker-clusters.mjs';
+import { getExploreMapOptions } from './explore-map-options.mjs';
 import {
     formatAlbumCount,
     formatDayCount,
@@ -96,6 +98,7 @@ import {
 } from './copy-formatters.mjs';
 import { getPublicDemoAlbumEntries, getPublicDemoAlbums, getPublicDemoPhotos } from './public-demo-data.mjs';
 import { combinePublicAlbumsWithDemoEntries } from './public-album-entries.mjs';
+import { getPublicSurfaceAlbums } from './public-surface-albums.mjs';
 
 const state = {
     currentUser: null,
@@ -421,14 +424,10 @@ async function ensureExploreMap() {
         return null;
     }
 
-    state.exploreMap = new maps.Map(container, {
+    state.exploreMap = new maps.Map(container, getExploreMapOptions({
         center: { lat: 36.45, lng: 127.85 },
-        zoom: state.exploreZoom,
-        mapTypeControl: false,
-        fullscreenControl: false,
-        streetViewControl: false,
-        gestureHandling: 'greedy'
-    });
+        zoom: state.exploreZoom
+    }));
 
     const input = $('#explore-map-search-input');
     if (input && maps.places?.SearchBox) {
@@ -493,15 +492,16 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             const previewPhoto = cluster.photos.find((item) => item.album_id === selectedAlbumId) || photo;
             if (isCluster) {
                 const targetZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom() || state.exploreZoom);
-                map.panTo(cluster.position);
                 window.setTimeout(() => {
                     map.setZoom(targetZoom);
                 }, 140);
                 return;
             }
-            if (previewPhoto.album_id) setSelectedPublicAlbum(previewPhoto.album_id);
+            if (previewPhoto.album_id) state.selectedPublicAlbumId = previewPhoto.album_id;
             updateExplorePhotoPreview(previewPhoto);
-            renderExploreMapMarkers(locatedPhotos, previewPhoto.album_id);
+            if (shouldRerenderExploreMarkersAfterPinClick({ isCluster })) {
+                renderExploreMapMarkers(locatedPhotos, previewPhoto.album_id);
+            }
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
         });
@@ -652,8 +652,8 @@ function getFallbackPublicAlbums() {
     return getPublicDemoAlbums();
 }
 
-function getPublicAlbums() {
-    const publicAlbums = state.savedAlbums
+function getSavedPublicAlbums() {
+    return state.savedAlbums
         .filter((album) => ['public', 'link'].includes(album.visibility) || album.owner_id === state.currentUser?.id)
         .map((album, index) => {
             const photos = state.savedPhotos.filter((photo) => {
@@ -681,11 +681,13 @@ function getPublicAlbums() {
                 photos
             };
         });
-    return combinePublicAlbumsWithDemoEntries(publicAlbums, getPublicDemoAlbumEntries());
 }
 
-function getSelectedPublicAlbum() {
-    const albums = getPublicAlbums();
+function getPublicAlbums() {
+    return combinePublicAlbumsWithDemoEntries(getSavedPublicAlbums(), getPublicDemoAlbumEntries());
+}
+
+function getSelectedPublicAlbum(albums = getPublicAlbums()) {
     return albums.find((album) => album.id === state.selectedPublicAlbumId) || albums[0];
 }
 
@@ -903,8 +905,8 @@ async function renderTripReviewMap(albumPhotos) {
 }
 
 function renderPublicSurfaces() {
-    const albums = getPublicAlbums();
-    const selected = getSelectedPublicAlbum();
+    const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
+    const selected = getSelectedPublicAlbum(albums);
     if (!selected) {
         renderEmptyPublicSurfaces();
         return;

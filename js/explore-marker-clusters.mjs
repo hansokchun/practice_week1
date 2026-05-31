@@ -48,6 +48,10 @@ export function shouldShowExploreClusterLabel() {
     return false;
 }
 
+export function shouldRerenderExploreMarkersAfterPinClick({ isCluster = false } = {}) {
+    return !!isCluster;
+}
+
 export function getExploreViewportAction(photos = [], previousBoundsKey = null) {
     const boundsKey = photos.map((photo) => `${photo.id}:${photo.lat}:${photo.lng}`).join('|');
     if (photos.length > 1 && boundsKey && boundsKey !== previousBoundsKey) {

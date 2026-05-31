@@ -5,6 +5,7 @@ import {
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
     getExploreViewportAction,
+    shouldRerenderExploreMarkersAfterPinClick,
     shouldShowExploreClusterLabel
 } from '../js/explore-marker-clusters.mjs';
 
@@ -55,4 +56,9 @@ test('Explore viewport fits only when the marker data set changes', () => {
         type: 'none',
         boundsKey: action.boundsKey
     });
+});
+
+test('normal pin clicks keep neighboring pins mounted', () => {
+    assert.equal(shouldRerenderExploreMarkersAfterPinClick({ isCluster: false }), false);
+    assert.equal(shouldRerenderExploreMarkersAfterPinClick({ isCluster: true }), true);
 });

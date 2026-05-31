@@ -11,17 +11,18 @@ test('public demo albums and photos are visible on Explore with real coordinates
     const albums = getPublicDemoAlbums();
     const photos = albums.flatMap((album) => getPublicDemoPhotos(album));
 
-    assert.ok(albums.length >= 3);
-    assert.ok(photos.length >= 6);
+    assert.deepEqual(albums.map((album) => album.id), ['sample-public-photos']);
+    assert.equal(photos.length, 8);
     assert.ok(albums.every((album) => album.visibility === 'public'));
     assert.ok(photos.every((photo) => photo.visibility === 'public' && photo.shared === true));
     assert.ok(photos.every((photo) => Number.isFinite(photo.lat) && Number.isFinite(photo.lng)));
+    assert.ok(photos.every((photo) => !photo.id.startsWith('demo-jeju') && !photo.id.startsWith('demo-tokyo') && !photo.id.startsWith('demo-italy')));
 });
 
 test('public demo album entries include photos so Explore can render pins immediately', () => {
     const entries = getPublicDemoAlbumEntries();
 
-    assert.ok(entries.length >= 3);
-    assert.ok(entries.every((album) => album.photos.length >= 3));
+    assert.equal(entries.length, 1);
+    assert.ok(entries.every((album) => album.photos.length === 8));
     assert.ok(entries.every((album) => album.places === album.photos.length));
 });
