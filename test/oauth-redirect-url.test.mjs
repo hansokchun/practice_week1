@@ -3,9 +3,13 @@ import { test } from 'node:test';
 
 import { getOAuthRedirectUrl } from '../js/oauth-redirect-url.mjs';
 
-test('OAuth redirect uses the current deployed origin', () => {
+test('OAuth redirect uses the stable Pages origin', () => {
     assert.equal(
         getOAuthRedirectUrl({ origin: 'https://practice-week1-cws.pages.dev', hostname: 'practice-week1-cws.pages.dev' }),
+        'https://practice-week1-cws.pages.dev/'
+    );
+    assert.equal(
+        getOAuthRedirectUrl({ origin: 'https://4084bcb2.practice-week1-cws.pages.dev', hostname: '4084bcb2.practice-week1-cws.pages.dev' }),
         'https://practice-week1-cws.pages.dev/'
     );
 });
