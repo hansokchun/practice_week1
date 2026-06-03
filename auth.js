@@ -8,7 +8,6 @@
  */
 
 import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
-import { getOAuthRedirectUrl } from './js/oauth-redirect-url.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
@@ -55,7 +54,7 @@ export async function signInWithOAuthProvider(provider) {
         const sb = getSupabase();
         const { data, error } = await sb.auth.signInWithOAuth({
             provider,
-            options: { redirectTo: getOAuthRedirectUrl(window.location) }
+            options: { redirectTo: window.location.origin }
         });
         if (error) throw error;
         return { data, error: null };
