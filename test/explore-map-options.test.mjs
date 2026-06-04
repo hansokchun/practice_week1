@@ -10,3 +10,14 @@ test('Explore map has a minimum zoom so wheel zoom-out stops at the limit', () =
     assert.equal(options.minZoom, EXPLORE_MAP_MIN_ZOOM);
     assert.equal(options.gestureHandling, 'greedy');
 });
+
+test('Explore map hides default Google POI markers so only public photo pins look clickable', () => {
+    const options = getExploreMapOptions();
+    const poiStyle = options.styles.find((style) => style.featureType === 'poi');
+
+    assert.deepEqual(poiStyle, {
+        featureType: 'poi',
+        elementType: 'labels.icon',
+        stylers: [{ visibility: 'off' }]
+    });
+});
