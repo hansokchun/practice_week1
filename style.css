@@ -973,19 +973,21 @@ img {
 
 .recent-photo-empty {
     aspect-ratio: auto;
-    min-height: 72px;
+    min-height: 24px;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     justify-items: stretch;
     align-content: center;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 4px 8px;
     text-align: left;
 }
 
 .recent-photo-empty button {
-    min-height: 34px;
-    border-radius: 10px;
-    padding: 0 12px;
+    min-height: 24px;
+    border-radius: 8px;
+    padding: 0 8px;
+    font-size: 12px;
 }
 
 .album-empty-state button {
@@ -995,7 +997,9 @@ img {
 
 .recent-photo-empty span {
     color: var(--muted);
+    font-size: 12px;
     font-weight: 700;
+    line-height: 1.2;
 }
 
 .explore-map-canvas {
