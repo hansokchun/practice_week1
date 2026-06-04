@@ -10,3 +10,19 @@ test('Explore map has a minimum zoom so wheel zoom-out stops at the limit', () =
     assert.equal(options.minZoom, EXPLORE_MAP_MIN_ZOOM);
     assert.equal(options.gestureHandling, 'greedy');
 });
+
+test('Explore map disables default Google place icons so only photo pins are clickable', () => {
+    const options = getExploreMapOptions();
+
+    assert.equal(options.clickableIcons, false);
+    assert.deepEqual(options.styles, [
+        {
+            featureType: 'poi',
+            stylers: [{ visibility: 'off' }]
+        },
+        {
+            featureType: 'transit',
+            stylers: [{ visibility: 'off' }]
+        }
+    ]);
+});

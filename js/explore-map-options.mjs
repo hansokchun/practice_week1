@@ -8,6 +8,17 @@ export function getExploreMapOptions({ center = { lat: 36.45, lng: 127.85 }, zoo
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
-        gestureHandling: 'greedy'
+        gestureHandling: 'greedy',
+        clickableIcons: false,
+        styles: [
+            {
+                featureType: 'poi',
+                stylers: [{ visibility: 'off' }]
+            },
+            {
+                featureType: 'transit',
+                stylers: [{ visibility: 'off' }]
+            }
+        ]
     };
 }

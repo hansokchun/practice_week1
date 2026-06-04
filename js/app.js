@@ -1022,13 +1022,14 @@ async function renderTripReviewMap(albumPhotos) {
 }
 
 function renderPublicSurfaces() {
+    const isExplorePage = document.body.dataset.page === APP_SECTIONS.EXPLORE;
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     const selected = getSelectedPublicAlbum(albums);
     renderExplorePhotoScopeControls();
     const explorePhotos = getPublicPhotoMapItems();
     if (!selected) {
         renderEmptyPublicSurfaces();
-        if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
+        if (isExplorePage && explorePhotos.length) {
             renderExploreMapMarkers(explorePhotos, null);
         }
         return;
@@ -1174,9 +1175,9 @@ function renderPublicSurfaces() {
 
     const locatedPhotos = getPublicPhotoMapItems();
     renderTripReviewMap(tripPhotos);
-    renderExploreMapMarkers(locatedPhotos, selected.id);
+    if (isExplorePage) renderExploreMapMarkers(locatedPhotos, selected.id);
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
-    if (selectedPhoto) updateExplorePhotoPreview(selectedPhoto);
+    if (isExplorePage && selectedPhoto) updateExplorePhotoPreview(selectedPhoto);
 
     const relatedGrid = $('.related-album-grid');
     if (relatedGrid) {
@@ -3058,7 +3059,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderStagedPhotos();
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
-    renderExploreList();
     setVisibilityMode(state.visibility);
     setProfileTab(state.profileTab);
     if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
