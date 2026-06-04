@@ -305,21 +305,6 @@ function formatPhotoDateInput(value) {
     return offsetDate.toISOString().slice(0, 16);
 }
 
-function getLocatedPublicPhotos(albums = getPublicAlbums()) {
-    return albums.flatMap((album) => (album.photos || [])
-        .filter(hasPhotoLocation)
-        .map((photo) => ({
-            ...photo,
-            album_id: photo.album_id || album.id,
-            album: photo.album || album.title,
-            albumTitle: album.title,
-            albumNote: album.note,
-            albumVisibility: album.visibility,
-            albumCoverUrl: album.cover_url,
-            albumOwnerId: album.owner_id
-        })));
-}
-
 function getPublicPhotoMapItems() {
     return state.savedPhotos
         .filter((photo) => hasPhotoLocation(photo) && (photo.shared || ['public', 'link'].includes(photo.visibility)))
@@ -346,8 +331,12 @@ function getPublicPhotoMapItems() {
 }
 
 function renderExplorePhotoScopeControls() {
+    if (!state.currentUser && state.explorePhotoScope === 'mine') {
+        state.explorePhotoScope = 'others';
+    }
     $$('[data-explore-scope]').forEach((button) => {
         button.classList.toggle('active', button.dataset.exploreScope === state.explorePhotoScope);
+        if (button.dataset.exploreScope === 'mine') button.disabled = !state.currentUser;
     });
 }
 
@@ -2879,7 +2868,7 @@ function bindEvents() {
 
         const explorePhotoPin = event.target.closest('[data-explore-photo-pin]');
         if (explorePhotoPin) {
-            const photo = getLocatedPublicPhotos().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
+            const photo = getPublicPhotoMapItems().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
             if (photo?.album_id) setSelectedPublicAlbum(photo.album_id);
             updateExplorePhotoPreview(photo);
             renderPublicSurfaces();

@@ -20,3 +20,13 @@ test('Explore map markers are driven by public photos in the selected owner scop
     assert.match(source, /const locatedPhotos = getPublicPhotoMapItems\(\);/);
     assert.match(source, /if \(!locatedPhotos\.length\) \{/);
 });
+
+test('Explore photo map items do not depend on album visibility', () => {
+    const fnStart = source.indexOf('function getPublicPhotoMapItems()');
+    const fnEnd = source.indexOf('function renderExplorePhotoScopeControls()', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /photo\.visibility/);
+    assert.doesNotMatch(body, /album\.visibility/);
+    assert.doesNotMatch(body, /\['public', 'link'\]\.includes\(album\.visibility\)/);
+});

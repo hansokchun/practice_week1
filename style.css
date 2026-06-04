@@ -2131,6 +2131,11 @@ img {
     color: #ffffff;
 }
 
+.explore-photo-scope button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+}
+
 .map-scrim {
     position: absolute;
     inset: 0;
