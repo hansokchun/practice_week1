@@ -2529,15 +2529,6 @@ async function saveAlbumAndOpenDetail() {
             }
             return photo;
         });
-        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(draftPhotoIds, state.visibility);
-        if (photoVisibilityError) {
-            showToast('앨범 공개 상태를 사진에 반영하지 못했습니다.');
-            return;
-        }
-        if (updatedPhotos?.length) {
-            const normalized = updatedPhotos.map(normalizeSavedPhoto);
-            state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
-        }
     }
     state.editingAlbumId = null;
     await loadPublicProfileNames();

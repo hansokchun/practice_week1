@@ -10,6 +10,16 @@ test('album save flow handles album-photo replacement failures', () => {
     assert.match(source, /showToast\('앨범 사진 연결에 실패했습니다\.'\);/);
 });
 
+test('album save flow does not change individual photo visibility', () => {
+    const fnStart = source.indexOf('async function saveAlbumAndOpenDetail()');
+    const fnEnd = source.indexOf('function getDraftAlbumInput()', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /await replaceAlbumPhotos\(savedAlbum\.id, draftPhotoIds\)/);
+    assert.doesNotMatch(body, /updatePhotosVisibility\(draftPhotoIds, state\.visibility\)/);
+    assert.doesNotMatch(body, /photoVisibilityError/);
+});
+
 test('share flow handles photo visibility update failures', () => {
     assert.match(source, /const \{ data: updatedPhotos, error: photoVisibilityError \} = await updatePhotosVisibility\(photoIds, state\.visibility\);/);
     assert.match(source, /if \(photoVisibilityError\) throw photoVisibilityError;/);
