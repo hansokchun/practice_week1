@@ -135,6 +135,7 @@ const state = {
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
+    exploreMarkerRenderToken: 0,
     explorePhotoScope: 'mine',
     tripReviewMap: null,
     tripReviewMarkers: [],
@@ -548,8 +549,10 @@ function getExplorePinIcon(maps, options = {}) {
 }
 
 async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
+    const renderToken = ++state.exploreMarkerRenderToken;
     const map = await ensureExploreMap();
     const maps = window.google?.maps;
+    if (renderToken !== state.exploreMarkerRenderToken) return;
     if (!map || !maps) return;
 
     state.exploreMarkerPhotos = locatedPhotos;
@@ -1021,8 +1024,8 @@ async function renderTripReviewMap(albumPhotos) {
 function renderPublicSurfaces() {
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     const selected = getSelectedPublicAlbum(albums);
-    const explorePhotos = getPublicPhotoMapItems();
     renderExplorePhotoScopeControls();
+    const explorePhotos = getPublicPhotoMapItems();
     if (!selected) {
         renderEmptyPublicSurfaces();
         if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
@@ -1385,6 +1388,8 @@ async function deleteSelectedPersonalPhotos() {
     const myPhotos = getMySavedPhotos();
     const selectedPhotos = getSelectedPersonalPhotos(myPhotos, state.selectedPersonalPhotoIds);
     if (!selectedPhotos.length) return;
+    const confirmed = window.confirm(`선택한 사진 ${selectedPhotos.length}장을 정말 삭제할까요? 삭제한 사진은 복구할 수 없습니다.`);
+    if (!confirmed) return;
 
     const deleteButton = $('#btn-delete-selected-photos');
     if (deleteButton) deleteButton.disabled = true;
