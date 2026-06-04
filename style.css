@@ -973,12 +973,21 @@ img {
 
 .recent-photo-empty {
     aspect-ratio: auto;
+    min-height: 138px;
+    justify-items: start;
+    align-content: center;
+    padding: 20px 24px;
+    text-align: left;
 }
 
-.recent-photo-empty button,
 .album-empty-state button {
     width: fit-content;
     justify-self: center;
+}
+
+.recent-photo-empty span {
+    color: var(--muted);
+    font-weight: 700;
 }
 
 .explore-map-canvas {
