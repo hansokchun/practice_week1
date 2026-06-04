@@ -164,6 +164,14 @@ function escapeHtml(value) {
     })[char]);
 }
 
+function getPhotoTitle(photo) {
+    return String(photo?.title || photo?.name || '').trim();
+}
+
+function getPhotoFallbackLabel(photo, fallback = '사진') {
+    return getPhotoTitle(photo) || photo?.description || fallback;
+}
+
 function showToast(message) {
     const toast = $('#toast');
     if (!toast) return;
@@ -376,16 +384,30 @@ function updateExplorePhotoPreview(photo) {
     const title = preview.querySelector('.pin-preview-copy h2');
     const note = preview.querySelector('.pin-preview-copy p:last-child');
     const meta = preview.querySelector('.pin-preview-meta');
-    const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
+    const authorAvatar = preview.querySelector('.pin-author .avatar');
+    const authorNameNode = preview.querySelector('.pin-author strong');
+    const displayTitle = getPhotoTitle(photo);
+    const description = String(photo.description || '').trim();
+    const ownerId = photo.owner_id || photo.albumOwnerId || '';
+    const authorName = getPublicAuthorName({ owner_id: ownerId }, {
+        currentUser: state.currentUser,
+        profileNames: state.profileNames
+    });
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
-        image.alt = photo.name || photo.albumTitle || '공개 사진';
+        image.alt = displayTitle || '공개 사진';
     }
-    if (title) title.textContent = photo.name || photo.albumTitle || '공개 사진';
-    if (note) note.textContent = photo.description || photo.albumNote || photo.albumTitle || '';
+    if (title) {
+        title.textContent = displayTitle;
+        title.hidden = !displayTitle;
+    }
+    if (note) {
+        note.textContent = description;
+        note.hidden = !description;
+    }
     if (meta) {
         meta.innerHTML = `
             <span><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
@@ -393,8 +415,12 @@ function updateExplorePhotoPreview(photo) {
             <span><span class="material-symbols-outlined">public</span> ${photo.albumVisibility === 'link' ? '링크' : '공개'}</span>
         `;
     }
-    if (tripButton) tripButton.dataset.publicAlbumId = photo.album_id || '';
-    if (profileButton) profileButton.dataset.publicAlbumId = photo.album_id || '';
+    if (profileButton) {
+        profileButton.dataset.publicAlbumId = photo.album_id || '';
+        profileButton.dataset.publicOwnerId = ownerId;
+    }
+    if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
+    if (authorNameNode) authorNameNode.textContent = authorName;
     updatePhotoDetailModal(photo);
 }
 
@@ -411,8 +437,14 @@ function updateExploreAlbumPreview(album) {
         image.src = album.cover_url || 'images/main_bg2.jpg';
         image.alt = album.title || 'Public album';
     }
-    if (title) title.textContent = album.title || 'Public album';
-    if (note) note.textContent = album.note || '';
+    if (title) {
+        title.textContent = album.title || 'Public album';
+        title.hidden = false;
+    }
+    if (note) {
+        note.textContent = album.note || '';
+        note.hidden = !album.note;
+    }
     if (meta) {
         meta.innerHTML = `
             <span><span class="material-symbols-outlined">auto_stories</span> ${formatPhotoCount(album.photo_count || 0)}</span>
@@ -594,14 +626,18 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
+    const displayTitle = getPhotoTitle(photo);
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
 
     if (image) {
         image.src = photo.url || 'images/main_bg2.jpg';
-        image.alt = photo.name || '여행 사진 상세';
+        image.alt = displayTitle || '여행 사진 상세';
     }
-    if (title) title.textContent = photo.name || '여행 사진';
+    if (title) {
+        title.textContent = displayTitle;
+        title.hidden = !displayTitle;
+    }
     if (meta) meta.textContent = `${dateLabel} · ${hasPhotoLocation(photo) ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}` : '위치 정보 없음'}`;
     if (map && mapFrame) {
         const mapUrl = getPhotoMapUrl(photo);
@@ -628,9 +664,11 @@ function updateAccountUI() {
 
 function normalizeSavedPhoto(photo) {
     const hasLocation = hasUsableCoordinates(photo.lat, photo.lng);
+    const title = String(photo.title || '').trim();
     return {
         id: photo.id,
-        name: photo.title || photo.description || '여행 사진',
+        name: title,
+        title,
         description: photo.description || '',
         url: photo.url,
         date: photo.date || photo.created_at || new Date().toISOString(),
@@ -766,6 +804,13 @@ function setSelectedPublicAlbum(albumId) {
     renderPublicSurfaces();
 }
 
+function routeToProfileFromAuthor(albumId, ownerId) {
+    const ownerAlbum = ownerId
+        ? getPublicAlbums().find((album) => album.owner_id === ownerId)
+        : null;
+    routeToPublic('profile', albumId || ownerAlbum?.id || state.selectedPublicAlbumId);
+}
+
 function getCurrentShareUrl() {
     return buildTripShareUrl(window.location.origin, getShareUrlAlbumId(state.selectedPublicAlbumId, getSelectedPublicAlbum()));
 }
@@ -798,8 +843,14 @@ function renderEmptyPublicSurfaces() {
         previewImage.src = 'images/main_bg2.jpg';
         previewImage.alt = empty.title;
     }
-    if (previewTitle) previewTitle.textContent = empty.title;
-    if (previewNote) previewNote.textContent = empty.body;
+    if (previewTitle) {
+        previewTitle.textContent = empty.title;
+        previewTitle.hidden = false;
+    }
+    if (previewNote) {
+        previewNote.textContent = empty.body;
+        previewNote.hidden = false;
+    }
     if (previewMeta) previewMeta.textContent = empty.meta;
 
     const tripHeroImage = $('.public-trip-hero > img');
@@ -953,7 +1004,7 @@ async function renderTripReviewMap(albumPhotos) {
         const marker = new maps.Marker({
             position: { lat: Number(photo.lat), lng: Number(photo.lng) },
             map: state.tripReviewMap,
-            title: photo.name || '여행 사진'
+            title: getPhotoFallbackLabel(photo, '여행 사진')
         });
         marker.addListener('click', () => updatePhotoDetailModal(photo));
         return marker;
@@ -1006,8 +1057,14 @@ function renderPublicSurfaces() {
         previewImage.src = cover;
         previewImage.alt = selected.title;
     }
-    if (previewTitle) previewTitle.textContent = selected.title;
-    if (previewNote) previewNote.textContent = note;
+    if (previewTitle) {
+        previewTitle.textContent = selected.title;
+        previewTitle.hidden = false;
+    }
+    if (previewNote) {
+        previewNote.textContent = note;
+        previewNote.hidden = !note;
+    }
     if (previewMeta) {
         previewMeta.innerHTML = `
             <span><span class="material-symbols-outlined">photo_library</span> ${formatPhotoCount(photoCount || 1)}</span>
@@ -2164,7 +2221,7 @@ async function persistStagedPhotos() {
                 id,
                 url,
                 date: exif.date || new Date().toISOString(),
-                title: photo.name,
+                title: '',
                 description: '',
                 lat: hasExifLocation ? exif.lat : null,
                 lng: hasExifLocation ? exif.lng : null,
@@ -2460,7 +2517,7 @@ function setLocationEditorPhoto(photoId) {
     state.selectedLocationPhotoId = photo?.id || null;
     setLocationEditorPickMode(false);
     setLocationEditorCoordinateFields(Number(draft.lat), Number(draft.lng));
-    if (nameInput) nameInput.value = photo?.name || '';
+    if (nameInput) nameInput.value = getPhotoTitle(photo);
     if (descriptionInput) descriptionInput.value = photo?.description || '';
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
     updateLocationEditorMap(Number(draft.lat), Number(draft.lng));
@@ -2470,7 +2527,7 @@ function setLocationEditorPhoto(photoId) {
     });
     if (message) {
         message.textContent = photo
-            ? `${photo.name}의 위치를 직접 지정합니다.`
+            ? `${getPhotoFallbackLabel(photo, '선택한 사진')}의 위치를 직접 지정합니다.`
             : '저장된 사진이 없어서 화면 흐름만 확인할 수 있습니다.';
     }
 }
@@ -2488,7 +2545,7 @@ function openLocationEditor(eventOrPhotoId) {
     }
     if (message) {
         message.textContent = photo
-            ? `${photo.name}의 위치를 수정합니다.`
+            ? `${getPhotoFallbackLabel(photo, '선택한 사진')}의 위치를 수정합니다.`
             : '저장된 사진이 없으면 화면에서만 위치 지정 흐름을 확인할 수 있습니다.';
     }
     openModal('#location-editor-modal');
@@ -2528,7 +2585,7 @@ async function saveManualLocation(event) {
 
     if (message) message.textContent = '위치를 저장하는 중입니다...';
     const { data, error } = await updatePhotoInfo(photo.id, {
-        title: title || photo.name,
+        title,
         description,
         date: dateValue ? new Date(dateValue).toISOString() : photo.date,
         lat,
@@ -2670,7 +2727,7 @@ function bindEvents() {
         button.addEventListener('click', () => routeToTrip(button.dataset.publicAlbumId));
     });
     $$('[data-go-profile]').forEach((button) => {
-        button.addEventListener('click', () => routeToPublic('profile', button.dataset.publicAlbumId));
+        button.addEventListener('click', () => routeToProfileFromAuthor(button.dataset.publicAlbumId, button.dataset.publicOwnerId));
     });
     $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => {
         updatePhotoDetailModal(getDefaultDetailPhoto());
@@ -2802,7 +2859,7 @@ function bindEvents() {
 
         const goProfileButton = event.target.closest('[data-go-profile]');
         if (goProfileButton) {
-            routeToPublic('profile', goProfileButton.dataset.publicAlbumId);
+            routeToProfileFromAuthor(goProfileButton.dataset.publicAlbumId, goProfileButton.dataset.publicOwnerId);
             return;
         }
 
