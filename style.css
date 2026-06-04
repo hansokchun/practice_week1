@@ -2961,6 +2961,7 @@ img {
     display: block;
 }
 
+.profile-photo-grid.is-active,
 .profile-album-grid.is-active {
     display: grid;
 }
@@ -2975,34 +2976,47 @@ img {
     box-shadow: var(--shadow);
 }
 
+.profile-google-map {
+    width: 100%;
+    min-height: 520px;
+    height: 100%;
+}
+
+.profile-photo-grid,
 .profile-album-grid {
     grid-template-columns: repeat(3, 1fr);
 }
 
+.profile-photo-grid article,
 .profile-album-grid article {
     cursor: pointer;
     padding: 0;
     overflow: hidden;
 }
 
+.profile-photo-grid img,
 .profile-album-grid img {
     width: 100%;
     height: 180px;
     object-fit: cover;
 }
 
+.profile-photo-grid strong,
+.profile-photo-grid span,
 .profile-album-grid strong,
 .profile-album-grid span {
     display: block;
     padding: 0 18px;
 }
 
+.profile-photo-grid strong,
 .profile-album-grid strong {
     margin-top: 16px;
     color: var(--teal);
     font-family: var(--headline);
 }
 
+.profile-photo-grid span,
 .profile-album-grid span {
     margin: 6px 0 18px;
     color: var(--muted);
@@ -3478,6 +3492,7 @@ img {
     .trip-day-grid,
     .public-trip-photo-grid,
     .related-album-grid,
+    .profile-photo-grid,
     .profile-card,
     .profile-stats,
     .profile-layout,

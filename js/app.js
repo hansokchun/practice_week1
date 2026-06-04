@@ -12,6 +12,7 @@ import {
     signUpWithEmail,
     signInWithGoogle,
     signInWithKakao,
+    updateNicknameInDB,
     updatePhotoInfo,
     updatePhotosVisibility,
     uploadImage,
@@ -134,6 +135,9 @@ const state = {
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
     explorePhotoScope: 'mine',
+    profileMap: null,
+    profileMarkers: [],
+    profileMapRenderToken: 0,
     tripReviewMap: null,
     tripReviewMarkers: [],
     googleMapsApiKey: null,
@@ -595,6 +599,50 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     }
 }
 
+async function ensureProfileMap() {
+    const container = $('#profile-map');
+    if (!container) return null;
+    if (state.profileMap) return state.profileMap;
+
+    const maps = await loadGoogleMapsApi();
+    if (!maps) {
+        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 설정이 필요합니다.</strong><span>공개 프로필 지도는 API 키 설정 후 표시됩니다.</span></div>';
+        return null;
+    }
+
+    state.profileMap = new maps.Map(container, getExploreMapOptions({
+        center: { lat: 36.45, lng: 127.85 },
+        zoom: 7
+    }));
+    return state.profileMap;
+}
+
+async function renderProfileMap(photos = []) {
+    const renderToken = ++state.profileMapRenderToken;
+    const map = await ensureProfileMap();
+    const maps = window.google?.maps;
+    if (renderToken !== state.profileMapRenderToken) return;
+    if (!map || !maps) return;
+
+    state.profileMarkers.forEach((marker) => marker.setMap(null));
+    state.profileMarkers = [];
+    const locatedPhotos = photos.filter(hasPhotoLocation);
+    if (!locatedPhotos.length) return;
+
+    state.profileMarkers = locatedPhotos.map((photo) => new maps.Marker({
+        map,
+        position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+        title: getPhotoFallbackLabel(photo, '공개 사진'),
+        icon: getExplorePinIcon(maps, { type: 'photo' }),
+        label: null,
+        zIndex: 10
+    }));
+
+    const bounds = new maps.LatLngBounds();
+    locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+    map.fitBounds(bounds, 96);
+}
+
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
@@ -641,6 +689,22 @@ function updateAccountUI() {
     const button = $('#btn-open-auth');
     if (label) label.textContent = name;
     if (button) button.textContent = state.currentUser ? 'Logout' : 'Login';
+}
+
+async function ensureCurrentUserPublicProfile() {
+    const user = state.currentUser;
+    if (!user?.id) return;
+    const nickname = String(user.user_metadata?.nickname || user.email?.split('@')[0] || '').trim();
+    if (!nickname) return;
+    const { data } = await fetchProfilesByIds([user.id]);
+    const profile = (data || []).find((row) => getProfileUserId(row) === user.id);
+    const existingName = getProfileDisplayName(profile);
+    if (existingName) {
+        state.profileNames = { ...state.profileNames, [user.id]: existingName };
+        return;
+    }
+    const { error } = await updateNicknameInDB(user.id, nickname);
+    if (!error) state.profileNames = { ...state.profileNames, [user.id]: nickname };
 }
 
 function normalizeSavedPhoto(photo) {
@@ -861,6 +925,7 @@ function renderEmptyPublicSurfaces() {
     $('#public-trip-photo-grid') && ($('#public-trip-photo-grid').innerHTML = emptyCard);
     $('.trip-day-grid') && ($('.trip-day-grid').innerHTML = emptyCard);
     $('.related-album-grid') && ($('.related-album-grid').innerHTML = '');
+    $('.profile-photo-grid') && ($('.profile-photo-grid').innerHTML = emptyCard);
     $('.profile-album-grid') && ($('.profile-album-grid').innerHTML = emptyCard);
     $('.route-strip') && ($('.route-strip').innerHTML = '<span>공개 지도</span>');
     $('.profile-stats') && ($('.profile-stats').innerHTML = '<span><strong>0</strong>개 앨범</span><span><strong>0</strong>장</span><span><strong>0</strong>곳</span>');
@@ -884,6 +949,7 @@ function renderEmptyPublicSurfaces() {
 
 function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
     const ownerPhotos = publicPhotos.filter((photo) => photo.owner_id === ownerId || photo.albumOwnerId === ownerId);
+    const ownerAlbums = getSavedPublicAlbums().filter((album) => album.owner_id === ownerId && ['public', 'link'].includes(album.visibility));
     const authorName = getPublicAuthorName({ owner_id: ownerId }, {
         currentUser: state.currentUser,
         profileNames: state.profileNames
@@ -908,19 +974,15 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     const profileStats = $('.profile-stats');
     if (profileStats) {
         profileStats.innerHTML = `
-            <span><strong>0</strong>개 앨범</span>
+            <span><strong>${ownerAlbums.length}</strong>개 앨범</span>
             <span><strong>${ownerPhotos.length}</strong>장</span>
             <span><strong>${locatedCount}</strong>곳</span>
         `;
     }
-    const profileMapFrame = $('.profile-map-preview .google-map-frame');
-    if (profileMapFrame) {
-        const center = ownerPhotos.find(hasPhotoLocation) || ownerPhotos[0] || { lat: 36.45, lng: 127.85 };
-        profileMapFrame.src = `https://www.google.com/maps?q=${Number(center.lat) || 36.45},${Number(center.lng) || 127.85}&z=6&output=embed`;
-    }
-    const profileGrid = $('.profile-album-grid');
-    if (profileGrid) {
-        profileGrid.innerHTML = ownerPhotos.length
+    renderProfileMap(ownerPhotos);
+    const profilePhotoGrid = $('.profile-photo-grid');
+    if (profilePhotoGrid) {
+        profilePhotoGrid.innerHTML = ownerPhotos.length
             ? ownerPhotos.slice(0, 12).map((photo) => `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                     <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
@@ -929,6 +991,18 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
                 </article>
             `).join('')
             : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개된 사진이 없습니다.</span></article>';
+    }
+    const profileAlbumGrid = $('.profile-album-grid');
+    if (profileAlbumGrid) {
+        profileAlbumGrid.innerHTML = ownerAlbums.length
+            ? ownerAlbums.slice(0, 12).map((album) => `
+                <article class="${getPublicAlbumCardClass(album.id, state.selectedPublicAlbumId)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
+                    <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
+                    <strong>${escapeHtml(album.title)}</strong>
+                    <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
+                </article>
+            `).join('')
+            : '<article class="empty-state"><strong>공개 앨범이 없습니다</strong><span>아직 공개한 앨범이 없습니다.</span></article>';
     }
 }
 
@@ -1246,16 +1320,24 @@ function renderPublicSurfaces() {
         `;
     }
 
-    const profileMapFrame = $('.profile-map-preview .google-map-frame');
-    if (profileMapFrame) {
-        const center = getProfileMapCenter(profileAlbums);
-        const nextSrc = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=5&output=embed`;
-        if (profileMapFrame.src !== nextSrc) profileMapFrame.src = nextSrc;
+    const profilePhotos = getPublicPhotoMapItems().filter((photo) => photo.owner_id === selected.owner_id || photo.albumOwnerId === selected.owner_id);
+    renderProfileMap(profilePhotos);
+    const profilePhotoGrid = $('.profile-photo-grid');
+    if (profilePhotoGrid) {
+        profilePhotoGrid.innerHTML = profilePhotos.length
+            ? profilePhotos.slice(0, 12).map((photo) => `
+                <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+                    <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
+                    <strong>${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}</strong>
+                    <span>${photo.date ? new Date(photo.date).toISOString().slice(0, 10) : '날짜 없음'}</span>
+                </article>
+            `).join('')
+            : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개한 사진이 없습니다.</span></article>';
     }
 
-    const profileGrid = $('.profile-album-grid');
-    if (profileGrid) {
-        profileGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
+    const profileAlbumGrid = $('.profile-album-grid');
+    if (profileAlbumGrid) {
+        profileAlbumGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
                 <strong>${escapeHtml(album.title)}</strong>
@@ -1293,7 +1375,7 @@ function renderPublicSurfaces() {
             }
         });
     });
-    $$('#public-trip-photo-grid [data-open-photo-detail], .profile-album-grid [data-open-photo-detail]').forEach((item) => {
+    $$('#public-trip-photo-grid [data-open-photo-detail], .profile-photo-grid [data-open-photo-detail], .profile-album-grid [data-open-photo-detail]').forEach((item) => {
         item.addEventListener('click', (event) => {
             if (!shouldOpenAlbumDetailPhotoClick(event.target, { isEditing: state.albumDetailEditMode })) return;
             const photo = getAllDisplayPhotos().find((candidate) => candidate.id === item.dataset.photoId)
@@ -1900,7 +1982,7 @@ async function saveShareSettings() {
 }
 
 function setProfileTab(tab) {
-    state.profileTab = tab === 'albums' ? 'albums' : 'map';
+    state.profileTab = ['map', 'photos', 'albums'].includes(tab) ? tab : 'map';
     $$('[data-profile-tab]').forEach((button) => {
         const active = button.dataset.profileTab === state.profileTab;
         button.classList.toggle('active', active);
@@ -1909,6 +1991,9 @@ function setProfileTab(tab) {
     $$('[data-profile-panel]').forEach((panel) => {
         panel.classList.toggle('is-active', panel.dataset.profilePanel === state.profileTab);
     });
+    if (state.profileTab === 'map' && state.selectedPublicOwnerId) {
+        renderProfileMap(getPublicPhotoMapItems().filter((photo) => photo.owner_id === state.selectedPublicOwnerId || photo.albumOwnerId === state.selectedPublicOwnerId));
+    }
 }
 
 function openMyphotoAlbum(albumRow) {
@@ -2705,6 +2790,7 @@ async function handleAuthSubmit(event) {
     }
     state.currentUser = user;
     updateAccountUI();
+    await ensureCurrentUserPublicProfile();
     await loadSavedPhotos();
     await loadSavedAlbums();
     closeModals();
@@ -2725,6 +2811,7 @@ async function handleSignup() {
     }
     state.currentUser = user;
     updateAccountUI();
+    await ensureCurrentUserPublicProfile();
     await loadSavedPhotos();
     await loadSavedAlbums();
     closeModals();
@@ -2815,6 +2902,12 @@ function bindEvents() {
         const goAlbumButton = event.target.closest('[data-go-album]');
         if (goAlbumButton) {
             routeTo('album');
+            return;
+        }
+
+        const goTripButton = event.target.closest('[data-go-trip]');
+        if (goTripButton) {
+            routeToTrip(goTripButton.dataset.publicAlbumId);
             return;
         }
 
@@ -3109,6 +3202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
     state.currentUser = await getCurrentUser();
     updateAccountUI();
+    await ensureCurrentUserPublicProfile();
     await loadSavedPhotos();
     await loadSavedAlbums();
     await loadPublicProfileNames();

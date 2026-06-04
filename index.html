@@ -528,14 +528,15 @@
             <div class="page-container profile-content">
                 <div class="profile-tabs" role="tablist" aria-label="프로필 보기 방식">
                     <button class="active" data-profile-tab="map" type="button">Map View</button>
+                    <button data-profile-tab="photos" type="button">사진</button>
                     <button data-profile-tab="albums" type="button">앨범</button>
                 </div>
                 <div class="profile-layout">
                     <section class="profile-map-preview" data-profile-panel="map">
-                        <iframe class="google-map-frame" title="Google map public profile" src="https://www.google.com/maps?q=34.9,135.5&z=5&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                        <div class="map-scrim" aria-hidden="true"></div>
-                        <b class="route-point p1"></b>
-                        <b class="route-point p2"></b>
+                        <div id="profile-map" class="profile-google-map" aria-label="공개 사진 위치 지도"></div>
+                    </section>
+                    <section class="profile-photo-grid" data-profile-panel="photos">
+                        <article><img src="images/main_bg2.jpg" alt=""><strong>공개 사진</strong><span>사진을 공개하면 이곳에 표시됩니다.</span></article>
                     </section>
                     <section class="profile-album-grid" data-profile-panel="albums">
                         <article data-go-trip><img src="images/main_bg2.jpg" alt=""><strong>Jeju East Coast Drive</strong><span>42장 · 11곳</span></article>

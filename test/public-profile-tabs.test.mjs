@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { test } from 'node:test';
+
+const html = readFileSync('index.html', 'utf8');
+const app = readFileSync('js/app.js', 'utf8');
+
+test('public profile exposes Map View, photos, and albums tabs', () => {
+    assert.match(html, /data-profile-tab="map"[^>]*>Map View/);
+    assert.match(html, /data-profile-tab="photos"[^>]*>사진/);
+    assert.match(html, /data-profile-tab="albums"[^>]*>앨범/);
+    assert.match(html, /id="profile-map"/);
+    assert.match(html, /class="profile-photo-grid" data-profile-panel="photos"/);
+});
+
+test('profile tab state supports photos separately from albums', () => {
+    const fnStart = app.indexOf('function setProfileTab');
+    const fnEnd = app.indexOf('function openMyphotoAlbum', fnStart);
+    const body = app.slice(fnStart, fnEnd);
+
+    assert.match(body, /\['map', 'photos', 'albums'\]\.includes\(tab\)/);
+    assert.match(body, /panel\.dataset\.profilePanel === state\.profileTab/);
+});
+
+test('public owner profile renders separate map, photo, and album panels', () => {
+    const fnStart = app.indexOf('function renderPublicOwnerProfile');
+    const fnEnd = app.indexOf('function renderTripReviewShell', fnStart);
+    const body = app.slice(fnStart, fnEnd);
+
+    assert.match(body, /const ownerAlbums = getSavedPublicAlbums\(\)\.filter/);
+    assert.match(body, /renderProfileMap\(ownerPhotos\)/);
+    assert.match(body, /const profilePhotoGrid = \$\('\.profile-photo-grid'\)/);
+    assert.match(body, /const profileAlbumGrid = \$\('\.profile-album-grid'\)/);
+});
+
+test('public profile map uses Google Maps JS with greedy wheel gestures and inert markers', () => {
+    assert.match(app, /async function ensureProfileMap/);
+    assert.match(app, /getExploreMapOptions\(\{/);
+    assert.match(app, /state\.profileMarkers = locatedPhotos\.map/);
+    const fnStart = app.indexOf('async function renderProfileMap');
+    const fnEnd = app.indexOf('function renderPublicOwnerProfile', fnStart);
+    const body = app.slice(fnStart, fnEnd);
+
+    assert.doesNotMatch(body, /addListener\('click'/);
+});
