@@ -3022,6 +3022,10 @@ img {
     background: var(--surface-muted);
 }
 
+.photo-detail-map[hidden] {
+    display: none !important;
+}
+
 .location-editor-map {
     min-height: 260px;
     margin: 14px 0 18px;
