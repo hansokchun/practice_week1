@@ -1491,16 +1491,24 @@ function renderAlbumComposePage() {
 
 function getAlbumPhotoDayGroups(photos = []) {
     const groups = new Map();
-    photos.forEach((photo) => {
+    const getTime = (photo) => {
+        const date = photo?.date ? new Date(photo.date) : null;
+        return date && !Number.isNaN(date.getTime()) ? date.getTime() : Number.POSITIVE_INFINITY;
+    };
+    const formatMonthDay = (dateKey) => {
+        if (dateKey === '날짜 없음') return '날짜 없음';
+        const [, month, day] = dateKey.split('-').map(Number);
+        return `${month}월 ${day}일`;
+    };
+    photos.slice().sort((a, b) => getTime(a) - getTime(b)).forEach((photo) => {
         const date = photo.date ? new Date(photo.date) : null;
         const key = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
         if (!groups.has(key)) groups.set(key, []);
         groups.get(key).push(photo);
     });
-    return [...groups.entries()].map(([date, items], index) => ({
+    return [...groups.entries()].map(([date, items]) => ({
         date,
-        label: date === '날짜 없음' ? '날짜 없음' : `Day ${index + 1}`,
-        title: date === '날짜 없음' ? '날짜별 분류를 기다리는 사진' : date.replaceAll('-', '.'),
+        title: formatMonthDay(date),
         photos: items,
         places: items.filter(hasPhotoLocation).length
     }));
@@ -1607,7 +1615,6 @@ function renderTravelDraftSurfaces() {
             ? dayGroups.map((day) => `
                     <article>
                         <div>
-                            <span>${day.label}</span>
                             <strong>${day.title}</strong>
                             <small>${formatPhotoPlaceMeta(day.photos.length, day.places)}</small>
                         </div>
