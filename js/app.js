@@ -928,7 +928,6 @@ function renderEmptyPublicSurfaces() {
     $('.profile-photo-grid') && ($('.profile-photo-grid').innerHTML = emptyCard);
     $('.profile-album-grid') && ($('.profile-album-grid').innerHTML = emptyCard);
     $('.route-strip') && ($('.route-strip').innerHTML = '<span>공개 지도</span>');
-    $('.profile-stats') && ($('.profile-stats').innerHTML = '<span><strong>0</strong>개 앨범</span><span><strong>0</strong>장</span><span><strong>0</strong>곳</span>');
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = 'Ikkyee';
     });
@@ -970,14 +969,6 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if (profileHeroImage) {
         profileHeroImage.src = cover;
         profileHeroImage.alt = `${authorName} public profile cover`;
-    }
-    const profileStats = $('.profile-stats');
-    if (profileStats) {
-        profileStats.innerHTML = `
-            <span><strong>${ownerAlbums.length}</strong>개 앨범</span>
-            <span><strong>${ownerPhotos.length}</strong>장</span>
-            <span><strong>${locatedCount}</strong>곳</span>
-        `;
     }
     renderProfileMap(ownerPhotos);
     const profilePhotoGrid = $('.profile-photo-grid');
@@ -1309,16 +1300,7 @@ function renderPublicSurfaces() {
         `).join('');
     }
 
-    const profileStats = $('.profile-stats');
     const profileAlbums = getProfileAlbums(albums, selected);
-    if (profileStats) {
-        const stats = getProfileAlbumStats(profileAlbums);
-        profileStats.innerHTML = `
-            <span><strong>${stats.albums}</strong>개 앨범</span>
-            <span><strong>${stats.photos || stats.albums}</strong>장</span>
-            <span><strong>${stats.places}</strong>곳</span>
-        `;
-    }
 
     const profilePhotos = getPublicPhotoMapItems().filter((photo) => photo.owner_id === selected.owner_id || photo.albumOwnerId === selected.owner_id);
     renderProfileMap(profilePhotos);

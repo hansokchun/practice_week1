@@ -2867,6 +2867,7 @@ img {
     display: grid;
     align-items: end;
     overflow: hidden;
+    padding: 0 0 42px;
 }
 
 .profile-cover > img {
@@ -2888,11 +2889,11 @@ img {
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 18px;
     width: min(var(--container), calc(100% - 48px));
-    margin: 0 auto -70px;
+    margin: 0 auto;
 }
 
 .large-avatar {
@@ -2906,20 +2907,8 @@ img {
     color: var(--muted);
 }
 
-.profile-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 96px);
-    gap: 8px;
-}
-
-.profile-stats strong {
-    color: var(--teal);
-    font-family: var(--headline);
-    font-size: 22px;
-}
-
 .profile-content {
-    padding-top: 118px;
+    padding-top: 56px;
 }
 
 .profile-tabs {
@@ -3494,7 +3483,6 @@ img {
     .related-album-grid,
     .profile-photo-grid,
     .profile-card,
-    .profile-stats,
     .profile-layout,
     .photo-detail-card {
         grid-template-columns: 1fr;
@@ -3532,15 +3520,11 @@ img {
     }
 
     .profile-card {
-        margin-bottom: -108px;
-    }
-
-    .profile-stats {
-        grid-template-columns: repeat(3, 1fr);
+        align-items: start;
     }
 
     .profile-content {
-        padding-top: 144px;
+        padding-top: 48px;
     }
 
     .photo-detail-card > img {
