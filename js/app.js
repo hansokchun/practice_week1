@@ -138,6 +138,7 @@ const state = {
     profileMap: null,
     profileMarkers: [],
     profileMapRenderToken: 0,
+    isMissingLocationBannerDismissed: false,
     tripReviewMap: null,
     tripReviewMarkers: [],
     googleMapsApiKey: null,
@@ -386,7 +387,8 @@ function getExplorePinPosition(photo, photos) {
 function updateExplorePhotoPreview(photo) {
     const preview = $('#explore-pin-preview');
     if (!preview || !photo) return;
-    const image = preview.querySelector('img');
+    const photoButton = preview.querySelector('[data-pin-preview-photo]');
+    const image = photoButton?.querySelector('img');
     const title = preview.querySelector('.pin-preview-copy h2');
     const note = preview.querySelector('.pin-preview-copy p:last-child');
     const meta = preview.querySelector('.pin-preview-meta');
@@ -403,6 +405,7 @@ function updateExplorePhotoPreview(photo) {
     });
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
+    if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
         image.alt = displayTitle || '공개 사진';
@@ -1433,6 +1436,9 @@ function renderSavedPhotoSurfaces() {
     $('#stat-located-count') && ($('#stat-located-count').textContent = String(stats.locatedCount));
     $('#stat-missing-count') && ($('#stat-missing-count').textContent = String(stats.missingLocationCount));
     $('#stat-album-count') && ($('#stat-album-count').textContent = String(stats.albumCount));
+    const attentionBanner = $('.attention-banner');
+    if (stats.missingLocationCount === 0) state.isMissingLocationBannerDismissed = false;
+    if (attentionBanner) attentionBanner.hidden = stats.missingLocationCount === 0 || state.isMissingLocationBannerDismissed;
     const attentionTitle = $('.attention-banner strong');
     const attentionCopy = $('.attention-banner p');
     if (attentionTitle) attentionTitle.textContent = formatMissingLocationSummary(stats.missingLocationCount);
@@ -1538,22 +1544,13 @@ function renderMissingLocationTasks(photos) {
     if (!list) return;
 
     if (!photos.length) {
-        list.innerHTML = `
-            <p class="missing-location-empty">
-                위치를 직접 지정해야 하는 사진이 없습니다.
-            </p>
-        `;
+        list.innerHTML = '';
         return;
     }
 
     list.innerHTML = photos.slice(0, 4).map((photo) => `
-        <button type="button" data-open-photo-editor data-photo-id="${escapeHtml(photo.id)}">
-            <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-            <span>
-                <strong>${escapeHtml(photo.name)}</strong>
-                <small>위치 직접 지정</small>
-            </span>
-            <span class="material-symbols-outlined">edit_location_alt</span>
+        <button class="missing-location-thumb" type="button" data-open-photo-editor data-photo-id="${escapeHtml(photo.id)}" aria-label="위치 직접 지정">
+            <img src="${photo.url}" alt="">
         </button>
     `).join('');
 }
@@ -2851,6 +2848,10 @@ function bindEvents() {
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
+    $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
+        state.isMissingLocationBannerDismissed = true;
+        renderSavedPhotoSurfaces();
+    });
     $('#btn-open-album')?.addEventListener('click', startNewAlbum);
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
     $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO)));

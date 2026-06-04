@@ -159,8 +159,8 @@
                         <strong>처리 필요: 위치 정보 없는 사진 12장</strong>
                         <p>사진의 메타데이터가 부족해 지도에 표시되지 않고 있습니다.</p>
                     </div>
-                    <button data-open-photo-editor type="button">수정</button>
-                    <button type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
+                    <button id="btn-dismiss-missing-location" type="button">나중에 하기</button>
+                    <button id="btn-direct-missing-location" type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
                     <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
                 </section>
 
@@ -423,7 +423,9 @@
                     <button id="btn-close-pin-preview" class="panel-close" type="button" aria-label="미리보기 닫기">
                         <span class="material-symbols-outlined">close</span>
                     </button>
-                    <img src="images/main_bg3.jpg" alt="도쿄 야경 사진">
+                    <button class="pin-preview-photo-button" data-pin-preview-photo data-open-photo-detail type="button">
+                        <img src="images/main_bg3.jpg" alt="도쿄 야경 사진">
+                    </button>
                     <div class="pin-preview-copy">
                         <p class="eyebrow">Selected Pin</p>
                         <h2>도쿄 야경 산책</h2>
