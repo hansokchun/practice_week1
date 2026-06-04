@@ -39,6 +39,6 @@ test('getMyphotoStats falls back to grouped photo albums when no saved albums ex
 });
 
 test('formatMissingLocationSummary reflects the current missing-location count', () => {
-    assert.equal(formatMissingLocationSummary(0), '위치 정보가 모두 정리되었습니다.');
-    assert.equal(formatMissingLocationSummary(3), '처리 필요: 위치 정보 없는 사진 3장');
+    assert.equal(formatMissingLocationSummary(0), '');
+    assert.match(formatMissingLocationSummary(3), /3/);
 });

@@ -15,6 +15,6 @@ export function getMyphotoStats(photos = [], albums = []) {
 
 export function formatMissingLocationSummary(count) {
     const normalizedCount = Math.max(0, Number(count || 0));
-    if (!normalizedCount) return '위치 정보가 모두 정리되었습니다.';
+    if (!normalizedCount) return '';
     return `처리 필요: 위치 정보 없는 사진 ${normalizedCount}장`;
 }

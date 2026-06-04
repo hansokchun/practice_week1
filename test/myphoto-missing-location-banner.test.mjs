@@ -10,18 +10,22 @@ test('missing location banner has direct assign and dismiss actions only', () =>
     const bannerEnd = html.indexOf('class="recent-photo-section"', bannerStart);
     const banner = html.slice(bannerStart, bannerEnd);
 
+    assert.match(html, /<section class="attention-banner" hidden>/);
     assert.match(banner, /id="btn-direct-missing-location"/);
     assert.match(banner, /id="btn-dismiss-missing-location"/);
-    assert.doesNotMatch(banner, /수정/);
+    assert.doesNotMatch(banner, /id="btn-edit-missing-location"/);
 });
 
-test('missing location banner is hidden when all photos have locations or it is dismissed', () => {
+test('missing location banner only appears when there are unresolved missing-location photos', () => {
     const fnStart = source.indexOf('function renderSavedPhotoSurfaces');
     const fnEnd = source.indexOf('function renderPersonalPhotosPage', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(body, /const attentionBanner = \$\('\.attention-banner'\)/);
-    assert.match(body, /attentionBanner\.hidden = stats\.missingLocationCount === 0 \|\| state\.isMissingLocationBannerDismissed/);
+    assert.match(body, /const shouldShowMissingLocationBanner = stats\.missingLocationCount > 0 && !state\.isMissingLocationBannerDismissed/);
+    assert.match(body, /attentionBanner\.hidden = !shouldShowMissingLocationBanner/);
+    assert.match(body, /if \(shouldShowMissingLocationBanner\) \{[\s\S]*attentionTitle\)\s+attentionTitle\.textContent/);
+    assert.doesNotMatch(body, /else \{[\s\S]*attentionTitle\.textContent/);
 });
 
 test('missing location task list renders thumbnails without photo names', () => {
