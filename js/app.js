@@ -1225,7 +1225,13 @@ function renderSavedPhotoSurfaces() {
                 <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
             </article>
         `).join('')
-            : '<article class="photo-placeholder"></article>';
+            : `
+            <article class="empty-state recent-photo-empty">
+                <strong>아직 저장한 사진이 없습니다.</strong>
+                <span>사진 업로드를 한 번 해보세요. 올린 사진은 이곳에서 바로 확인할 수 있습니다.</span>
+                <button class="btn-primary" data-route="upload" type="button">사진 업로드</button>
+            </article>
+        `;
     }
 
     if (state.albumDrafts.length) {
@@ -1989,6 +1995,19 @@ function renderAlbumDrafts() {
 
     if (!state.albumDrafts.length) {
         list.innerHTML = `
+            <article class="empty-state album-empty-state">
+                <div>
+                    <strong>앨범이 비어있습니다.</strong>
+                    <span>개별사진을 저장한 뒤 앨범 만들기로 여행을 묶을 수 있습니다.</span>
+                </div>
+                <button id="btn-open-album-inline" class="btn-secondary" type="button">앨범 만들기</button>
+            </article>
+        `;
+        return;
+    }
+
+    if (!state.albumDrafts.length) {
+        list.innerHTML = `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
                 <img src="images/main_bg2.jpg" alt="">
                 <div>
@@ -2628,6 +2647,12 @@ function bindEvents() {
         const goAlbumButton = event.target.closest('[data-go-album]');
         if (goAlbumButton) {
             routeTo('album');
+            return;
+        }
+
+        const openAlbumInlineButton = event.target.closest('#btn-open-album-inline');
+        if (openAlbumInlineButton) {
+            startNewAlbum();
             return;
         }
 

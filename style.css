@@ -963,6 +963,24 @@ img {
     font-family: var(--headline);
 }
 
+.recent-photo-empty,
+.album-empty-state {
+    grid-column: 1 / -1;
+    border: 1px dashed rgba(26, 77, 78, 0.22);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.recent-photo-empty {
+    aspect-ratio: auto;
+}
+
+.recent-photo-empty button,
+.album-empty-state button {
+    width: fit-content;
+    justify-self: center;
+}
+
 .explore-map-canvas {
     position: relative;
     height: calc(100vh - 64px);
