@@ -18,3 +18,17 @@ test('photo detail modal keeps the right information panel inside the viewport',
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*min-width:\s*0;/s);
     assert.match(css, /\.photo-detail-card\s*\{[^}]*width:\s*min\(1120px,\s*calc\(100vw - 32px\)\);/s);
 });
+
+test('empty recent photo notice uses the same empty card style as the album notice', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+
+    const recentStart = source.indexOf('<article class="empty-state album-empty-state recent-photo-empty">');
+    const albumStart = source.indexOf('<article class="empty-state album-empty-state">');
+
+    assert.notEqual(recentStart, -1);
+    assert.notEqual(albumStart, -1);
+    assert.match(source.slice(recentStart, recentStart + 360), /data-route="upload"/);
+    assert.doesNotMatch(css, /\.recent-photo-grid article\.recent-photo-empty\s*\{/);
+    assert.doesNotMatch(css, /\.recent-photo-empty button\s*\{/);
+});
