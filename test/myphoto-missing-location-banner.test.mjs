@@ -4,6 +4,7 @@ import { test } from 'node:test';
 
 const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
+const css = readFileSync('style.css', 'utf8');
 
 test('missing location banner has direct assign and dismiss actions only', () => {
     const bannerStart = html.indexOf('class="attention-banner"');
@@ -11,9 +12,11 @@ test('missing location banner has direct assign and dismiss actions only', () =>
     const banner = html.slice(bannerStart, bannerEnd);
 
     assert.match(html, /<section class="attention-banner" hidden>/);
+    assert.match(css, /\.attention-banner\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
     assert.match(banner, /id="btn-direct-missing-location"/);
     assert.match(banner, /id="btn-dismiss-missing-location"/);
     assert.doesNotMatch(banner, /id="btn-edit-missing-location"/);
+    assert.doesNotMatch(banner, /12/);
 });
 
 test('missing location banner only appears when there are unresolved missing-location photos', () => {
