@@ -12,6 +12,8 @@ test('public profile names are loaded from public photo owners as well as albums
     assert.match(body, /state\.savedPhotos/);
     assert.match(body, /photo\.owner_id/);
     assert.match(body, /photo\.shared \|\| \['public', 'link'\]\.includes\(photo\.visibility\)/);
+    assert.match(body, /getProfileUserId\(profile\)/);
+    assert.match(body, /getProfileDisplayName\(profile\)/);
 });
 
 test('photo owner profile route preserves the owner when there is no public album', () => {

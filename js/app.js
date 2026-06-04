@@ -54,6 +54,7 @@ import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelated
 import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
+import { getProfileDisplayName, getProfileUserId } from './profile-names.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
@@ -603,8 +604,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
+    const editButton = modal?.querySelector('[data-open-photo-editor]');
     const displayTitle = getPhotoTitle(photo);
     const date = photo.date ? new Date(photo.date) : null;
+    const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
 
     if (image) {
@@ -627,6 +630,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
         }
     }
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
+    if (editButton) editButton.hidden = !canEdit;
 }
 
 function updateAccountUI() {
@@ -1338,7 +1342,9 @@ async function loadPublicProfileNames() {
     const { data, error } = await fetchProfilesByIds(ownerIds);
     if (error) return;
     state.profileNames = (data || []).reduce((names, profile) => {
-        if (profile.id && profile.nickname) names[profile.id] = profile.nickname;
+        const userId = getProfileUserId(profile);
+        const displayName = getProfileDisplayName(profile);
+        if (userId && displayName) names[userId] = displayName;
         return names;
     }, { ...state.profileNames });
     renderPublicSurfaces();
@@ -2970,6 +2976,12 @@ function bindEvents() {
 
         const locationButton = event.target.closest('[data-open-photo-editor]');
         if (locationButton) {
+            const photoId = locationButton.dataset.photoId || state.selectedPhotoId;
+            const editablePhoto = getLocationEditorPhoto(getMySavedPhotos(), photoId);
+            if (!state.currentUser?.id || !editablePhoto || editablePhoto.owner_id !== state.currentUser.id) {
+                showToast('본인 사진만 수정할 수 있습니다.');
+                return;
+            }
             openLocationEditor({ currentTarget: locationButton });
             return;
         }

@@ -11,6 +11,24 @@ export function getUserFallbackName(userId) {
     return `User ${String(userId).substring(0, 4)}`;
 }
 
+export function getProfileUserId(profile) {
+    return profile?.id || profile?.user_id || profile?.owner_id || profile?.userId || '';
+}
+
+export function getProfileDisplayName(profile) {
+    const fields = [
+        profile?.nickname,
+        profile?.display_name,
+        profile?.name,
+        profile?.full_name,
+        profile?.username
+    ];
+    const name = fields.find((value) => typeof value === 'string' && value.trim());
+    if (name) return name.trim();
+    const email = typeof profile?.email === 'string' ? profile.email.trim() : '';
+    return email && email.includes('@') ? email.split('@')[0] : '';
+}
+
 export function createProfileNameResolver({ fetchProfilesByIds }) {
     const cache = new Map();
     const missing = new Set();
@@ -31,8 +49,8 @@ export function createProfileNameResolver({ fetchProfilesByIds }) {
 
         try {
             const rows = await fetchProfilesByIds([userId]);
-            const profile = (rows || []).find((row) => row && row.id === userId);
-            const nickname = profile && typeof profile.nickname === 'string' ? profile.nickname.trim() : '';
+            const profile = (rows || []).find((row) => row && getProfileUserId(row) === userId);
+            const nickname = getProfileDisplayName(profile);
             if (nickname) {
                 cache.set(userId, nickname);
                 return nickname;
@@ -55,10 +73,11 @@ export function createProfileNameResolver({ fetchProfilesByIds }) {
                 const rows = await fetchProfilesByIds(idsToFetch);
                 const found = new Set();
                 (rows || []).forEach((row) => {
-                    const nickname = row && typeof row.nickname === 'string' ? row.nickname.trim() : '';
-                    if (row && row.id && nickname) {
-                        cache.set(row.id, nickname);
-                        found.add(row.id);
+                    const userId = getProfileUserId(row);
+                    const nickname = getProfileDisplayName(row);
+                    if (userId && nickname) {
+                        cache.set(userId, nickname);
+                        found.add(userId);
                     }
                 });
                 idsToFetch.forEach((id) => {
@@ -78,4 +97,3 @@ export function createProfileNameResolver({ fetchProfilesByIds }) {
 
     return { prime, resolve, resolveMany };
 }
-

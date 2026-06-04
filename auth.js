@@ -127,10 +127,25 @@ export async function fetchProfilesByIds(userIds) {
         const sb = getSupabase();
         const { data, error } = await sb
             .from('profiles')
-            .select('id,nickname')
+            .select('*')
             .in('id', ids);
         if (error) throw error;
-        return { data: data || [], error: null };
+        const rows = data || [];
+        const foundIds = new Set(rows.flatMap((profile) => [profile?.id, profile?.user_id]).filter(Boolean));
+        const missingIds = ids.filter((id) => !foundIds.has(id));
+
+        if (missingIds.length === 0) return { data: rows, error: null };
+
+        try {
+            const { data: userProfiles, error: userProfileError } = await sb
+                .from('profiles')
+                .select('*')
+                .in('user_id', missingIds);
+            if (userProfileError) throw userProfileError;
+            return { data: [...rows, ...(userProfiles || [])], error: null };
+        } catch {
+            return { data: rows, error: null };
+        }
     } catch (error) {
         return { data: [], error };
     }

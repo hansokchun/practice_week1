@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
     createProfileNameResolver,
+    getProfileDisplayName,
+    getProfileUserId,
     getUserFallbackName,
     normalizeNickname
 } from '../js/profile-names.mjs';
@@ -18,6 +20,14 @@ test('getUserFallbackName creates a stable safe label', () => {
     assert.equal(getUserFallbackName(''), 'User');
 });
 
+test('profile helpers support alternate user id and display name fields', () => {
+    assert.equal(getProfileUserId({ user_id: 'owner-1' }), 'owner-1');
+    assert.equal(getProfileUserId({ owner_id: 'owner-2' }), 'owner-2');
+    assert.equal(getProfileDisplayName({ display_name: '  Sora  ' }), 'Sora');
+    assert.equal(getProfileDisplayName({ full_name: 'Min Lee' }), 'Min Lee');
+    assert.equal(getProfileDisplayName({ email: 'traveler@example.com' }), 'traveler');
+});
+
 test('profile resolver uses fetched nickname then cache', async () => {
     let fetchCount = 0;
     const resolver = createProfileNameResolver({
@@ -31,6 +41,17 @@ test('profile resolver uses fetched nickname then cache', async () => {
     assert.equal(await resolver.resolve('user-123456'), 'Nari');
     assert.equal(await resolver.resolve('user-123456'), 'Nari');
     assert.equal(fetchCount, 1);
+});
+
+test('profile resolver matches fetched rows by user_id', async () => {
+    const resolver = createProfileNameResolver({
+        fetchProfilesByIds: async (ids) => {
+            assert.deepEqual(ids, ['owner-123456']);
+            return [{ user_id: 'owner-123456', display_name: 'Hana' }];
+        }
+    });
+
+    assert.equal(await resolver.resolve('owner-123456'), 'Hana');
 });
 
 test('profile resolver falls back when profile is missing', async () => {
@@ -51,4 +72,3 @@ test('profile resolver can prime a saved nickname', async () => {
     resolver.prime('user-123456', 'Mina');
     assert.equal(await resolver.resolve('user-123456'), 'Mina');
 });
-
