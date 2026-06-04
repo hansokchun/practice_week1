@@ -65,8 +65,9 @@ export function shouldRerenderExploreMarkersAfterPinClick({ isCluster = false } 
     return !!isCluster;
 }
 
-export function getExploreViewportAction(photos = [], previousBoundsKey = null) {
+export function getExploreViewportAction(photos = [], previousBoundsKey = null, { preserveViewport = false } = {}) {
     const boundsKey = photos.map((photo) => `${photo.id}:${photo.lat}:${photo.lng}`).join('|');
+    if (preserveViewport) return { type: 'none', boundsKey: boundsKey || previousBoundsKey };
     if (photos.length > 1 && boundsKey && boundsKey !== previousBoundsKey) {
         return { type: 'fit', boundsKey };
     }

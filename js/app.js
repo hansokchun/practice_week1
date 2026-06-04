@@ -137,6 +137,7 @@ const state = {
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
     explorePhotoScope: 'mine',
+    explorePreserveViewportOnce: false,
     profileMap: null,
     profileMarkers: [],
     profileMapRenderToken: 0,
@@ -369,7 +370,7 @@ function setExplorePhotoScope(scope) {
     state.explorePhotoScope = scope;
     state.selectedPublicAlbumId = null;
     state.selectedPhotoId = null;
-    state.exploreLastBoundsKey = null;
+    state.explorePreserveViewportOnce = true;
     document.body.classList.remove('explore-pin-selected');
     $('#explore-pin-preview')?.setAttribute('hidden', '');
     renderExplorePhotoScopeControls();
@@ -606,11 +607,14 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         });
     }
 
-    const viewportAction = getExploreViewportAction(locatedPhotos, state.exploreLastBoundsKey);
+    const viewportAction = getExploreViewportAction(locatedPhotos, state.exploreLastBoundsKey, {
+        preserveViewport: state.explorePreserveViewportOnce
+    });
+    state.explorePreserveViewportOnce = false;
+    state.exploreLastBoundsKey = viewportAction.boundsKey;
     if (viewportAction.type === 'fit') {
         const bounds = new maps.LatLngBounds();
         locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
-        state.exploreLastBoundsKey = viewportAction.boundsKey;
         map.fitBounds(bounds, 96);
     }
 }

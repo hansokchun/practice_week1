@@ -59,6 +59,18 @@ test('Explore viewport fits only when the marker data set changes', () => {
     });
 });
 
+test('Explore viewport can be preserved when only the photo scope changes', () => {
+    const photos = [
+        { id: 'mine-a', lat: 33.4, lng: 126.5 },
+        { id: 'mine-b', lat: 35.6, lng: 139.7 }
+    ];
+
+    const action = getExploreViewportAction(photos, 'old-key', { preserveViewport: true });
+
+    assert.equal(action.type, 'none');
+    assert.notEqual(action.boundsKey, 'old-key');
+});
+
 test('normal pin clicks keep neighboring pins mounted', () => {
     assert.equal(shouldRerenderExploreMarkersAfterPinClick({ isCluster: false }), false);
     assert.equal(shouldRerenderExploreMarkersAfterPinClick({ isCluster: true }), true);
