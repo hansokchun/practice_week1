@@ -29,6 +29,6 @@ test('empty recent photo notice uses the same empty card style as the album noti
     assert.notEqual(recentStart, -1);
     assert.notEqual(albumStart, -1);
     assert.match(source.slice(recentStart, recentStart + 360), /data-route="upload"/);
-    assert.doesNotMatch(css, /\.recent-photo-grid article\.recent-photo-empty\s*\{/);
+    assert.match(css, /\.recent-photo-grid article\.recent-photo-empty\s*\{[^}]*aspect-ratio:\s*auto;[^}]*min-height:\s*112px;/s);
     assert.doesNotMatch(css, /\.recent-photo-empty button\s*\{/);
 });

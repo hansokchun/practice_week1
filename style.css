@@ -976,6 +976,11 @@ img {
     background: rgba(255, 255, 255, 0.72);
 }
 
+.recent-photo-grid article.recent-photo-empty {
+    aspect-ratio: auto;
+    min-height: 112px;
+}
+
 .album-empty-state button {
     width: fit-content;
     justify-self: center;
