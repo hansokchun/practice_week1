@@ -1,3 +1,3 @@
-export function getPublicSurfaceAlbums(page, publicAlbums = [], sampleAlbums = []) {
-    return publicAlbums.length ? publicAlbums : sampleAlbums;
+export function getPublicSurfaceAlbums(page, publicAlbums = []) {
+    return publicAlbums;
 }

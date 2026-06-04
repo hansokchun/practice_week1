@@ -7,16 +7,16 @@ const demoEntries = [
     { id: 'demo', photos: [{ id: 'demo-photo', lat: 33, lng: 126 }] }
 ];
 
-test('demo entries are used when there are no public albums', () => {
-    assert.deepEqual(combinePublicAlbumsWithDemoEntries([], demoEntries), demoEntries);
+test('demo entries stay hidden when there are no public albums', () => {
+    assert.deepEqual(combinePublicAlbumsWithDemoEntries([], demoEntries), []);
 });
 
-test('demo entries are added when public albums have no located photos', () => {
+test('demo entries stay hidden when public albums have no located photos', () => {
     const publicAlbums = [{ id: 'real', photos: [{ id: 'p1', lat: null, lng: null }] }];
 
     assert.deepEqual(
         combinePublicAlbumsWithDemoEntries(publicAlbums, demoEntries).map((album) => album.id),
-        ['real', 'demo']
+        ['real']
     );
 });
 

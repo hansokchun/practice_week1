@@ -1228,6 +1228,7 @@ function renderSavedPhotoSurfaces() {
             : `
             <article class="empty-state recent-photo-empty">
                 <span>아직 저장한 사진이 없습니다. 사진 업로드를 한 번 해보세요.</span>
+                <button class="btn-secondary" data-route="upload" type="button">사진 업로드</button>
             </article>
         `;
     }
