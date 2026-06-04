@@ -25,6 +25,7 @@ import {
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
+import { getExplorePreviewExpansionAction } from './explore-preview-expansion.mjs';
 import { shouldOpenExplorePreview } from './explore-selection.mjs';
 import {
     getLocationEditorPhoto,
@@ -448,12 +449,6 @@ function setExplorePreviewExpanded(isExpanded) {
     const preview = $('#explore-pin-preview');
     if (!preview) return;
     preview.classList.toggle('is-expanded', Boolean(isExpanded));
-}
-
-function collapseExplorePreviewIfOutside(target) {
-    const preview = $('#explore-pin-preview');
-    if (!preview?.classList.contains('is-expanded') || !target) return;
-    if (!preview.contains(target)) setExplorePreviewExpanded(false);
 }
 
 function updateExploreAlbumPreview(album) {
@@ -1826,33 +1821,6 @@ function renderTravelDraftSurfaces() {
     $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(albumPhotos.length));
     $('#analysis-place-count') && ($('#analysis-place-count').textContent = String(albumLocatedPhotos.length));
     $('#analysis-day-count') && ($('#analysis-day-count').textContent = formatDayCount(getTravelDaySummaries(albumPhotos).length));
-    $('#review-day-one-count') && ($('#review-day-one-count').textContent = formatPhotoPlaceMeta(Math.min(photoCount, 18), summary.places));
-    $('#share-title') && ($('#share-title').textContent = summary.title);
-    $('#share-preview-title') && ($('#share-preview-title').textContent = summary.title);
-    $('#share-date-range') && ($('#share-date-range').textContent = summary.dateRange);
-    $('#share-trip-photo-count') && ($('#share-trip-photo-count').textContent = formatPhotoCount(photoCount));
-    $('#share-preview-count') && ($('#share-preview-count').textContent = `공개 사진 ${summary.publicCount}장`);
-
-    const reviewDayList = $('#review-day-list');
-    if (reviewDayList) {
-        const daySummaries = getTravelDaySummaries(draftPhotos);
-        reviewDayList.innerHTML = daySummaries.length
-            ? daySummaries.map((day) => `
-                <article>
-                    <span>${day.dayLabel}</span>
-                    <strong>${day.title}</strong>
-                    <small>${formatPhotoPlaceMeta(day.photoCount, day.places)}</small>
-                </article>
-            `).join('')
-            : `
-                <article>
-                    <span>Draft</span>
-                    <strong>날짜 정보가 있는 사진이 없습니다</strong>
-                    <small>${formatPhotoPlaceMeta(photoCount, summary.places)}</small>
-                </article>
-            `;
-    }
-
     const analysisStrip = $('#analysis-selected-strip');
     if (analysisStrip) {
         analysisStrip.innerHTML = draftPhotos.slice(0, 4).map((photo, index) => `
@@ -1901,23 +1869,6 @@ function renderTravelDraftSurfaces() {
         `).join('');
     }
 
-    const shareGrid = $('#share-photo-grid');
-    if (shareGrid) {
-        shareGrid.innerHTML = draftPhotos.slice(0, 6).map((photo, index) => `
-            <article>
-                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-                <span class="material-symbols-outlined${index === 3 ? ' muted' : ''}">${index === 3 ? 'radio_button_unchecked' : 'check_circle'}</span>
-            </article>
-        `).join('');
-    }
-
-    ['#review-pin-one', '#review-pin-two', '#review-pin-three'].forEach((selector, index) => {
-        const image = $(selector);
-        if (image && draftPhotos[index]) {
-            image.src = draftPhotos[index].url;
-            image.alt = draftPhotos[index].name;
-        }
-    });
 }
 
 function setVisibilityMode(mode) {
@@ -1984,10 +1935,8 @@ async function saveShareSettings() {
         showToast(message);
         if (['public', 'link'].includes(state.visibility)) await copyCurrentShareLink();
         const completionHash = getShareCompletionHash(state.visibility, shareTargetAlbumId);
-        if (completionHash !== '#/share') {
-            window.location.hash = completionHash;
-            renderRoute('trip');
-        }
+        window.location.hash = completionHash;
+        renderRoute(parseRouteHash(completionHash));
     } catch (error) {
         showToast(error?.message || '공개 설정을 저장하지 못했습니다.');
     } finally {
@@ -2895,12 +2844,18 @@ function bindEvents() {
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
 
+        const preview = $('#explore-pin-preview');
         const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');
-        if (explorePreviewPhoto) {
+        const previewAction = getExplorePreviewExpansionAction({
+            clickedPreviewPhoto: Boolean(explorePreviewPhoto),
+            clickedInsidePreview: Boolean(preview?.contains(event.target)),
+            isExpanded: Boolean(preview?.classList.contains('is-expanded'))
+        });
+        if (previewAction === 'expand') {
             setExplorePreviewExpanded(true);
             return;
         }
-        collapseExplorePreviewIfOutside(event.target);
+        if (previewAction === 'collapse') setExplorePreviewExpanded(false);
 
         const routeButton = event.target.closest('[data-route]');
         if (routeButton) {

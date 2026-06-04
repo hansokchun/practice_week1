@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { getExplorePreviewExpansionAction } from '../js/explore-preview-expansion.mjs';
 
 const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
@@ -9,12 +10,14 @@ test('Explore pin preview image expands the inline preview instead of opening th
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('class="pin-preview-copy"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
-    const clickStart = source.indexOf("const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]')");
-    const clickEnd = source.indexOf('collapseExplorePreviewIfOutside(event.target);', clickStart) + 'collapseExplorePreviewIfOutside(event.target);'.length;
+    const clickStart = source.indexOf("const previewAction = getExplorePreviewExpansionAction({");
+    const clickEnd = source.indexOf("const routeButton = event.target.closest('[data-route]');", clickStart);
     const clickBody = source.slice(clickStart, clickEnd);
 
     assert.match(preview, /data-pin-preview-photo/);
     assert.doesNotMatch(preview, /data-open-photo-detail/);
+    assert.match(clickBody, /clickedPreviewPhoto: Boolean\(explorePreviewPhoto\)/);
+    assert.match(clickBody, /previewAction === 'expand'/);
     assert.match(clickBody, /setExplorePreviewExpanded\(true\)/);
     assert.doesNotMatch(clickBody, /openModal\('#photo-detail-modal'\)/);
 });
@@ -30,6 +33,13 @@ test('Explore pin preview stores the selected photo id on the preview image acti
 
 test('Explore expanded preview can collapse when the user clicks outside the preview card', () => {
     assert.match(source, /function setExplorePreviewExpanded\(isExpanded\)/);
-    assert.match(source, /function collapseExplorePreviewIfOutside\(target\)/);
-    assert.match(source, /collapseExplorePreviewIfOutside\(event\.target\)/);
+    assert.match(source, /getExplorePreviewExpansionAction\(/);
+    assert.match(source, /previewAction === 'collapse'/);
+});
+
+test('Explore preview expansion action is decided outside app DOM wiring', () => {
+    assert.equal(getExplorePreviewExpansionAction({ clickedPreviewPhoto: true }), 'expand');
+    assert.equal(getExplorePreviewExpansionAction({ isExpanded: true, clickedInsidePreview: false }), 'collapse');
+    assert.equal(getExplorePreviewExpansionAction({ isExpanded: true, clickedInsidePreview: true }), 'none');
+    assert.equal(getExplorePreviewExpansionAction({ isExpanded: false, clickedInsidePreview: false }), 'none');
 });
