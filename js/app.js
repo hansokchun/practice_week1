@@ -109,6 +109,7 @@ const state = {
     visibility: 'private',
     profileTab: 'map',
     selectedPublicAlbumId: null,
+    selectedPublicOwnerId: null,
     selectedPhotoId: null,
     selectedPersonalPhotoIds: [],
     albumBuilderPhotoIds: [],
@@ -386,6 +387,7 @@ function updateExplorePhotoPreview(photo) {
     const displayTitle = getPhotoTitle(photo);
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
+    state.selectedPublicOwnerId = ownerId || state.selectedPublicOwnerId;
     const authorName = getPublicAuthorName({ owner_id: ownerId }, {
         currentUser: state.currentUser,
         profileNames: state.profileNames
@@ -783,7 +785,13 @@ function routeToProfileFromAuthor(albumId, ownerId) {
     const ownerAlbum = ownerId
         ? getPublicAlbums().find((album) => album.owner_id === ownerId)
         : null;
-    routeToPublic('profile', albumId || ownerAlbum?.id || state.selectedPublicAlbumId);
+    state.selectedPublicOwnerId = ownerId || ownerAlbum?.owner_id || null;
+    const targetAlbumId = albumId || ownerAlbum?.id || null;
+    if (targetAlbumId) routeToPublic('profile', targetAlbumId);
+    else {
+        state.selectedPublicAlbumId = null;
+        routeTo('profile');
+    }
 }
 
 function getCurrentShareUrl() {
@@ -867,6 +875,56 @@ function renderEmptyPublicSurfaces() {
     if (state.exploreMarkers.length) {
         state.exploreMarkers.forEach((marker) => marker.setMap?.(null));
         state.exploreMarkers = [];
+    }
+}
+
+function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
+    const ownerPhotos = publicPhotos.filter((photo) => photo.owner_id === ownerId || photo.albumOwnerId === ownerId);
+    const authorName = getPublicAuthorName({ owner_id: ownerId }, {
+        currentUser: state.currentUser,
+        profileNames: state.profileNames
+    });
+    const authorInitials = getAuthorInitials(authorName);
+    const locatedCount = ownerPhotos.filter(hasPhotoLocation).length;
+    const cover = ownerPhotos[0]?.url || 'images/main_bg4.jpg';
+
+    $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
+        node.textContent = authorName;
+    });
+    $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
+        avatar.textContent = authorInitials;
+    });
+    const profileCopy = $('.profile-card p:not(.eyebrow)');
+    if (profileCopy) profileCopy.textContent = '공개한 사진을 모아 볼 수 있는 프로필입니다.';
+    const profileHeroImage = $('.profile-cover > img');
+    if (profileHeroImage) {
+        profileHeroImage.src = cover;
+        profileHeroImage.alt = `${authorName} public profile cover`;
+    }
+    const profileStats = $('.profile-stats');
+    if (profileStats) {
+        profileStats.innerHTML = `
+            <span><strong>0</strong>개 앨범</span>
+            <span><strong>${ownerPhotos.length}</strong>장</span>
+            <span><strong>${locatedCount}</strong>곳</span>
+        `;
+    }
+    const profileMapFrame = $('.profile-map-preview .google-map-frame');
+    if (profileMapFrame) {
+        const center = ownerPhotos.find(hasPhotoLocation) || ownerPhotos[0] || { lat: 36.45, lng: 127.85 };
+        profileMapFrame.src = `https://www.google.com/maps?q=${Number(center.lat) || 36.45},${Number(center.lng) || 127.85}&z=6&output=embed`;
+    }
+    const profileGrid = $('.profile-album-grid');
+    if (profileGrid) {
+        profileGrid.innerHTML = ownerPhotos.length
+            ? ownerPhotos.slice(0, 12).map((photo) => `
+                <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+                    <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
+                    <strong>${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}</strong>
+                    <span>${photo.date ? new Date(photo.date).toISOString().slice(0, 10) : '날짜 없음'}</span>
+                </article>
+            `).join('')
+            : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개된 사진이 없습니다.</span></article>';
     }
 }
 
@@ -999,12 +1057,24 @@ function renderPublicSurfaces() {
     renderExplorePhotoScopeControls();
     const explorePhotos = getPublicPhotoMapItems();
     if (!selected) {
-        renderEmptyPublicSurfaces();
+        if (document.body.dataset.page === 'profile' && state.selectedPublicOwnerId) {
+            renderPublicOwnerProfile(state.selectedPublicOwnerId, explorePhotos);
+            return;
+        }
         if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
             renderExploreMapMarkers(explorePhotos, null);
+            const selectedPhoto = explorePhotos.find((photo) => photo.id === state.selectedPhotoId) || explorePhotos[0];
+            if (selectedPhoto && state.selectedPhotoId) {
+                updateExplorePhotoPreview(selectedPhoto);
+                document.body.classList.add('explore-pin-selected');
+                $('#explore-pin-preview')?.removeAttribute('hidden');
+            }
+            return;
         }
+        renderEmptyPublicSurfaces();
         return;
     }
+    state.selectedPublicOwnerId = selected.owner_id || state.selectedPublicOwnerId;
     if (state.albumDetailEditMode && selected.owner_id !== state.currentUser?.id) {
         state.albumDetailEditMode = false;
     }
@@ -1219,7 +1289,7 @@ function renderPublicSurfaces() {
             }
         });
     });
-    $$('#public-trip-photo-grid [data-open-photo-detail]').forEach((item) => {
+    $$('#public-trip-photo-grid [data-open-photo-detail], .profile-album-grid [data-open-photo-detail]').forEach((item) => {
         item.addEventListener('click', (event) => {
             if (!shouldOpenAlbumDetailPhotoClick(event.target, { isEditing: state.albumDetailEditMode })) return;
             const photo = getAllDisplayPhotos().find((candidate) => candidate.id === item.dataset.photoId)
@@ -1259,7 +1329,11 @@ async function loadSavedAlbums() {
 }
 
 async function loadPublicProfileNames() {
-    const ownerIds = [...new Set(state.savedAlbums.map((album) => album.owner_id).filter((id) => id && id !== 'demo'))];
+    const albumOwnerIds = state.savedAlbums.map((album) => album.owner_id);
+    const publicPhotoOwnerIds = state.savedPhotos
+        .filter((photo) => photo.shared || ['public', 'link'].includes(photo.visibility))
+        .map((photo) => photo.owner_id);
+    const ownerIds = [...new Set([...albumOwnerIds, ...publicPhotoOwnerIds].filter((id) => id && id !== 'demo'))];
     if (!ownerIds.length) return;
     const { data, error } = await fetchProfilesByIds(ownerIds);
     if (error) return;
