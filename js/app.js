@@ -3172,7 +3172,6 @@ function bindEvents() {
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-signup')?.addEventListener('click', handleSignup);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
-    $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);

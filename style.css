@@ -3242,15 +3242,6 @@ img {
     font-size: 13px;
 }
 
-#btn-kakao-login {
-    background: #fee500;
-    border-color: #f0d600;
-}
-
-#btn-kakao-login span {
-    background: #191919;
-}
-
 .auth-divider {
     display: flex;
     align-items: center;
