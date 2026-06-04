@@ -1,9 +1,11 @@
 const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album']);
+const SUPPORTED_PENDING_ROUTES = new Set(['upload']);
 const STORAGE_KEY = 'ikkyee.pendingAuth';
 
 export function createPendingAuthState() {
     return {
-        pendingAuthAction: null
+        pendingAuthAction: null,
+        pendingAuthRoute: null
     };
 }
 
@@ -28,12 +30,14 @@ export function takePendingAuthAction(state) {
 
 export function storePendingAuthContext(storage, state, context = {}) {
     const action = getPendingAuthAction(state);
-    if (!storage || !action) return null;
+    const pendingRoute = SUPPORTED_PENDING_ROUTES.has(state.pendingAuthRoute) ? state.pendingAuthRoute : null;
+    if (!storage || (!action && !pendingRoute)) return null;
     const payload = {
         action,
         route: context.route || null,
         visibility: context.visibility || null,
-        albumId: context.albumId || null
+        albumId: context.albumId || null,
+        pendingRoute
     };
     storage.setItem(STORAGE_KEY, JSON.stringify(payload));
     return payload;
@@ -47,13 +51,17 @@ export function restorePendingAuthContext(storage, state) {
 
     try {
         const parsed = JSON.parse(raw);
-        if (!SUPPORTED_ACTIONS.has(parsed?.action)) return null;
-        state.pendingAuthAction = parsed.action;
+        const action = SUPPORTED_ACTIONS.has(parsed?.action) ? parsed.action : null;
+        const pendingRoute = SUPPORTED_PENDING_ROUTES.has(parsed?.pendingRoute) ? parsed.pendingRoute : null;
+        if (!action && !pendingRoute) return null;
+        state.pendingAuthAction = action;
+        state.pendingAuthRoute = pendingRoute;
         return {
-            action: parsed.action,
+            action,
             route: typeof parsed.route === 'string' ? parsed.route : null,
             visibility: ['private', 'link', 'public'].includes(parsed.visibility) ? parsed.visibility : null,
-            albumId: typeof parsed.albumId === 'string' ? parsed.albumId : null
+            albumId: typeof parsed.albumId === 'string' ? parsed.albumId : null,
+            pendingRoute
         };
     } catch {
         return null;

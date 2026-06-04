@@ -77,6 +77,7 @@ import {
     shouldClearUploadQueue,
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
+import { getAuthRequiredRoute, takePendingAuthRoute } from './auth-route-guard.mjs';
 import { getAlbumReviewDaySections } from './album-review-layout.mjs';
 import {
     getAlbumPhotoIdsAfterRemoval,
@@ -124,6 +125,7 @@ const state = {
     editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
+    pendingAuthRoute: null,
     exploreZoom: 7,
     exploreMap: null,
     exploreMarkers: [],
@@ -194,6 +196,13 @@ function parseRouteHash(hash) {
 
 function routeTo(section, { replace = false } = {}) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
+    const authRequiredRoute = getAuthRequiredRoute(normalized, state.currentUser);
+    if (authRequiredRoute) {
+        state.pendingAuthRoute = authRequiredRoute;
+        openModal('#auth-modal');
+        showToast('사진을 업로드하려면 먼저 로그인해주세요.');
+        return;
+    }
     const hash = normalized === 'home' ? '#/' : `#/${normalized}`;
     if (replace) window.history.replaceState(null, '', hash);
     else if (window.location.hash !== hash) window.location.hash = hash;
@@ -2823,6 +2832,11 @@ async function handleSocialLogin(provider) {
 }
 
 async function runPendingAuthAction() {
+    const route = takePendingAuthRoute(state);
+    if (route) {
+        routeTo(route);
+        return;
+    }
     const action = takePendingAuthAction(state);
     if (action === 'persist-upload') {
         await persistStagedPhotos();

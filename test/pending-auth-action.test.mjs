@@ -47,8 +47,31 @@ test('pending auth context can be stored and restored after OAuth redirect', () 
         action: 'save-share',
         route: 'share',
         visibility: 'public',
-        albumId: 'album-1'
+        albumId: 'album-1',
+        pendingRoute: null
     });
     assert.equal(getPendingAuthAction(restored), 'save-share');
     assert.equal(adapter.getItem('ikkyee.pendingAuth'), null);
+});
+
+test('pending auth context preserves an upload route after OAuth redirect', () => {
+    const state = { ...createPendingAuthState(), pendingAuthRoute: 'upload' };
+    const storage = new Map();
+    const adapter = {
+        getItem: (key) => storage.get(key) || null,
+        setItem: (key, value) => storage.set(key, value),
+        removeItem: (key) => storage.delete(key)
+    };
+
+    storePendingAuthContext(adapter, state, { route: 'myphoto' });
+
+    const restored = createPendingAuthState();
+    assert.deepEqual(restorePendingAuthContext(adapter, restored), {
+        action: null,
+        route: 'myphoto',
+        visibility: null,
+        albumId: null,
+        pendingRoute: 'upload'
+    });
+    assert.equal(restored.pendingAuthRoute, 'upload');
 });
