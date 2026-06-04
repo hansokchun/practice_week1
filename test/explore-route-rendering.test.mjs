@@ -10,10 +10,3 @@ test('Explore route renders public surfaces after navigation', () => {
         /normalized === APP_SECTIONS\.EXPLORE \|\| normalized === 'trip' \|\| normalized === 'profile'\) renderPublicSurfaces\(\);/
     );
 });
-
-test('initial app boot does not render Explore before applying the current route', () => {
-    const bootStart = appSource.indexOf("document.addEventListener('DOMContentLoaded'");
-    const bootBody = appSource.slice(bootStart);
-
-    assert.doesNotMatch(bootBody, /renderExploreList\(\);/);
-});

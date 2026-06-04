@@ -2928,6 +2928,18 @@ function bindEvents() {
             return;
         }
 
+        const explorePhotoPin = event.target.closest('[data-explore-photo-pin]');
+        if (explorePhotoPin) {
+            const photo = getPublicPhotoMapItems().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
+            if (photo?.album_id) setSelectedPublicAlbum(photo.album_id);
+            updateExplorePhotoPreview(photo);
+            renderPublicSurfaces();
+            updateExplorePhotoPreview(photo);
+            document.body.classList.add('explore-pin-selected');
+            $('#explore-pin-preview')?.removeAttribute('hidden');
+            return;
+        }
+
     });
     document.addEventListener('keydown', (event) => {
         if (!['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) return;
@@ -3046,6 +3058,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderStagedPhotos();
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
+    renderExploreList();
     setVisibilityMode(state.visibility);
     setProfileTab(state.profileTab);
     if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });

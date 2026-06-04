@@ -2149,10 +2149,59 @@ img {
 .map-cluster,
 .map-dot,
 .map-pin,
+.explore-photo-pins,
+.explore-photo-pin,
 .map-filter,
 .map-hint {
     position: absolute;
     z-index: 3;
+}
+
+.explore-photo-pins {
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.explore-photo-pin {
+    width: 54px;
+    height: 54px;
+    transform: translate(-50%, -100%);
+    border: 2px solid #ffffff;
+    border-radius: 999px 999px 999px 10px;
+    background: var(--teal);
+    box-shadow: 0 16px 34px rgba(26, 77, 78, 0.24);
+    cursor: pointer;
+    pointer-events: auto;
+    padding: 4px;
+}
+
+.explore-photo-pin::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    width: 14px;
+    height: 14px;
+    transform: translateX(-50%) rotate(45deg);
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    background: var(--teal);
+}
+
+.explore-photo-pin img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
+.explore-photo-pin.is-selected,
+.explore-photo-pin:focus-visible {
+    outline: 3px solid var(--coral);
+    outline-offset: 5px;
 }
 
 .map-cluster {
