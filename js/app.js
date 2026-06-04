@@ -1237,8 +1237,6 @@ function renderSavedPhotoSurfaces() {
         renderAlbumDrafts();
     } else if (savedAlbums.length) {
         renderSavedAlbumRows(savedAlbums);
-    } else if (myPhotos.length) {
-        renderSavedPhotoAlbums(myPhotos);
     } else {
         renderAlbumDrafts();
     }
@@ -2122,7 +2120,7 @@ async function persistStagedPhotos() {
                 liked: 0,
                 shared: false,
                 owner_id: state.currentUser.id,
-                album: $('#album-name-input')?.value.trim() || '업로드 초안',
+                album: null,
                 visibility: 'private',
                 geo_source: hasExifLocation ? 'exif' : 'unknown'
             };
