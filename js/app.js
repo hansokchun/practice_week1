@@ -444,6 +444,18 @@ function updateExplorePhotoPreview(photo) {
     updatePhotoDetailModal(photo);
 }
 
+function setExplorePreviewExpanded(isExpanded) {
+    const preview = $('#explore-pin-preview');
+    if (!preview) return;
+    preview.classList.toggle('is-expanded', Boolean(isExpanded));
+}
+
+function collapseExplorePreviewIfOutside(target) {
+    const preview = $('#explore-pin-preview');
+    if (!preview?.classList.contains('is-expanded') || !target) return;
+    if (!preview.contains(target)) setExplorePreviewExpanded(false);
+}
+
 function updateExploreAlbumPreview(album) {
     const preview = $('#explore-pin-preview');
     if (!preview || !album) return;
@@ -580,6 +592,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     state.exploreMarkers = [];
     if (!locatedPhotos.length) {
         document.body.classList.remove('explore-pin-selected');
+        setExplorePreviewExpanded(false);
         $('#explore-pin-preview')?.setAttribute('hidden', '');
         return;
     }
@@ -596,6 +609,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         marker.addListener('click', () => {
             if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
             updateExplorePhotoPreview(photo);
+            setExplorePreviewExpanded(false);
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
         });
@@ -1374,6 +1388,7 @@ function renderPublicSurfaces() {
                 isTripLink: item.hasAttribute('data-go-trip'),
                 isExploreListItem: item.classList.contains('explore-item')
             })) {
+                setExplorePreviewExpanded(false);
                 document.body.classList.add('explore-pin-selected');
                 $('#explore-pin-preview')?.removeAttribute('hidden');
             }
@@ -2889,6 +2904,13 @@ function bindEvents() {
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) return;
 
+        const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');
+        if (explorePreviewPhoto) {
+            setExplorePreviewExpanded(true);
+            return;
+        }
+        collapseExplorePreviewIfOutside(event.target);
+
         const routeButton = event.target.closest('[data-route]');
         if (routeButton) {
             event.preventDefault();
@@ -3095,6 +3117,7 @@ function bindEvents() {
             updateExplorePhotoPreview(photo);
             renderPublicSurfaces();
             updateExplorePhotoPreview(photo);
+            setExplorePreviewExpanded(false);
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
             return;
@@ -3110,6 +3133,7 @@ function bindEvents() {
     });
     $('#btn-close-pin-preview')?.addEventListener('click', () => {
         document.body.classList.remove('explore-pin-selected');
+        setExplorePreviewExpanded(false);
         $('#explore-pin-preview')?.setAttribute('hidden', '');
     });
     $$('[data-visibility]').forEach((button) => button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility)));

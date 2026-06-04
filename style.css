@@ -2342,10 +2342,18 @@ img {
     box-shadow: 0 24px 70px rgba(26, 77, 78, 0.24);
     backdrop-filter: blur(16px);
     padding: 16px;
+    transition: width 180ms ease, max-height 180ms ease, box-shadow 180ms ease;
 }
 
 .explore-pin-preview[hidden] {
     display: none;
+}
+
+.explore-pin-preview.is-expanded {
+    width: min(760px, calc(100% - 48px));
+    max-height: calc(100vh - 128px);
+    overflow: auto;
+    box-shadow: 0 30px 90px rgba(26, 77, 78, 0.34);
 }
 
 .pin-preview-photo-button {
@@ -2358,11 +2366,23 @@ img {
     cursor: zoom-in;
 }
 
+.explore-pin-preview.is-expanded .pin-preview-photo-button {
+    cursor: zoom-out;
+    background: #0d1f1f;
+}
+
 .pin-preview-photo-button img {
     width: 100%;
     aspect-ratio: 4 / 3;
     display: block;
     object-fit: cover;
+}
+
+.explore-pin-preview.is-expanded .pin-preview-photo-button img {
+    max-height: min(68vh, 620px);
+    aspect-ratio: auto;
+    object-fit: contain;
+    background: #0d1f1f;
 }
 
 .panel-close {
