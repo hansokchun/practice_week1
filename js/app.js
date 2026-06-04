@@ -135,6 +135,7 @@ const state = {
     exploreSearchBox: null,
     exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
+    explorePhotoScope: 'mine',
     tripReviewMap: null,
     tripReviewMarkers: [],
     googleMapsApiKey: null,
@@ -319,6 +320,49 @@ function getLocatedPublicPhotos(albums = getPublicAlbums()) {
         })));
 }
 
+function getPublicPhotoMapItems() {
+    return state.savedPhotos
+        .filter((photo) => hasPhotoLocation(photo) && (photo.shared || ['public', 'link'].includes(photo.visibility)))
+        .filter((photo) => {
+            if (!state.currentUser) return state.explorePhotoScope === 'others';
+            const isMine = photo.owner_id === state.currentUser.id;
+            return state.explorePhotoScope === 'mine' ? isMine : !isMine;
+        })
+        .map((photo) => {
+            const album = photo.album_id
+                ? state.savedAlbums.find((candidate) => candidate.id === photo.album_id)
+                : null;
+            return {
+                ...photo,
+                album_id: photo.album_id || null,
+                album: photo.album || album?.title || '개별 사진',
+                albumTitle: album?.title || '개별 사진',
+                albumNote: album?.note || photo.description || '',
+                albumVisibility: photo.visibility,
+                albumCoverUrl: album?.cover_url || photo.url,
+                albumOwnerId: photo.owner_id
+            };
+        });
+}
+
+function renderExplorePhotoScopeControls() {
+    $$('[data-explore-scope]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.exploreScope === state.explorePhotoScope);
+    });
+}
+
+function setExplorePhotoScope(scope) {
+    if (!['mine', 'others'].includes(scope)) return;
+    state.explorePhotoScope = scope;
+    state.selectedPublicAlbumId = null;
+    state.selectedPhotoId = null;
+    state.exploreLastBoundsKey = null;
+    document.body.classList.remove('explore-pin-selected');
+    $('#explore-pin-preview')?.setAttribute('hidden', '');
+    renderExplorePhotoScopeControls();
+    renderPublicSurfaces();
+}
+
 function getExplorePinPosition(photo, photos) {
     const lats = photos.map((item) => Number(item.lat));
     const lngs = photos.map((item) => Number(item.lng));
@@ -490,6 +534,12 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     state.exploreMarkerPhotos = locatedPhotos;
     state.exploreSelectedAlbumId = selectedAlbumId;
     state.exploreMarkers.forEach((marker) => marker.setMap(null));
+    state.exploreMarkers = [];
+    if (!locatedPhotos.length) {
+        document.body.classList.remove('explore-pin-selected');
+        $('#explore-pin-preview')?.setAttribute('hidden', '');
+        return;
+    }
     const clusters = getExploreMarkerClusters(locatedPhotos, map.getZoom() || state.exploreZoom);
     state.exploreMarkers = clusters.map((cluster) => {
         const photo = cluster.photos[0];
@@ -931,8 +981,13 @@ async function renderTripReviewMap(albumPhotos) {
 function renderPublicSurfaces() {
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     const selected = getSelectedPublicAlbum(albums);
+    const explorePhotos = getPublicPhotoMapItems();
+    renderExplorePhotoScopeControls();
     if (!selected) {
         renderEmptyPublicSurfaces();
+        if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
+            renderExploreMapMarkers(explorePhotos, null);
+        }
         return;
     }
     if (state.albumDetailEditMode && selected.owner_id !== state.currentUser?.id) {
@@ -1068,7 +1123,7 @@ function renderPublicSurfaces() {
         });
     }
 
-    const locatedPhotos = getLocatedPublicPhotos(albums);
+    const locatedPhotos = getPublicPhotoMapItems();
     renderTripReviewMap(tripPhotos);
     renderExploreMapMarkers(locatedPhotos, selected.id);
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
@@ -2639,6 +2694,12 @@ function bindEvents() {
         if (routeButton) {
             event.preventDefault();
             routeTo(routeButton.dataset.route);
+            return;
+        }
+
+        const exploreScopeButton = event.target.closest('[data-explore-scope]');
+        if (exploreScopeButton) {
+            setExplorePhotoScope(exploreScopeButton.dataset.exploreScope);
             return;
         }
 

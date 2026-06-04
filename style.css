@@ -2100,6 +2100,37 @@ img {
     padding: 0 14px;
 }
 
+.explore-photo-scope {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 14px 34px rgba(26, 77, 78, 0.16);
+    padding: 6px;
+}
+
+.explore-photo-scope button {
+    min-height: 34px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+    padding: 0 14px;
+}
+
+.explore-photo-scope button.active {
+    background: var(--teal);
+    color: #ffffff;
+}
+
 .map-scrim {
     position: absolute;
     inset: 0;
