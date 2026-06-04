@@ -19,7 +19,17 @@ test('public profile names are loaded from public photo owners as well as albums
 test('photo owner profile route preserves the owner when there is no public album', () => {
     assert.match(source, /selectedPublicOwnerId:\s*null/);
     assert.match(source, /state\.selectedPublicOwnerId = ownerId \|\| ownerAlbum\?\.owner_id \|\| null/);
-    assert.match(source, /routeTo\('profile'\)/);
+    assert.match(source, /buildOwnerProfileHash\(state\.selectedPublicOwnerId\)/);
+});
+
+test('profile route restores owner id from the hash after refresh', () => {
+    const fnStart = source.indexOf('function applyRouteHash');
+    const fnEnd = source.indexOf('function updateExplorePhotoScopeControls', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /if \(sharedRoute\.ownerId\)/);
+    assert.match(body, /state\.selectedPublicOwnerId = sharedRoute\.ownerId/);
+    assert.match(body, /if \(sharedRoute\.albumId \|\| sharedRoute\.ownerId\) renderPublicSurfaces\(\)/);
 });
 
 test('Explore restores the selected public photo preview when no public album exists', () => {

@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 
 import {
     buildAlbumRouteHash,
+    buildOwnerProfileHash,
     buildTripHash,
     buildTripShareUrl,
     getSharedRouteState,
     getShareUrlAlbumId,
-    parseSharedAlbumId
+    parseSharedAlbumId,
+    parseSharedOwnerId
 } from '../js/share-link.mjs';
 
 test('buildAlbumRouteHash keeps album id on public routes', () => {
@@ -17,6 +19,11 @@ test('buildAlbumRouteHash keeps album id on public routes', () => {
 
 test('buildAlbumRouteHash falls back to the route without an album id', () => {
     assert.equal(buildAlbumRouteHash('profile', null), '#/profile');
+});
+
+test('buildOwnerProfileHash keeps owner id on public profile routes', () => {
+    assert.equal(buildOwnerProfileHash('owner 1'), '#/profile?owner=owner%201');
+    assert.equal(buildOwnerProfileHash(null), '#/profile');
 });
 
 test('getShareUrlAlbumId prefers the explicit selected album id', () => {
@@ -52,32 +59,51 @@ test('parseSharedAlbumId reads album id from route hashes', () => {
     assert.equal(parseSharedAlbumId('#/trip'), null);
 });
 
+test('parseSharedOwnerId reads owner id from profile route hashes', () => {
+    assert.equal(parseSharedOwnerId('#/profile?owner=owner%201'), 'owner 1');
+    assert.equal(parseSharedOwnerId('#/profile?album=demo-jeju'), null);
+});
+
 test('getSharedRouteState returns normalized route and optional album id', () => {
     assert.deepEqual(getSharedRouteState('#/trip?album=demo-jeju'), {
         route: 'trip',
-        albumId: 'demo-jeju'
+        albumId: 'demo-jeju',
+        ownerId: null
     });
     assert.deepEqual(getSharedRouteState('#/explore?album=demo-jeju'), {
         route: 'explore',
-        albumId: 'demo-jeju'
+        albumId: 'demo-jeju',
+        ownerId: null
     });
     assert.deepEqual(getSharedRouteState('#/album-photos'), {
         route: 'album-photos',
-        albumId: null
+        albumId: null,
+        ownerId: null
     });
     assert.deepEqual(getSharedRouteState('#/unknown?album=demo-jeju'), {
         route: 'home',
-        albumId: 'demo-jeju'
+        albumId: 'demo-jeju',
+        ownerId: null
+    });
+});
+
+test('getSharedRouteState returns profile owner id for refreshable public profiles', () => {
+    assert.deepEqual(getSharedRouteState('#/profile?owner=owner%201'), {
+        route: 'profile',
+        albumId: null,
+        ownerId: 'owner 1'
     });
 });
 
 test('getSharedRouteState no longer exposes removed review and share pages', () => {
     assert.deepEqual(getSharedRouteState('#/review?album=demo-jeju'), {
         route: 'home',
-        albumId: 'demo-jeju'
+        albumId: 'demo-jeju',
+        ownerId: null
     });
     assert.deepEqual(getSharedRouteState('#/share?album=demo-jeju'), {
         route: 'home',
-        albumId: 'demo-jeju'
+        albumId: 'demo-jeju',
+        ownerId: null
     });
 });

@@ -58,7 +58,7 @@ import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import { getProfileDisplayName, getProfileUserId } from './profile-names.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
-import { buildAlbumRouteHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
+import { buildAlbumRouteHash, buildOwnerProfileHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
 import { getShareSaveControlState } from './share-save-state.mjs';
 import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
@@ -249,6 +249,10 @@ function renderRoute(section) {
 function applyRouteHash(hash, options = {}) {
     const sharedRoute = getSharedRouteState(hash);
     if (sharedRoute.albumId) state.selectedPublicAlbumId = sharedRoute.albumId;
+    if (sharedRoute.ownerId) {
+        state.selectedPublicOwnerId = sharedRoute.ownerId;
+        state.selectedPublicAlbumId = null;
+    }
     const route = sharedRoute.route || parseRouteHash(hash);
     const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
     if (options.replace) {
@@ -260,7 +264,7 @@ function applyRouteHash(hash, options = {}) {
         window.history.replaceState(null, '', nextHash);
     }
     renderRoute(normalized);
-    if (sharedRoute.albumId) renderPublicSurfaces();
+    if (sharedRoute.albumId || sharedRoute.ownerId) renderPublicSurfaces();
 }
 
 function openModal(id) {
@@ -858,7 +862,9 @@ function routeToProfileFromAuthor(albumId, ownerId) {
     if (targetAlbumId) routeToPublic('profile', targetAlbumId);
     else {
         state.selectedPublicAlbumId = null;
-        routeTo('profile');
+        const hash = buildOwnerProfileHash(state.selectedPublicOwnerId);
+        if (window.location.hash !== hash) window.location.hash = hash;
+        renderRoute('profile');
     }
 }
 

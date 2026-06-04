@@ -9,6 +9,11 @@ export function buildTripHash(albumId) {
     return buildAlbumRouteHash('trip', albumId);
 }
 
+export function buildOwnerProfileHash(ownerId) {
+    if (!ownerId) return '#/profile';
+    return `#/profile?owner=${encodeURIComponent(ownerId)}`;
+}
+
 export function buildTripShareUrl(origin, albumId) {
     const base = String(origin || '').replace(/\/+$/, '');
     return `${base}/${buildTripHash(albumId)}`;
@@ -25,6 +30,13 @@ export function parseSharedAlbumId(hash) {
     return params.get('album');
 }
 
+export function parseSharedOwnerId(hash) {
+    const query = String(hash || '').split('?')[1];
+    if (!query) return null;
+    const params = new URLSearchParams(query);
+    return params.get('owner');
+}
+
 export function getSharedRouteState(hash) {
     const path = String(hash || '').replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
     const route = ['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'album-photos', 'trip', 'profile'].includes(path)
@@ -32,6 +44,7 @@ export function getSharedRouteState(hash) {
         : 'home';
     return {
         route: route || 'home',
-        albumId: parseSharedAlbumId(hash)
+        albumId: parseSharedAlbumId(hash),
+        ownerId: parseSharedOwnerId(hash)
     };
 }
