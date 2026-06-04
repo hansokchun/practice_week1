@@ -83,12 +83,7 @@ import {
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 import {
-    getExploreMarkerClusters,
-    getExploreMarkerClusterBounds,
-    getExploreMarkerExpansionZoom,
-    getExploreViewportAction,
-    shouldRerenderExploreMarkersAfterPinClick,
-    shouldShowExploreClusterLabel
+    getExploreViewportAction
 } from './explore-marker-clusters.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
@@ -564,42 +559,19 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         $('#explore-pin-preview')?.setAttribute('hidden', '');
         return;
     }
-    const clusters = getExploreMarkerClusters(locatedPhotos, map.getZoom() || state.exploreZoom);
-    state.exploreMarkers = clusters.map((cluster) => {
-        const photo = cluster.photos[0];
-        const selected = cluster.photos.some((item) => item.album_id === selectedAlbumId || item.id === state.selectedPhotoId);
-        const isCluster = cluster.count > 1;
+    state.exploreMarkers = locatedPhotos.map((photo) => {
+        const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
         const marker = new maps.Marker({
             map,
-            position: cluster.position,
-            title: isCluster ? formatPhotoCount(cluster.count) : (photo.name || photo.albumTitle || '공개 사진'),
-            icon: getExplorePinIcon(maps, { type: 'photo', selected, isCluster }),
-            label: shouldShowExploreClusterLabel(cluster) ? {
-                text: String(cluster.count),
-                color: '#ffffff',
-                fontSize: '13px',
-                fontWeight: '900'
-            } : null,
-            zIndex: isCluster ? 15 : selected ? 12 : 10
+            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+            title: photo.name || photo.albumTitle || '공개 사진',
+            icon: getExplorePinIcon(maps, { type: 'photo', selected }),
+            label: null,
+            zIndex: selected ? 12 : 10
         });
         marker.addListener('click', () => {
-            const previewPhoto = cluster.photos.find((item) => item.album_id === selectedAlbumId) || photo;
-            if (isCluster) {
-                const clusterBounds = getExploreMarkerClusterBounds(cluster.photos);
-                if (clusterBounds) {
-                    const bounds = new maps.LatLngBounds(
-                        { lat: clusterBounds.south, lng: clusterBounds.west },
-                        { lat: clusterBounds.north, lng: clusterBounds.east }
-                    );
-                    map.fitBounds(bounds, 112);
-                }
-                return;
-            }
-            if (previewPhoto.album_id) state.selectedPublicAlbumId = previewPhoto.album_id;
-            updateExplorePhotoPreview(previewPhoto);
-            if (shouldRerenderExploreMarkersAfterPinClick({ isCluster })) {
-                renderExploreMapMarkers(locatedPhotos, previewPhoto.album_id);
-            }
+            if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
+            updateExplorePhotoPreview(photo);
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
         });
