@@ -1062,7 +1062,6 @@ function renderTripReviewShell() {
                     <div class="trip-review-map-summary" aria-label="앨범 지도 요약">
                         <strong>앨범 지도</strong>
                         <div id="trip-review-map-meta" class="trip-review-map-meta"></div>
-                        <button class="btn-secondary" data-open-trip-map type="button">지도 크게 보기</button>
                     </div>
                 </aside>
             </div>
@@ -1142,6 +1141,29 @@ function getTripReviewMapPhotos(albumPhotos = []) {
     return albumPhotos.filter((photo) => getTripReviewPhotoDateKey(photo) === state.tripReviewDateFilter);
 }
 
+function updateTripReviewDateFilterUI() {
+    $$('[data-trip-review-date]').forEach((button) => {
+        const selected = button.dataset.tripReviewDate === state.tripReviewDateFilter;
+        button.classList.toggle('active', selected);
+        button.textContent = selected ? '선택됨' : '지도에서 보기';
+    });
+    const meta = $('#trip-review-map-meta');
+    if (!meta) return;
+    const selectedAlbum = getSelectedPublicAlbum();
+    const tripSummary = getTravelSummary({
+        draftPhotos: state.albumDetailPhotos,
+        selectedAlbum
+    });
+    const photoCount = state.albumDetailPhotos.length || Number(selectedAlbum?.photo_count || 0);
+    const places = Number(selectedAlbum?.places || Math.max(1, Math.ceil(photoCount / 4)));
+    meta.innerHTML = `
+        <span>${state.tripReviewDateFilter ? state.tripReviewDateFilter.replaceAll('-', '.') : (tripSummary.dateRange || '날짜 없음')}</span>
+        <span>${formatPlaceCount(places)}</span>
+        <span>${state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀'}</span>
+        ${state.tripReviewDateFilter ? '<button class="trip-review-clear-filter" data-clear-trip-review-date type="button">전체 보기</button>' : ''}
+    `;
+}
+
 function layoutTripReviewPhotoRows() {
     $$('.trip-review-day-rows').forEach((dayRows) => {
         const cards = [...dayRows.querySelectorAll('.trip-review-photo-card')];
@@ -1197,14 +1219,16 @@ async function renderTripReviewMap(albumPhotos) {
     }
 
     const center = { lat: Number(located[0].lat), lng: Number(located[0].lng) };
-    state.tripReviewMap = new maps.Map(container, {
-        center,
-        zoom: located.length > 1 ? 11 : 13,
-        mapTypeControl: false,
-        fullscreenControl: false,
-        streetViewControl: false,
-        gestureHandling: 'greedy'
-    });
+    if (!state.tripReviewMap) {
+        state.tripReviewMap = new maps.Map(container, {
+            center,
+            zoom: located.length > 1 ? 11 : 13,
+            mapTypeControl: false,
+            fullscreenControl: false,
+            streetViewControl: false,
+            gestureHandling: 'greedy'
+        });
+    }
 
     state.tripReviewMarkers.forEach((marker) => marker.setMap(null));
     state.tripReviewMarkers = located.map((photo) => {
@@ -1221,6 +1245,9 @@ async function renderTripReviewMap(albumPhotos) {
         const bounds = new maps.LatLngBounds();
         located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
         state.tripReviewMap.fitBounds(bounds, 72);
+    } else {
+        state.tripReviewMap.panTo(center);
+        state.tripReviewMap.setZoom(Math.max(state.tripReviewMap.getZoom() || 13, 13));
     }
 
 }
@@ -1252,6 +1279,9 @@ function renderPublicSurfaces() {
     if (state.albumDetailEditMode && selected.owner_id !== state.currentUser?.id) {
         state.albumDetailEditMode = false;
     }
+    state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
+    state.tripReviewMarkers = [];
+    state.tripReviewMap = null;
     renderTripReviewShell();
     const cover = selected.cover_url || 'images/main_bg2.jpg';
     const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
@@ -1333,21 +1363,7 @@ function renderPublicSurfaces() {
             <span>${formatPhotoCount(photoCount || tripPhotos.length)}</span>
         `;
     }
-    if (tripReviewMapMeta) {
-        tripReviewMapMeta.innerHTML = `
-            <span>${tripSummary.dateRange || '날짜 없음'}</span>
-            <span>${formatPlaceCount(places)}</span>
-            <span>${selected.visibility === 'public' ? '공개 앨범' : '비공개 앨범'}</span>
-        `;
-    }
-    if (tripReviewMapMeta) {
-        tripReviewMapMeta.innerHTML = `
-            <span>${state.tripReviewDateFilter ? state.tripReviewDateFilter.replaceAll('-', '.') : (tripSummary.dateRange || '날짜 없음')}</span>
-            <span>${formatPlaceCount(places)}</span>
-            <span>${state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀'}</span>
-            ${state.tripReviewDateFilter ? '<button class="trip-review-clear-filter" data-clear-trip-review-date type="button">전체 보기</button>' : ''}
-        `;
-    }
+    if (tripReviewMapMeta) updateTripReviewDateFilterUI();
     if (tripReviewActions) {
         tripReviewActions.innerHTML = `
             ${isOwnAlbum ? `<button id="btn-edit-album" class="btn-secondary ${state.albumDetailEditMode ? 'active' : ''}" type="button">${state.albumDetailEditMode ? '수정 완료' : '수정하기'}</button>` : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
@@ -3028,14 +3044,16 @@ function bindEvents() {
         const tripDateButton = event.target.closest('[data-trip-review-date]');
         if (tripDateButton) {
             state.tripReviewDateFilter = tripDateButton.dataset.tripReviewDate || null;
-            renderPublicSurfaces();
+            updateTripReviewDateFilterUI();
+            renderTripReviewMap(state.albumDetailPhotos);
             return;
         }
 
         const clearTripDateButton = event.target.closest('[data-clear-trip-review-date]');
         if (clearTripDateButton) {
             state.tripReviewDateFilter = null;
-            renderPublicSurfaces();
+            updateTripReviewDateFilterUI();
+            renderTripReviewMap(state.albumDetailPhotos);
             return;
         }
 

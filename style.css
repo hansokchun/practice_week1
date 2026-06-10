@@ -3103,8 +3103,9 @@ img {
 
 .photo-detail-card > img {
     width: 100%;
-    height: 100%;
+    height: min(100%, calc(100vh - 48px));
     min-height: 580px;
+    max-height: calc(100vh - 48px);
     object-fit: contain;
     background: #0d1717;
 }
@@ -3629,5 +3630,16 @@ img {
 
     .trip-review-map {
         height: 360px;
+    }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+    .trip-review-map-panel {
+        position: relative;
+        top: auto;
+    }
+
+    .trip-review-map {
+        height: 300px;
     }
 }

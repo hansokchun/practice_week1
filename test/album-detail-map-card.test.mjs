@@ -22,3 +22,9 @@ test('album detail exposes date map filters and a clear state', () => {
     assert.match(appSource, /data-clear-trip-review-date/);
     assert.match(appSource, /tripReviewDateFilter/);
 });
+
+test('album detail keeps the map card focused without an inactive large-map button', () => {
+    assert.doesNotMatch(appSource, /data-open-trip-map/);
+    assert.match(cssSource, /@media \(max-height: 760px\) and \(min-width: 901px\)/);
+    assert.match(cssSource, /position:\s*relative;[\s\S]*top:\s*auto;/);
+});
