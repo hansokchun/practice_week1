@@ -17,7 +17,7 @@ function getAspectRatio(photo) {
     const height = Number(photo?.height || photo?.naturalHeight || photo?.image_height);
     if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return 1;
     const ratio = width / height;
-    return Math.round(Math.min(1.8, Math.max(0.75, ratio)) * 100) / 100;
+    return Math.round(ratio * 100) / 100;
 }
 
 function getNextRowSize(remaining) {
@@ -29,8 +29,8 @@ function getNextRowSize(remaining) {
 export function calculateAlbumReviewRowLayout(rowPhotos = [], availableWidth = 0, options = {}) {
     const gap = Number.isFinite(Number(options.gap)) ? Number(options.gap) : 6;
     const baseHeight = Number.isFinite(Number(options.baseHeight)) ? Number(options.baseHeight) : 220;
-    const minHeight = Number.isFinite(Number(options.minHeight)) ? Number(options.minHeight) : 190;
-    const maxHeight = Number.isFinite(Number(options.maxHeight)) ? Number(options.maxHeight) : 320;
+    const minHeight = Number.isFinite(Number(options.minHeight)) ? Number(options.minHeight) : 120;
+    const maxHeight = Number.isFinite(Number(options.maxHeight)) ? Number(options.maxHeight) : 260;
     const ratios = rowPhotos.map((photo) => {
         const ratio = typeof photo === 'number' ? photo : Number(photo?.aspectRatio || photo?.ratio);
         return Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
@@ -47,6 +47,37 @@ export function calculateAlbumReviewRowLayout(rowPhotos = [], availableWidth = 0
         height,
         widths: ratios.map((ratio) => Math.round(ratio * height))
     };
+}
+
+export function packAlbumReviewRowsForWidth(rowPhotos = [], availableWidth = 0, options = {}) {
+    const gap = Number.isFinite(Number(options.gap)) ? Number(options.gap) : 6;
+    const targetHeight = Number.isFinite(Number(options.targetHeight)) ? Number(options.targetHeight) : 220;
+    const ratios = rowPhotos.map((photo) => {
+        const ratio = typeof photo === 'number' ? photo : Number(photo?.aspectRatio || photo?.ratio);
+        return Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
+    });
+    if (!ratios.length) return [];
+    if (!Number.isFinite(Number(availableWidth)) || Number(availableWidth) <= 0) return [rowPhotos];
+
+    const rows = [];
+    let current = [];
+    let currentWidth = 0;
+
+    rowPhotos.forEach((photo, index) => {
+        const photoWidth = ratios[index] * targetHeight;
+        const nextWidth = current.length ? currentWidth + gap + photoWidth : photoWidth;
+        if (current.length && nextWidth > Number(availableWidth)) {
+            rows.push(current);
+            current = [photo];
+            currentWidth = photoWidth;
+            return;
+        }
+        current.push(photo);
+        currentWidth = nextWidth;
+    });
+
+    if (current.length) rows.push(current);
+    return rows;
 }
 
 function buildRows(photos) {

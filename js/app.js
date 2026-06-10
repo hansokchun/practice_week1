@@ -79,7 +79,7 @@ import {
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
 import { getAuthRequiredRoute, takePendingAuthRoute } from './auth-route-guard.mjs';
-import { calculateAlbumReviewRowLayout, getAlbumReviewDaySections } from './album-review-layout.mjs';
+import { calculateAlbumReviewRowLayout, getAlbumReviewDaySections, packAlbumReviewRowsForWidth } from './album-review-layout.mjs';
 import {
     getAlbumPhotoIdsAfterRemoval,
     getAlbumPhotoRemovalTarget,
@@ -1106,7 +1106,42 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
     requestAnimationFrame(() => layoutTripReviewPhotoRows());
 }
 
+function getTripReviewCardAspect(card) {
+    const image = card.querySelector('img');
+    if (image?.naturalWidth && image?.naturalHeight) {
+        const ratio = image.naturalWidth / image.naturalHeight;
+        if (Number.isFinite(ratio) && ratio > 0) {
+            card.dataset.photoAspect = String(Math.round(ratio * 100) / 100);
+            return ratio;
+        }
+    }
+    if (image && !card.dataset.aspectLoadBound) {
+        card.dataset.aspectLoadBound = 'true';
+        image.addEventListener('load', () => layoutTripReviewPhotoRows(), { once: true });
+    }
+    return Number(card.dataset.photoAspect) || 1;
+}
+
 function layoutTripReviewPhotoRows() {
+    $$('.trip-review-day-rows').forEach((dayRows) => {
+        const cards = [...dayRows.querySelectorAll('.trip-review-photo-card')];
+        if (!cards.length) return;
+        const dayWidth = dayRows.clientWidth || dayRows.parentElement?.clientWidth || 0;
+        if (!dayWidth) return;
+        const styles = window.getComputedStyle(dayRows);
+        const gap = Number.parseFloat(styles.columnGap || styles.gap) || 6;
+        const packedRows = packAlbumReviewRowsForWidth(cards.map((card) => ({
+            card,
+            aspectRatio: getTripReviewCardAspect(card)
+        })), dayWidth, { gap, targetHeight: 220 });
+        dayRows.replaceChildren(...packedRows.map((rowCards) => {
+            const row = document.createElement('div');
+            row.className = 'trip-review-photo-row';
+            row.append(...rowCards.map((item) => item.card));
+            return row;
+        }));
+    });
+
     $$('.trip-review-photo-row').forEach((row) => {
         const cards = [...row.querySelectorAll('.trip-review-photo-card')];
         if (!cards.length) return;
@@ -1114,8 +1149,8 @@ function layoutTripReviewPhotoRows() {
         if (!rowWidth) return;
         const styles = window.getComputedStyle(row);
         const gap = Number.parseFloat(styles.columnGap || styles.gap) || 6;
-        const ratios = cards.map((card) => Number(card.dataset.photoAspect) || 1);
-        const layout = calculateAlbumReviewRowLayout(ratios, rowWidth, { gap });
+        const ratios = cards.map((card) => getTripReviewCardAspect(card));
+        const layout = calculateAlbumReviewRowLayout(ratios, rowWidth, { gap, minHeight: 120, maxHeight: 260 });
         row.style.setProperty('--row-height', `${layout.height}px`);
         cards.forEach((card, index) => {
             card.style.setProperty('--photo-width', `${layout.widths[index] || layout.height}px`);

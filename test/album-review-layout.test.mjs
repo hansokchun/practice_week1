@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { calculateAlbumReviewRowLayout, getAlbumReviewDaySections } from '../js/album-review-layout.mjs';
+import {
+    calculateAlbumReviewRowLayout,
+    getAlbumReviewDaySections,
+    packAlbumReviewRowsForWidth
+} from '../js/album-review-layout.mjs';
 
 test('getAlbumReviewDaySections groups photos by capture date and balances rows between two and four photos', () => {
     const sections = getAlbumReviewDaySections([
@@ -69,4 +73,17 @@ test('calculateAlbumReviewRowLayout caps oversized rows but still keeps landscap
 
     assert.equal(layout.height, 320);
     assert.deepEqual(layout.widths, [576, 240]);
+});
+
+test('packAlbumReviewRowsForWidth wraps before a row exceeds the available timeline width', () => {
+    const rows = packAlbumReviewRowsForWidth(
+        [{ aspectRatio: 1.8, id: 'wide-1' }, { aspectRatio: 1.8, id: 'wide-2' }, { aspectRatio: 0.75, id: 'tall' }],
+        700,
+        { gap: 6, targetHeight: 220 }
+    );
+
+    assert.deepEqual(rows.map((row) => row.map((photo) => photo.id)), [
+        ['wide-1'],
+        ['wide-2', 'tall']
+    ]);
 });
