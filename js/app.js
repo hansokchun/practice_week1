@@ -123,6 +123,7 @@ const state = {
     albumDetailEditMode: false,
     albumDetailPhotos: [],
     tripReviewDateFilter: null,
+    tripReviewFocusPhotoId: null,
     removedAlbumPhotoKeys: {},
     editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
@@ -224,6 +225,7 @@ function routeToPublic(section, albumId, { replace = false } = {}) {
 
 function routeToTrip(albumId, options = {}) {
     state.tripReviewDateFilter = null;
+    state.tripReviewFocusPhotoId = null;
     routeToPublic('trip', albumId, options);
 }
 
@@ -684,6 +686,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
+    const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
     const displayTitle = getPhotoTitle(photo);
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
@@ -710,6 +713,15 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     }
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
     if (editButton) editButton.hidden = !canEdit;
+    if (showOnMapButton) {
+        const canShowOnTripMap = Boolean(
+            photo?.id
+            && hasPhotoLocation(photo)
+            && state.albumDetailPhotos.some((albumPhoto) => String(albumPhoto.id || albumPhoto.localId) === String(photo.id || photo.localId))
+        );
+        showOnMapButton.hidden = !canShowOnTripMap;
+        showOnMapButton.dataset.photoId = canShowOnTripMap ? String(photo.id || photo.localId) : '';
+    }
 }
 
 function updateAccountUI() {
@@ -1109,7 +1121,10 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
             </div>
         </section>
     `).join('');
-    requestAnimationFrame(() => layoutTripReviewPhotoRows());
+    requestAnimationFrame(() => {
+        layoutTripReviewPhotoRows();
+        updateTripReviewDateFilterUI();
+    });
 }
 
 function getTripReviewCardAspect(card) {
@@ -1141,6 +1156,15 @@ function getTripReviewMapPhotos(albumPhotos = []) {
     return albumPhotos.filter((photo) => getTripReviewPhotoDateKey(photo) === state.tripReviewDateFilter);
 }
 
+function getTripReviewPhotoId(photo = {}) {
+    return String(photo.id || photo.localId || '');
+}
+
+function getTripReviewFocusedPhoto() {
+    if (!state.tripReviewFocusPhotoId) return null;
+    return state.albumDetailPhotos.find((photo) => getTripReviewPhotoId(photo) === String(state.tripReviewFocusPhotoId)) || null;
+}
+
 function updateTripReviewDateFilterUI() {
     $$('[data-trip-review-date]').forEach((button) => {
         const selected = button.dataset.tripReviewDate === state.tripReviewDateFilter;
@@ -1156,12 +1180,17 @@ function updateTripReviewDateFilterUI() {
     });
     const photoCount = state.albumDetailPhotos.length || Number(selectedAlbum?.photo_count || 0);
     const places = Number(selectedAlbum?.places || Math.max(1, Math.ceil(photoCount / 4)));
+    const focusedPhoto = getTripReviewFocusedPhoto();
+    const focusedDate = focusedPhoto ? getTripReviewPhotoDateKey(focusedPhoto)?.replaceAll('-', '.') : null;
     meta.innerHTML = `
         <span>${state.tripReviewDateFilter ? state.tripReviewDateFilter.replaceAll('-', '.') : (tripSummary.dateRange || '날짜 없음')}</span>
         <span>${formatPlaceCount(places)}</span>
-        <span>${state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀'}</span>
+        <span>${focusedPhoto ? `선택 사진${focusedDate ? ` · ${focusedDate}` : ''}` : (state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀')}</span>
         ${state.tripReviewDateFilter ? '<button class="trip-review-clear-filter" data-clear-trip-review-date type="button">전체 보기</button>' : ''}
     `;
+    $$('.trip-review-photo-card').forEach((card) => {
+        card.classList.toggle('is-map-focused', Boolean(state.tripReviewFocusPhotoId && card.dataset.photoId === String(state.tripReviewFocusPhotoId)));
+    });
 }
 
 function layoutTripReviewPhotoRows() {
@@ -1232,16 +1261,26 @@ async function renderTripReviewMap(albumPhotos) {
 
     state.tripReviewMarkers.forEach((marker) => marker.setMap(null));
     state.tripReviewMarkers = located.map((photo) => {
+        const selected = state.tripReviewFocusPhotoId && getTripReviewPhotoId(photo) === String(state.tripReviewFocusPhotoId);
         const marker = new maps.Marker({
             position: { lat: Number(photo.lat), lng: Number(photo.lng) },
             map: state.tripReviewMap,
-            title: getPhotoFallbackLabel(photo, '여행 사진')
+            title: getPhotoFallbackLabel(photo, '여행 사진'),
+            icon: getExplorePinIcon(maps, { type: 'photo', selected }),
+            zIndex: selected ? 20 : 10
         });
         marker.addListener('click', () => updatePhotoDetailModal(photo));
         return marker;
     });
 
-    if (located.length > 1) {
+    const focusedPhoto = getTripReviewFocusedPhoto();
+    const focusedLocation = focusedPhoto && hasPhotoLocation(focusedPhoto)
+        ? { lat: Number(focusedPhoto.lat), lng: Number(focusedPhoto.lng) }
+        : null;
+    if (focusedLocation) {
+        state.tripReviewMap.panTo(focusedLocation);
+        state.tripReviewMap.setZoom(Math.max(state.tripReviewMap.getZoom() || 14, 14));
+    } else if (located.length > 1) {
         const bounds = new maps.LatLngBounds();
         located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
         state.tripReviewMap.fitBounds(bounds, 72);
@@ -3044,6 +3083,7 @@ function bindEvents() {
         const tripDateButton = event.target.closest('[data-trip-review-date]');
         if (tripDateButton) {
             state.tripReviewDateFilter = tripDateButton.dataset.tripReviewDate || null;
+            state.tripReviewFocusPhotoId = null;
             updateTripReviewDateFilterUI();
             renderTripReviewMap(state.albumDetailPhotos);
             return;
@@ -3052,8 +3092,26 @@ function bindEvents() {
         const clearTripDateButton = event.target.closest('[data-clear-trip-review-date]');
         if (clearTripDateButton) {
             state.tripReviewDateFilter = null;
+            state.tripReviewFocusPhotoId = null;
             updateTripReviewDateFilterUI();
             renderTripReviewMap(state.albumDetailPhotos);
+            return;
+        }
+
+        const showPhotoOnMapButton = event.target.closest('[data-show-photo-on-map]');
+        if (showPhotoOnMapButton) {
+            const photo = state.albumDetailPhotos.find((candidate) => getTripReviewPhotoId(candidate) === String(showPhotoOnMapButton.dataset.photoId));
+            if (!photo) return;
+            state.tripReviewFocusPhotoId = getTripReviewPhotoId(photo);
+            state.tripReviewDateFilter = getTripReviewPhotoDateKey(photo);
+            closeModals();
+            updateTripReviewDateFilterUI();
+            renderTripReviewMap(state.albumDetailPhotos);
+            document.querySelector(`[data-open-photo-detail][data-photo-id="${CSS.escape(state.tripReviewFocusPhotoId)}"]`)?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'nearest'
+            });
             return;
         }
 

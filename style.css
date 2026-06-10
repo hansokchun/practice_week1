@@ -2860,6 +2860,20 @@ img {
     object-fit: contain;
 }
 
+.trip-review-photo-card.is-map-focused {
+    outline: 3px solid var(--coral);
+    outline-offset: 0;
+    z-index: 2;
+}
+
+.trip-review-photo-card.is-map-focused::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    pointer-events: none;
+}
+
 .trip-review-photo-remove {
     position: absolute;
     z-index: 2;

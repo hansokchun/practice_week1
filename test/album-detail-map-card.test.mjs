@@ -28,3 +28,13 @@ test('album detail keeps the map card focused without an inactive large-map butt
     assert.match(cssSource, /@media \(max-height: 760px\) and \(min-width: 901px\)/);
     assert.match(cssSource, /position:\s*relative;[\s\S]*top:\s*auto;/);
 });
+
+test('photo detail can hand off a selected photo to the album map', () => {
+    const htmlSource = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
+    assert.match(htmlSource, /data-show-photo-on-map/);
+    assert.match(appSource, /tripReviewFocusPhotoId/);
+    assert.match(appSource, /closeModals\(\);[\s\S]*updateTripReviewDateFilterUI\(\);[\s\S]*renderTripReviewMap\(state\.albumDetailPhotos\)/);
+    assert.match(appSource, /getExplorePinIcon\(maps, \{ type: 'photo', selected \}\)/);
+    assert.match(cssSource, /\.trip-review-photo-card\.is-map-focused/);
+});
