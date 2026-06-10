@@ -40,6 +40,11 @@ test('photo detail can hand off a selected photo to the album map', () => {
 });
 
 test('album detail map refreshes after first render and date filter updates', () => {
+    assert.match(appSource, /tripReviewMapRenderToken:\s*0/);
+    assert.match(appSource, /const renderToken = \+\+state\.tripReviewMapRenderToken/);
+    assert.match(appSource, /await waitForTripReviewMapContainer\(container, renderToken\)/);
+    assert.match(appSource, /if \(renderToken !== state\.tripReviewMapRenderToken\) return/);
+    assert.match(appSource, /function waitForTripReviewMapContainer/);
     assert.match(appSource, /function refreshTripReviewMapViewport/);
     assert.match(appSource, /maps\.event\.trigger\(state\.tripReviewMap, 'resize'\)/);
     assert.match(appSource, /requestAnimationFrame\(\(\) => refreshTripReviewMapViewport/);

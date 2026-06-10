@@ -18,7 +18,8 @@ test('photo detail modal keeps the right information panel inside the viewport',
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*min-width:\s*0;/s);
     assert.match(css, /\.photo-detail-card\s*\{[^}]*width:\s*min\(1180px,\s*calc\(100vw - 32px\)\);/s);
     assert.match(css, /\.photo-detail-card\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(260px,\s*320px\);/s);
-    assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*center;/s);
+    assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*start;/s);
+    assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*start;/s);
     assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*auto;/s);
     assert.match(css, /\.photo-detail-card > img\s*\{[^}]*max-height:\s*calc\(100vh - 48px\);/s);
     assert.doesNotMatch(css, /\.photo-detail-card > img\s*\{[^}]*min-height:/s);

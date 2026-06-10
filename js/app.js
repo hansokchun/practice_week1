@@ -147,6 +147,7 @@ const state = {
     isMissingLocationBannerDismissed: false,
     tripReviewMap: null,
     tripReviewMarkers: [],
+    tripReviewMapRenderToken: 0,
     googleMapsApiKey: null,
     googleMapsApiKeyPromise: null,
     locationEditorMap: null,
@@ -671,7 +672,7 @@ async function renderProfileMap(photos = []) {
     map.fitBounds(bounds, 96);
 }
 
-function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
+function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'photo' } = {}) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
     const image = modal?.querySelector('.photo-detail-card > img');
@@ -685,6 +686,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
 
+    if (modal) modal.dataset.photoDetailContext = context;
     if (image) {
         image.src = photo.url || 'images/main_bg2.jpg';
         image.alt = displayTitle || '여행 사진 상세';
@@ -698,6 +700,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     if (editButton) editButton.hidden = !canEdit;
     if (showOnMapButton) {
         const canShowOnTripMap = Boolean(
+            context === 'album' &&
             photo?.id
             && hasPhotoLocation(photo)
             && state.albumDetailPhotos.some((albumPhoto) => String(albumPhoto.id || albumPhoto.localId) === String(photo.id || photo.localId))
@@ -1233,7 +1236,30 @@ function refreshTripReviewMapViewport(maps, located, center, focusedLocation) {
     fitTripReviewMapViewport(maps, located, center, focusedLocation);
 }
 
+function waitForTripReviewMapContainer(container, renderToken, attempts = 12) {
+    return new Promise((resolve) => {
+        const check = (remaining) => {
+            if (renderToken !== state.tripReviewMapRenderToken || !document.body.contains(container)) {
+                resolve(false);
+                return;
+            }
+            const rect = container.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                resolve(true);
+                return;
+            }
+            if (remaining <= 0) {
+                resolve(false);
+                return;
+            }
+            requestAnimationFrame(() => check(remaining - 1));
+        };
+        check(attempts);
+    });
+}
+
 async function renderTripReviewMap(albumPhotos) {
+    const renderToken = ++state.tripReviewMapRenderToken;
     const container = $('#trip-review-map');
     if (!container) return;
     const located = getTripReviewMapPhotos(albumPhotos).filter(hasPhotoLocation);
@@ -1245,7 +1271,15 @@ async function renderTripReviewMap(albumPhotos) {
         return;
     }
 
+    const isContainerReady = await waitForTripReviewMapContainer(container, renderToken);
+    if (renderToken !== state.tripReviewMapRenderToken) return;
+    if (!isContainerReady) {
+        container.innerHTML = '<div class="map-api-warning"><strong>지도를 표시할 공간을 준비하는 중입니다.</strong><span>잠시 후 날짜를 다시 선택하거나 앨범을 다시 열면 위치가 표시됩니다.</span></div>';
+        return;
+    }
+
     const maps = await loadGoogleMapsApi();
+    if (renderToken !== state.tripReviewMapRenderToken) return;
     if (!maps) {
         container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>지도 설정이 완료되면 앨범 위치가 표시됩니다.</span></div>';
         return;
@@ -1273,7 +1307,7 @@ async function renderTripReviewMap(albumPhotos) {
             icon: getExplorePinIcon(maps, { type: 'photo', selected }),
             zIndex: selected ? 20 : 10
         });
-        marker.addListener('click', () => updatePhotoDetailModal(photo));
+        marker.addListener('click', () => updatePhotoDetailModal(photo, { context: 'album' }));
         return marker;
     });
 
@@ -2978,7 +3012,8 @@ function bindEvents() {
         button.addEventListener('click', () => routeToProfileFromAuthor(button.dataset.publicAlbumId, button.dataset.publicOwnerId));
     });
     $$('[data-open-photo-detail]').forEach((button) => button.addEventListener('click', () => {
-        updatePhotoDetailModal(getDefaultDetailPhoto());
+        const context = document.body.dataset.page === 'trip' ? 'album' : 'photo';
+        updatePhotoDetailModal(getDefaultDetailPhoto(), { context });
         openModal('#photo-detail-modal');
     }));
     document.addEventListener('click', (event) => {
@@ -3206,15 +3241,19 @@ function bindEvents() {
 
         const photoCard = event.target.closest('[data-open-photo-detail][data-photo-id]');
         if (photoCard) {
-            const photo = getAllDisplayPhotos().find((candidate) => candidate.id === photoCard.dataset.photoId);
-            updatePhotoDetailModal(photo || getDefaultDetailPhoto());
+            const isTripPhoto = Boolean(photoCard.closest('#public-trip-photo-grid'));
+            const photo = isTripPhoto
+                ? state.albumDetailPhotos.find((candidate) => getTripReviewPhotoId(candidate) === String(photoCard.dataset.photoId))
+                : getAllDisplayPhotos().find((candidate) => candidate.id === photoCard.dataset.photoId);
+            updatePhotoDetailModal(photo || getDefaultDetailPhoto(), { context: isTripPhoto ? 'album' : 'photo' });
             openModal('#photo-detail-modal');
             return;
         }
 
         const photoDetailButton = event.target.closest('[data-open-photo-detail]');
         if (photoDetailButton) {
-            updatePhotoDetailModal(getDefaultDetailPhoto());
+            const context = document.body.dataset.page === 'trip' ? 'album' : 'photo';
+            updatePhotoDetailModal(getDefaultDetailPhoto(), { context });
             openModal('#photo-detail-modal');
             return;
         }

@@ -3105,7 +3105,7 @@ img {
 .photo-detail-card {
     position: relative;
     display: grid;
-    align-items: center;
+    align-items: start;
     grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
     gap: 0;
     width: min(1180px, calc(100vw - 32px));
@@ -3126,6 +3126,7 @@ img {
 
 .photo-detail-card section {
     display: grid;
+    align-self: start;
     align-content: start;
     gap: 14px;
     min-width: 0;
