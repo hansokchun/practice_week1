@@ -1057,6 +1057,11 @@ function renderTripReviewShell() {
                 </main>
                 <aside class="trip-review-map-panel" aria-label="앨범 사진 위치 지도">
                     <div id="trip-review-map" class="trip-review-map"></div>
+                    <div class="trip-review-map-summary" aria-label="앨범 지도 요약">
+                        <strong>앨범 지도</strong>
+                        <div id="trip-review-map-meta" class="trip-review-map-meta"></div>
+                        <button class="btn-secondary" data-open-trip-map type="button">지도 크게 보기</button>
+                    </div>
                 </aside>
             </div>
         </div>
@@ -1081,7 +1086,6 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
         <section class="trip-review-day">
             <div class="trip-review-day-divider">
                 <strong>${escapeHtml(section.dateLabel)}</strong>
-                <small>${formatPhotoCount(section.photoCount)}</small>
             </div>
             <div class="trip-review-day-rows">
                 ${section.rows.map((row) => `
@@ -1280,6 +1284,7 @@ function renderPublicSurfaces() {
     const tripActions = $('.public-trip-copy .trip-actions');
     const tripReviewDescription = $('#trip-review-description');
     const tripReviewMeta = $('#trip-review-meta');
+    const tripReviewMapMeta = $('#trip-review-map-meta');
     const tripReviewActions = $('.trip-review-header .trip-actions');
     const routeMeta = $('.trip-route-card .compact-heading p');
     if (tripHeroImage) {
@@ -1310,6 +1315,13 @@ function renderPublicSurfaces() {
             <span>${tripSummary.dateRange || '날짜 없음'}</span>
             <span>${formatPlaceCount(places)}</span>
             <span>${formatPhotoCount(photoCount || tripPhotos.length)}</span>
+        `;
+    }
+    if (tripReviewMapMeta) {
+        tripReviewMapMeta.innerHTML = `
+            <span>${tripSummary.dateRange || '날짜 없음'}</span>
+            <span>${formatPlaceCount(places)}</span>
+            <span>${selected.visibility === 'public' ? '공개 앨범' : '비공개 앨범'}</span>
         `;
     }
     if (tripReviewActions) {
