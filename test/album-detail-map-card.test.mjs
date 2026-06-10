@@ -13,4 +13,12 @@ test('album detail uses a compact map card beside the photo timeline', () => {
     assert.match(appSource, /trip-review-map-summary/);
     assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*border-radius: 20px/);
     assert.match(cssSource, /\.trip-review-map\s*\{[\s\S]*height: 390px/);
+    assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*margin-top: 30px/);
+    assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*gap: 36px/);
+});
+
+test('album detail exposes date map filters and a clear state', () => {
+    assert.match(appSource, /data-trip-review-date/);
+    assert.match(appSource, /data-clear-trip-review-date/);
+    assert.match(appSource, /tripReviewDateFilter/);
 });

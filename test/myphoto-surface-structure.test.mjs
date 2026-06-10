@@ -16,7 +16,8 @@ test('photo detail modal keeps the right information panel inside the viewport',
     const css = readFileSync('style.css', 'utf8');
 
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*min-width:\s*0;/s);
-    assert.match(css, /\.photo-detail-card\s*\{[^}]*width:\s*min\(1120px,\s*calc\(100vw - 32px\)\);/s);
+    assert.match(css, /\.photo-detail-card\s*\{[^}]*width:\s*min\(1180px,\s*calc\(100vw - 32px\)\);/s);
+    assert.match(css, /\.photo-detail-card\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(260px,\s*320px\);/s);
 });
 
 test('empty recent photo notice uses the same empty card style as the album notice', () => {

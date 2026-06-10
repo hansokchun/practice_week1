@@ -18,6 +18,7 @@ test('getAlbumReviewDaySections groups photos by capture date and balances rows 
     ]);
 
     assert.equal(sections.length, 2);
+    assert.equal(sections[0].dateKey, '2026-05-12');
     assert.equal(sections[0].dateLabel, '5\uC6D4 12\uC77C');
     assert.deepEqual(sections[0].rows.map((row) => row.map((photo) => photo.id)), [
         ['p1', 'p2', 'p3'],

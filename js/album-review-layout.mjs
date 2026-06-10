@@ -111,6 +111,7 @@ export function getAlbumReviewDaySections(photos = []) {
             return a.localeCompare(b);
         })
         .map(([dateKey, dayPhotos]) => ({
+            dateKey: dateKey === '__undated' ? null : dateKey,
             dateLabel: formatDateLabel(dateKey === '__undated' ? null : dateKey),
             photoCount: dayPhotos.length,
             rows: buildRows(dayPhotos.sort((a, b) => a._albumReviewIndex - b._albumReviewIndex))

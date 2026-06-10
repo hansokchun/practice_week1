@@ -122,6 +122,7 @@ const state = {
     editingAlbumId: null,
     albumDetailEditMode: false,
     albumDetailPhotos: [],
+    tripReviewDateFilter: null,
     removedAlbumPhotoKeys: {},
     editingPhotoVisibility: 'private',
     selectedLocationPhotoId: null,
@@ -222,6 +223,7 @@ function routeToPublic(section, albumId, { replace = false } = {}) {
 }
 
 function routeToTrip(albumId, options = {}) {
+    state.tripReviewDateFilter = null;
     routeToPublic('trip', albumId, options);
 }
 
@@ -1086,6 +1088,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
         <section class="trip-review-day">
             <div class="trip-review-day-divider">
                 <strong>${escapeHtml(section.dateLabel)}</strong>
+                ${section.dateKey ? `<button class="trip-review-date-filter ${state.tripReviewDateFilter === section.dateKey ? 'active' : ''}" data-trip-review-date="${escapeHtml(section.dateKey)}" type="button">${state.tripReviewDateFilter === section.dateKey ? '선택됨' : '지도에서 보기'}</button>` : ''}
             </div>
             <div class="trip-review-day-rows">
                 ${section.rows.map((row) => `
@@ -1124,6 +1127,19 @@ function getTripReviewCardAspect(card) {
         image.addEventListener('load', () => layoutTripReviewPhotoRows(), { once: true });
     }
     return Number(card.dataset.photoAspect) || 1;
+}
+
+function getTripReviewPhotoDateKey(photo) {
+    const raw = photo?.date || photo?.created_at;
+    if (!raw) return null;
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed.toISOString().slice(0, 10);
+}
+
+function getTripReviewMapPhotos(albumPhotos = []) {
+    if (!state.tripReviewDateFilter) return albumPhotos;
+    return albumPhotos.filter((photo) => getTripReviewPhotoDateKey(photo) === state.tripReviewDateFilter);
 }
 
 function layoutTripReviewPhotoRows() {
@@ -1165,7 +1181,7 @@ function layoutTripReviewPhotoRows() {
 async function renderTripReviewMap(albumPhotos) {
     const container = $('#trip-review-map');
     if (!container) return;
-    const located = albumPhotos.filter(hasPhotoLocation);
+    const located = getTripReviewMapPhotos(albumPhotos).filter(hasPhotoLocation);
     if (!located.length) {
         state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
         state.tripReviewMarkers = [];
@@ -1322,6 +1338,14 @@ function renderPublicSurfaces() {
             <span>${tripSummary.dateRange || '날짜 없음'}</span>
             <span>${formatPlaceCount(places)}</span>
             <span>${selected.visibility === 'public' ? '공개 앨범' : '비공개 앨범'}</span>
+        `;
+    }
+    if (tripReviewMapMeta) {
+        tripReviewMapMeta.innerHTML = `
+            <span>${state.tripReviewDateFilter ? state.tripReviewDateFilter.replaceAll('-', '.') : (tripSummary.dateRange || '날짜 없음')}</span>
+            <span>${formatPlaceCount(places)}</span>
+            <span>${state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀'}</span>
+            ${state.tripReviewDateFilter ? '<button class="trip-review-clear-filter" data-clear-trip-review-date type="button">전체 보기</button>' : ''}
         `;
     }
     if (tripReviewActions) {
@@ -2998,6 +3022,20 @@ function bindEvents() {
                 removeTripPhotoButton.dataset.removeTripPhoto,
                 removeTripPhotoButton.dataset.removeTripPhotoIndex
             );
+            return;
+        }
+
+        const tripDateButton = event.target.closest('[data-trip-review-date]');
+        if (tripDateButton) {
+            state.tripReviewDateFilter = tripDateButton.dataset.tripReviewDate || null;
+            renderPublicSurfaces();
+            return;
+        }
+
+        const clearTripDateButton = event.target.closest('[data-clear-trip-review-date]');
+        if (clearTripDateButton) {
+            state.tripReviewDateFilter = null;
+            renderPublicSurfaces();
             return;
         }
 
