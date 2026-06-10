@@ -324,6 +324,11 @@ function hasPhotoLocation(photo) {
     return hasUsablePhotoLocation(photo);
 }
 
+function getPhotoMapUrl(photo, zoom = 14) {
+    if (!hasPhotoLocation(photo)) return '';
+    return `https://www.google.com/maps?q=${Number(photo.lat)},${Number(photo.lng)}&z=${zoom}&output=embed`;
+}
+
 function formatPhotoDateInput(value) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return '';
@@ -678,6 +683,8 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const image = modal?.querySelector('.photo-detail-card > img');
     const title = $('#photo-detail-title');
     const meta = modal?.querySelector('.photo-detail-card section > p:not(.eyebrow)');
+    const map = $('#photo-detail-map');
+    const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
@@ -696,6 +703,16 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         title.hidden = !displayTitle;
     }
     if (meta) meta.textContent = `${dateLabel} · ${hasPhotoLocation(photo) ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}` : '위치 정보 없음'}`;
+    if (map && mapFrame) {
+        const mapUrl = context === 'photo' ? getPhotoMapUrl(photo) : '';
+        if (mapUrl) {
+            mapFrame.src = mapUrl;
+            map.removeAttribute('hidden');
+        } else {
+            mapFrame.removeAttribute('src');
+            map.setAttribute('hidden', '');
+        }
+    }
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
     if (editButton) editButton.hidden = !canEdit;
     if (showOnMapButton) {

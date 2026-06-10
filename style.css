@@ -3146,18 +3146,24 @@ img {
     line-height: 1.55;
 }
 
+.photo-detail-map,
 .location-editor-map {
     position: relative;
     overflow: hidden;
     width: 100%;
     min-width: 0;
-    min-height: 260px;
+    min-height: 140px;
     border: 1px solid var(--line);
     border-radius: 0;
     background: var(--surface-muted);
 }
 
+.photo-detail-map[hidden] {
+    display: none !important;
+}
+
 .location-editor-map {
+    min-height: 260px;
     margin: 14px 0 18px;
 }
 
@@ -3186,6 +3192,7 @@ img {
     cursor: default;
 }
 
+.photo-detail-map iframe,
 .location-editor-map-canvas {
     position: absolute;
     inset: 0;
