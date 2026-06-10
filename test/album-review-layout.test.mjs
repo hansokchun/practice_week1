@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getAlbumReviewDaySections } from '../js/album-review-layout.mjs';
+import { calculateAlbumReviewRowLayout, getAlbumReviewDaySections } from '../js/album-review-layout.mjs';
 
 test('getAlbumReviewDaySections groups photos by capture date and balances rows between two and four photos', () => {
     const sections = getAlbumReviewDaySections([
@@ -47,4 +47,26 @@ test('getAlbumReviewDaySections never mixes different dates in the same photo ro
         [['day-2']],
         [['day-3']]
     ]);
+});
+
+test('calculateAlbumReviewRowLayout keeps a shared row height and scales widths by photo ratio', () => {
+    const layout = calculateAlbumReviewRowLayout(
+        [{ aspectRatio: 1.8 }, { aspectRatio: 0.75 }, { aspectRatio: 1 }],
+        1000,
+        { gap: 6, minHeight: 190, maxHeight: 320 }
+    );
+
+    assert.equal(layout.height, 278);
+    assert.deepEqual(layout.widths, [500, 209, 278]);
+});
+
+test('calculateAlbumReviewRowLayout caps oversized rows but still keeps landscape photos wider', () => {
+    const layout = calculateAlbumReviewRowLayout(
+        [{ aspectRatio: 1.8 }, { aspectRatio: 0.75 }],
+        1200,
+        { gap: 6, minHeight: 190, maxHeight: 320 }
+    );
+
+    assert.equal(layout.height, 320);
+    assert.deepEqual(layout.widths, [576, 240]);
 });

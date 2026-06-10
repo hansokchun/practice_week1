@@ -79,7 +79,7 @@ import {
     toggleUploadPhotoSelection
 } from './upload-photo-selection.mjs';
 import { getAuthRequiredRoute, takePendingAuthRoute } from './auth-route-guard.mjs';
-import { getAlbumReviewDaySections } from './album-review-layout.mjs';
+import { calculateAlbumReviewRowLayout, getAlbumReviewDaySections } from './album-review-layout.mjs';
 import {
     getAlbumPhotoIdsAfterRemoval,
     getAlbumPhotoRemovalTarget,
@@ -1090,6 +1090,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
                             <article
                                 class="trip-review-photo-card ${isEditing ? 'is-editing' : ''}"
                                 style="--photo-width: ${Math.round(Number(photo.aspectRatio || 1) * 220)}px;"
+                                data-photo-aspect="${Number(photo.aspectRatio || 1)}"
                                 ${isEditing ? '' : 'data-open-photo-detail'}
                                 data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
                             >
@@ -1102,6 +1103,24 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
             </div>
         </section>
     `).join('');
+    requestAnimationFrame(() => layoutTripReviewPhotoRows());
+}
+
+function layoutTripReviewPhotoRows() {
+    $$('.trip-review-photo-row').forEach((row) => {
+        const cards = [...row.querySelectorAll('.trip-review-photo-card')];
+        if (!cards.length) return;
+        const rowWidth = row.clientWidth || row.parentElement?.clientWidth || 0;
+        if (!rowWidth) return;
+        const styles = window.getComputedStyle(row);
+        const gap = Number.parseFloat(styles.columnGap || styles.gap) || 6;
+        const ratios = cards.map((card) => Number(card.dataset.photoAspect) || 1);
+        const layout = calculateAlbumReviewRowLayout(ratios, rowWidth, { gap });
+        row.style.setProperty('--row-height', `${layout.height}px`);
+        cards.forEach((card, index) => {
+            card.style.setProperty('--photo-width', `${layout.widths[index] || layout.height}px`);
+        });
+    });
 }
 
 async function renderTripReviewMap(albumPhotos) {
@@ -3170,6 +3189,7 @@ function bindEvents() {
         });
     });
     window.addEventListener('hashchange', () => applyRouteHash(window.location.hash));
+    window.addEventListener('resize', () => layoutTripReviewPhotoRows());
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

@@ -2814,12 +2814,13 @@ img {
     display: flex;
     justify-content: flex-start;
     gap: 6px;
-    height: 220px;
+    height: var(--row-height, 220px);
+    align-items: stretch;
 }
 
 .trip-review-photo-card {
     position: relative;
-    flex: 0 1 var(--photo-width, 220px);
+    flex: 0 0 var(--photo-width, 220px);
     min-width: 120px;
     max-width: 100%;
     overflow: hidden;
@@ -2834,7 +2835,7 @@ img {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
 }
 
 .trip-review-photo-remove {
