@@ -3105,6 +3105,7 @@ img {
 .photo-detail-card {
     position: relative;
     display: grid;
+    align-items: center;
     grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
     gap: 0;
     width: min(1180px, calc(100vw - 32px));
@@ -3117,11 +3118,10 @@ img {
 
 .photo-detail-card > img {
     width: 100%;
-    height: min(100%, calc(100vh - 48px));
-    min-height: 580px;
+    height: auto;
     max-height: calc(100vh - 48px);
     object-fit: contain;
-    background: #0d1717;
+    background: #ffffff;
 }
 
 .photo-detail-card section {
@@ -3145,24 +3145,18 @@ img {
     line-height: 1.55;
 }
 
-.photo-detail-map,
 .location-editor-map {
     position: relative;
     overflow: hidden;
     width: 100%;
     min-width: 0;
-    min-height: 140px;
+    min-height: 260px;
     border: 1px solid var(--line);
     border-radius: 0;
     background: var(--surface-muted);
 }
 
-.photo-detail-map[hidden] {
-    display: none !important;
-}
-
 .location-editor-map {
-    min-height: 260px;
     margin: 14px 0 18px;
 }
 
@@ -3191,7 +3185,6 @@ img {
     cursor: default;
 }
 
-.photo-detail-map iframe,
 .location-editor-map-canvas {
     position: absolute;
     inset: 0;
@@ -3608,10 +3601,6 @@ img {
 
     .profile-content {
         padding-top: 48px;
-    }
-
-    .photo-detail-card > img {
-        min-height: 320px;
     }
 
     .trip-review-header,

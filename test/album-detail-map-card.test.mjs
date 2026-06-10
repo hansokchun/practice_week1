@@ -38,3 +38,9 @@ test('photo detail can hand off a selected photo to the album map', () => {
     assert.match(appSource, /getExplorePinIcon\(maps, \{ type: 'photo', selected \}\)/);
     assert.match(cssSource, /\.trip-review-photo-card\.is-map-focused/);
 });
+
+test('album detail map refreshes after first render and date filter updates', () => {
+    assert.match(appSource, /function refreshTripReviewMapViewport/);
+    assert.match(appSource, /maps\.event\.trigger\(state\.tripReviewMap, 'resize'\)/);
+    assert.match(appSource, /requestAnimationFrame\(\(\) => refreshTripReviewMapViewport/);
+});

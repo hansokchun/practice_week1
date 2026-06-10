@@ -8,18 +8,23 @@ test('photo detail modal shows only the photo visibility status block', () => {
     assert.equal(html.includes('<dt>Album</dt>'), false);
     assert.equal(html.includes('<dt>Visibility</dt>'), false);
     assert.equal(html.includes('<dt>Original</dt>'), false);
+    assert.equal(html.includes('id="photo-detail-map"'), false);
+    assert.equal(html.includes('id="photo-detail-map-frame"'), false);
     assert.equal(html.includes('id="btn-expand-photo-map"'), false);
     assert.equal(html.includes('class="map-expand-button"'), false);
     assert.match(html, /id="photo-detail-visibility"/);
+    assert.match(html, /data-show-photo-on-map/);
 });
 
-test('photo detail renderer writes only public or private visibility text', () => {
+test('photo detail renderer writes compact metadata and map handoff controls', () => {
     const source = readFileSync('js/app.js', 'utf8');
 
     assert.equal(source.includes('albumValue'), false);
     assert.equal(source.includes('originalValue'), false);
+    assert.equal(source.includes("const map = $('#photo-detail-map')"), false);
+    assert.equal(source.includes("const mapFrame = $('#photo-detail-map-frame')"), false);
+    assert.equal(source.includes('getPhotoMapUrl(photo)'), false);
     assert.equal(source.includes('btn-expand-photo-map'), false);
     assert.match(source, /photo-detail-visibility/);
-    assert.match(source, /공개/);
-    assert.match(source, /비공개/);
+    assert.match(source, /showOnMapButton\.hidden = !canShowOnTripMap/);
 });

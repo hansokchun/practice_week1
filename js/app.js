@@ -323,11 +323,6 @@ function hasPhotoLocation(photo) {
     return hasUsablePhotoLocation(photo);
 }
 
-function getPhotoMapUrl(photo, zoom = 14) {
-    if (!hasPhotoLocation(photo)) return '';
-    return `https://www.google.com/maps?q=${Number(photo.lat)},${Number(photo.lng)}&z=${zoom}&output=embed`;
-}
-
 function formatPhotoDateInput(value) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return '';
@@ -682,8 +677,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
     const image = modal?.querySelector('.photo-detail-card > img');
     const title = $('#photo-detail-title');
     const meta = modal?.querySelector('.photo-detail-card section > p:not(.eyebrow)');
-    const map = $('#photo-detail-map');
-    const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
@@ -701,16 +694,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto()) {
         title.hidden = !displayTitle;
     }
     if (meta) meta.textContent = `${dateLabel} · ${hasPhotoLocation(photo) ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}` : '위치 정보 없음'}`;
-    if (map && mapFrame) {
-        const mapUrl = getPhotoMapUrl(photo);
-        if (mapUrl) {
-            mapFrame.src = mapUrl;
-            map.removeAttribute('hidden');
-        } else {
-            mapFrame.removeAttribute('src');
-            map.setAttribute('hidden', '');
-        }
-    }
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
     if (editButton) editButton.hidden = !canEdit;
     if (showOnMapButton) {
@@ -1229,6 +1212,27 @@ function layoutTripReviewPhotoRows() {
     });
 }
 
+function fitTripReviewMapViewport(maps, located, center, focusedLocation) {
+    if (!state.tripReviewMap) return;
+    if (focusedLocation) {
+        state.tripReviewMap.panTo(focusedLocation);
+        state.tripReviewMap.setZoom(Math.max(state.tripReviewMap.getZoom() || 14, 14));
+    } else if (located.length > 1) {
+        const bounds = new maps.LatLngBounds();
+        located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+        state.tripReviewMap.fitBounds(bounds, 72);
+    } else {
+        state.tripReviewMap.panTo(center);
+        state.tripReviewMap.setZoom(Math.max(state.tripReviewMap.getZoom() || 13, 13));
+    }
+}
+
+function refreshTripReviewMapViewport(maps, located, center, focusedLocation) {
+    if (!state.tripReviewMap) return;
+    maps.event.trigger(state.tripReviewMap, 'resize');
+    fitTripReviewMapViewport(maps, located, center, focusedLocation);
+}
+
 async function renderTripReviewMap(albumPhotos) {
     const container = $('#trip-review-map');
     if (!container) return;
@@ -1277,17 +1281,8 @@ async function renderTripReviewMap(albumPhotos) {
     const focusedLocation = focusedPhoto && hasPhotoLocation(focusedPhoto)
         ? { lat: Number(focusedPhoto.lat), lng: Number(focusedPhoto.lng) }
         : null;
-    if (focusedLocation) {
-        state.tripReviewMap.panTo(focusedLocation);
-        state.tripReviewMap.setZoom(Math.max(state.tripReviewMap.getZoom() || 14, 14));
-    } else if (located.length > 1) {
-        const bounds = new maps.LatLngBounds();
-        located.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
-        state.tripReviewMap.fitBounds(bounds, 72);
-    } else {
-        state.tripReviewMap.panTo(center);
-        state.tripReviewMap.setZoom(Math.max(state.tripReviewMap.getZoom() || 13, 13));
-    }
+    fitTripReviewMapViewport(maps, located, center, focusedLocation);
+    requestAnimationFrame(() => refreshTripReviewMapViewport(maps, located, center, focusedLocation));
 
 }
 
