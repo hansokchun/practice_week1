@@ -23,6 +23,15 @@ test('home absorbs the myphoto dashboard and top-level navigation is reduced to 
     assert.match(source, /renderedRoute === APP_SECTIONS\.HOME[\s\S]*renderSavedPhotoSurfaces\(\)/);
 });
 
+test('home no longer renders the temporary album preview and public example bands', () => {
+    const html = readFileSync('index.html', 'utf8');
+
+    assert.equal(html.includes('id="home-preview-title"'), false);
+    assert.equal(html.includes('class="archive-preview"'), false);
+    assert.equal(html.includes('id="public-examples-title"'), false);
+    assert.equal(html.includes('class="public-example-grid"'), false);
+});
+
 test('photo detail modal keeps the right information panel inside the viewport', () => {
     const css = readFileSync('style.css', 'utf8');
 
