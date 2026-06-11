@@ -39,8 +39,23 @@ test('getExploreMarkerExpansionZoom finds the next zoom level that separates a c
     assert.equal(getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 }), 12);
 });
 
-test('cluster pins use the same logo without numeric labels', () => {
-    assert.equal(shouldShowExploreClusterLabel({ count: 4 }), false);
+test('getExploreMarkerExpansionZoom uses the highest zoom needed to fully split the cluster', () => {
+    const photos = [
+        { id: 'a', lat: 37.5665, lng: 126.9780 },
+        { id: 'b', lat: 37.5667, lng: 126.9782 },
+        { id: 'c', lat: 37.58, lng: 127.0 }
+    ];
+
+    const expansionZoom = getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 });
+    const clustersAtZoom = getExploreMarkerClusters(photos, expansionZoom, 54);
+    const clustersBeforeZoom = getExploreMarkerClusters(photos, expansionZoom - 1, 54);
+
+    assert.equal(clustersAtZoom.length, photos.length);
+    assert.ok(clustersBeforeZoom.length < photos.length);
+});
+
+test('cluster pins show count labels only for grouped photos', () => {
+    assert.equal(shouldShowExploreClusterLabel({ count: 4 }), true);
     assert.equal(shouldShowExploreClusterLabel({ count: 1 }), false);
 });
 
