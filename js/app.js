@@ -87,7 +87,6 @@ import {
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 import {
-    getExploreExpandedClusterPositions,
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
     getExploreViewportAction
@@ -136,8 +135,6 @@ const state = {
     exploreMap: null,
     exploreMarkers: [],
     exploreClusterListener: null,
-    exploreExpandedClusterPhotoIds: [],
-    exploreExpandedClusterZoom: null,
     exploreMarkerPhotos: [],
     exploreSelectedAlbumId: null,
     exploreSearchBox: null,
@@ -611,21 +608,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         return;
     }
     const currentZoom = map.getZoom?.() || state.exploreZoom;
-    if (state.exploreExpandedClusterZoom && currentZoom < state.exploreExpandedClusterZoom) {
-        state.exploreExpandedClusterPhotoIds = [];
-        state.exploreExpandedClusterZoom = null;
-    }
-    const expandedPhotoIds = new Set(state.exploreExpandedClusterPhotoIds);
-    const expandedPhotos = locatedPhotos.filter((photo) => expandedPhotoIds.has(String(photo.id)));
-    const clusterablePhotos = locatedPhotos.filter((photo) => !expandedPhotoIds.has(String(photo.id)));
-    const clusters = getExploreMarkerClusters(clusterablePhotos, currentZoom, 54).concat(
-        getExploreExpandedClusterPositions(expandedPhotos).map(({ photo, position }) => ({
-            id: `expanded-${photo.id || `${photo.lat},${photo.lng}`}`,
-            count: 1,
-            photos: [photo],
-            position
-        }))
-    );
+    const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
     state.exploreMarkers = clusters.map((cluster) => {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
@@ -664,13 +647,11 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             $('#explore-pin-preview')?.setAttribute('hidden', '');
             const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, {
                 radiusPx: 54,
-                maxZoom: 18
+                maxZoom: 21
             });
             const bounds = new maps.LatLngBounds();
             cluster.photos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
             maps.event.addListenerOnce(map, 'idle', () => {
-                state.exploreExpandedClusterPhotoIds = cluster.photos.map((photo) => String(photo.id));
-                state.exploreExpandedClusterZoom = expansionZoom;
                 if ((map.getZoom?.() || 0) < expansionZoom) {
                     map.setZoom(expansionZoom);
                 } else {
