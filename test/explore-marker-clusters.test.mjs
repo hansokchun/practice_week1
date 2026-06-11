@@ -21,6 +21,16 @@ test('getExploreMarkerClusters combines nearby photos at low zoom', () => {
     assert.deepEqual(clusters.map((cluster) => cluster.count).sort(), [1, 2]);
 });
 
+test('getExploreMarkerClusters combines nearby photos across grid cell boundaries', () => {
+    const clusters = getExploreMarkerClusters([
+        { id: 'a', lat: 37.5665, lng: 126.9780 },
+        { id: 'b', lat: 37.5665, lng: 126.9950 }
+    ], 12, 54);
+
+    assert.equal(clusters.length, 1);
+    assert.equal(clusters[0].count, 2);
+});
+
 test('getExploreMarkerClusters separates nearby photos after zooming in', () => {
     const clusters = getExploreMarkerClusters([
         { id: 'a', lat: 37.5665, lng: 126.9780 },

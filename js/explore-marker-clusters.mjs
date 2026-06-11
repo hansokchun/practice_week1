@@ -20,15 +20,24 @@ function averagePosition(photos) {
 }
 
 export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
-    const buckets = new Map();
+    const clusters = [];
     photos.forEach((photo) => {
         const point = toWorldPixel(photo.lat, photo.lng, zoom);
-        const key = `${Math.floor(point.x / radiusPx)}:${Math.floor(point.y / radiusPx)}`;
-        if (!buckets.has(key)) buckets.set(key, []);
-        buckets.get(key).push(photo);
+        const cluster = clusters.find((candidate) => (
+            Math.hypot(candidate.point.x - point.x, candidate.point.y - point.y) <= radiusPx
+        ));
+        if (cluster) {
+            cluster.photos.push(photo);
+            cluster.point = {
+                x: (cluster.point.x * (cluster.photos.length - 1) + point.x) / cluster.photos.length,
+                y: (cluster.point.y * (cluster.photos.length - 1) + point.y) / cluster.photos.length
+            };
+            return;
+        }
+        clusters.push({ point, photos: [photo] });
     });
 
-    return [...buckets.values()].map((items) => ({
+    return clusters.map(({ photos: items }) => ({
         id: items.map((photo) => photo.id || `${photo.lat},${photo.lng}`).join('|'),
         count: items.length,
         photos: items,
