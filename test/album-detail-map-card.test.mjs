@@ -49,3 +49,13 @@ test('album detail map refreshes after first render and date filter updates', ()
     assert.match(appSource, /maps\.event\.trigger\(state\.tripReviewMap, 'resize'\)/);
     assert.match(appSource, /requestAnimationFrame\(\(\) => refreshTripReviewMapViewport/);
 });
+
+test('album detail map shows lightweight loading feedback while the viewport changes', () => {
+    assert.match(appSource, /function setTripReviewMapLoading/);
+    assert.match(appSource, /tripReviewMapPanel\?\.classList\.toggle\('is-loading', isLoading\)/);
+    assert.match(appSource, /지도 이동 중/);
+    assert.match(appSource, /setTripReviewMapLoading\(true\);[\s\S]*renderTripReviewMap\(state\.albumDetailPhotos\)/);
+    assert.match(appSource, /setTripReviewMapLoading\(false\)/);
+    assert.match(cssSource, /\.trip-review-map-loading/);
+    assert.match(cssSource, /\.trip-review-map-panel\.is-loading\s+\.trip-review-map-loading/);
+});

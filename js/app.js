@@ -1074,6 +1074,7 @@ function renderTripReviewShell() {
                 </main>
                 <aside class="trip-review-map-panel" aria-label="앨범 사진 위치 지도">
                     <div id="trip-review-map" class="trip-review-map"></div>
+                    <div class="trip-review-map-loading" aria-live="polite">지도 이동 중</div>
                     <div class="trip-review-map-summary" aria-label="앨범 지도 요약">
                         <strong>앨범 지도</strong>
                         <div id="trip-review-map-meta" class="trip-review-map-meta"></div>
@@ -1253,6 +1254,11 @@ function refreshTripReviewMapViewport(maps, located, center, focusedLocation) {
     fitTripReviewMapViewport(maps, located, center, focusedLocation);
 }
 
+function setTripReviewMapLoading(isLoading) {
+    const tripReviewMapPanel = $('.trip-review-map-panel');
+    tripReviewMapPanel?.classList.toggle('is-loading', isLoading);
+}
+
 function waitForTripReviewMapContainer(container, renderToken, attempts = 12) {
     return new Promise((resolve) => {
         const check = (remaining) => {
@@ -1285,6 +1291,7 @@ async function renderTripReviewMap(albumPhotos) {
         state.tripReviewMarkers = [];
         state.tripReviewMap = null;
         container.innerHTML = '<div class="map-api-warning"><strong>위치 정보가 있는 사진이 없습니다.</strong><span>위치가 저장된 사진을 추가하면 지도에 표시됩니다.</span></div>';
+        setTripReviewMapLoading(false);
         return;
     }
 
@@ -1292,6 +1299,7 @@ async function renderTripReviewMap(albumPhotos) {
     if (renderToken !== state.tripReviewMapRenderToken) return;
     if (!isContainerReady) {
         container.innerHTML = '<div class="map-api-warning"><strong>지도를 표시할 공간을 준비하는 중입니다.</strong><span>잠시 후 날짜를 다시 선택하거나 앨범을 다시 열면 위치가 표시됩니다.</span></div>';
+        setTripReviewMapLoading(false);
         return;
     }
 
@@ -1299,6 +1307,7 @@ async function renderTripReviewMap(albumPhotos) {
     if (renderToken !== state.tripReviewMapRenderToken) return;
     if (!maps) {
         container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>지도 설정이 완료되면 앨범 위치가 표시됩니다.</span></div>';
+        setTripReviewMapLoading(false);
         return;
     }
 
@@ -1334,6 +1343,9 @@ async function renderTripReviewMap(albumPhotos) {
         : null;
     fitTripReviewMapViewport(maps, located, center, focusedLocation);
     requestAnimationFrame(() => refreshTripReviewMapViewport(maps, located, center, focusedLocation));
+    window.setTimeout(() => {
+        if (renderToken === state.tripReviewMapRenderToken) setTripReviewMapLoading(false);
+    }, 360);
 
 }
 
@@ -3131,6 +3143,7 @@ function bindEvents() {
         if (tripDateButton) {
             state.tripReviewDateFilter = tripDateButton.dataset.tripReviewDate || null;
             state.tripReviewFocusPhotoId = null;
+            setTripReviewMapLoading(true);
             updateTripReviewDateFilterUI();
             renderTripReviewMap(state.albumDetailPhotos);
             return;
@@ -3140,6 +3153,7 @@ function bindEvents() {
         if (clearTripDateButton) {
             state.tripReviewDateFilter = null;
             state.tripReviewFocusPhotoId = null;
+            setTripReviewMapLoading(true);
             updateTripReviewDateFilterUI();
             renderTripReviewMap(state.albumDetailPhotos);
             return;
@@ -3152,6 +3166,7 @@ function bindEvents() {
             state.tripReviewFocusPhotoId = getTripReviewPhotoId(photo);
             state.tripReviewDateFilter = getTripReviewPhotoDateKey(photo);
             closeModals();
+            setTripReviewMapLoading(true);
             updateTripReviewDateFilterUI();
             renderTripReviewMap(state.albumDetailPhotos);
             document.querySelector(`[data-open-photo-detail][data-photo-id="${CSS.escape(state.tripReviewFocusPhotoId)}"]`)?.scrollIntoView({

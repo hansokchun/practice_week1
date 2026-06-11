@@ -2913,6 +2913,28 @@ img {
     background: #edf2ef;
 }
 
+.trip-review-map-loading {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--teal);
+    box-shadow: 0 10px 24px rgba(10, 41, 42, 0.12);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 8px 11px;
+    transition: opacity 160ms ease;
+}
+
+.trip-review-map-panel.is-loading .trip-review-map-loading {
+    opacity: 1;
+}
+
 .trip-review-map-summary {
     display: grid;
     gap: 12px;
