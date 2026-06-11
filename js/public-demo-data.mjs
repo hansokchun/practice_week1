@@ -5,13 +5,13 @@ const sampleAlbum = {
     visibility: 'public',
     cover_url: 'images/main_bg2.jpg',
     owner_id: 'sample',
-    photo_count: 200,
-    places: 200,
+    photo_count: 8,
+    places: 8,
     lat: 36.12,
     lng: 127.88
 };
 
-const baseSamplePhotos = [
+const samplePhotos = [
     {
         id: 'sample-public-photo-1',
         name: 'Gyeongbokgung Gate',
@@ -85,34 +85,6 @@ const baseSamplePhotos = [
         description: 'Public sample photo in central Korea.'
     }
 ];
-
-const sampleCities = [
-    { name: 'Seoul', lat: 37.5665, lng: 126.9780, image: 'images/main_bg1.jpg' },
-    { name: 'Busan', lat: 35.1796, lng: 129.0756, image: 'images/main_bg4.jpg' },
-    { name: 'Jeju', lat: 33.4582, lng: 126.9425, image: 'images/main_bg2.jpg' },
-    { name: 'Tokyo', lat: 35.6762, lng: 139.6503, image: 'images/main_bg5.jpg' },
-    { name: 'Kyoto', lat: 35.0116, lng: 135.7681, image: 'images/main_bg3.jpg' }
-];
-
-function buildGeneratedSamplePhoto(index) {
-    const city = sampleCities[index % sampleCities.length];
-    const ring = Math.floor(index / sampleCities.length);
-    const angle = ((index * 137.508) % 360) * (Math.PI / 180);
-    const radius = 0.01 + ((ring % 8) * 0.006);
-    return {
-        id: `sample-public-photo-${index + 1}`,
-        name: `${city.name} public photo ${index + 1}`,
-        url: city.image,
-        lat: Number((city.lat + (Math.sin(angle) * radius)).toFixed(6)),
-        lng: Number((city.lng + (Math.cos(angle) * radius)).toFixed(6)),
-        date: new Date(Date.UTC(2026, 4, 12 + (index % 18), 8 + (index % 10), (index * 7) % 60)).toISOString(),
-        description: `Public sample photo near ${city.name}.`
-    };
-}
-
-const samplePhotos = Array.from({ length: 200 }, (_, index) => (
-    index < baseSamplePhotos.length ? baseSamplePhotos[index] : buildGeneratedSamplePhoto(index)
-));
 
 export function getPublicDemoAlbums() {
     return [{ ...sampleAlbum }];

@@ -12,7 +12,7 @@ test('public demo albums and photos are visible on Explore with real coordinates
     const photos = albums.flatMap((album) => getPublicDemoPhotos(album));
 
     assert.deepEqual(albums.map((album) => album.id), ['sample-public-photos']);
-    assert.equal(photos.length, 200);
+    assert.equal(photos.length, 8);
     assert.ok(albums.every((album) => album.visibility === 'public'));
     assert.ok(photos.every((photo) => photo.visibility === 'public' && photo.shared === true));
     assert.ok(photos.every((photo) => Number.isFinite(photo.lat) && Number.isFinite(photo.lng)));
@@ -23,6 +23,6 @@ test('public demo album entries include photos so Explore can render pins immedi
     const entries = getPublicDemoAlbumEntries();
 
     assert.equal(entries.length, 1);
-    assert.ok(entries.every((album) => album.photos.length === 200));
+    assert.ok(entries.every((album) => album.photos.length === 8));
     assert.ok(entries.every((album) => album.places === album.photos.length));
 });
