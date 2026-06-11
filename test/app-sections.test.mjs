@@ -20,20 +20,20 @@ test('normalizeAppSection accepts only top-level product sections', () => {
 
 test('sectionToHash creates route-like hash values', () => {
     assert.equal(sectionToHash(APP_SECTIONS.HOME), '#/');
-    assert.equal(sectionToHash(APP_SECTIONS.MYPHOTO), '#/myphoto');
+    assert.equal(sectionToHash(APP_SECTIONS.MYPHOTO), '#/');
     assert.equal(sectionToHash(APP_SECTIONS.EXPLORE), '#/explore');
 });
 
-test('parseSectionHash handles route-like hashes and legacy photo hashes', () => {
+test('parseSectionHash handles route-like hashes, legacy myphoto hashes, and legacy photo hashes', () => {
     assert.equal(parseSectionHash('#/'), APP_SECTIONS.HOME);
-    assert.equal(parseSectionHash('#/myphoto'), APP_SECTIONS.MYPHOTO);
+    assert.equal(parseSectionHash('#/myphoto'), APP_SECTIONS.HOME);
     assert.equal(parseSectionHash('#/explore?photoId=123'), APP_SECTIONS.EXPLORE);
     assert.equal(parseSectionHash('#1234567890'), null);
     assert.equal(parseSectionHash(''), null);
 });
 
 test('viewMode compatibility maps current renderer modes to product sections', () => {
-    assert.equal(getSectionForViewMode('my'), APP_SECTIONS.MYPHOTO);
+    assert.equal(getSectionForViewMode('my'), APP_SECTIONS.HOME);
     assert.equal(getSectionForViewMode('shared'), APP_SECTIONS.EXPLORE);
     assert.equal(getViewModeForSection(APP_SECTIONS.MYPHOTO), 'my');
     assert.equal(getViewModeForSection(APP_SECTIONS.EXPLORE), 'shared');

@@ -12,6 +12,17 @@ test('myphoto dashboard no longer renders the stats strip', () => {
     assert.equal(html.includes('id="stat-album-count"'), false);
 });
 
+test('home absorbs the myphoto dashboard and top-level navigation is reduced to home and explore', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+
+    assert.equal(html.includes('id="page-myphoto"'), false);
+    assert.equal(html.includes('data-route="myphoto"'), false);
+    assert.equal(html.includes('data-mobile-route="myphoto"'), false);
+    assert.match(html, /id="page-home"[\s\S]*id="recent-photo-grid"[\s\S]*id="album-list"/);
+    assert.match(source, /renderedRoute === APP_SECTIONS\.HOME[\s\S]*renderSavedPhotoSurfaces\(\)/);
+});
+
 test('photo detail modal keeps the right information panel inside the viewport', () => {
     const css = readFileSync('style.css', 'utf8');
 

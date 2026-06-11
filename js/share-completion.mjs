@@ -2,7 +2,7 @@ import { buildTripHash } from './share-link.mjs';
 
 export function getShareCompletionHash(visibility, albumId) {
     if (visibility === 'public' && albumId) return buildTripHash(albumId);
-    return '#/myphoto';
+    return '#/';
 }
 
 export function getShareTargetAlbumId(updatedAlbum, fallbackAlbum) {

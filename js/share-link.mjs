@@ -43,7 +43,7 @@ export function getSharedRouteState(hash) {
         ? path || 'home'
         : 'home';
     return {
-        route: route || 'home',
+        route: route === 'myphoto' ? 'home' : route || 'home',
         albumId: parseSharedAlbumId(hash),
         ownerId: parseSharedOwnerId(hash)
     };

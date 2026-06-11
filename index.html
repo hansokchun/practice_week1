@@ -20,7 +20,6 @@
         </a>
         <nav class="top-nav" aria-label="Main navigation">
             <a href="#/" data-route="home" class="active">Home</a>
-            <a href="#/myphoto" data-route="myphoto">Myphoto</a>
             <a href="#/explore" data-route="explore">Explore</a>
         </nav>
         <div class="account-area">
@@ -130,12 +129,10 @@
                     <article><img src="images/main_bg1.jpg" alt=""><strong>파리 골목길 산책</strong><span>Paris, France</span></article>
                 </div>
             </section>
-        </section>
 
-        <section id="page-myphoto" class="page page-myphoto" aria-labelledby="myphoto-title">
-            <div class="page-container">
+            <section class="home-workspace page-container" aria-labelledby="myphoto-title">
                 <div class="page-intro">
-                    <p class="eyebrow">Myphoto</p>
+                    <p class="eyebrow">Home Archive</p>
                     <h1 id="myphoto-title">내 사진과 앨범을 정리하는 공간</h1>
                     <p>선택한 사진만 업로드됩니다. 모든 사진과 앨범은 기본 비공개입니다.</p>
                 </div>
@@ -187,14 +184,14 @@
                     </div>
                     <div id="album-list" class="album-list"></div>
                 </section>
-            </div>
+            </section>
         </section>
 
         <section id="page-photos" class="page page-photos" aria-labelledby="photos-title">
             <div class="page-container">
                 <button class="back-link" data-go-myphoto type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
-                    Myphoto
+                    Home
                 </button>
                 <div class="page-intro">
                     <p class="eyebrow">Personal Photos</p>
@@ -221,7 +218,7 @@
             <div class="page-container flow-page">
                 <button class="back-link" data-go-myphoto type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
-                    Myphoto
+                    Home
                 </button>
                 <div class="flow-hero">
                     <p class="eyebrow">Photo Upload</p>
@@ -258,7 +255,7 @@
                 <div class="upload-step-list">
                     <article><span>1</span><strong>사진 선택</strong><p>여행 중 찍은 사진을 기기에서 선택합니다.</p></article>
                     <article><span>2</span><strong>위치 확인</strong><p>GPS가 있는 사진은 자동으로 지도에 연결됩니다.</p></article>
-                    <article><span>3</span><strong>기본 비공개</strong><p>업로드된 사진은 공개 전까지 Myphoto에만 보관됩니다.</p></article>
+                    <article><span>3</span><strong>기본 비공개</strong><p>업로드된 사진은 공개 전까지 Home에만 보관됩니다.</p></article>
                 </div>
             </div>
         </section>
@@ -267,7 +264,7 @@
             <div class="page-container flow-page">
                 <button class="back-link" data-go-myphoto type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
-                    Myphoto
+                    Home
                 </button>
                 <div class="flow-hero">
                     <p class="eyebrow">Album Analysis</p>
@@ -541,10 +538,6 @@
         <button type="button" data-mobile-route="home">
             <span class="material-symbols-outlined">home</span>
             홈
-        </button>
-        <button type="button" data-mobile-route="myphoto">
-            <span class="material-symbols-outlined">photo_library</span>
-            내 사진
         </button>
         <button type="button" data-mobile-route="explore">
             <span class="material-symbols-outlined">explore</span>

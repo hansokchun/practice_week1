@@ -35,7 +35,7 @@ test('normalizeSavedPageState upgrades older saved state without appSection', ()
     });
 
     assert.deepEqual(normalizeSavedPageState({ viewMode: 'my' }), {
-        appSection: 'myphoto',
+        appSection: 'home',
         viewMode: 'my'
     });
 });

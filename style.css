@@ -191,8 +191,7 @@ img {
     display: block;
 }
 
-.page-home,
-.page-myphoto {
+.page-home {
     min-height: calc(100vh - var(--header-height));
 }
 

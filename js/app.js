@@ -195,12 +195,18 @@ function parseRouteHash(hash) {
     if (!hash || !hash.startsWith('#/')) return APP_SECTIONS.HOME;
     const path = hash.slice(2).split('?')[0].replace(/^\/+|\/+$/g, '');
     if (!path) return APP_SECTIONS.HOME;
+    if (path === APP_SECTIONS.MYPHOTO) return APP_SECTIONS.HOME;
     if (ROUTES.has(path)) return path;
     return parseSectionHash(hash) || APP_SECTIONS.HOME;
 }
 
+function getRenderedRoute(route) {
+    return route === APP_SECTIONS.MYPHOTO ? APP_SECTIONS.HOME : route;
+}
+
 function routeTo(section, { replace = false } = {}) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
+    const renderedRoute = getRenderedRoute(normalized);
     const authRequiredRoute = getAuthRequiredRoute(normalized, state.currentUser);
     if (authRequiredRoute) {
         state.pendingAuthRoute = authRequiredRoute;
@@ -208,7 +214,7 @@ function routeTo(section, { replace = false } = {}) {
         showToast('사진을 업로드하려면 먼저 로그인해주세요.');
         return;
     }
-    const hash = normalized === 'home' ? '#/' : `#/${normalized}`;
+    const hash = renderedRoute === 'home' ? '#/' : `#/${renderedRoute}`;
     if (replace) window.history.replaceState(null, '', hash);
     else if (window.location.hash !== hash) window.location.hash = hash;
     renderRoute(normalized);
@@ -238,24 +244,26 @@ function clearUploadQueue() {
 
 function renderRoute(section) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
+    const renderedRoute = getRenderedRoute(normalized);
     const previousRoute = document.body.dataset.page || null;
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    const navSection = ['upload', 'photos', 'album', 'album-photos', 'trip'].includes(normalized)
-        ? APP_SECTIONS.MYPHOTO
+    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'album', 'album-photos', 'trip'].includes(normalized)
+        ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
-            : normalized;
+            : renderedRoute;
 
-    document.body.dataset.page = normalized;
+    document.body.dataset.page = renderedRoute;
     $$('.page').forEach((page) => page.classList.remove('active'));
-    $(`#page-${normalized}`)?.classList.add('active');
+    $(`#page-${renderedRoute}`)?.classList.add('active');
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
+    if (renderedRoute === APP_SECTIONS.HOME) renderSavedPhotoSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
         ensureExploreMap();
@@ -273,11 +281,12 @@ function applyRouteHash(hash, options = {}) {
     const route = sharedRoute.route || parseRouteHash(hash);
     const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
     if (options.replace) {
+        const renderedRoute = getRenderedRoute(normalized);
         const nextHash = hash && hash.startsWith('#/')
             ? hash
-            : normalized === 'home'
+            : renderedRoute === 'home'
                 ? '#/'
-                : `#/${normalized}`;
+                : `#/${renderedRoute}`;
         window.history.replaceState(null, '', nextHash);
     }
     renderRoute(normalized);
@@ -1451,8 +1460,8 @@ function renderPublicSurfaces() {
     }
     const reviewBackButton = $('.trip-review-header .back-link');
     const reviewBackLabel = $('#trip-review-back-label');
-    if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'myphoto' : 'explore';
-    if (reviewBackLabel) reviewBackLabel.textContent = isOwnAlbum ? 'Myphoto' : 'Explore';
+    if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'home' : 'explore';
+    if (reviewBackLabel) reviewBackLabel.textContent = isOwnAlbum ? 'Home' : 'Explore';
     if (tripReviewMeta) {
         tripReviewMeta.innerHTML = `
             <span>${tripSummary.dateRange || '날짜 없음'}</span>
@@ -1898,7 +1907,7 @@ function renderAlbumComposePage() {
     page.innerHTML = `
         <button class="back-link" data-go-myphoto type="button">
             <span class="material-symbols-outlined">arrow_back</span>
-            Myphoto
+            Home
         </button>
         <div class="album-compose-header">
             <div>
@@ -2299,7 +2308,7 @@ async function deleteSelectedAlbum() {
     state.selectedPublicAlbumId = state.savedAlbums.find((item) => item.owner_id === state.currentUser?.id)?.id || null;
     state.albumDetailEditMode = false;
     renderSavedPhotoSurfaces();
-    routeTo(APP_SECTIONS.MYPHOTO);
+    routeTo(APP_SECTIONS.HOME);
     showToast('앨범을 삭제했습니다.');
 }
 
@@ -2436,7 +2445,7 @@ function renderAlbumDrafts() {
                 <div>
                     <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.04.20 - 04.22</span>
                     <strong>동해 새벽 여행</strong>
-                    <p>공개 전까지는 Myphoto에서만 확인할 수 있는 개인 여행 기록입니다.</p>
+                    <p>공개 전까지는 Home에서만 확인할 수 있는 개인 여행 기록입니다.</p>
                     <small>42장 · 보관중</small>
                 </div>
             </article>
@@ -3020,7 +3029,7 @@ function bindEvents() {
         });
     });
     $$('[data-mobile-route]').forEach((button) => button.addEventListener('click', () => routeTo(button.dataset.mobileRoute)));
-    $('#btn-home-myphoto')?.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO));
+    $('#btn-home-myphoto')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-home-explore')?.addEventListener('click', () => routeTo(APP_SECTIONS.EXPLORE));
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
@@ -3032,7 +3041,7 @@ function bindEvents() {
     });
     $('#btn-open-album')?.addEventListener('click', startNewAlbum);
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
-    $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.MYPHOTO)));
+    $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.HOME)));
     $$('[data-go-album]').forEach((button) => button.addEventListener('click', () => routeTo('album')));
     $$('[data-go-trip]').forEach((button) => {
         button.addEventListener('click', () => routeToTrip(button.dataset.publicAlbumId));
@@ -3076,7 +3085,7 @@ function bindEvents() {
 
         const goMyphotoButton = event.target.closest('[data-go-myphoto]');
         if (goMyphotoButton) {
-            routeTo(APP_SECTIONS.MYPHOTO);
+            routeTo(APP_SECTIONS.HOME);
             return;
         }
 
