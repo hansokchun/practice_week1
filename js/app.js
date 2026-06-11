@@ -87,10 +87,7 @@ import {
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 import {
-    getExploreMarkerClusters,
-    getExploreMarkerExpansionZoom,
-    getExploreViewportAction,
-    shouldShowExploreClusterLabel
+    getExploreViewportAction
 } from './explore-marker-clusters.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
@@ -608,57 +605,22 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         $('#explore-pin-preview')?.setAttribute('hidden', '');
         return;
     }
-    const currentZoom = map.getZoom?.() || state.exploreZoom;
-    const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
-    state.exploreMarkers = clusters.map((cluster) => {
-        if (cluster.count === 1) {
-            const [photo] = cluster.photos;
-            const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
-            const marker = new maps.Marker({
-                map,
-                position: { lat: Number(photo.lat), lng: Number(photo.lng) },
-                title: photo.name || photo.albumTitle || '공개 사진',
-                icon: getExplorePinIcon(maps, { type: 'photo', selected }),
-                label: null,
-                zIndex: selected ? 12 : 10
-            });
-            marker.addListener('click', () => {
-                if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
-                updateExplorePhotoPreview(photo);
-                setExplorePreviewExpanded(false);
-                document.body.classList.add('explore-pin-selected');
-                $('#explore-pin-preview')?.removeAttribute('hidden');
-            });
-            return marker;
-        }
-
+    state.exploreMarkers = locatedPhotos.map((photo) => {
+        const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
         const marker = new maps.Marker({
             map,
-            position: cluster.position,
-            title: `이 지역 공개 사진 ${formatPhotoCount(cluster.count)}`,
-            icon: getExplorePinIcon(maps, { type: 'photo' }),
-            label: shouldShowExploreClusterLabel(cluster)
-                ? {
-                    text: String(Math.min(cluster.count, 99)),
-                    color: '#ffffff',
-                    fontSize: '12px',
-                    fontWeight: '800'
-                }
-                : null,
-            zIndex: 20 + Math.min(cluster.count, 99)
+            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+            title: photo.name || photo.albumTitle || '공개 사진',
+            icon: getExplorePinIcon(maps, { type: 'photo', selected }),
+            label: null,
+            zIndex: selected ? 12 : 10
         });
         marker.addListener('click', () => {
-            state.selectedPublicAlbumId = null;
-            state.selectedPhotoId = null;
+            if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
+            updateExplorePhotoPreview(photo);
             setExplorePreviewExpanded(false);
-            document.body.classList.remove('explore-pin-selected');
-            $('#explore-pin-preview')?.setAttribute('hidden', '');
-            const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, {
-                radiusPx: 54,
-                maxZoom: 18
-            });
-            map.panTo(cluster.position);
-            map.setZoom(expansionZoom);
+            document.body.classList.add('explore-pin-selected');
+            $('#explore-pin-preview')?.removeAttribute('hidden');
         });
         return marker;
     });
