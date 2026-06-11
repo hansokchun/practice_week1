@@ -742,6 +742,8 @@ function updateAccountUI() {
         || 'Guest';
     const label = $('#account-label');
     const button = $('#btn-open-auth');
+    document.body.classList.toggle('is-logged-in', Boolean(state.currentUser));
+    document.body.classList.toggle('is-logged-out', !state.currentUser);
     if (label) label.textContent = name;
     if (button) button.textContent = state.currentUser ? 'Logout' : 'Login';
 }

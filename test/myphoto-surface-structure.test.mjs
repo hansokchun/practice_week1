@@ -32,6 +32,31 @@ test('home no longer renders the temporary album preview and public example band
     assert.equal(html.includes('class="public-example-grid"'), false);
 });
 
+test('home leads with public discovery while keeping upload as the secondary action', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+
+    assert.match(html, /id="home-title"[\s\S]*다른 사람들의 여행 사진을 지도에서 둘러보세요/);
+    assert.match(html, /id="btn-home-explore" class="btn-primary"[\s\S]*둘러보기/);
+    assert.match(html, /id="btn-home-myphoto" class="btn-secondary"[\s\S]*내 사진으로 지도 만들기/);
+    assert.match(html, /id="home-public-preview-title"[\s\S]*지금 지도에서 볼 수 있는 공개 사진/);
+    assert.match(html, /class="home-public-photo-grid"[\s\S]*data-route="explore"/);
+    assert.match(source, /\$\('#btn-home-explore'\)\?\.addEventListener\('click', \(\) => routeTo\(APP_SECTIONS\.EXPLORE\)\)/);
+    assert.match(source, /\$\('#btn-home-myphoto'\)\?\.addEventListener\('click', \(\) => routeTo\('upload'\)\)/);
+});
+
+test('home private workspace is only visible after login', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+
+    assert.match(html, /<body[^>]*class="is-logged-out"/);
+    assert.match(css, /body\.is-logged-out\s+\.home-workspace\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.match(source, /document\.body\.classList\.toggle\('is-logged-in', Boolean\(state\.currentUser\)\)/);
+    assert.match(source, /document\.body\.classList\.toggle\('is-logged-out', !state\.currentUser\)/);
+});
+
 test('photo detail modal keeps the right information panel inside the viewport', () => {
     const css = readFileSync('style.css', 'utf8');
 

@@ -255,6 +255,14 @@ img {
     margin-top: 34px;
 }
 
+body.is-logged-out .home-workspace {
+    display: none;
+}
+
+body.is-logged-in .home-workspace {
+    display: block;
+}
+
 .hero-visual {
     position: relative;
 }
@@ -326,6 +334,128 @@ img {
 
 .soft-band {
     border-top: 1px solid var(--line);
+}
+
+.home-public-preview {
+    padding-top: 52px;
+}
+
+.home-public-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.home-map-preview {
+    position: relative;
+    min-height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #ffffff;
+}
+
+.home-map-preview img {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    object-fit: cover;
+}
+
+.map-dot {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 3px solid #ffffff;
+    border-radius: 999px;
+    background: var(--coral);
+    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.24);
+}
+
+.dot-seoul {
+    top: 31%;
+    left: 54%;
+}
+
+.dot-busan {
+    top: 70%;
+    left: 66%;
+}
+
+.dot-jeju {
+    top: 78%;
+    left: 36%;
+}
+
+.map-preview-card {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    display: grid;
+    gap: 6px;
+    width: min(360px, calc(100% - 48px));
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.88);
+    padding: 16px;
+    backdrop-filter: blur(12px);
+}
+
+.map-preview-card strong {
+    color: var(--teal);
+}
+
+.map-preview-card small {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.home-public-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.home-public-photo-grid button {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 0;
+    cursor: pointer;
+}
+
+.home-public-photo-grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    transition: transform 180ms ease;
+}
+
+.home-public-photo-grid button:hover img {
+    transform: scale(1.04);
+}
+
+.home-public-photo-grid span {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 10px;
+}
+
+.home-public-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .section-heading {
@@ -3490,6 +3620,15 @@ img {
 
     .hero h1 {
         font-size: 40px;
+    }
+
+    .home-public-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .home-map-preview,
+    .home-map-preview img {
+        min-height: 320px;
     }
 
     .content-band,

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body data-page="home">
+<body class="is-logged-out" data-page="home">
     <header class="site-header">
         <a class="brand" href="#/" aria-label="Travelgram home">
             <img src="images/logo.webp" alt="">
@@ -32,13 +32,13 @@
         <section id="page-home" class="page page-home active" aria-labelledby="home-title">
             <div class="hero">
                 <div class="hero-content">
-                    <h1 id="home-title">사진을 고르면<br>여행 지도가 만들어집니다.</h1>
+                    <h1 id="home-title">다른 사람들의 여행 사진을 지도에서 둘러보세요</h1>
                     <p class="hero-copy">
-                        흩어진 여행 사진을 날짜와 위치에 따라 앨범으로 정리하고, 공개하고 싶은 여행만 지도 위에 공유하세요.
+                        공개된 여행 사진을 지도에서 먼저 발견하고, 마음에 드는 장소를 찾았다면 내 사진으로 나만의 여행 지도도 만들어보세요.
                     </p>
                     <div class="hero-actions">
-                        <button id="btn-home-myphoto" class="btn-primary" type="button">내 사진으로 시작하기</button>
-                        <button id="btn-home-explore" class="btn-secondary" type="button">공개 여행 둘러보기</button>
+                        <button id="btn-home-explore" class="btn-primary" type="button">둘러보기</button>
+                        <button id="btn-home-myphoto" class="btn-secondary" type="button">내 사진으로 지도 만들기</button>
                     </div>
                 </div>
                 <div class="hero-visual" aria-label="여행 지도 생성 미리보기">
@@ -54,6 +54,50 @@
                     </div>
                 </div>
             </div>
+
+            <section class="content-band home-public-preview" aria-labelledby="home-public-preview-title">
+                <div class="section-heading">
+                    <p class="eyebrow">Explore First</p>
+                    <h2 id="home-public-preview-title">지금 지도에서 볼 수 있는 공개 사진</h2>
+                    <p>서울, 부산, 제주처럼 익숙한 장소부터 여행자가 남긴 사진 핀을 먼저 둘러보세요.</p>
+                </div>
+                <div class="home-public-layout">
+                    <div class="home-map-preview" aria-label="공개 사진 지도 미리보기">
+                        <img src="images/main_bg2.jpg" alt="공개 사진 지도 미리보기">
+                        <span class="map-dot dot-seoul"></span>
+                        <span class="map-dot dot-busan"></span>
+                        <span class="map-dot dot-jeju"></span>
+                        <div class="map-preview-card">
+                            <strong>공개 사진 200장까지 준비 가능</strong>
+                            <small>초기 배포에서는 지도 위 샘플 사진으로 바로 둘러보는 경험을 만듭니다.</small>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="home-public-photo-grid">
+                            <button type="button" data-route="explore">
+                                <img src="images/main_bg1.jpg" alt="공개 여행 사진 예시">
+                                <span>Seoul</span>
+                            </button>
+                            <button type="button" data-route="explore">
+                                <img src="images/main_bg4.jpg" alt="공개 여행 사진 예시">
+                                <span>Busan</span>
+                            </button>
+                            <button type="button" data-route="explore">
+                                <img src="images/main_bg5.jpg" alt="공개 여행 사진 예시">
+                                <span>Jeju</span>
+                            </button>
+                            <button type="button" data-route="explore">
+                                <img src="images/main_bg3.jpg" alt="공개 여행 사진 예시">
+                                <span>Tokyo</span>
+                            </button>
+                        </div>
+                        <div class="home-public-actions">
+                            <button class="btn-primary" data-route="explore" type="button">지도에서 더 보기</button>
+                            <button class="btn-secondary" data-route="upload" type="button">나도 지도 만들기</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <section class="content-band white-band" aria-labelledby="home-flow-title">
                 <div class="section-heading">
