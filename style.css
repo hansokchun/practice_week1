@@ -2506,6 +2506,33 @@ body.is-logged-in .home-workspace {
     font-size: 18px;
 }
 
+.pin-cluster-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.pin-cluster-thumbs[hidden] {
+    display: none;
+}
+
+.pin-cluster-thumbs button {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 0;
+    cursor: pointer;
+}
+
+.pin-cluster-thumbs img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+}
+
 .pin-author,
 .public-author-card {
     display: flex;

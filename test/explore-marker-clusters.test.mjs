@@ -39,8 +39,8 @@ test('getExploreMarkerExpansionZoom finds the next zoom level that separates a c
     assert.equal(getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 }), 12);
 });
 
-test('cluster pins use the same logo without numeric labels', () => {
-    assert.equal(shouldShowExploreClusterLabel({ count: 4 }), false);
+test('cluster pins show count labels only for grouped photos', () => {
+    assert.equal(shouldShowExploreClusterLabel({ count: 4 }), true);
     assert.equal(shouldShowExploreClusterLabel({ count: 1 }), false);
 });
 

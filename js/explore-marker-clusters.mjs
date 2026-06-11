@@ -57,8 +57,8 @@ export function getExploreMarkerClusterBounds(photos = []) {
     };
 }
 
-export function shouldShowExploreClusterLabel() {
-    return false;
+export function shouldShowExploreClusterLabel({ count = 1 } = {}) {
+    return Number(count) > 1;
 }
 
 export function shouldRerenderExploreMarkersAfterPinClick({ isCluster = false } = {}) {

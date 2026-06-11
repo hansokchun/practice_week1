@@ -87,7 +87,11 @@ import {
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 import {
-    getExploreViewportAction
+    getExploreMarkerClusterBounds,
+    getExploreMarkerClusters,
+    getExploreMarkerExpansionZoom,
+    getExploreViewportAction,
+    shouldShowExploreClusterLabel
 } from './explore-marker-clusters.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
@@ -420,6 +424,8 @@ function updateExplorePhotoPreview(photo) {
     const profileButton = preview.querySelector('[data-go-profile]');
     const authorAvatar = preview.querySelector('.pin-author .avatar');
     const authorNameNode = preview.querySelector('.pin-author strong');
+    const authorBlock = preview.querySelector('.pin-author');
+    const clusterThumbs = preview.querySelector('.pin-cluster-thumbs');
     const displayTitle = getPhotoTitle(photo);
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
@@ -454,9 +460,60 @@ function updateExplorePhotoPreview(photo) {
         profileButton.dataset.publicAlbumId = photo.album_id || '';
         profileButton.dataset.publicOwnerId = ownerId;
     }
+    if (authorBlock) authorBlock.hidden = false;
+    if (clusterThumbs) {
+        clusterThumbs.hidden = true;
+        clusterThumbs.innerHTML = '';
+    }
     if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
     if (authorNameNode) authorNameNode.textContent = authorName;
     updatePhotoDetailModal(photo);
+}
+
+function updateExploreClusterPreview(photos = []) {
+    const preview = $('#explore-pin-preview');
+    if (!preview || !photos.length) return;
+    const representative = photos[0];
+    const photoButton = preview.querySelector('[data-pin-preview-photo]');
+    const image = photoButton?.querySelector('img');
+    const title = preview.querySelector('.pin-preview-copy h2');
+    const note = preview.querySelector('.pin-preview-copy p:last-child');
+    const meta = preview.querySelector('.pin-preview-meta');
+    const authorBlock = preview.querySelector('.pin-author');
+    const clusterThumbs = preview.querySelector('.pin-cluster-thumbs');
+    if (photoButton) photoButton.dataset.photoId = representative.id || '';
+    if (image) {
+        image.src = representative.url || 'images/main_bg2.jpg';
+        image.alt = '묶음 공개 사진 대표 이미지';
+    }
+    if (title) {
+        title.textContent = `이 지역 공개 사진 ${formatPhotoCount(photos.length)}`;
+        title.hidden = false;
+    }
+    if (note) {
+        note.textContent = photos.length > 30
+            ? '사진이 많은 지역입니다. 지도를 확대하면 더 작은 묶음과 개별 사진으로 나뉩니다.'
+            : '대표 사진만 먼저 보여줍니다. 지도를 확대하면 개별 사진 핀을 더 쉽게 볼 수 있습니다.';
+        note.hidden = false;
+    }
+    if (meta) {
+        const albums = new Set(photos.map((photo) => photo.album_id || photo.albumTitle || photo.album).filter(Boolean));
+        meta.innerHTML = `
+            <span><span class="material-symbols-outlined">photo_library</span> ${formatPhotoCount(photos.length)}</span>
+            <span><span class="material-symbols-outlined">travel_explore</span> ${formatPlaceCount(Math.min(photos.length, 99))}</span>
+            <span><span class="material-symbols-outlined">collections_bookmark</span> ${formatAlbumCount(albums.size || 1)}</span>
+        `;
+    }
+    if (authorBlock) authorBlock.hidden = true;
+    if (clusterThumbs) {
+        clusterThumbs.hidden = false;
+        clusterThumbs.innerHTML = photos.slice(0, 4).map((photo) => `
+            <button type="button" data-cluster-photo-id="${escapeHtml(photo.id || '')}">
+                <img src="${escapeHtml(photo.url || 'images/main_bg2.jpg')}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
+            </button>
+        `).join('');
+    }
+    updatePhotoDetailModal(representative);
 }
 
 function setExplorePreviewExpanded(isExpanded) {
@@ -605,22 +662,59 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         $('#explore-pin-preview')?.setAttribute('hidden', '');
         return;
     }
-    state.exploreMarkers = locatedPhotos.map((photo) => {
-        const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
+    const currentZoom = map.getZoom?.() || state.exploreZoom;
+    const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
+    state.exploreMarkers = clusters.map((cluster) => {
+        if (cluster.count === 1) {
+            const photo = cluster.photos[0];
+            const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
+            const marker = new maps.Marker({
+                map,
+                position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+                title: photo.name || photo.albumTitle || '공개 사진',
+                icon: getExplorePinIcon(maps, { type: 'photo', selected }),
+                label: null,
+                zIndex: selected ? 12 : 10
+            });
+            marker.addListener('click', () => {
+                if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
+                updateExplorePhotoPreview(photo);
+                setExplorePreviewExpanded(false);
+                document.body.classList.add('explore-pin-selected');
+                $('#explore-pin-preview')?.removeAttribute('hidden');
+            });
+            return marker;
+        }
         const marker = new maps.Marker({
             map,
-            position: { lat: Number(photo.lat), lng: Number(photo.lng) },
-            title: photo.name || photo.albumTitle || '공개 사진',
-            icon: getExplorePinIcon(maps, { type: 'photo', selected }),
-            label: null,
-            zIndex: selected ? 12 : 10
+            position: cluster.position,
+            title: `이 지역 공개 사진 ${formatPhotoCount(cluster.count)}`,
+            icon: getExplorePinIcon(maps, { type: 'cluster' }),
+            label: shouldShowExploreClusterLabel(cluster) ? {
+                text: String(Math.min(cluster.count, 99)),
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: '800'
+            } : null,
+            zIndex: 20 + Math.min(cluster.count, 99)
         });
         marker.addListener('click', () => {
-            if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
-            updateExplorePhotoPreview(photo);
+            state.selectedPublicAlbumId = null;
+            state.selectedPhotoId = null;
+            updateExploreClusterPreview(cluster.photos);
             setExplorePreviewExpanded(false);
             document.body.classList.add('explore-pin-selected');
             $('#explore-pin-preview')?.removeAttribute('hidden');
+            const clusterBounds = getExploreMarkerClusterBounds(cluster.photos);
+            if (clusterBounds) {
+                const bounds = new maps.LatLngBounds();
+                cluster.photos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+                map.fitBounds(bounds, 112);
+                const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, { radiusPx: 54, maxZoom: 18 });
+                window.setTimeout(() => {
+                    if (map.getZoom?.() < expansionZoom) map.setZoom(expansionZoom);
+                }, 120);
+            }
         });
         return marker;
     });
@@ -3082,6 +3176,13 @@ function bindEvents() {
         const exploreScopeButton = event.target.closest('[data-explore-scope]');
         if (exploreScopeButton) {
             setExplorePhotoScope(exploreScopeButton.dataset.exploreScope);
+            return;
+        }
+
+        const clusterPhotoButton = event.target.closest('[data-cluster-photo-id]');
+        if (clusterPhotoButton) {
+            const photo = state.exploreMarkerPhotos.find((candidate) => String(candidate.id) === String(clusterPhotoButton.dataset.clusterPhotoId));
+            if (photo) updateExplorePhotoPreview(photo);
             return;
         }
 
