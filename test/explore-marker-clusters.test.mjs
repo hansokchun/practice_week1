@@ -54,8 +54,8 @@ test('getExploreMarkerExpansionZoom uses the highest zoom needed to fully split 
     assert.ok(clustersBeforeZoom.length < photos.length);
 });
 
-test('cluster pins show count labels only for grouped photos', () => {
-    assert.equal(shouldShowExploreClusterLabel({ count: 4 }), true);
+test('cluster pins do not show numeric count labels', () => {
+    assert.equal(shouldShowExploreClusterLabel({ count: 4 }), false);
     assert.equal(shouldShowExploreClusterLabel({ count: 1 }), false);
 });
 

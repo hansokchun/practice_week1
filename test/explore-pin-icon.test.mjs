@@ -24,3 +24,21 @@ test('Explore photo pin icon uses a visible Google Maps symbol color', () => {
     assert.equal(icon.anchor.x, 24);
     assert.equal(icon.anchor.y, 45);
 });
+
+test('Explore cluster pin icon is visually distinct from a photo pin', () => {
+    const maps = {
+        Point: class Point {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+    };
+    const photoIcon = getExplorePinSymbolIcon(maps, { type: 'photo' });
+    const clusterIcon = getExplorePinSymbolIcon(maps, { type: 'cluster' });
+
+    assert.notEqual(clusterIcon.fillColor, photoIcon.fillColor);
+    assert.ok(clusterIcon.scale > photoIcon.scale);
+    assert.equal(clusterIcon.strokeColor, '#ffffff');
+    assert.equal(clusterIcon.url, undefined);
+});

@@ -89,8 +89,7 @@ import {
 import {
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
-    getExploreViewportAction,
-    shouldShowExploreClusterLabel
+    getExploreViewportAction
 } from './explore-marker-clusters.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
@@ -636,15 +635,8 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             map,
             position: cluster.position,
             title: `이 지역 공개 사진 ${formatPhotoCount(cluster.count)}`,
-            icon: getExplorePinIcon(maps, { type: 'photo' }),
-            label: shouldShowExploreClusterLabel(cluster)
-                ? {
-                    text: String(Math.min(cluster.count, 99)),
-                    color: '#ffffff',
-                    fontSize: '12px',
-                    fontWeight: '800'
-                }
-                : null,
+            icon: getExplorePinIcon(maps, { type: 'cluster' }),
+            label: null,
             zIndex: 20 + Math.min(cluster.count, 99)
         });
         marker.addListener('click', () => {
@@ -657,8 +649,12 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
                 radiusPx: 54,
                 maxZoom: 18
             });
-            map.panTo(cluster.position);
-            map.setZoom(expansionZoom);
+            const bounds = new maps.LatLngBounds();
+            cluster.photos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+            maps.event.addListenerOnce(map, 'idle', () => {
+                if ((map.getZoom?.() || 0) < expansionZoom) map.setZoom(expansionZoom);
+            });
+            map.fitBounds(bounds, 96);
         });
         return marker;
     });
