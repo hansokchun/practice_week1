@@ -87,6 +87,7 @@ import {
     shouldOpenAlbumDetailPhotoClick
 } from './album-detail-edit-state.mjs';
 import {
+    getExploreExpandedClusterPositions,
     getExploreMarkerClusters,
     getExploreMarkerExpansionZoom,
     getExploreViewportAction
@@ -135,6 +136,8 @@ const state = {
     exploreMap: null,
     exploreMarkers: [],
     exploreClusterListener: null,
+    exploreExpandedClusterPhotoIds: [],
+    exploreExpandedClusterZoom: null,
     exploreMarkerPhotos: [],
     exploreSelectedAlbumId: null,
     exploreSearchBox: null,
@@ -608,14 +611,28 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         return;
     }
     const currentZoom = map.getZoom?.() || state.exploreZoom;
-    const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
+    if (state.exploreExpandedClusterZoom && currentZoom < state.exploreExpandedClusterZoom) {
+        state.exploreExpandedClusterPhotoIds = [];
+        state.exploreExpandedClusterZoom = null;
+    }
+    const expandedPhotoIds = new Set(state.exploreExpandedClusterPhotoIds);
+    const expandedPhotos = locatedPhotos.filter((photo) => expandedPhotoIds.has(String(photo.id)));
+    const clusterablePhotos = locatedPhotos.filter((photo) => !expandedPhotoIds.has(String(photo.id)));
+    const clusters = getExploreMarkerClusters(clusterablePhotos, currentZoom, 54).concat(
+        getExploreExpandedClusterPositions(expandedPhotos).map(({ photo, position }) => ({
+            id: `expanded-${photo.id || `${photo.lat},${photo.lng}`}`,
+            count: 1,
+            photos: [photo],
+            position
+        }))
+    );
     state.exploreMarkers = clusters.map((cluster) => {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
             const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
             const marker = new maps.Marker({
                 map,
-                position: { lat: Number(photo.lat), lng: Number(photo.lng) },
+                position: cluster.position || { lat: Number(photo.lat), lng: Number(photo.lng) },
                 title: photo.name || photo.albumTitle || '공개 사진',
                 icon: getExplorePinIcon(maps, { type: 'photo', selected }),
                 label: null,
@@ -652,7 +669,13 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             const bounds = new maps.LatLngBounds();
             cluster.photos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
             maps.event.addListenerOnce(map, 'idle', () => {
-                if ((map.getZoom?.() || 0) < expansionZoom) map.setZoom(expansionZoom);
+                state.exploreExpandedClusterPhotoIds = cluster.photos.map((photo) => String(photo.id));
+                state.exploreExpandedClusterZoom = expansionZoom;
+                if ((map.getZoom?.() || 0) < expansionZoom) {
+                    map.setZoom(expansionZoom);
+                } else {
+                    renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+                }
             });
             map.fitBounds(bounds, 96);
         });

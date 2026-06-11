@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    getExploreExpandedClusterPositions,
     getExploreMarkerClusters,
     getExploreMarkerClusterBounds,
     getExploreMarkerExpansionZoom,
@@ -57,6 +58,21 @@ test('getExploreMarkerExpansionZoom uses the highest zoom needed to fully split 
 test('cluster pins do not show numeric count labels', () => {
     assert.equal(shouldShowExploreClusterLabel({ count: 4 }), false);
     assert.equal(shouldShowExploreClusterLabel({ count: 1 }), false);
+});
+
+test('expanded cluster positions separate photos that still overlap at max zoom', () => {
+    const photos = [
+        { id: 'a', lat: 37.5665, lng: 126.9780 },
+        { id: 'b', lat: 37.5665, lng: 126.9780 }
+    ];
+
+    const clustersAtMaxZoom = getExploreMarkerClusters(photos, 18, 54);
+    const expanded = getExploreExpandedClusterPositions(photos, { spread: 0.001 });
+
+    assert.equal(clustersAtMaxZoom.length, 1);
+    assert.equal(expanded.length, 2);
+    assert.notDeepEqual(expanded[0].position, expanded[1].position);
+    assert.deepEqual(expanded.map((item) => item.photo.id), ['a', 'b']);
 });
 
 test('Explore viewport fits only when the marker data set changes', () => {

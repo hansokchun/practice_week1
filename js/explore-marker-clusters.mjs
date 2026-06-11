@@ -19,6 +19,27 @@ function averagePosition(photos) {
     };
 }
 
+export function getExploreExpandedClusterPositions(photos = [], { spread = 0.001 } = {}) {
+    if (photos.length <= 1) {
+        return photos.map((photo) => ({
+            photo,
+            position: { lat: Number(photo.lat), lng: Number(photo.lng) }
+        }));
+    }
+
+    const center = averagePosition(photos);
+    return photos.map((photo, index) => {
+        const angle = ((Math.PI * 2) / photos.length) * index - (Math.PI / 2);
+        return {
+            photo,
+            position: {
+                lat: Number((center.lat + Math.sin(angle) * spread).toFixed(6)),
+                lng: Number((center.lng + Math.cos(angle) * spread).toFixed(6))
+            }
+        };
+    });
+}
+
 export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
     const buckets = new Map();
     photos.forEach((photo) => {
