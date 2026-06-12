@@ -33,3 +33,15 @@ test('auth modal exposes Google and email auth while Kakao is disabled for QA', 
     assert.match(html, /id="auth-form"/);
     assert.doesNotMatch(html, /id="btn-kakao-login"/);
 });
+
+test('Google login warns before redirecting from embedded mobile browsers', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const start = source.indexOf('async function handleSocialLogin');
+    const end = source.indexOf('async function runPendingAuthAction', start);
+    const body = source.slice(start, end);
+
+    assert.match(body, /provider === 'google' && isLikelyEmbeddedOAuthBrowser\(window\.navigator\?\.userAgent\)/);
+    assert.match(body, /getEmbeddedOAuthBrowserMessage\(provider\)/);
+    assert.match(body, /showToast\(browserMessage\)/);
+    assert.match(body, /return;/);
+});

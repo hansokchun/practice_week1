@@ -91,6 +91,10 @@ import {
     getExploreMarkerExpansionZoom,
     getExploreViewportAction
 } from './explore-marker-clusters.mjs';
+import {
+    getEmbeddedOAuthBrowserMessage,
+    isLikelyEmbeddedOAuthBrowser
+} from './mobile-oauth-browser.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import {
@@ -3044,6 +3048,13 @@ async function handleSignup() {
 
 async function handleSocialLogin(provider) {
     const message = $('#auth-message');
+    if (provider === 'google' && isLikelyEmbeddedOAuthBrowser(window.navigator?.userAgent)) {
+        const browserMessage = getEmbeddedOAuthBrowserMessage(provider);
+        if (message) message.textContent = browserMessage;
+        showToast(browserMessage);
+        return;
+    }
+
     if (message) message.textContent = `${provider === 'google' ? 'Google' : 'Kakao'} 로그인으로 이동합니다...`;
     storePendingAuthContext(window.sessionStorage, state, {
         route: getCurrentRoute(),
