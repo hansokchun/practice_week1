@@ -31,6 +31,17 @@ test('Explore pin preview stores the selected photo id on the preview image acti
     assert.match(body, /photoButton\.dataset\.photoId = photo\.id \|\| ''/);
 });
 
+test('Explore photo preview only shows visibility for the current user photo', () => {
+    const fnStart = source.indexOf('function updateExplorePhotoPreview');
+    const fnEnd = source.indexOf('function updateExploreAlbumPreview', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /const isOwnPhoto = Boolean\(state\.currentUser\?\.id && ownerId === state\.currentUser\.id\)/);
+    assert.match(body, /const visibilityMeta = isOwnPhoto/);
+    assert.match(body, /data-pin-meta="visibility"/);
+    assert.match(body, /\$\{visibilityMeta\}/);
+});
+
 test('Explore expanded preview can collapse when the user clicks outside the preview card', () => {
     assert.match(source, /function setExplorePreviewExpanded\(isExpanded\)/);
     assert.match(source, /getExplorePreviewExpansionAction\(/);

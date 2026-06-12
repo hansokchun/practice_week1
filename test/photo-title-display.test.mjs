@@ -29,6 +29,15 @@ test('Explore pin preview opens author profile from avatar or name only', () => 
     assert.doesNotMatch(preview, /<small>/);
 });
 
+test('Explore pin preview no longer shows the selected pin label', () => {
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+
+    assert.doesNotMatch(preview, /Selected Pin/i);
+    assert.doesNotMatch(preview, /class="eyebrow"/);
+});
+
 test('photo detail and Explore preview hide title fields when no user title exists', () => {
     assert.match(source, /function getPhotoTitle\(photo\)/);
     assert.match(source, /title\.hidden = !displayTitle/);

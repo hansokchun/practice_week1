@@ -425,6 +425,7 @@ function updateExplorePhotoPreview(photo) {
     const displayTitle = getPhotoTitle(photo);
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
+    const isOwnPhoto = Boolean(state.currentUser?.id && ownerId === state.currentUser.id);
     state.selectedPublicOwnerId = ownerId || state.selectedPublicOwnerId;
     const authorName = getPublicAuthorName({ owner_id: ownerId }, {
         currentUser: state.currentUser,
@@ -432,6 +433,13 @@ function updateExplorePhotoPreview(photo) {
     });
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
+    const visibilityLabel = photo.albumVisibility === 'link'
+        ? '링크'
+        : (photo.shared || photo.visibility === 'public' || photo.albumVisibility === 'public') ? '공개' : '비공개';
+    const visibilityIcon = visibilityLabel === '비공개' ? 'lock' : 'public';
+    const visibilityMeta = isOwnPhoto
+        ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span> ${visibilityLabel}</span>`
+        : '';
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
@@ -447,9 +455,9 @@ function updateExplorePhotoPreview(photo) {
     }
     if (meta) {
         meta.innerHTML = `
-            <span><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
-            <span><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
-            <span><span class="material-symbols-outlined">public</span> ${photo.albumVisibility === 'link' ? '링크' : '공개'}</span>
+            <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
+            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
+            ${visibilityMeta}
         `;
     }
     if (profileButton) {
