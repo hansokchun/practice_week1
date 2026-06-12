@@ -2408,6 +2408,8 @@ body.is-logged-in .home-workspace {
     box-shadow: 0 18px 55px rgba(12, 42, 43, 0.18);
     backdrop-filter: blur(14px);
     padding: 14px;
+    transform-origin: 32px 32px;
+    animation: pinPreviewEnter 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
     transition: width 180ms ease, max-height 180ms ease, box-shadow 180ms ease;
 }
 
@@ -2430,6 +2432,8 @@ body.is-logged-in .home-workspace {
     overflow: hidden;
     background: transparent;
     cursor: zoom-in;
+    transform-origin: center;
+    animation: pinPreviewPhotoEnter 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .explore-pin-preview.is-expanded .pin-preview-photo-button {
@@ -2561,6 +2565,37 @@ body.is-logged-in .home-workspace {
 .pin-author button:hover strong,
 .pin-author-link:hover strong {
     text-decoration: underline;
+}
+
+@keyframes pinPreviewEnter {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
+    }
+
+    72% {
+        opacity: 1;
+        transform: translateY(0) scale(1.012);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes pinPreviewPhotoEnter {
+    from {
+        transform: scale(0.975);
+    }
+
+    70% {
+        transform: scale(1.015);
+    }
+
+    to {
+        transform: scale(1);
+    }
 }
 
 .avatar {

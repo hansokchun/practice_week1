@@ -5,6 +5,7 @@ import { getExplorePreviewExpansionAction } from '../js/explore-preview-expansio
 
 const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
+const css = readFileSync('style.css', 'utf8');
 
 test('Explore pin preview image expands the inline preview instead of opening the photo detail modal', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
@@ -53,4 +54,11 @@ test('Explore preview expansion action is decided outside app DOM wiring', () =>
     assert.equal(getExplorePreviewExpansionAction({ isExpanded: true, clickedInsidePreview: false }), 'collapse');
     assert.equal(getExplorePreviewExpansionAction({ isExpanded: true, clickedInsidePreview: true }), 'none');
     assert.equal(getExplorePreviewExpansionAction({ isExpanded: false, clickedInsidePreview: false }), 'none');
+});
+
+test('Explore pin preview uses a small entrance grow animation', () => {
+    assert.match(css, /\.explore-pin-preview\s*\{[^}]*animation:\s*pinPreviewEnter/s);
+    assert.match(css, /\.pin-preview-photo-button\s*\{[^}]*animation:\s*pinPreviewPhotoEnter/s);
+    assert.match(css, /@keyframes pinPreviewEnter\s*\{[\s\S]*transform:\s*translateY\(8px\)\s+scale\(0\.96\)/);
+    assert.match(css, /@keyframes pinPreviewPhotoEnter\s*\{[\s\S]*transform:\s*scale\(0\.975\)/);
 });
