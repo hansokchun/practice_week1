@@ -62,3 +62,9 @@ test('Explore pin preview uses a small entrance grow animation', () => {
     assert.match(css, /@keyframes pinPreviewEnter\s*\{[\s\S]*transform:\s*translateY\(8px\)\s+scale\(0\.96\)/);
     assert.match(css, /@keyframes pinPreviewPhotoEnter\s*\{[\s\S]*transform:\s*scale\(0\.975\)/);
 });
+
+test('Explore pin preview gives the photo card a roomier default size', () => {
+    assert.match(css, /\.explore-pin-preview\s*\{[^}]*width:\s*min\(400px,\s*calc\(100% - 48px\)\);/s);
+    assert.match(css, /\.explore-pin-preview\s*\{[^}]*padding:\s*16px;/s);
+    assert.match(css, /\.pin-preview-photo-button img\s*\{[^}]*aspect-ratio:\s*4 \/ 3;/s);
+});
