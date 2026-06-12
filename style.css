@@ -3726,7 +3726,11 @@ body.is-logged-in .white-band {
     }
 
     .hero {
-        min-height: 720px;
+        width: calc(100% - 32px);
+        min-height: auto;
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 42px 0;
     }
 
     .hero-media {
@@ -3738,12 +3742,37 @@ body.is-logged-in .white-band {
     }
 
     .hero-content {
-        width: calc(100% - 32px);
-        padding-bottom: 48px;
+        width: 100%;
+        padding: 0;
     }
 
     .hero h1 {
-        font-size: 40px;
+        font-size: 34px;
+        line-height: 1.12;
+    }
+
+    .hero-copy {
+        margin-top: 16px;
+        font-size: 16px;
+        line-height: 1.58;
+    }
+
+    .hero-actions,
+    .home-public-actions,
+    .result-actions,
+    .detail-actions,
+    .auth-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .hero-actions button,
+    .home-public-actions button,
+    .result-actions button,
+    .detail-actions button,
+    .auth-actions button {
+        width: 100%;
     }
 
     .home-public-layout {
@@ -3759,6 +3788,54 @@ body.is-logged-in .white-band {
     .page-container {
         width: calc(100% - 32px);
         padding: 48px 0;
+    }
+
+    body.is-logged-in .home-workspace {
+        padding-top: 24px;
+        padding-bottom: 36px;
+    }
+
+    body.is-logged-in .hero {
+        width: calc(100% - 32px);
+        padding: 24px 0 32px;
+    }
+
+    body.is-logged-in .home-public-preview {
+        padding-top: 24px;
+        padding-bottom: 36px;
+    }
+
+    .page-intro {
+        margin-bottom: 22px;
+    }
+
+    .page-intro h1,
+    .section-heading h2 {
+        font-size: 28px;
+    }
+
+    .page-intro p {
+        font-size: 15px;
+        line-height: 1.58;
+    }
+
+    .action-card {
+        min-height: 82px;
+        padding: 18px;
+    }
+
+    .panel-topline {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .panel-actions {
+        justify-content: stretch;
+        width: 100%;
+    }
+
+    .panel-actions button {
+        flex: 1;
     }
 
     .process-grid,
@@ -3792,7 +3869,9 @@ body.is-logged-in .white-band {
     }
 
     .attention-banner {
+        grid-template-columns: 1fr;
         justify-items: start;
+        padding: 18px;
     }
 
     .missing-location-list {
@@ -3803,7 +3882,99 @@ body.is-logged-in .white-band {
     .public-trip-copy h1,
     .share-main h1,
     .flow-hero h1 {
-        font-size: 38px;
+        font-size: 32px;
+    }
+
+    .flow-hero {
+        margin: 22px 0 24px;
+    }
+
+    .flow-hero p {
+        font-size: 15px;
+        line-height: 1.58;
+    }
+
+    .recent-photo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .personal-photo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .album-row img {
+        min-height: 180px;
+        height: 180px;
+    }
+
+    .album-row div {
+        padding: 18px;
+    }
+
+    .album-row strong {
+        font-size: 24px;
+    }
+
+    .upload-dropzone {
+        min-height: 260px;
+        border-radius: 18px;
+        padding: 22px;
+        text-align: center;
+    }
+
+    .upload-thumbnail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .result-stats {
+        gap: 10px;
+    }
+
+    .explore-map-canvas {
+        height: calc(100svh - 64px - 82px);
+        min-height: 520px;
+    }
+
+    .explore-map {
+        min-height: 100%;
+    }
+
+    .explore-pin-preview {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: 92px;
+        top: auto;
+        width: auto;
+        max-height: min(46svh, 420px);
+        overflow-y: auto;
+        border-radius: 22px 22px 18px 18px;
+        padding: 12px;
+        box-shadow: 0 18px 48px rgba(12, 42, 43, 0.28);
+    }
+
+    .explore-pin-preview.is-expanded {
+        width: auto;
+        max-height: calc(100svh - 120px);
+    }
+
+    .pin-preview-photo-button img {
+        aspect-ratio: 16 / 10;
+    }
+
+    .pin-preview-copy h2 {
+        font-size: 20px;
+    }
+
+    .pin-preview-meta {
+        gap: 6px;
+    }
+
+    .pin-preview-meta span {
+        min-height: 32px;
+        padding: 7px 9px;
     }
 
     .route-strip {
@@ -3846,12 +4017,13 @@ body.is-logged-in .white-band {
     }
 
     .trip-review-photo-row {
-        height: 172px;
+        height: 156px;
         gap: 5px;
     }
 
     .trip-review-map-panel {
         position: relative;
+        order: -1;
         top: auto;
         margin: 0 16px 28px;
         border-left: 0;
@@ -3859,7 +4031,51 @@ body.is-logged-in .white-band {
     }
 
     .trip-review-map {
-        height: 360px;
+        height: 320px;
+    }
+
+    .trip-review-map-summary {
+        padding: 0 14px 14px;
+    }
+
+    .photo-detail-modal {
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .photo-detail-card {
+        width: 100vw;
+        max-height: 100svh;
+        border-radius: 0;
+        overflow-y: auto;
+    }
+
+    .photo-detail-card > img {
+        max-height: 62svh;
+        background: #ffffff;
+    }
+
+    .photo-detail-card section {
+        max-height: 38svh;
+        padding: 18px;
+    }
+
+    .photo-detail-map {
+        min-height: 120px;
+    }
+
+    .location-editor-map {
+        min-height: 220px;
+    }
+
+    .profile-cover {
+        min-height: 280px;
+        padding-bottom: 28px;
+    }
+
+    .profile-map-preview,
+    .profile-google-map {
+        min-height: 420px;
     }
 }
 
