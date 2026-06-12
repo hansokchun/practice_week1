@@ -569,6 +569,14 @@ async function ensureExploreMap() {
         center: { lat: 36.45, lng: 127.85 },
         zoom: state.exploreZoom
     }));
+    state.exploreMap.addListener('idle', () => {
+        if (
+            document.body.dataset.page === APP_SECTIONS.EXPLORE
+            && state.exploreMarkerPhotos.length
+        ) {
+            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+        }
+    });
 
     const input = $('#explore-map-search-input');
     if (input && maps.places?.SearchBox) {
