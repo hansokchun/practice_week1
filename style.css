@@ -2527,7 +2527,6 @@ body.is-logged-in .white-band {
     box-shadow: 0 8px 22px rgba(12, 42, 43, 0.14);
 }
 
-.pin-preview-copy h2,
 .public-trip-copy h1,
 .public-author-card h2,
 .profile-card h1,
@@ -2538,37 +2537,53 @@ body.is-logged-in .white-band {
     letter-spacing: 0;
 }
 
-.pin-preview-copy h2 {
-    font-size: 22px;
-    line-height: 1.15;
+.pin-preview-story {
+    border-top: 1px solid rgba(15, 88, 86, 0.08);
+    padding-top: 2px;
 }
 
-.pin-preview-copy p {
-    margin: 6px 0 0;
-    color: var(--muted);
+.pin-preview-story p {
+    margin: 0;
+    color: #2e3f3f;
     font-size: 14px;
-    line-height: 1.55;
+    line-height: 1.6;
+}
+
+.pin-preview-story p.is-empty {
+    color: var(--muted);
 }
 
 .pin-preview-meta {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
     gap: 8px;
+    border: 1px solid rgba(15, 88, 86, 0.09);
+    border-radius: 14px;
+    background: #f8fbfa;
+    padding: 10px;
 }
 
-.pin-preview-meta span {
-    display: inline-flex;
+.pin-preview-meta > span {
+    display: flex;
     align-items: center;
-    gap: 6px;
-    min-height: 34px;
-    border: 1px solid rgba(15, 88, 86, 0.1);
-    border-radius: 999px;
-    background: #f7faf9;
-    color: #627373;
-    font-size: 12px;
+    gap: 10px;
+    min-height: 36px;
+    color: #536767;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.pin-preview-meta span span:not(.material-symbols-outlined) {
+    display: grid;
+    gap: 2px;
+}
+
+.pin-preview-meta b {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
     font-weight: 800;
-    line-height: 1;
-    padding: 8px 10px;
+    letter-spacing: 0.02em;
 }
 
 .profile-stats span {
@@ -2585,7 +2600,7 @@ body.is-logged-in .white-band {
 
 .pin-preview-meta .material-symbols-outlined {
     color: var(--teal);
-    font-size: 17px;
+    font-size: 18px;
 }
 
 .pin-author,
@@ -2597,8 +2612,8 @@ body.is-logged-in .white-band {
 
 .pin-author {
     justify-content: space-between;
-    border-top: 1px solid var(--line);
-    padding-top: 12px;
+    min-height: 42px;
+    padding-right: 42px;
 }
 
 .pin-author button,
@@ -2617,6 +2632,17 @@ body.is-logged-in .white-band {
 .pin-author .avatar {
     width: 38px;
     height: 38px;
+}
+
+.pin-author-copy {
+    display: grid;
+    gap: 2px;
+}
+
+.pin-author-time {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .pin-author button:hover strong,
@@ -3964,15 +3990,11 @@ body.is-logged-in .white-band {
         aspect-ratio: 16 / 10;
     }
 
-    .pin-preview-copy h2 {
-        font-size: 20px;
-    }
-
     .pin-preview-meta {
         gap: 6px;
     }
 
-    .pin-preview-meta span {
+    .pin-preview-meta > span {
         min-height: 32px;
         padding: 7px 9px;
     }

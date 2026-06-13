@@ -188,6 +188,22 @@ function getPhotoFallbackLabel(photo, fallback = '사진') {
     return getPhotoTitle(photo) || photo?.description || fallback;
 }
 
+function formatRelativeTime(value, now = new Date()) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return '방금 전';
+    const diffMs = Math.max(0, now.getTime() - date.getTime());
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return '방금 전';
+    if (minutes < 60) return `${minutes}분 전`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}시간 전`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}일 전`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}개월 전`;
+    return `${Math.floor(months / 12)}년 전`;
+}
+
 function showToast(message) {
     const toast = $('#toast');
     if (!toast) return;
@@ -420,12 +436,12 @@ function updateExplorePhotoPreview(photo) {
     if (!preview || !photo) return;
     const photoButton = preview.querySelector('[data-pin-preview-photo]');
     const image = photoButton?.querySelector('img');
-    const title = preview.querySelector('.pin-preview-copy h2');
-    const note = preview.querySelector('.pin-preview-copy p:last-child');
+    const story = preview.querySelector('.pin-preview-story p');
     const meta = preview.querySelector('.pin-preview-meta');
     const profileButton = preview.querySelector('[data-go-profile]');
     const authorAvatar = preview.querySelector('.pin-author .avatar');
     const authorNameNode = preview.querySelector('.pin-author strong');
+    const authorTimeNode = preview.querySelector('.pin-author-time');
     const displayTitle = getPhotoTitle(photo);
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
@@ -437,30 +453,27 @@ function updateExplorePhotoPreview(photo) {
     });
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
+    const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
     const visibilityLabel = photo.albumVisibility === 'link'
         ? '링크'
         : (photo.shared || photo.visibility === 'public' || photo.albumVisibility === 'public') ? '공개' : '비공개';
     const visibilityIcon = visibilityLabel === '비공개' ? 'lock' : 'public';
     const visibilityMeta = isOwnPhoto
-        ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span> ${visibilityLabel}</span>`
+        ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span><span><b>공개 상태</b>${visibilityLabel}</span></span>`
         : '';
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
         image.alt = displayTitle || '공개 사진';
     }
-    if (title) {
-        title.textContent = displayTitle;
-        title.hidden = !displayTitle;
-    }
-    if (note) {
-        note.textContent = description;
-        note.hidden = !description;
+    if (story) {
+        story.textContent = description || '사진에 대한 글이 아직 없습니다.';
+        story.classList.toggle('is-empty', !description);
     }
     if (meta) {
         meta.innerHTML = `
-            <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
-            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
+            <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span><span><b>찍은 날짜</b>${dateLabel}</span></span>
+            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span><span><b>위치</b>${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span></span>
             ${visibilityMeta}
         `;
     }
@@ -470,6 +483,7 @@ function updateExplorePhotoPreview(photo) {
     }
     if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
     if (authorNameNode) authorNameNode.textContent = authorName;
+    if (authorTimeNode) authorTimeNode.textContent = `사진 기록 · ${uploadTimeLabel}`;
     updatePhotoDetailModal(photo);
 }
 
@@ -483,8 +497,7 @@ function updateExploreAlbumPreview(album) {
     const preview = $('#explore-pin-preview');
     if (!preview || !album) return;
     const image = preview.querySelector('img');
-    const title = preview.querySelector('.pin-preview-copy h2');
-    const note = preview.querySelector('.pin-preview-copy p:last-child');
+    const story = preview.querySelector('.pin-preview-story p');
     const meta = preview.querySelector('.pin-preview-meta');
     const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
@@ -492,13 +505,9 @@ function updateExploreAlbumPreview(album) {
         image.src = album.cover_url || 'images/main_bg2.jpg';
         image.alt = album.title || 'Public album';
     }
-    if (title) {
-        title.textContent = album.title || 'Public album';
-        title.hidden = false;
-    }
-    if (note) {
-        note.textContent = album.note || '';
-        note.hidden = !album.note;
+    if (story) {
+        story.textContent = album.note || '앨범에 대한 글이 아직 없습니다.';
+        story.classList.toggle('is-empty', !album.note);
     }
     if (meta) {
         meta.innerHTML = `
@@ -832,6 +841,7 @@ function normalizeSavedPhoto(photo) {
         description: photo.description || '',
         url: photo.url,
         date: photo.date || photo.created_at || new Date().toISOString(),
+        created_at: photo.created_at || photo.uploaded_at || photo.createdAt || null,
         lat: hasLocation ? Number(photo.lat) : null,
         lng: hasLocation ? Number(photo.lng) : null,
         shared: !!photo.shared || photo.visibility === 'public',
@@ -1004,20 +1014,15 @@ function renderEmptyPublicSurfaces() {
 
     const preview = $('#explore-pin-preview');
     const previewImage = preview?.querySelector('img');
-    const previewTitle = preview?.querySelector('.pin-preview-copy h2');
-    const previewNote = preview?.querySelector('.pin-preview-copy p:last-child');
+    const previewStory = preview?.querySelector('.pin-preview-story p');
     const previewMeta = preview?.querySelector('.pin-preview-meta');
     if (previewImage) {
         previewImage.src = 'images/main_bg2.jpg';
         previewImage.alt = empty.title;
     }
-    if (previewTitle) {
-        previewTitle.textContent = empty.title;
-        previewTitle.hidden = false;
-    }
-    if (previewNote) {
-        previewNote.textContent = empty.body;
-        previewNote.hidden = false;
+    if (previewStory) {
+        previewStory.textContent = empty.body;
+        previewStory.classList.remove('is-empty');
     }
     if (previewMeta) previewMeta.textContent = empty.meta;
 
@@ -1465,20 +1470,15 @@ function renderPublicSurfaces() {
     const isOwnAlbum = selected.owner_id && selected.owner_id === state.currentUser?.id;
     const preview = $('#explore-pin-preview');
     const previewImage = preview?.querySelector('img');
-    const previewTitle = preview?.querySelector('.pin-preview-copy h2');
-    const previewNote = preview?.querySelector('.pin-preview-copy p:last-child');
+    const previewStory = preview?.querySelector('.pin-preview-story p');
     const previewMeta = preview?.querySelector('.pin-preview-meta');
     if (previewImage) {
         previewImage.src = cover;
         previewImage.alt = selected.title;
     }
-    if (previewTitle) {
-        previewTitle.textContent = selected.title;
-        previewTitle.hidden = false;
-    }
-    if (previewNote) {
-        previewNote.textContent = note;
-        previewNote.hidden = !note;
+    if (previewStory) {
+        previewStory.textContent = note;
+        previewStory.classList.toggle('is-empty', !note);
     }
     if (previewMeta) {
         previewMeta.innerHTML = `

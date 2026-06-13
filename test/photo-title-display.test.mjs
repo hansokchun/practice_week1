@@ -38,9 +38,16 @@ test('Explore pin preview no longer shows the selected pin label', () => {
     assert.doesNotMatch(preview, /class="eyebrow"/);
 });
 
-test('photo detail and Explore preview hide title fields when no user title exists', () => {
+test('photo detail keeps optional titles while Explore preview does not render a title field', () => {
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+    const exploreStart = source.indexOf('function updateExplorePhotoPreview');
+    const exploreEnd = source.indexOf('function setExplorePreviewExpanded', exploreStart);
+    const exploreBody = source.slice(exploreStart, exploreEnd);
+
     assert.match(source, /function getPhotoTitle\(photo\)/);
-    assert.match(source, /title\.hidden = !displayTitle/);
-    assert.match(source, /image\.alt = displayTitle \|\| '공개 사진'/);
-    assert.match(source, /image\.alt = displayTitle \|\| '여행 사진 상세'/);
+    assert.doesNotMatch(preview, /<h2>/);
+    assert.doesNotMatch(exploreBody, /title\.hidden = !displayTitle/);
+    assert.match(source, /updatePhotoDetailModal\(photo\)/);
 });

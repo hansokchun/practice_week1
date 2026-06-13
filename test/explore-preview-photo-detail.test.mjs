@@ -9,7 +9,7 @@ const css = readFileSync('style.css', 'utf8');
 
 test('Explore pin preview image expands the inline preview instead of opening the photo detail modal', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
-    const previewEnd = html.indexOf('class="pin-preview-copy"', previewStart);
+    const previewEnd = html.indexOf('class="pin-preview-story"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
     const clickStart = source.indexOf("const previewAction = getExplorePreviewExpansionAction({");
     const clickEnd = source.indexOf("const routeButton = event.target.closest('[data-route]');", clickStart);
@@ -67,4 +67,27 @@ test('Explore pin preview gives the photo card a roomier default size', () => {
     assert.match(css, /\.explore-pin-preview\s*\{[^}]*width:\s*min\(400px,\s*calc\(100% - 48px\)\);/s);
     assert.match(css, /\.explore-pin-preview\s*\{[^}]*padding:\s*16px;/s);
     assert.match(css, /\.pin-preview-photo-button img\s*\{[^}]*aspect-ratio:\s*4 \/ 3;/s);
+});
+
+test('Explore pin preview follows an author, photo, story, and info order', () => {
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+
+    assert.ok(preview.indexOf('class="pin-author"') < preview.indexOf('data-pin-preview-photo'));
+    assert.ok(preview.indexOf('data-pin-preview-photo') < preview.indexOf('class="pin-preview-story"'));
+    assert.ok(preview.indexOf('class="pin-preview-story"') < preview.indexOf('class="pin-preview-meta"'));
+    assert.match(preview, /class="pin-author-time"/);
+    assert.doesNotMatch(preview, /pin-preview-copy[\s\S]*<h2/);
+});
+
+test('Explore photo preview fills story text and relative upload time', () => {
+    const fnStart = source.indexOf('function updateExplorePhotoPreview');
+    const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /const story = preview\.querySelector\('\.pin-preview-story p'\)/);
+    assert.match(body, /const authorTimeNode = preview\.querySelector\('\.pin-author-time'\)/);
+    assert.match(body, /formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
+    assert.doesNotMatch(body, /title\.textContent = displayTitle/);
 });
