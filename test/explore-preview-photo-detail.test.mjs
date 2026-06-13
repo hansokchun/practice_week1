@@ -91,3 +91,42 @@ test('Explore photo preview fills story text and relative upload time', () => {
     assert.match(body, /formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
     assert.doesNotMatch(body, /title\.textContent = displayTitle/);
 });
+
+test('Explore photo preview hides the story block when no description exists', () => {
+    const fnStart = source.indexOf('function updateExplorePhotoPreview');
+    const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /const storyWrap = preview\.querySelector\('\.pin-preview-story'\)/);
+    assert.match(body, /storyWrap\.hidden = !description/);
+    assert.doesNotMatch(body, /사진에 대한 글이 아직 없습니다/);
+});
+
+test('Explore photo preview keeps capture info as compact chips below the story', () => {
+    const fnStart = source.indexOf('function updateExplorePhotoPreview');
+    const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /<span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today<\/span> \$\{dateLabel\}<\/span>/);
+    assert.match(body, /<span data-pin-meta="place"><span class="material-symbols-outlined">place<\/span> \$\{Number\(photo\.lat\)\.toFixed\(4\)\}, \$\{Number\(photo\.lng\)\.toFixed\(4\)\}<\/span>/);
+    assert.doesNotMatch(body, /<b>찍은 날짜<\/b>/);
+});
+
+test('Explore expanded own-photo preview can edit only description and visibility', () => {
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+    const saveStart = source.indexOf('async function saveExplorePreviewEdits');
+    const saveEnd = source.indexOf('async function getGoogleMapsApiKey', saveStart);
+    const saveBody = source.slice(saveStart, saveEnd);
+
+    assert.match(preview, /id="btn-edit-pin-preview"/);
+    assert.match(preview, /id="pin-preview-description-input"/);
+    assert.match(preview, /data-preview-visibility="private"/);
+    assert.match(preview, /data-preview-visibility="public"/);
+    assert.match(saveBody, /updatePhotoInfo\(photo\.id, \{\s*description,\s*visibility:/s);
+    assert.doesNotMatch(saveBody, /lat,/);
+    assert.doesNotMatch(saveBody, /lng,/);
+    assert.doesNotMatch(saveBody, /date:/);
+    assert.doesNotMatch(saveBody, /title,/);
+});

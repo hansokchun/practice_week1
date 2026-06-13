@@ -147,6 +147,7 @@ const state = {
     exploreMarkerRenderToken: 0,
     explorePhotoScope: 'mine',
     explorePreserveViewportOnce: false,
+    explorePreviewEditMode: false,
     profileMap: null,
     profileMarkers: [],
     profileMapRenderToken: 0,
@@ -436,16 +437,23 @@ function updateExplorePhotoPreview(photo) {
     if (!preview || !photo) return;
     const photoButton = preview.querySelector('[data-pin-preview-photo]');
     const image = photoButton?.querySelector('img');
+    const storyWrap = preview.querySelector('.pin-preview-story');
     const story = preview.querySelector('.pin-preview-story p');
     const meta = preview.querySelector('.pin-preview-meta');
     const profileButton = preview.querySelector('[data-go-profile]');
     const authorAvatar = preview.querySelector('.pin-author .avatar');
     const authorNameNode = preview.querySelector('.pin-author strong');
     const authorTimeNode = preview.querySelector('.pin-author-time');
+    const ownerActions = preview.querySelector('.pin-preview-owner-actions');
+    const descriptionInput = $('#pin-preview-description-input');
     const displayTitle = getPhotoTitle(photo);
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
     const isOwnPhoto = Boolean(state.currentUser?.id && ownerId === state.currentUser.id);
+    const visibilityValue = photo.visibility === 'public' || photo.shared || photo.albumVisibility === 'public'
+        ? 'public'
+        : 'private';
+    state.selectedPhotoId = photo.id || null;
     state.selectedPublicOwnerId = ownerId || state.selectedPublicOwnerId;
     const authorName = getPublicAuthorName({ owner_id: ownerId }, {
         currentUser: state.currentUser,
@@ -459,7 +467,7 @@ function updateExplorePhotoPreview(photo) {
         : (photo.shared || photo.visibility === 'public' || photo.albumVisibility === 'public') ? '공개' : '비공개';
     const visibilityIcon = visibilityLabel === '비공개' ? 'lock' : 'public';
     const visibilityMeta = isOwnPhoto
-        ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span><span><b>공개 상태</b>${visibilityLabel}</span></span>`
+        ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span> ${visibilityLabel}</span>`
         : '';
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
@@ -467,16 +475,20 @@ function updateExplorePhotoPreview(photo) {
         image.alt = displayTitle || '공개 사진';
     }
     if (story) {
-        story.textContent = description || '사진에 대한 글이 아직 없습니다.';
-        story.classList.toggle('is-empty', !description);
+        story.textContent = description;
+        if (storyWrap) storyWrap.hidden = !description;
     }
     if (meta) {
         meta.innerHTML = `
-            <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span><span><b>찍은 날짜</b>${dateLabel}</span></span>
-            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span><span><b>위치</b>${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span></span>
+            <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
+            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
             ${visibilityMeta}
         `;
     }
+    if (ownerActions) ownerActions.hidden = !isOwnPhoto;
+    if (descriptionInput) descriptionInput.value = description;
+    setExplorePreviewVisibility(visibilityValue);
+    setExplorePreviewEditMode(false);
     if (profileButton) {
         profileButton.dataset.publicAlbumId = photo.album_id || '';
         profileButton.dataset.publicOwnerId = ownerId;
@@ -491,6 +503,61 @@ function setExplorePreviewExpanded(isExpanded) {
     const preview = $('#explore-pin-preview');
     if (!preview) return;
     preview.classList.toggle('is-expanded', Boolean(isExpanded));
+    if (!isExpanded) setExplorePreviewEditMode(false);
+}
+
+function setExplorePreviewEditMode(isEditing) {
+    state.explorePreviewEditMode = Boolean(isEditing);
+    const preview = $('#explore-pin-preview');
+    const form = $('#pin-preview-edit-form');
+    const editButton = $('#btn-edit-pin-preview');
+    const message = $('#pin-preview-edit-message');
+    if (preview) preview.classList.toggle('is-editing', state.explorePreviewEditMode);
+    if (form) form.hidden = !state.explorePreviewEditMode;
+    if (editButton) editButton.hidden = state.explorePreviewEditMode;
+    if (message) message.textContent = '';
+}
+
+function setExplorePreviewVisibility(visibility) {
+    const nextVisibility = visibility === 'public' ? 'public' : 'private';
+    state.editingPhotoVisibility = nextVisibility;
+    $$('[data-preview-visibility]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.previewVisibility === nextVisibility);
+    });
+}
+
+async function saveExplorePreviewEdits(event) {
+    event.preventDefault();
+    const photo = getMySavedPhotos().find((candidate) => candidate.id === state.selectedPhotoId);
+    const message = $('#pin-preview-edit-message');
+    if (!state.currentUser || !photo || photo.owner_id !== state.currentUser.id) {
+        if (message) message.textContent = '본인 사진만 수정할 수 있습니다.';
+        return;
+    }
+
+    const description = $('#pin-preview-description-input')?.value.trim() || '';
+    const visibility = state.editingPhotoVisibility === 'public' ? 'public' : 'private';
+    if (message) message.textContent = '저장 중입니다...';
+    const { data, error } = await updatePhotoInfo(photo.id, {
+        description,
+        visibility: visibility
+    });
+    if (error) {
+        if (message) message.textContent = error.message || '사진 정보를 저장하지 못했습니다.';
+        return;
+    }
+
+    const updated = normalizeSavedPhoto(data || { ...photo, description, visibility, shared: visibility === 'public' });
+    state.savedPhotos = state.savedPhotos.map((savedPhoto) => savedPhoto.id === updated.id ? updated : savedPhoto);
+    setExplorePreviewEditMode(false);
+    renderSavedPhotoSurfaces();
+    renderTravelDraftSurfaces();
+    renderPublicSurfaces();
+    updateExplorePhotoPreview(updated);
+    document.body.classList.add('explore-pin-selected');
+    $('#explore-pin-preview')?.removeAttribute('hidden');
+    updatePhotoDetailModal(updated);
+    showToast('사진 정보를 저장했습니다.');
 }
 
 function updateExploreAlbumPreview(album) {
@@ -3137,6 +3204,24 @@ function bindEvents() {
         }
         if (previewAction === 'collapse') setExplorePreviewExpanded(false);
 
+        const editPinPreviewButton = event.target.closest('#btn-edit-pin-preview');
+        if (editPinPreviewButton) {
+            setExplorePreviewEditMode(true);
+            return;
+        }
+
+        const cancelPinPreviewEditButton = event.target.closest('[data-cancel-pin-preview-edit]');
+        if (cancelPinPreviewEditButton) {
+            setExplorePreviewEditMode(false);
+            return;
+        }
+
+        const previewVisibilityButton = event.target.closest('[data-preview-visibility]');
+        if (previewVisibilityButton) {
+            setExplorePreviewVisibility(previewVisibilityButton.dataset.previewVisibility);
+            return;
+        }
+
         const routeButton = event.target.closest('[data-route]');
         if (routeButton) {
             event.preventDefault();
@@ -3485,6 +3570,7 @@ function bindEvents() {
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
+    $('#pin-preview-edit-form')?.addEventListener('submit', saveExplorePreviewEdits);
     $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModals));
     $$('.modal').forEach((modal) => {
         modal.addEventListener('click', (event) => {
