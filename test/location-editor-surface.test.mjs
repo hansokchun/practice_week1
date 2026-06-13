@@ -10,6 +10,12 @@ test('photo info editor no longer shows a selected-photo picker block', () => {
     assert.equal(html.includes('id="location-selected-photo-title"'), false);
 });
 
+test('photo info editor no longer exposes a photo title field', () => {
+    assert.equal(html.includes('id="photo-title-input"'), false);
+    assert.equal(html.includes('for="photo-title-input"'), false);
+    assert.equal(html.includes('사진 이름'), false);
+});
+
 test('photo info editor coordinate inputs avoid browser number validation bubbles', () => {
     assert.match(html, /id="location-lat-input" type="text" inputmode="decimal"[^>]+readonly/);
     assert.match(html, /id="location-lng-input" type="text" inputmode="decimal"[^>]+readonly/);

@@ -187,7 +187,6 @@ export async function upsertPhoto(photo) {
                 id: photo.id.toString(),
                 url: photo.url,
                 date: photo.date,
-                title: photo.title || '',
                 description: photo.description || '',
                 lat: photo.lat,
                 lng: photo.lng,
@@ -230,7 +229,6 @@ export async function updatePhotoInfo(photoId, updates = {}) {
     try {
         const sb = getSupabase();
         const payload = {};
-        if ('title' in updates) payload.title = updates.title || '';
         if ('description' in updates) payload.description = updates.description || '';
         if ('date' in updates) payload.date = updates.date;
         if ('lat' in updates) payload.lat = updates.lat;

@@ -5,18 +5,27 @@ import { test } from 'node:test';
 const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
 
-test('uploaded photos do not persist the file name as the photo title', () => {
-    assert.match(source, /title:\s*'',/);
-    assert.doesNotMatch(source, /title:\s*photo\.name,/);
+test('individual photos do not persist a title field', () => {
+    const uploadStart = source.indexOf('async function persistStagedPhotos');
+    const uploadEnd = source.indexOf('async function saveAlbumDraft', uploadStart);
+    const uploadBody = source.slice(uploadStart, uploadEnd);
+    const normalizeStart = source.indexOf('function normalizeSavedPhoto');
+    const normalizeEnd = source.indexOf('function normalizeSavedAlbum', normalizeStart);
+    const normalizeBody = source.slice(normalizeStart, normalizeEnd);
+
+    assert.doesNotMatch(uploadBody, /title:/);
+    assert.doesNotMatch(normalizeBody, /title/);
+    assert.doesNotMatch(normalizeBody, /name:/);
 });
 
-test('photo edits can save an empty title without restoring the old name', () => {
+test('photo edits save description without sending a title update', () => {
     const saveStart = source.indexOf('async function saveManualLocation');
     const saveEnd = source.indexOf('async function searchExploreMap', saveStart);
     const body = source.slice(saveStart, saveEnd);
 
-    assert.match(body, /title,\s*\n/);
-    assert.doesNotMatch(body, /title:\s*title\s*\|\|\s*photo\.name/);
+    assert.match(body, /description,/);
+    assert.doesNotMatch(body, /title,/);
+    assert.doesNotMatch(body, /photo-title-input/);
 });
 
 test('Explore pin preview opens author profile from avatar or name only', () => {
@@ -38,7 +47,7 @@ test('Explore pin preview no longer shows the selected pin label', () => {
     assert.doesNotMatch(preview, /class="eyebrow"/);
 });
 
-test('photo detail keeps optional titles while Explore preview does not render a title field', () => {
+test('photo detail and Explore preview do not render individual photo title fields', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
@@ -46,7 +55,7 @@ test('photo detail keeps optional titles while Explore preview does not render a
     const exploreEnd = source.indexOf('function setExplorePreviewExpanded', exploreStart);
     const exploreBody = source.slice(exploreStart, exploreEnd);
 
-    assert.match(source, /function getPhotoTitle\(photo\)/);
+    assert.doesNotMatch(source, /function getPhotoTitle\(photo\)/);
     assert.doesNotMatch(preview, /<h2>/);
     assert.doesNotMatch(exploreBody, /title\.hidden = !displayTitle/);
     assert.match(source, /updatePhotoDetailModal\(photo\)/);

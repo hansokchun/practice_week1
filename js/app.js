@@ -181,12 +181,8 @@ function escapeHtml(value) {
     })[char]);
 }
 
-function getPhotoTitle(photo) {
-    return String(photo?.title || photo?.name || '').trim();
-}
-
 function getPhotoFallbackLabel(photo, fallback = '사진') {
-    return getPhotoTitle(photo) || photo?.description || fallback;
+    return String(photo?.description || '').trim() || fallback;
 }
 
 function formatRelativeTime(value, now = new Date()) {
@@ -335,7 +331,7 @@ function getAllDisplayPhotos() {
         ...state.savedPhotos,
         ...state.stagedPhotos.map((photo, index) => ({
             id: `staged-${index}`,
-            name: photo.name,
+            description: '',
             url: photo.url,
             date: new Date().toISOString(),
             album: '업로드 초안',
@@ -446,7 +442,6 @@ function updateExplorePhotoPreview(photo) {
     const authorTimeNode = preview.querySelector('.pin-author-time');
     const ownerActions = preview.querySelector('.pin-preview-owner-actions');
     const descriptionInput = $('#pin-preview-description-input');
-    const displayTitle = getPhotoTitle(photo);
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
     const isOwnPhoto = Boolean(state.currentUser?.id && ownerId === state.currentUser.id);
@@ -472,7 +467,7 @@ function updateExplorePhotoPreview(photo) {
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
-        image.alt = displayTitle || '공개 사진';
+        image.alt = description || '공개 사진';
     }
     if (story) {
         story.textContent = description;
@@ -712,7 +707,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             const marker = new maps.Marker({
                 map,
                 position: cluster.position || { lat: Number(photo.lat), lng: Number(photo.lng) },
-                title: photo.name || photo.albumTitle || '공개 사진',
+                title: getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진'),
                 icon: getExplorePinIcon(maps, { type: 'photo', selected }),
                 label: null,
                 zIndex: selected ? 12 : 10
@@ -824,28 +819,33 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
     const image = modal?.querySelector('.photo-detail-card > img');
-    const title = $('#photo-detail-title');
-    const meta = modal?.querySelector('.photo-detail-card section > p:not(.eyebrow)');
+    const descriptionNode = $('#photo-detail-description');
+    const dateMeta = modal?.querySelector('[data-photo-detail-meta="date"]');
+    const placeMeta = modal?.querySelector('[data-photo-detail-meta="place"]');
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
-    const displayTitle = getPhotoTitle(photo);
+    const description = String(photo.description || '').trim();
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
+    const locationLabel = hasPhotoLocation(photo)
+        ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
+        : '위치 정보 없음';
 
     if (modal) modal.dataset.photoDetailContext = context;
     if (image) {
         image.src = photo.url || 'images/main_bg2.jpg';
-        image.alt = displayTitle || '여행 사진 상세';
+        image.alt = description || '여행 사진 상세';
     }
-    if (title) {
-        title.textContent = displayTitle;
-        title.hidden = !displayTitle;
+    if (descriptionNode) {
+        descriptionNode.textContent = description;
+        descriptionNode.hidden = !description;
     }
-    if (meta) meta.textContent = `${dateLabel} · ${hasPhotoLocation(photo) ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}` : '위치 정보 없음'}`;
+    if (dateMeta) dateMeta.innerHTML = `<span class="material-symbols-outlined">calendar_today</span> ${dateLabel}`;
+    if (placeMeta) placeMeta.innerHTML = `<span class="material-symbols-outlined">place</span> ${locationLabel}`;
     if (map && mapFrame) {
         const mapUrl = context === 'photo' ? getPhotoMapUrl(photo) : '';
         if (mapUrl) {
@@ -900,11 +900,8 @@ async function ensureCurrentUserPublicProfile() {
 
 function normalizeSavedPhoto(photo) {
     const hasLocation = hasUsableCoordinates(photo.lat, photo.lng);
-    const title = String(photo.title || '').trim();
     return {
         id: photo.id,
-        name: title,
-        title,
         description: photo.description || '',
         url: photo.url,
         date: photo.date || photo.created_at || new Date().toISOString(),
@@ -1258,7 +1255,7 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
                                 data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
                             >
                                 ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photo.id || photo.localId || '')}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제">×</button>` : ''}
-                                <img src="${photo.url || cover}" alt="${escapeHtml(photo.name || albumTitle)}">
+                                <img src="${photo.url || cover}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}">
                             </article>
                         `).join('')}
                     </div>
@@ -1623,7 +1620,7 @@ function renderPublicSurfaces() {
 
     const routeStrip = $('.route-strip');
     if (routeStrip) {
-        const routeLabels = selected.photos?.filter(hasPhotoLocation).slice(0, 4).map((photo) => photo.name)
+        const routeLabels = selected.photos?.filter(hasPhotoLocation).slice(0, 4).map((photo) => getPhotoFallbackLabel(photo))
             || ['Start', 'Walk', 'View', 'Finish'];
         const labels = routeLabels.length >= 2 ? routeLabels : [selected.title, '공개 지도'];
         routeStrip.innerHTML = labels.slice(0, 4).map((label, index) => (
@@ -1815,7 +1812,7 @@ function renderSavedPhotoSurfaces() {
         recentGrid.innerHTML = myPhotos.length
             ? myPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
             </article>
         `).join('')
             : `
@@ -1866,9 +1863,9 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
-                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
                 <div>
-                    <strong>${escapeHtml(photo.name)}</strong>
+                    <strong>${escapeHtml(getPhotoFallbackLabel(photo))}</strong>
                     <span>${hasLocation ? '위치 확인됨' : '위치 확인 필요'} · ${photo.visibility === 'public' ? '공개' : '비공개'}</span>
                 </div>
             </article>
@@ -2010,7 +2007,7 @@ function renderStagedPhotos() {
             <div class="upload-thumbnail-grid" aria-label="업로드할 사진 선택">
                 ${state.stagedPhotos.map((photo) => `
                     <button class="upload-thumbnail${photo.selected === false ? '' : ' is-selected'}" type="button" data-upload-photo-id="${escapeHtml(photo.localId)}" aria-pressed="${photo.selected === false ? 'false' : 'true'}" draggable="false">
-                        <img src="${photo.url}" alt="${escapeHtml(photo.name)}" draggable="false">
+                        <img src="${photo.url}" alt="선택한 사진" draggable="false">
                     </button>
                 `).join('')}
             </div>
@@ -2019,8 +2016,8 @@ function renderStagedPhotos() {
     }
     if (grid) grid.innerHTML = state.stagedPhotos.map((photo) => `
         <article class="photo-card">
-            <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-            <span>${escapeHtml(photo.name)}</span>
+            <img src="${photo.url}" alt="선택한 사진">
+            <span>선택한 사진</span>
         </article>
     `).join('');
 }
@@ -2123,8 +2120,8 @@ function renderAlbumPhotoPickerPage() {
                         const isSelected = selected.has(photo.id);
                         return `
                             <button class="album-photo-picker-card ${isSelected ? 'is-selected' : ''}" data-toggle-album-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}">
-                                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
-                                <span>${escapeHtml(photo.name)}</span>
+                                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                                <span>${escapeHtml(getPhotoFallbackLabel(photo))}</span>
                             </button>
                         `;
                     }).join('')}
@@ -2164,7 +2161,7 @@ function renderTravelDraftSurfaces() {
     if (analysisStrip) {
         analysisStrip.innerHTML = draftPhotos.slice(0, 4).map((photo, index) => `
             <article>
-                <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
                 <span>${index === 0 ? 'Cover' : index === 1 ? 'Route' : 'Photo'}</span>
             </article>
         `).join('');
@@ -2184,7 +2181,7 @@ function renderTravelDraftSurfaces() {
                             ${day.photos.slice(0, 6).map((photo) => `
                                 <figure>
                                     <button class="album-photo-remove" data-remove-album-photo="${escapeHtml(photo.id)}" type="button" aria-label="앨범에서 사진 제거">×</button>
-                                    <img src="${photo.url}" alt="${escapeHtml(photo.name)}">
+                                    <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
                                 </figure>
                             `).join('')}
                         </div>
@@ -2666,7 +2663,6 @@ async function persistStagedPhotos() {
                 id,
                 url,
                 date: exif.date || new Date().toISOString(),
-                title: '',
                 description: '',
                 lat: hasExifLocation ? exif.lat : null,
                 lng: hasExifLocation ? exif.lng : null,
@@ -2944,7 +2940,6 @@ async function updateLocationEditorMap(lat, lng) {
 
 function setLocationEditorPhoto(photoId) {
     const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
-    const nameInput = $('#photo-title-input');
     const descriptionInput = $('#photo-description-input');
     const dateInput = $('#photo-date-input');
     const message = $('#location-editor-message');
@@ -2953,7 +2948,6 @@ function setLocationEditorPhoto(photoId) {
     state.selectedLocationPhotoId = photo?.id || null;
     setLocationEditorPickMode(false);
     setLocationEditorCoordinateFields(Number(draft.lat), Number(draft.lng));
-    if (nameInput) nameInput.value = getPhotoTitle(photo);
     if (descriptionInput) descriptionInput.value = photo?.description || '';
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
     updateLocationEditorMap(Number(draft.lat), Number(draft.lng));
@@ -3002,7 +2996,6 @@ async function saveManualLocation(event) {
     event.preventDefault();
     const lat = Number($('#location-lat-input')?.value);
     const lng = Number($('#location-lng-input')?.value);
-    const title = $('#photo-title-input')?.value.trim() || '';
     const description = $('#photo-description-input')?.value.trim() || '';
     const dateValue = $('#photo-date-input')?.value;
     const message = $('#location-editor-message');
@@ -3021,7 +3014,6 @@ async function saveManualLocation(event) {
 
     if (message) message.textContent = '위치를 저장하는 중입니다...';
     const { data, error } = await updatePhotoInfo(photo.id, {
-        title,
         description,
         date: dateValue ? new Date(dateValue).toISOString() : photo.date,
         lat,

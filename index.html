@@ -464,20 +464,23 @@
     </main>
 
     <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
-        <div class="photo-detail-card" role="dialog" aria-modal="true" aria-labelledby="photo-detail-title">
+        <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">
             <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
             <img src="images/main_bg2.jpg" alt="여행 사진 상세">
             <section>
                 <p class="eyebrow">Archival Photo</p>
-                <h2 id="photo-detail-title">여행 사진</h2>
-                <p>촬영 날짜 없음 · 위치 정보 없음</p>
-                <div id="photo-detail-map" class="photo-detail-map" hidden>
-                    <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <p id="photo-detail-description" class="photo-detail-description" hidden></p>
+                <div class="photo-detail-meta">
+                    <span data-photo-detail-meta="date"><span class="material-symbols-outlined">calendar_today</span> 촬영 날짜 없음</span>
+                    <span data-photo-detail-meta="place"><span class="material-symbols-outlined">place</span> 위치 정보 없음</span>
                 </div>
                 <div id="photo-detail-visibility" class="photo-detail-visibility">비공개</div>
                 <div class="detail-actions">
                     <button class="btn-primary" data-show-photo-on-map type="button" hidden>지도에서 보기</button>
                     <button class="btn-secondary" data-open-photo-editor type="button">수정</button>
+                </div>
+                <div id="photo-detail-map" class="photo-detail-map" hidden>
+                    <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </section>
         </div>
@@ -488,14 +491,12 @@
             <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
             <p class="eyebrow">Photo Edit</p>
             <h2 id="location-editor-title">사진 정보 수정</h2>
-            <p>사진 이름, 설명, 촬영 날짜와 지도에 표시될 위치를 수정합니다.</p>
+            <p>사진 설명, 촬영 날짜와 지도에 표시될 위치를 수정합니다.</p>
             <div id="location-editor-map" class="location-editor-map">
                 <div id="location-editor-map-canvas" class="location-editor-map-canvas" role="img" aria-label="수정할 사진 위치 지도"></div>
                 <button id="btn-pick-photo-location" class="map-pick-button" type="button">지도에서 위치수정</button>
             </div>
             <form id="location-editor-form" class="location-form">
-                <label for="photo-title-input">사진 이름</label>
-                <input id="photo-title-input" type="text" maxlength="120" placeholder="사진 이름">
                 <label for="photo-description-input">설명</label>
                 <textarea id="photo-description-input" rows="3" maxlength="500" placeholder="사진 설명"></textarea>
                 <label for="photo-date-input">촬영 날짜</label>

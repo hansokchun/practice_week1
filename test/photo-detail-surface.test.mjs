@@ -16,6 +16,19 @@ test('photo detail modal shows only the photo visibility status block', () => {
     assert.match(html, /data-show-photo-on-map/);
 });
 
+test('photo detail surface leads with description and compact info before the map', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const detailStart = html.indexOf('id="photo-detail-modal"');
+    const detailEnd = html.indexOf('id="location-editor-modal"', detailStart);
+    const detail = html.slice(detailStart, detailEnd);
+
+    assert.match(detail, /id="photo-detail-description"/);
+    assert.match(detail, /class="photo-detail-meta"/);
+    assert.ok(detail.indexOf('id="photo-detail-description"') < detail.indexOf('class="photo-detail-meta"'));
+    assert.ok(detail.indexOf('class="photo-detail-meta"') < detail.indexOf('id="photo-detail-map"'));
+    assert.doesNotMatch(detail, /id="photo-detail-title"/);
+});
+
 test('photo detail renderer writes compact metadata and map handoff controls', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const css = readFileSync('style.css', 'utf8');
@@ -35,6 +48,8 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /showOnMapButton\.hidden = !canShowOnTripMap/);
     assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*start;/s);
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*start;/s);
+    assert.match(css, /\.photo-detail-card > img\s*\{[^}]*padding:\s*clamp\(18px,\s*4vh,\s*48px\)\s*0;/s);
+    assert.match(css, /\.photo-detail-map\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /\.photo-detail-map,\s*\.location-editor-map\s*\{/s);
     assert.match(css, /\.photo-detail-map\[hidden\]\s*\{[^}]*display:\s*none !important;/s);
 });

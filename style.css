@@ -3414,6 +3414,7 @@ body.is-logged-in .white-band {
     max-height: calc(100vh - 48px);
     object-fit: contain;
     background: #ffffff;
+    padding: clamp(18px, 4vh, 48px) 0;
 }
 
 .photo-detail-card section {
@@ -3436,6 +3437,46 @@ body.is-logged-in .white-band {
     margin: 0;
     color: var(--muted);
     line-height: 1.55;
+}
+
+.photo-detail-description {
+    color: #2e3f3f !important;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.photo-detail-description[hidden] {
+    display: none;
+}
+
+.photo-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.photo-detail-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    border: 1px solid rgba(15, 88, 86, 0.1);
+    border-radius: 999px;
+    background: #f7faf9;
+    color: #627373;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 8px 10px;
+}
+
+.photo-detail-meta .material-symbols-outlined {
+    color: var(--teal);
+    font-size: 17px;
+}
+
+.photo-detail-map {
+    order: 6;
 }
 
 .photo-detail-map,
