@@ -45,6 +45,17 @@ test('home leads with public discovery while keeping upload as the secondary act
     assert.match(source, /\$\('#btn-home-myphoto'\)\?\.addEventListener\('click', \(\) => routeTo\('upload'\)\)/);
 });
 
+test('home includes a concise site explanation section with map photo artwork', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+
+    assert.match(html, /class="content-band home-story-band"[\s\S]*id="home-story-title"/);
+    assert.match(html, /images\/home-map-memory-board\.png/);
+    assert.match(html, /사진은 지도 위에서 더 쉽게 이어집니다/);
+    assert.match(html, /Explore[\s\S]*내 사진[\s\S]*앨범/);
+    assert.match(css, /\.home-story-band\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.05fr\)\s*minmax\(360px,\s*0\.95fr\);/s);
+});
+
 test('home private workspace is only visible after login', () => {
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');
