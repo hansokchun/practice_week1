@@ -29,6 +29,8 @@ test('mobile Home keeps the private workspace first without oversized intro medi
     assert.match(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{[^}]*padding-top:\s*24px;/s);
     assert.match(mobile, /\.home-choice-band\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.home-choice-grid\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(mobile, /\.home-fit-band\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(mobile, /\.home-fit-list article\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.home-replay-hero\s*\{[^}]*min-height:\s*420px;/s);
     assert.match(mobile, /\.home-replay-hero > img\s*\{[^}]*object-position:\s*62% center;/s);
     assert.match(mobile, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*1fr;/s);

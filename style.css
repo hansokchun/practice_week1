@@ -323,19 +323,25 @@ body.is-logged-in .home-choice-band {
 }
 
 body.is-logged-in .home-replay-hero {
-    order: 5;
+    order: 6;
 }
 
 body.is-logged-in .home-story-band {
-    order: 7;
+    order: 8;
     padding-top: 28px;
     padding-bottom: 54px;
 }
 
 body.is-logged-in .home-explore-guide {
-    order: 6;
+    order: 7;
     padding-top: 28px;
     padding-bottom: 52px;
+}
+
+body.is-logged-in .home-fit-band {
+    order: 5;
+    padding-top: 28px;
+    padding-bottom: 44px;
 }
 
 body.is-logged-in .white-band {
@@ -500,6 +506,65 @@ body.is-logged-in .white-band {
 
 .home-choice-option.is-primary small {
     color: rgba(255, 255, 255, 0.76);
+}
+
+.home-fit-band {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
+    gap: 34px;
+    align-items: start;
+    width: min(var(--container), calc(100% - 48px));
+    margin: 0 auto;
+    padding: 28px 0 64px;
+    border-top: 1px solid var(--line);
+}
+
+.home-fit-heading {
+    display: grid;
+    gap: 12px;
+}
+
+.home-fit-heading h2 {
+    margin: 0;
+    color: var(--teal);
+    font-family: var(--headline);
+    font-size: 34px;
+    line-height: 1.16;
+    letter-spacing: 0;
+}
+
+.home-fit-heading p:not(.eyebrow) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.68;
+}
+
+.home-fit-list {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--line);
+}
+
+.home-fit-list article {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.48fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0;
+}
+
+.home-fit-list strong {
+    color: var(--teal);
+    font-size: 16px;
+    line-height: 1.35;
+}
+
+.home-fit-list span {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
 }
 
 .home-public-layout {
@@ -4232,6 +4297,34 @@ body.is-logged-in .white-band {
     .home-choice-option {
         min-height: 112px;
         padding: 16px;
+    }
+
+    body.is-logged-in .home-fit-band {
+        padding-top: 24px;
+        padding-bottom: 32px;
+    }
+
+    .home-fit-band {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        width: calc(100% - 32px);
+        padding: 24px 0 42px;
+    }
+
+    .home-fit-heading h2 {
+        font-size: 26px;
+        line-height: 1.18;
+    }
+
+    .home-fit-heading p:not(.eyebrow) {
+        font-size: 15px;
+        line-height: 1.58;
+    }
+
+    .home-fit-list article {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 16px 0;
     }
 
     .home-replay-hero {
