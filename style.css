@@ -316,14 +316,18 @@ body.is-logged-in .home-public-preview {
     padding-bottom: 48px;
 }
 
+body.is-logged-in .home-replay-hero {
+    order: 4;
+}
+
 body.is-logged-in .home-story-band {
-    order: 5;
+    order: 6;
     padding-top: 28px;
     padding-bottom: 54px;
 }
 
 body.is-logged-in .home-explore-guide {
-    order: 4;
+    order: 5;
     padding-top: 28px;
     padding-bottom: 52px;
 }
@@ -525,6 +529,59 @@ body.is-logged-in .white-band {
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 16px;
+}
+
+.home-replay-hero {
+    position: relative;
+    min-height: 520px;
+    overflow: hidden;
+    background: #efe4d3;
+}
+
+.home-replay-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(249, 247, 242, 0.1), rgba(249, 247, 242, 0.46) 44%, rgba(249, 247, 242, 0.06));
+    pointer-events: none;
+}
+
+.home-replay-hero > img {
+    width: 100%;
+    min-height: 520px;
+    object-fit: cover;
+}
+
+.home-replay-copy {
+    position: absolute;
+    left: max(24px, calc((100% - var(--container)) / 2));
+    bottom: 56px;
+    z-index: 1;
+    display: grid;
+    gap: 14px;
+    width: min(500px, calc(100% - 48px));
+    color: #3b3028;
+}
+
+.home-replay-copy h2 {
+    margin: 0;
+    color: #3b3028;
+    font-family: var(--headline);
+    font-size: 38px;
+    line-height: 1.16;
+    letter-spacing: 0;
+}
+
+.home-replay-copy p:not(.eyebrow) {
+    margin: 0;
+    color: rgba(59, 48, 40, 0.76);
+    font-size: 17px;
+    line-height: 1.68;
+}
+
+.home-replay-copy .btn-primary {
+    width: fit-content;
+    margin-top: 8px;
 }
 
 .home-explore-guide {
@@ -4061,6 +4118,41 @@ body.is-logged-in .white-band {
     body.is-logged-in .home-public-preview {
         padding-top: 24px;
         padding-bottom: 36px;
+    }
+
+    .home-replay-hero {
+        min-height: 420px;
+    }
+
+    .home-replay-hero::after {
+        background: linear-gradient(180deg, rgba(249, 247, 242, 0.06), rgba(249, 247, 242, 0.72));
+    }
+
+    .home-replay-hero > img {
+        min-height: 420px;
+        object-position: 62% center;
+    }
+
+    .home-replay-copy {
+        left: 16px;
+        right: 16px;
+        bottom: 24px;
+        width: auto;
+        gap: 10px;
+    }
+
+    .home-replay-copy h2 {
+        font-size: 26px;
+        line-height: 1.18;
+    }
+
+    .home-replay-copy p:not(.eyebrow) {
+        font-size: 14px;
+        line-height: 1.56;
+    }
+
+    .home-replay-copy .btn-primary {
+        width: 100%;
     }
 
     body.is-logged-in .home-story-band {

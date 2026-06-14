@@ -49,6 +49,10 @@ test('home includes a concise site explanation section with map photo artwork', 
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');
 
+    assert.match(html, /class="home-replay-hero"[\s\S]*id="home-replay-title"/);
+    assert.match(html, /images\/home-travel-replay\.png/);
+    assert.match(html, /사진이 흩어져 있어도 여행의 흐름은 남아 있습니다/);
+    assert.match(css, /\.home-replay-hero\s*\{[^}]*min-height:\s*520px;/s);
     assert.match(html, /class="content-band home-explore-guide"[\s\S]*id="home-explore-guide-title"/);
     assert.match(html, /images\/home-explore-guide\.png/);
     assert.match(html, /지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
@@ -78,8 +82,9 @@ test('logged-in home prioritizes the private workspace and compresses intro cont
     assert.match(css, /body\.is-logged-in\s+\.page-home\.active\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
     assert.match(css, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*order:\s*1;/s);
     assert.match(css, /body\.is-logged-in\s+\.hero\s*\{[^}]*order:\s*2;[^}]*min-height:\s*auto;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-explore-guide\s*\{[^}]*order:\s*4;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-story-band\s*\{[^}]*order:\s*5;/s);
+    assert.match(css, /body\.is-logged-in\s+\.home-replay-hero\s*\{[^}]*order:\s*4;/s);
+    assert.match(css, /body\.is-logged-in\s+\.home-explore-guide\s*\{[^}]*order:\s*5;/s);
+    assert.match(css, /body\.is-logged-in\s+\.home-story-band\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /body\.is-logged-in\s+\.hero-visual\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /body\.is-logged-in\s+\.white-band\s*\{[^}]*display:\s*none;/s);
 });
