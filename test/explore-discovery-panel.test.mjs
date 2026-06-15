@@ -74,10 +74,10 @@ test('Explore discovery items are thumbnail-first and only show relative upload 
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
 
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*minmax\(338px,\s*auto\)\s+auto;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*minmax\(170px,\s*auto\)\s+auto;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*380px;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*338px;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*212px;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*170px;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
     assert.doesNotMatch(source, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
     assert.doesNotMatch(source, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
@@ -86,11 +86,12 @@ test('Explore discovery items are thumbnail-first and only show relative upload 
 test('Explore discovery panel scrolls long photo lists inside the panel', () => {
     const css = readFileSync('style.css', 'utf8');
 
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*clamp\(520px,\s*calc\(100svh - 110px\),\s*820px\);/s);
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 110px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*clamp\(560px,\s*calc\(100svh - 96px\),\s*900px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 96px\);/s);
     assert.match(css, /\.explore-discovery-body\s*\{[^}]*display:\s*grid;[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\);[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*max-height:\s*100%;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overflow-y:\s*auto;/s);
+    assert.match(css, /\.explore-discovery-list\s*\{[^}]*align-content:\s*start;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overscroll-behavior:\s*contain;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*scrollbar-gutter:\s*stable;/s);
 });
