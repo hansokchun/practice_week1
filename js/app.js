@@ -116,6 +116,7 @@ import { getPublicSurfaceAlbums } from './public-surface-albums.mjs';
 
 const state = {
     currentUser: null,
+    authMode: 'login',
     stagedPhotos: [],
     savedPhotos: [],
     savedAlbums: [],
@@ -252,7 +253,46 @@ function initTurnstile() {
 function resetAuthModal() {
     const form = $('#auth-form');
     const message = $('#auth-message');
+    setAuthMode('login');
     if (form) form.hidden = true;
+    if (message) message.textContent = '';
+}
+
+function setAuthMode(mode) {
+    state.authMode = mode === 'signup' ? 'signup' : 'login';
+    const isSignup = state.authMode === 'signup';
+    const title = $('#auth-title');
+    const intro = $('.auth-intro');
+    const modeCopy = $('[data-auth-mode-copy]');
+    const signupButton = $('#btn-signup');
+    const loginButton = $('#btn-switch-login');
+    const emailButton = $('#btn-email-start');
+    const emailSubmit = $('#btn-email-submit');
+    const resetButton = $('#btn-reset-password');
+    const form = $('#auth-form');
+    const emailInput = $('#email-input');
+    const passwordInput = $('#password-input');
+    const message = $('#auth-message');
+
+    if (title) title.textContent = isSignup ? '\uD68C\uC6D0\uAC00\uC785' : '\uB85C\uADF8\uC778';
+    if (intro) {
+        intro.textContent = isSignup
+            ? 'Google, Kakao, \uC774\uBA54\uC77C \uC911 \uD3B8\uD55C \uBC29\uBC95\uC73C\uB85C \uAC00\uC785\uD558\uC138\uC694. \uC774\uBA54\uC77C \uAC00\uC785\uC740 \uC778\uC99D \uD6C4 \uC5C5\uB85C\uB4DC\uC640 \uACF5\uAC1C\uAC00 \uAC00\uB2A5\uD574\uC694.'
+            : 'Google, Kakao, \uC774\uBA54\uC77C \uC911 \uD3B8\uD55C \uBC29\uBC95\uC73C\uB85C \uB85C\uADF8\uC778\uD558\uC138\uC694.';
+    }
+    if (modeCopy) modeCopy.textContent = isSignup ? '\uC774\uBBF8 \uACC4\uC815\uC774 \uC788\uB098\uC694?' : '\uACC4\uC815\uC774 \uC5C6\uB098\uC694?';
+    if (signupButton) signupButton.hidden = isSignup;
+    if (loginButton) loginButton.hidden = !isSignup;
+    if (emailButton) {
+        emailButton.lastChild.textContent = isSignup
+            ? ' \uC774\uBA54\uC77C\uB85C \uD68C\uC6D0\uAC00\uC785'
+            : ' \uC774\uBA54\uC77C\uB85C \uB85C\uADF8\uC778';
+    }
+    if (emailSubmit) emailSubmit.textContent = isSignup ? '\uD68C\uC6D0\uAC00\uC785' : 'Login';
+    if (resetButton) resetButton.hidden = isSignup;
+    if (form) form.hidden = true;
+    if (emailInput) emailInput.autocomplete = isSignup ? 'email' : 'email';
+    if (passwordInput) passwordInput.autocomplete = isSignup ? 'new-password' : 'current-password';
     if (message) message.textContent = '';
 }
 
@@ -3293,6 +3333,10 @@ function renderExploreList() {
 
 async function handleAuthSubmit(event) {
     event.preventDefault();
+    if (state.authMode === 'signup') {
+        await handleSignup();
+        return;
+    }
     const email = $('#email-input')?.value.trim();
     const password = $('#password-input')?.value;
     const message = $('#auth-message');
@@ -3814,7 +3858,8 @@ function bindEvents() {
     });
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
-    $('#btn-signup')?.addEventListener('click', handleSignup);
+    $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));
+    $('#btn-switch-login')?.addEventListener('click', () => setAuthMode('login'));
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));

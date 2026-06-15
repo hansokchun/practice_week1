@@ -629,8 +629,8 @@
         <div class="modal-card auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
             <button class="modal-close" data-close-modal type="button" aria-label="&#45803;&#44592;">&times;</button>
             <p class="eyebrow">Account</p>
-            <h2 id="auth-title">&#47196;&#44536;&#51064; &#46608;&#45716; &#44032;&#51077;</h2>
-            <p class="auth-intro">Google &#47196;&#44536;&#51064;&#51012; &#47676;&#51200; &#52628;&#52380;&#54644;&#50836;. &#51060;&#47700;&#51068; &#44032;&#51077;&#51008; &#51064;&#51613;&#51012; &#50756;&#47308;&#54620; &#46244; &#49324;&#51652; &#50629;&#47196;&#46300;&#50752; &#44277;&#44060; &#44592;&#45733;&#51012; &#49324;&#50857;&#54624; &#49688; &#51080;&#50612;&#50836;.</p>
+            <h2 id="auth-title">&#47196;&#44536;&#51064;</h2>
+            <p class="auth-intro">Google, Kakao, &#51060;&#47700;&#51068; &#51473; &#54200;&#54620; &#48169;&#48277;&#51004;&#47196; &#47196;&#44536;&#51064;&#54616;&#49464;&#50836;.</p>
             <div class="social-login">
                 <button id="btn-google-login" class="auth-choice-button" type="button">
                     <span>G</span>
@@ -645,7 +645,11 @@
                     &#51060;&#47700;&#51068;&#47196; &#49884;&#51089;&#54616;&#44592;
                 </button>
             </div>
-            <div class="auth-divider"><span>&#46608;&#45716; &#51060;&#47700;&#51068;&#47196; &#44228;&#49549;</span></div>
+            <div class="auth-mode-switch">
+                <span data-auth-mode-copy>&#44228;&#51221;&#51060; &#50630;&#45208;&#50836;?</span>
+                <button id="btn-signup" class="auth-link-button" type="button">&#54924;&#50896;&#44032;&#51077;</button>
+                <button id="btn-switch-login" class="auth-link-button" type="button" hidden>&#47196;&#44536;&#51064;&#51004;&#47196; &#46028;&#50500;&#44032;&#44592;</button>
+            </div>
             <form id="auth-form" class="auth-form" hidden>
                 <label for="email-input">Email</label>
                 <input id="email-input" type="email" autocomplete="email" required>
@@ -653,8 +657,7 @@
                 <input id="password-input" type="password" autocomplete="current-password" minlength="6" required>
                 <div id="turnstile-container" class="turnstile-container" hidden></div>
                 <div class="auth-actions">
-                    <button id="btn-login" class="btn-primary" type="submit">Login</button>
-                    <button id="btn-signup" class="btn-secondary" type="button">Sign up</button>
+                    <button id="btn-email-submit" class="btn-primary" type="submit">Login</button>
                 </div>
                 <button id="btn-reset-password" class="auth-link-button" type="button">&#48708;&#48128;&#48264;&#54840; &#51116;&#49444;&#51221;</button>
             </form>

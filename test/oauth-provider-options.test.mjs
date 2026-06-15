@@ -32,7 +32,10 @@ test('auth modal exposes Google, Kakao, and email start choices', () => {
     assert.match(html, /id="btn-google-login"/);
     assert.match(html, /id="btn-kakao-login"/);
     assert.match(html, /id="btn-email-start"/);
+    assert.match(html, /id="btn-signup"/);
+    assert.match(html, /id="btn-switch-login"/);
     assert.match(html, /id="auth-form" class="auth-form" hidden/);
+    assert.doesNotMatch(html, /auth-divider/);
 });
 
 test('Google login warns before redirecting from embedded mobile browsers', () => {

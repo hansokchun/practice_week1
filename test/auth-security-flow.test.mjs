@@ -19,19 +19,34 @@ test('auth modal exposes social choices first, email signup, password reset, and
     assert.match(html, /id="btn-google-login"/);
     assert.match(html, /id="btn-kakao-login"/);
     assert.match(html, /id="btn-email-start"/);
-    assert.match(html, /id="btn-login"/);
     assert.match(html, /id="btn-signup"/);
+    assert.match(html, /id="btn-switch-login"/);
+    assert.match(html, /id="btn-email-submit"/);
     assert.match(html, /id="btn-reset-password"/);
     assert.match(html, /id="auth-form" class="auth-form" hidden/);
     assert.match(html, /id="turnstile-container"/);
     assert.match(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/);
+    assert.doesNotMatch(html, /auth-divider/);
+    assert.doesNotMatch(html, /id="btn-login"/);
 });
 
 test('email start choice reveals the email form while auth modal opens collapsed', () => {
     assert.match(appSource, /function resetAuthModal\(\)/);
     assert.match(appSource, /function showEmailAuthForm\(\)/);
+    assert.match(appSource, /function setAuthMode\(mode\)/);
     assert.match(appSource, /if \(id === '#auth-modal'\) resetAuthModal\(\);/);
     assert.match(appSource, /#btn-email-start'\)\?\.addEventListener\('click', showEmailAuthForm\)/);
+    assert.match(appSource, /#btn-signup'\)\?\.addEventListener\('click', \(\) => setAuthMode\('signup'\)\)/);
+    assert.match(appSource, /#btn-switch-login'\)\?\.addEventListener\('click', \(\) => setAuthMode\('login'\)\)/);
+});
+
+test('email form submit logs in or signs up based on the selected auth mode', () => {
+    const start = appSource.indexOf('async function handleAuthSubmit');
+    const end = appSource.indexOf('async function handleSignup', start);
+    const body = appSource.slice(start, end);
+
+    assert.match(body, /if \(state\.authMode === 'signup'\) \{\s*await handleSignup\(\);\s*return;\s*\}/s);
+    assert.match(body, /await signInWithEmail\(email, password, \{/s);
 });
 
 test('email signup waits for verification instead of opening the app as a logged-in user', () => {

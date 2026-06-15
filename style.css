@@ -4140,23 +4140,6 @@ body.is-logged-in .white-band {
     font-size: 13px;
 }
 
-.auth-divider {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--line);
-}
-
 .modal-close {
     position: absolute;
     top: 12px;
@@ -4201,9 +4184,27 @@ body.is-logged-in .white-band {
     gap: 10px;
 }
 
+.auth-form[hidden] {
+    display: none;
+}
+
 .auth-actions {
     grid-template-columns: 1fr 1fr;
     margin-top: 4px;
+}
+
+#auth-form .auth-actions {
+    grid-template-columns: 1fr;
+}
+
+.auth-mode-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .auth-message {
