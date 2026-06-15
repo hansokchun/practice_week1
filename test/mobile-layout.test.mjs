@@ -21,12 +21,12 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-pin-preview\.is-expanded\s*\{[^}]*max-height:\s*calc\(100svh - 120px\);/s);
 });
 
-test('mobile Home keeps the private workspace first without oversized intro media', () => {
+test('mobile Home keeps the private workspace visible without logged-in intro sections', () => {
     const mobile = mobileBlock();
 
     assert.match(mobile, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*padding-top:\s*24px;/s);
-    assert.match(mobile, /body\.is-logged-in\s+\.hero\s*\{[^}]*width:\s*calc\(100% - 32px\);[^}]*padding:\s*24px 0 32px;/s);
-    assert.match(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{[^}]*padding-top:\s*24px;/s);
+    assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.hero\s*\{/s);
+    assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{/s);
     assert.match(mobile, /\.home-choice-band\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.home-choice-grid\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.home-fit-band\s*\{[^}]*grid-template-columns:\s*1fr;/s);

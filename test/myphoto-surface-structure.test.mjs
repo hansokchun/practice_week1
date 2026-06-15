@@ -84,19 +84,11 @@ test('home private workspace is only visible after login', () => {
     assert.match(source, /document\.body\.classList\.toggle\('is-logged-out', !state\.currentUser\)/);
 });
 
-test('logged-in home prioritizes the private workspace and compresses intro content', () => {
+test('logged-in home hides the public intro sections and shows only the private workspace', () => {
     const css = readFileSync('style.css', 'utf8');
 
-    assert.match(css, /body\.is-logged-in\s+\.page-home\.active\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*order:\s*1;/s);
-    assert.match(css, /body\.is-logged-in\s+\.hero\s*\{[^}]*order:\s*2;[^}]*min-height:\s*auto;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-choice-band\s*\{[^}]*order:\s*3;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-fit-band\s*\{[^}]*order:\s*5;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-replay-hero\s*\{[^}]*order:\s*6;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-explore-guide\s*\{[^}]*order:\s*7;/s);
-    assert.match(css, /body\.is-logged-in\s+\.home-story-band\s*\{[^}]*order:\s*8;/s);
-    assert.match(css, /body\.is-logged-in\s+\.hero-visual\s*\{[^}]*display:\s*none;/s);
-    assert.match(css, /body\.is-logged-in\s+\.white-band\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.match(css, /body\.is-logged-in\s+\.hero,\s*body\.is-logged-in\s+\.home-choice-band,\s*body\.is-logged-in\s+\.home-public-preview,\s*body\.is-logged-in\s+\.home-fit-band,\s*body\.is-logged-in\s+\.home-replay-hero,\s*body\.is-logged-in\s+\.home-explore-guide,\s*body\.is-logged-in\s+\.home-story-band,\s*body\.is-logged-in\s+\.white-band\s*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {

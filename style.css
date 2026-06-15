@@ -261,89 +261,17 @@ body.is-logged-out .home-workspace {
 
 body.is-logged-in .home-workspace {
     display: block;
-}
-
-body.is-logged-in .page-home.active {
-    display: flex;
-    flex-direction: column;
-}
-
-body.is-logged-in .home-workspace {
-    order: 1;
     padding-top: 42px;
     padding-bottom: 58px;
 }
 
-body.is-logged-in .hero {
-    order: 2;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-    min-height: auto;
-    margin-top: 0;
-    padding: 34px 0 42px;
-    border-top: 1px solid var(--line);
-    background: transparent;
-}
-
-body.is-logged-in .hero-content {
-    padding: 0;
-}
-
-body.is-logged-in .hero h1 {
-    max-width: 680px;
-    font-size: 34px;
-    line-height: 1.16;
-}
-
-body.is-logged-in .hero-copy {
-    max-width: 700px;
-    margin-top: 12px;
-    font-size: 15px;
-    line-height: 1.6;
-}
-
-body.is-logged-in .hero-actions {
-    margin-top: 18px;
-}
-
-body.is-logged-in .hero-visual {
-    display: none;
-}
-
-body.is-logged-in .home-public-preview {
-    order: 4;
-    padding-top: 30px;
-    padding-bottom: 48px;
-}
-
-body.is-logged-in .home-choice-band {
-    order: 3;
-    padding-top: 0;
-    padding-bottom: 36px;
-}
-
-body.is-logged-in .home-replay-hero {
-    order: 6;
-}
-
-body.is-logged-in .home-story-band {
-    order: 8;
-    padding-top: 28px;
-    padding-bottom: 54px;
-}
-
-body.is-logged-in .home-explore-guide {
-    order: 7;
-    padding-top: 28px;
-    padding-bottom: 52px;
-}
-
-body.is-logged-in .home-fit-band {
-    order: 5;
-    padding-top: 28px;
-    padding-bottom: 44px;
-}
-
+body.is-logged-in .hero,
+body.is-logged-in .home-choice-band,
+body.is-logged-in .home-public-preview,
+body.is-logged-in .home-fit-band,
+body.is-logged-in .home-replay-hero,
+body.is-logged-in .home-explore-guide,
+body.is-logged-in .home-story-band,
 body.is-logged-in .white-band {
     display: none;
 }
@@ -4264,20 +4192,6 @@ body.is-logged-in .white-band {
         padding-bottom: 36px;
     }
 
-    body.is-logged-in .hero {
-        width: calc(100% - 32px);
-        padding: 24px 0 32px;
-    }
-
-    body.is-logged-in .home-public-preview {
-        padding-top: 24px;
-        padding-bottom: 36px;
-    }
-
-    body.is-logged-in .home-choice-band {
-        padding-bottom: 24px;
-    }
-
     .home-choice-band {
         grid-template-columns: 1fr;
         gap: 16px;
@@ -4297,11 +4211,6 @@ body.is-logged-in .white-band {
     .home-choice-option {
         min-height: 112px;
         padding: 16px;
-    }
-
-    body.is-logged-in .home-fit-band {
-        padding-top: 24px;
-        padding-bottom: 32px;
     }
 
     .home-fit-band {
@@ -4360,16 +4269,6 @@ body.is-logged-in .white-band {
 
     .home-replay-copy .btn-primary {
         width: 100%;
-    }
-
-    body.is-logged-in .home-story-band {
-        padding-top: 24px;
-        padding-bottom: 36px;
-    }
-
-    body.is-logged-in .home-explore-guide {
-        padding-top: 32px;
-        padding-bottom: 40px;
     }
 
     .home-explore-guide {
