@@ -640,7 +640,7 @@ function setExploreDiscoveryCollapsed(nextCollapsed) {
     panel?.classList.toggle('is-collapsed', state.isExploreDiscoveryCollapsed);
     if (button) {
         button.setAttribute('aria-expanded', String(!nextCollapsed));
-        button.setAttribute('aria-label', nextCollapsed ? '발견 패널 열기' : '발견 패널 접기');
+        button.setAttribute('aria-label', nextCollapsed ? '탐색 패널 열기' : '탐색 패널 접기');
     }
     if (icon) {
         icon.textContent = nextCollapsed ? 'chevron_left' : 'chevron_right';

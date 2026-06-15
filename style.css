@@ -2852,11 +2852,18 @@ body.is-logged-in .white-band {
 
 .explore-discovery-body {
     min-height: 0;
+    overflow: hidden;
 }
 
 .explore-discovery-panel.is-collapsed {
     width: auto;
     grid-template-rows: auto;
+    gap: 0;
+    border-color: transparent;
+    border-radius: 999px;
+    background: var(--teal);
+    box-shadow: 0 16px 38px rgba(12, 42, 43, 0.22);
+    padding: 10px 12px 10px 16px;
 }
 
 .explore-discovery-panel.is-collapsed .explore-discovery-body {
@@ -2865,6 +2872,7 @@ body.is-logged-in .white-band {
 
 .explore-discovery-panel.is-collapsed .explore-discovery-header {
     grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
     align-items: center;
 }
 
@@ -2874,14 +2882,28 @@ body.is-logged-in .white-band {
 }
 
 .explore-discovery-panel.is-collapsed .explore-discovery-header h2 {
+    color: #ffffff;
     font-size: 17px;
+    line-height: 1;
+}
+
+.explore-discovery-panel.is-collapsed .explore-discovery-toggle {
+    width: 30px;
+    height: 30px;
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    box-shadow: none;
 }
 
 .explore-discovery-list {
     display: grid;
     gap: 10px;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
     padding-right: 2px;
 }
 
