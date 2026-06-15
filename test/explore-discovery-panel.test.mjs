@@ -69,3 +69,15 @@ test('Explore discovery panel can be collapsed and reopened from its header', ()
     assert.match(source, /btn-toggle-explore-discovery/);
     assert.match(source, /setAttribute\('aria-expanded', String\(!nextCollapsed\)\)/);
 });
+
+test('Explore discovery items are thumbnail-first and only show relative upload time', () => {
+    const css = readFileSync('style.css', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*minmax\(170px,\s*auto\)\s+auto;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*170px;/s);
+    assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
+    assert.doesNotMatch(source, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
+    assert.doesNotMatch(source, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
+});

@@ -655,17 +655,15 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
     }
 
     list.innerHTML = visiblePhotos.map((photo) => {
-        const date = photo.date ? new Date(photo.date) : null;
-        const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
         const description = String(photo.description || '').trim();
         const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
+        const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
             <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
                 <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
                 <span>
-                    <strong>${escapeHtml(label)}</strong>
-                    <small>${escapeHtml(dateLabel)} · ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</small>
+                    <small>${escapeHtml(uploadTimeLabel)}</small>
                 </span>
             </button>
         `;
