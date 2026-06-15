@@ -416,6 +416,19 @@ function setExplorePhotoScope(scope) {
     renderPublicSurfaces();
 }
 
+function clearExplorePinSelection() {
+    const hadSelection = Boolean(state.selectedPhotoId);
+    state.selectedPhotoId = null;
+    state.selectedPublicAlbumId = null;
+    setExploreDiscoverySelection(null);
+    document.body.classList.remove('explore-pin-selected');
+    setExplorePreviewExpanded(false);
+    $('#explore-pin-preview')?.setAttribute('hidden', '');
+    if (hadSelection && state.exploreMap && state.exploreMarkerPhotos.length) {
+        renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+    }
+}
+
 function getExplorePinPosition(photo, photos) {
     const lats = photos.map((item) => Number(item.lat));
     const lngs = photos.map((item) => Number(item.lng));
@@ -513,6 +526,9 @@ function openExplorePhotoPreview(photo, options = {}) {
     document.body.classList.add('explore-pin-selected');
     $('#explore-pin-preview')?.removeAttribute('hidden');
     setExploreDiscoverySelection(photo.id);
+    if (state.exploreMap && state.exploreMarkerPhotos.length) {
+        renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+    }
 
     if (!options.focusMap) return;
     const map = state.exploreMap;
@@ -740,6 +756,8 @@ async function ensureExploreMap() {
         center: { lat: 36.45, lng: 127.85 },
         zoom: state.exploreZoom
     }));
+    const map = state.exploreMap;
+    map.addListener('click', () => clearExplorePinSelection());
     state.exploreMap.addListener('idle', () => {
         if (
             document.body.dataset.page === APP_SECTIONS.EXPLORE
@@ -820,6 +838,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         marker.addListener('click', () => {
             state.selectedPublicAlbumId = null;
             state.selectedPhotoId = null;
+            setExploreDiscoverySelection(null);
             setExplorePreviewExpanded(false);
             document.body.classList.remove('explore-pin-selected');
             $('#explore-pin-preview')?.setAttribute('hidden', '');
@@ -840,6 +859,25 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         });
         return marker;
     });
+    const selectedPhoto = locatedPhotos.find((photo) => photo.id === state.selectedPhotoId);
+    const selectedPhotoHasVisibleMarker = clusters.some((cluster) => (
+        cluster.count === 1
+        && cluster.photos.some((photo) => photo.id === state.selectedPhotoId)
+    ));
+    if (selectedPhoto && !selectedPhotoHasVisibleMarker) {
+        const selectedMarker = new maps.Marker({
+            map,
+            position: { lat: Number(selectedPhoto.lat), lng: Number(selectedPhoto.lng) },
+            title: getPhotoFallbackLabel(selectedPhoto, selectedPhoto.albumTitle || '공개 사진'),
+            icon: getExplorePinIcon(maps, { type: 'photo', selected: true }),
+            label: null,
+            zIndex: 1000
+        });
+        selectedMarker.addListener('click', () => {
+            openExplorePhotoPreview(selectedPhoto, { focusMap: false });
+        });
+        state.exploreMarkers.push(selectedMarker);
+    }
     if (!state.exploreClusterListener) {
         state.exploreClusterListener = map.addListener('zoom_changed', () => {
             renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
@@ -3561,11 +3599,7 @@ function bindEvents() {
         event.preventDefault();
         openMyphotoAlbum(albumRow);
     });
-    $('#btn-close-pin-preview')?.addEventListener('click', () => {
-        document.body.classList.remove('explore-pin-selected');
-        setExplorePreviewExpanded(false);
-        $('#explore-pin-preview')?.setAttribute('hidden', '');
-    });
+    $('#btn-close-pin-preview')?.addEventListener('click', () => clearExplorePinSelection());
     $$('[data-visibility]').forEach((button) => button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility)));
     $$('[data-visibility-shortcut]').forEach((button) => {
         button.addEventListener('click', async () => {

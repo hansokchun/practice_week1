@@ -26,3 +26,28 @@ test('Explore renders cluster pins that expand without opening the preview panel
     assert.doesNotMatch(body, /exploreExpandedClusterPhotoIds/);
     assert.doesNotMatch(body, /getExploreExpandedClusterPositions/);
 });
+
+test('Explore renders a selected photo overlay when the photo is hidden in a cluster', () => {
+    const fnStart = source.indexOf('async function renderExploreMapMarkers');
+    const fnEnd = source.indexOf('function updatePhotoDetailModal', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /const selectedPhoto = locatedPhotos\.find\(\(photo\) => photo\.id === state\.selectedPhotoId\)/);
+    assert.match(body, /const selectedPhotoHasVisibleMarker = clusters\.some/);
+    assert.match(body, /if \(selectedPhoto && !selectedPhotoHasVisibleMarker\)/);
+    assert.match(body, /type: 'photo', selected: true/);
+    assert.match(body, /zIndex: 1000/);
+    assert.match(body, /state\.exploreMarkers\.push\(selectedMarker\)/);
+});
+
+test('Explore clears selected pin highlight when the user clicks an empty map area', () => {
+    const fnStart = source.indexOf('function clearExplorePinSelection');
+    const fnEnd = source.indexOf('function getExplorePinPosition', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(source, /function clearExplorePinSelection/);
+    assert.match(body, /state\.selectedPhotoId = null/);
+    assert.match(body, /document\.body\.classList\.remove\('explore-pin-selected'\)/);
+    assert.match(body, /renderExploreMapMarkers\(state\.exploreMarkerPhotos, state\.exploreSelectedAlbumId\)/);
+    assert.match(source, /map\.addListener\('click', \(\) => clearExplorePinSelection\(\)\)/);
+});

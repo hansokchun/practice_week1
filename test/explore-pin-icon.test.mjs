@@ -42,3 +42,20 @@ test('Explore cluster pin icon is visually distinct from a photo pin', () => {
     assert.equal(clusterIcon.strokeColor, '#ffffff');
     assert.equal(clusterIcon.url, undefined);
 });
+
+test('Explore selected photo pin is larger and layered above normal pins', () => {
+    const maps = {
+        Point: class Point {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+    };
+    const photoIcon = getExplorePinSymbolIcon(maps, { type: 'photo' });
+    const selectedIcon = getExplorePinSymbolIcon(maps, { type: 'photo', selected: true });
+
+    assert.ok(selectedIcon.scale > photoIcon.scale);
+    assert.ok(selectedIcon.strokeWeight > photoIcon.strokeWeight);
+    assert.notEqual(selectedIcon.fillColor, photoIcon.fillColor);
+});
