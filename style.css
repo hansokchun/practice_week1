@@ -2797,7 +2797,7 @@ body.is-logged-in .white-band {
     grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
     width: min(370px, calc(100% - 48px));
-    max-height: calc(100svh - 170px);
+    max-height: calc(100svh - 220px);
     border: 1px solid rgba(15, 88, 86, 0.12);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.94);
