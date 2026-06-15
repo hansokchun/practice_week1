@@ -35,6 +35,7 @@ import {
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
+import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
     restorePendingAuthContext,
     setPendingAuthAction,
@@ -577,6 +578,11 @@ async function saveExplorePreviewEdits(event) {
 
     const description = $('#pin-preview-description-input')?.value.trim() || '';
     const visibility = state.editingPhotoVisibility === 'public' ? 'public' : 'private';
+    if (!enforceNewAccountLimit('publish', {
+        requestedVisibility: state.editingPhotoVisibility,
+        incomingPublicCount: getPhotosBecomingPublic([photo.id])
+    })) return;
+
     if (message) message.textContent = '저장 중입니다...';
     const { data, error } = await updatePhotoInfo(photo.id, {
         description,
@@ -2351,6 +2357,10 @@ async function saveShareSettings() {
         showToast('공개 설정을 저장하려면 먼저 로그인해주세요.');
         return;
     }
+    if (!enforceNewAccountLimit('publish', {
+        requestedVisibility: state.visibility,
+        incomingPublicCount: getPhotosBecomingPublic(getSharePhotoIds())
+    })) return;
     state.isSavingShare = true;
     applyShareSaveState();
     try {
@@ -2489,6 +2499,10 @@ async function toggleSelectedAlbumVisibility() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
     const nextVisibility = album.visibility === 'public' ? 'private' : 'public';
+    if (!enforceNewAccountLimit('publish', {
+        requestedVisibility: nextVisibility,
+        incomingPublicCount: getPhotosBecomingPublic(state.albumDetailPhotos.map((photo) => photo.id))
+    })) return;
     const { data, error } = await updateAlbumVisibility(album.id, nextVisibility);
     if (error) {
         showToast('앨범 공개 설정을 바꾸지 못했습니다.');
@@ -2757,6 +2771,9 @@ async function persistStagedPhotos() {
         showToast('사진을 저장하려면 먼저 로그인해주세요.');
         return;
     }
+    if (!enforceNewAccountLimit('upload', {
+        incomingUploadCount: selectedPhotos.length
+    })) return;
     if (state.isPersistingUpload) return;
     state.isPersistingUpload = true;
     const status = $('#upload-storage-status');
@@ -2865,6 +2882,28 @@ function getSharePhotoIds() {
         lastSavedPhotoIds: state.lastSavedPhotoIds,
         saved: getMySavedPhotos()
     });
+}
+
+function getPhotosBecomingPublic(photoIds = []) {
+    const ids = new Set((photoIds || []).filter(Boolean).map((id) => id.toString()));
+    return getMySavedPhotos().filter((photo) => (
+        ids.has(photo.id?.toString())
+        && photo.visibility !== 'public'
+        && !photo.shared
+    )).length;
+}
+
+function enforceNewAccountLimit(action, options = {}) {
+    const status = getNewAccountLimitStatus({
+        user: state.currentUser,
+        photos: state.savedPhotos,
+        ...options
+    });
+    const isBlocked = action === 'upload' ? !status.canUpload : !status.canPublish;
+    if (!isBlocked) return true;
+    const message = getNewAccountLimitMessage(status, action);
+    if (message) showToast(message);
+    return false;
 }
 
 async function saveAlbumAndOpenDetail() {
@@ -3126,6 +3165,11 @@ async function saveManualLocation(event) {
         closeModals();
         return;
     }
+
+    if (!enforceNewAccountLimit('publish', {
+        requestedVisibility: state.editingPhotoVisibility,
+        incomingPublicCount: getPhotosBecomingPublic([photo.id])
+    })) return;
 
     if (message) message.textContent = '위치를 저장하는 중입니다...';
     const { data, error } = await updatePhotoInfo(photo.id, {
