@@ -54,3 +54,18 @@ test('Explore shell exposes a desktop discovery panel instead of a hidden-only l
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*right:\s*24px;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*none;/s);
 });
+
+test('Explore discovery panel can be collapsed and reopened from its header', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+
+    assert.match(html, /id="btn-toggle-explore-discovery"/);
+    assert.match(html, /aria-controls="explore-discovery-body"/);
+    assert.match(html, /aria-expanded="true"/);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*width:\s*auto;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s+\.explore-discovery-body\s*\{[^}]*display:\s*none;/s);
+    assert.match(source, /function toggleExploreDiscoveryPanel\(\)/);
+    assert.match(source, /btn-toggle-explore-discovery/);
+    assert.match(source, /setAttribute\('aria-expanded', String\(!nextCollapsed\)\)/);
+});

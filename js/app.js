@@ -151,6 +151,7 @@ const state = {
     exploreMarkerRenderToken: 0,
     explorePhotoScope: 'mine',
     explorePreserveViewportOnce: false,
+    isExploreDiscoveryCollapsed: false,
     explorePreviewEditMode: false,
     profileMap: null,
     profileMarkers: [],
@@ -614,10 +615,33 @@ function getExploreCurrentBounds() {
     return normalizeExploreBounds(state.exploreMap?.getBounds?.());
 }
 
+function setExploreDiscoveryCollapsed(nextCollapsed) {
+    state.isExploreDiscoveryCollapsed = Boolean(nextCollapsed);
+    const panel = $('#explore-list');
+    const button = $('#btn-toggle-explore-discovery');
+    const icon = button?.querySelector('.material-symbols-outlined');
+
+    panel?.classList.toggle('is-collapsed', state.isExploreDiscoveryCollapsed);
+    if (button) {
+        button.setAttribute('aria-expanded', String(!nextCollapsed));
+        button.setAttribute('aria-label', nextCollapsed ? '발견 패널 열기' : '발견 패널 접기');
+    }
+    if (icon) {
+        icon.textContent = nextCollapsed ? 'chevron_left' : 'chevron_right';
+    }
+}
+
+function toggleExploreDiscoveryPanel() {
+    const panel = $('#explore-list');
+    const nextCollapsed = !panel?.classList.contains('is-collapsed');
+    setExploreDiscoveryCollapsed(nextCollapsed);
+}
+
 function renderExploreDiscoveryPanel(photos, options = {}) {
     const panel = $('#explore-list');
     const list = panel?.querySelector('[data-explore-discovery-list]');
     if (!panel || !list) return;
+    setExploreDiscoveryCollapsed(state.isExploreDiscoveryCollapsed);
 
     const visiblePhotos = getExploreDiscoveryPhotos(photos, {
         bounds: options.bounds || getExploreCurrentBounds(),
@@ -3279,6 +3303,12 @@ function bindEvents() {
         const exploreScopeButton = event.target.closest('[data-explore-scope]');
         if (exploreScopeButton) {
             setExplorePhotoScope(exploreScopeButton.dataset.exploreScope);
+            return;
+        }
+
+        const discoveryToggleButton = event.target.closest('#btn-toggle-explore-discovery');
+        if (discoveryToggleButton) {
+            toggleExploreDiscoveryPanel();
             return;
         }
 

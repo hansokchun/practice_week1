@@ -451,12 +451,19 @@
                 </aside>
                 <aside id="explore-list" class="explore-discovery-panel" aria-labelledby="explore-discovery-title">
                     <div class="explore-discovery-header">
-                        <p class="eyebrow">Discovery</p>
-                        <h2 id="explore-discovery-title">발견</h2>
-                        <span>현재 지도 화면 안의 공개 사진</span>
+                        <div>
+                            <p class="eyebrow">Discovery</p>
+                            <h2 id="explore-discovery-title">발견</h2>
+                            <span>현재 지도 화면 안의 공개 사진</span>
+                        </div>
+                        <button id="btn-toggle-explore-discovery" class="explore-discovery-toggle" type="button" aria-controls="explore-discovery-body" aria-expanded="true" aria-label="발견 패널 접기">
+                            <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                        </button>
                     </div>
-                    <div class="explore-discovery-list" data-explore-discovery-list>
-                        <p class="explore-discovery-empty">지도 위 공개 사진을 불러오는 중입니다.</p>
+                    <div id="explore-discovery-body" class="explore-discovery-body">
+                        <div class="explore-discovery-list" data-explore-discovery-list>
+                            <p class="explore-discovery-empty">지도 위 공개 사진을 불러오는 중입니다.</p>
+                        </div>
                     </div>
                 </aside>
             </div>

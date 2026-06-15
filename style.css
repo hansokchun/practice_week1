@@ -2808,6 +2808,13 @@ body.is-logged-in .white-band {
 
 .explore-discovery-header {
     display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px;
+    align-items: start;
+}
+
+.explore-discovery-header > div {
+    display: grid;
     gap: 3px;
 }
 
@@ -2824,6 +2831,50 @@ body.is-logged-in .white-band {
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
+}
+
+.explore-discovery-toggle {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(15, 88, 86, 0.12);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--teal);
+    box-shadow: 0 8px 22px rgba(12, 42, 43, 0.1);
+}
+
+.explore-discovery-toggle:focus-visible {
+    outline: 2px solid rgba(244, 140, 113, 0.38);
+    outline-offset: 2px;
+}
+
+.explore-discovery-body {
+    min-height: 0;
+}
+
+.explore-discovery-panel.is-collapsed {
+    width: auto;
+    grid-template-rows: auto;
+}
+
+.explore-discovery-panel.is-collapsed .explore-discovery-body {
+    display: none;
+}
+
+.explore-discovery-panel.is-collapsed .explore-discovery-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.explore-discovery-panel.is-collapsed .explore-discovery-header .eyebrow,
+.explore-discovery-panel.is-collapsed .explore-discovery-header span {
+    display: none;
+}
+
+.explore-discovery-panel.is-collapsed .explore-discovery-header h2 {
+    font-size: 17px;
 }
 
 .explore-discovery-list {
