@@ -98,6 +98,10 @@ import {
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import {
+    getExploreDiscoveryPhotos,
+    normalizeExploreBounds
+} from './explore-discovery-panel.mjs';
+import {
     formatAlbumCount,
     formatDayCount,
     formatPhotoCount,
@@ -494,6 +498,30 @@ function updateExplorePhotoPreview(photo) {
     updatePhotoDetailModal(photo);
 }
 
+function setExploreDiscoverySelection(photoId) {
+    $$('[data-explore-discovery-photo]').forEach((button) => {
+        button.classList.toggle('is-selected', Boolean(photoId && button.dataset.exploreDiscoveryPhoto === String(photoId)));
+    });
+}
+
+function openExplorePhotoPreview(photo, options = {}) {
+    if (!photo) return;
+    if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
+    updateExplorePhotoPreview(photo);
+    setExplorePreviewExpanded(false);
+    document.body.classList.add('explore-pin-selected');
+    $('#explore-pin-preview')?.removeAttribute('hidden');
+    setExploreDiscoverySelection(photo.id);
+
+    if (!options.focusMap) return;
+    const map = state.exploreMap;
+    const maps = window.google?.maps;
+    if (!map || !maps || !hasPhotoLocation(photo)) return;
+    const position = { lat: Number(photo.lat), lng: Number(photo.lng) };
+    map.panTo(position);
+    if ((map.getZoom?.() || state.exploreZoom) < 13) map.setZoom(13);
+}
+
 function setExplorePreviewExpanded(isExpanded) {
     const preview = $('#explore-pin-preview');
     if (!preview) return;
@@ -582,6 +610,44 @@ function updateExploreAlbumPreview(album) {
     if (profileButton) profileButton.dataset.publicAlbumId = album.id || '';
 }
 
+function getExploreCurrentBounds() {
+    return normalizeExploreBounds(state.exploreMap?.getBounds?.());
+}
+
+function renderExploreDiscoveryPanel(photos, options = {}) {
+    const panel = $('#explore-list');
+    const list = panel?.querySelector('[data-explore-discovery-list]');
+    if (!panel || !list) return;
+
+    const visiblePhotos = getExploreDiscoveryPhotos(photos, {
+        bounds: options.bounds || getExploreCurrentBounds(),
+        limit: 30
+    });
+    panel.dataset.visibleCount = String(visiblePhotos.length);
+
+    if (!visiblePhotos.length) {
+        list.innerHTML = '<p class="explore-discovery-empty">현재 지도 화면 안에 표시할 공개 사진이 없습니다.</p>';
+        return;
+    }
+
+    list.innerHTML = visiblePhotos.map((photo) => {
+        const date = photo.date ? new Date(photo.date) : null;
+        const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
+        const description = String(photo.description || '').trim();
+        const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
+        const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
+        return `
+            <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
+                <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
+                <span>
+                    <strong>${escapeHtml(label)}</strong>
+                    <small>${escapeHtml(dateLabel)} · ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</small>
+                </span>
+            </button>
+        `;
+    }).join('');
+}
+
 async function getGoogleMapsApiKey() {
     if (window.GOOGLE_MAPS_API_KEY) return window.GOOGLE_MAPS_API_KEY;
     if (state.googleMapsApiKey !== null) return state.googleMapsApiKey;
@@ -657,6 +723,7 @@ async function ensureExploreMap() {
             document.body.dataset.page === APP_SECTIONS.EXPLORE
             && state.exploreMarkerPhotos.length
         ) {
+            renderExploreDiscoveryPanel(state.exploreMarkerPhotos);
             renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
         }
     });
@@ -696,8 +763,10 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         document.body.classList.remove('explore-pin-selected');
         setExplorePreviewExpanded(false);
         $('#explore-pin-preview')?.setAttribute('hidden', '');
+        renderExploreDiscoveryPanel([]);
         return;
     }
+    renderExploreDiscoveryPanel(locatedPhotos);
     const currentZoom = map.getZoom?.() || state.exploreZoom;
     const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
     state.exploreMarkers = clusters.map((cluster) => {
@@ -713,11 +782,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
                 zIndex: selected ? 12 : 10
             });
             marker.addListener('click', () => {
-                if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
-                updateExplorePhotoPreview(photo);
-                setExplorePreviewExpanded(false);
-                document.body.classList.add('explore-pin-selected');
-                $('#explore-pin-preview')?.removeAttribute('hidden');
+                openExplorePhotoPreview(photo, { focusMap: false });
             });
             return marker;
         }
@@ -1107,7 +1172,7 @@ function renderEmptyPublicSurfaces() {
             <span>${empty.body}</span>
         </article>
     `;
-    $('#explore-list') && ($('#explore-list').innerHTML = emptyCard);
+    renderExploreDiscoveryPanel([]);
     $('#public-trip-photo-grid') && ($('#public-trip-photo-grid').innerHTML = emptyCard);
     $('.trip-day-grid') && ($('.trip-day-grid').innerHTML = emptyCard);
     $('.related-album-grid') && ($('.related-album-grid').innerHTML = '');
@@ -1699,16 +1764,6 @@ function renderPublicSurfaces() {
     if (profileHeroImage) {
         profileHeroImage.src = getProfileHeroImage(selected, profileAlbums);
         profileHeroImage.alt = `${authorName} public profile cover`;
-    }
-
-    const list = $('#explore-list');
-    if (list) {
-        list.innerHTML = albums.map((album) => `
-            <article class="explore-item ${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}">
-                <strong>${escapeHtml(album.title)}</strong>
-                <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
-            </article>
-        `).join('');
     }
 
     $$('[data-public-album-id]').forEach((item) => {
@@ -3227,6 +3282,14 @@ function bindEvents() {
             return;
         }
 
+        const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');
+        if (discoveryPhotoButton) {
+            const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto)
+                || getPublicPhotoMapItems().find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto);
+            openExplorePhotoPreview(photo, { focusMap: true });
+            return;
+        }
+
         const goMyphotoButton = event.target.closest('[data-go-myphoto]');
         if (goMyphotoButton) {
             routeTo(APP_SECTIONS.HOME);
@@ -3458,13 +3521,7 @@ function bindEvents() {
         const explorePhotoPin = event.target.closest('[data-explore-photo-pin]');
         if (explorePhotoPin) {
             const photo = getPublicPhotoMapItems().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
-            if (photo?.album_id) setSelectedPublicAlbum(photo.album_id);
-            updateExplorePhotoPreview(photo);
-            renderPublicSurfaces();
-            updateExplorePhotoPreview(photo);
-            setExplorePreviewExpanded(false);
-            document.body.classList.add('explore-pin-selected');
-            $('#explore-pin-preview')?.removeAttribute('hidden');
+            openExplorePhotoPreview(photo, { focusMap: true });
             return;
         }
 
