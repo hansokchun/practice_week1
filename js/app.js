@@ -7,6 +7,7 @@ import {
     fetchPhotos,
     fetchProfilesByIds,
     getCurrentUser,
+    resetPasswordForEmail,
     signInWithEmail,
     signOut,
     signUpWithEmail,
@@ -176,6 +177,9 @@ const getCurrentRoute = () => parseRouteHash(window.location.hash);
 const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'album-photos', 'trip', 'profile']);
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+const TURNSTILE_SITE_KEY = window.TRAVELGRAM_TURNSTILE_SITE_KEY || '';
+let turnstileWidgetId = null;
+let turnstileToken = '';
 
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -214,6 +218,35 @@ function showToast(message) {
     toast.classList.add('is-visible');
     window.clearTimeout(showToast._timer);
     showToast._timer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
+}
+
+function getTurnstileToken() {
+    return turnstileToken;
+}
+
+function resetTurnstile() {
+    turnstileToken = '';
+    if (window.turnstile && turnstileWidgetId !== null) {
+        window.turnstile.reset(turnstileWidgetId);
+    }
+}
+
+function initTurnstile() {
+    const container = $('#turnstile-container');
+    if (!container || !TURNSTILE_SITE_KEY || !window.turnstile || turnstileWidgetId !== null) return;
+    turnstileWidgetId = window.turnstile.render(container, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token) => {
+            turnstileToken = token;
+        },
+        'expired-callback': () => {
+            turnstileToken = '';
+        },
+        'error-callback': () => {
+            turnstileToken = '';
+        }
+    });
+    container.hidden = false;
 }
 
 function parseRouteHash(hash) {
@@ -578,6 +611,7 @@ async function saveExplorePreviewEdits(event) {
 
     const description = $('#pin-preview-description-input')?.value.trim() || '';
     const visibility = state.editingPhotoVisibility === 'public' ? 'public' : 'private';
+    if (!enforceVerifiedAccount('publish')) return;
     if (!enforceNewAccountLimit('publish', {
         requestedVisibility: state.editingPhotoVisibility,
         incomingPublicCount: getPhotosBecomingPublic([photo.id])
@@ -2357,6 +2391,7 @@ async function saveShareSettings() {
         showToast('공개 설정을 저장하려면 먼저 로그인해주세요.');
         return;
     }
+    if (!enforceVerifiedAccount('publish')) return;
     if (!enforceNewAccountLimit('publish', {
         requestedVisibility: state.visibility,
         incomingPublicCount: getPhotosBecomingPublic(getSharePhotoIds())
@@ -2499,6 +2534,7 @@ async function toggleSelectedAlbumVisibility() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
     const nextVisibility = album.visibility === 'public' ? 'private' : 'public';
+    if (!enforceVerifiedAccount('publish')) return;
     if (!enforceNewAccountLimit('publish', {
         requestedVisibility: nextVisibility,
         incomingPublicCount: getPhotosBecomingPublic(state.albumDetailPhotos.map((photo) => photo.id))
@@ -2771,6 +2807,7 @@ async function persistStagedPhotos() {
         showToast('사진을 저장하려면 먼저 로그인해주세요.');
         return;
     }
+    if (!enforceVerifiedAccount('upload')) return;
     if (!enforceNewAccountLimit('upload', {
         incomingUploadCount: selectedPhotos.length
     })) return;
@@ -2903,6 +2940,23 @@ function enforceNewAccountLimit(action, options = {}) {
     if (!isBlocked) return true;
     const message = getNewAccountLimitMessage(status, action);
     if (message) showToast(message);
+    return false;
+}
+
+function isCurrentUserEmailVerified() {
+    const user = state.currentUser;
+    const provider = user?.app_metadata?.provider;
+    return Boolean(user?.email_confirmed_at || user?.confirmed_at || provider === 'google');
+}
+
+function enforceVerifiedAccount(action) {
+    if (isCurrentUserEmailVerified()) return true;
+    const message = action === 'upload'
+        ? '이메일 인증을 완료하면 사진을 업로드할 수 있어요.'
+        : '이메일 인증을 완료하면 사진을 공개할 수 있어요.';
+    showToast(message);
+    const authMessage = $('#auth-message');
+    if (authMessage) authMessage.textContent = message;
     return false;
 }
 
@@ -3166,6 +3220,7 @@ async function saveManualLocation(event) {
         return;
     }
 
+    if (!enforceVerifiedAccount('publish')) return;
     if (!enforceNewAccountLimit('publish', {
         requestedVisibility: state.editingPhotoVisibility,
         incomingPublicCount: getPhotosBecomingPublic([photo.id])
@@ -3227,10 +3282,13 @@ async function handleAuthSubmit(event) {
     const password = $('#password-input')?.value;
     const message = $('#auth-message');
     if (!email || !password) return;
-    if (message) message.textContent = '로그인 중입니다...';
-    const { user, error } = await signInWithEmail(email, password);
+    if (message) message.textContent = '\uB85C\uADF8\uC778 \uC911\uC785\uB2C8\uB2E4...';
+    const { user, error } = await signInWithEmail(email, password, {
+        captchaToken: getTurnstileToken()
+    });
+    resetTurnstile();
     if (error) {
-        if (message) message.textContent = error.message || '로그인에 실패했습니다.';
+        if (message) message.textContent = error.message || '\uB85C\uADF8\uC778\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.';
         return;
     }
     state.currentUser = user;
@@ -3239,7 +3297,7 @@ async function handleAuthSubmit(event) {
     await loadSavedPhotos();
     await loadSavedAlbums();
     closeModals();
-    showToast('로그인했습니다.');
+    showToast('\uB85C\uADF8\uC778\uD588\uC5B4\uC694.');
     await runPendingAuthAction();
 }
 
@@ -3248,20 +3306,40 @@ async function handleSignup() {
     const password = $('#password-input')?.value;
     const message = $('#auth-message');
     if (!email || !password) return;
-    if (message) message.textContent = '가입 중입니다...';
-    const { user, error } = await signUpWithEmail(email, password);
+    if (message) message.textContent = '\uAC00\uC785 \uC911\uC785\uB2C8\uB2E4...';
+    const { error } = await signUpWithEmail(email, password, {
+        captchaToken: getTurnstileToken()
+    });
+    resetTurnstile();
     if (error) {
-        if (message) message.textContent = error.message || '가입에 실패했습니다.';
+        if (message) message.textContent = error.message || '\uAC00\uC785\uC5D0 \uC2E4\uD328\uD588\uC5B4\uC694.';
         return;
     }
-    state.currentUser = user;
-    updateAccountUI();
-    await ensureCurrentUserPublicProfile();
-    await loadSavedPhotos();
-    await loadSavedAlbums();
-    closeModals();
-    showToast('가입을 완료했습니다.');
-    await runPendingAuthAction();
+    const verificationMessage = '\uC774\uBA54\uC77C \uC778\uC99D \uB9C1\uD06C\uB97C \uBCF4\uB0C8\uC5B4\uC694. \uBA54\uC77C\uD568\uC5D0\uC11C \uC778\uC99D\uC744 \uC644\uB8CC\uD55C \uB4A4 \uB85C\uADF8\uC778\uD574\uC8FC\uC138\uC694.';
+    if (message) message.textContent = verificationMessage;
+    showToast(verificationMessage);
+}
+
+async function handlePasswordReset() {
+    const email = $('#email-input')?.value.trim();
+    const message = $('#auth-message');
+    if (!email) {
+        if (message) message.textContent = '\uBE44\uBC00\uBC88\uD638 \uC7AC\uC124\uC815 \uB9C1\uD06C\uB97C \uBC1B\uC744 \uC774\uBA54\uC77C\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.';
+        return;
+    }
+    if (message) message.textContent = '\uBE44\uBC00\uBC88\uD638 \uC7AC\uC124\uC815 \uBA54\uC77C\uC744 \uBCF4\uB0B4\uB294 \uC911\uC785\uB2C8\uB2E4...';
+    const { error } = await resetPasswordForEmail(email, {
+        captchaToken: getTurnstileToken(),
+        redirectTo: window.location.origin
+    });
+    resetTurnstile();
+    if (error) {
+        if (message) message.textContent = error.message || '\uBE44\uBC00\uBC88\uD638 \uC7AC\uC124\uC815 \uBA54\uC77C\uC744 \uBCF4\uB0B4\uC9C0 \uBABB\uD588\uC5B4\uC694.';
+        return;
+    }
+    const resetMessage = '\uBE44\uBC00\uBC88\uD638 \uC7AC\uC124\uC815 \uB9C1\uD06C\uB97C \uC774\uBA54\uC77C\uB85C \uBCF4\uB0C8\uC5B4\uC694.';
+    if (message) message.textContent = resetMessage;
+    showToast(resetMessage);
 }
 
 async function handleSocialLogin(provider) {
@@ -3721,7 +3799,9 @@ function bindEvents() {
     });
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-signup')?.addEventListener('click', handleSignup);
+    $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
+    initTurnstile();
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);

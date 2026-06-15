@@ -4101,6 +4101,11 @@ body.is-logged-in .white-band {
     line-height: 1.5;
 }
 
+.auth-intro,
+.auth-policy-note {
+    font-size: 13px;
+}
+
 .social-login {
     display: grid;
     gap: 10px;
@@ -4201,6 +4206,21 @@ body.is-logged-in .white-band {
     min-height: 20px;
     color: var(--muted);
     font-size: 13px;
+}
+
+.turnstile-container {
+    min-height: 65px;
+}
+
+.auth-link-button {
+    justify-self: center;
+    border: 0;
+    background: transparent;
+    color: var(--teal);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .toast {

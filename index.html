@@ -626,27 +626,31 @@
     </div>
 
     <div id="auth-modal" class="modal" aria-hidden="true">
-        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-            <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
+        <div class="modal-card auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="&#45803;&#44592;">&times;</button>
             <p class="eyebrow">Account</p>
-            <h2 id="auth-title">로그인 또는 가입</h2>
+            <h2 id="auth-title">&#47196;&#44536;&#51064; &#46608;&#45716; &#44032;&#51077;</h2>
+            <p class="auth-intro">Google &#47196;&#44536;&#51064;&#51012; &#47676;&#51200; &#52628;&#52380;&#54644;&#50836;. &#51060;&#47700;&#51068; &#44032;&#51077;&#51008; &#51064;&#51613;&#51012; &#50756;&#47308;&#54620; &#46244; &#49324;&#51652; &#50629;&#47196;&#46300;&#50752; &#44277;&#44060; &#44592;&#45733;&#51012; &#49324;&#50857;&#54624; &#49688; &#51080;&#50612;&#50836;.</p>
             <div class="social-login">
                 <button id="btn-google-login" type="button">
                     <span>G</span>
-                    Google로 계속하기
+                    Google&#47196; &#44228;&#49549;&#54616;&#44592;
                 </button>
             </div>
-            <div class="auth-divider"><span>또는 이메일로 계속</span></div>
+            <div class="auth-divider"><span>&#46608;&#45716; &#51060;&#47700;&#51068;&#47196; &#44228;&#49549;</span></div>
             <form id="auth-form" class="auth-form">
                 <label for="email-input">Email</label>
                 <input id="email-input" type="email" autocomplete="email" required>
                 <label for="password-input">Password</label>
                 <input id="password-input" type="password" autocomplete="current-password" minlength="6" required>
+                <div id="turnstile-container" class="turnstile-container" hidden></div>
                 <div class="auth-actions">
                     <button id="btn-login" class="btn-primary" type="submit">Login</button>
                     <button id="btn-signup" class="btn-secondary" type="button">Sign up</button>
                 </div>
+                <button id="btn-reset-password" class="auth-link-button" type="button">&#48708;&#48128;&#48264;&#54840; &#51116;&#49444;&#51221;</button>
             </form>
+            <p class="auth-policy-note">&#44032;&#51077; &#51649;&#54980;&#50640;&#45716; &#54616;&#47336; &#50629;&#47196;&#46300; 20&#51109;, &#44277;&#44060; &#51204;&#54872; 5&#51109;&#51004;&#47196; &#51228;&#54620;&#46121;&#45768;&#45796;.</p>
             <p id="auth-message" class="auth-message"></p>
         </div>
     </div>
@@ -664,6 +668,7 @@
         </button>
     </nav>
 
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script type="module" src="/js/app.js"></script>
 </body>

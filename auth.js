@@ -24,14 +24,25 @@ function getSupabase() {
     return _supabaseClient;
 }
 
+function getAuthOptions(options = {}) {
+    const authOptions = {};
+    if (options.captchaToken) authOptions.captchaToken = options.captchaToken;
+    if (options.redirectTo) authOptions.redirectTo = options.redirectTo;
+    return authOptions;
+}
+
 // ═══════════════════════════════════════════════════
 //  1. 인증 (Auth) — 로그인/가입/로그아웃/세션
 // ═══════════════════════════════════════════════════
 
-export async function signUpWithEmail(email, password) {
+export async function signUpWithEmail(email, password, options = {}) {
     try {
         const sb = getSupabase();
-        const { data, error } = await sb.auth.signUp({ email, password });
+        const { data, error } = await sb.auth.signUp({
+            email,
+            password,
+            options: getAuthOptions(options)
+        });
         if (error) throw error;
         return { user: data.user, error: null };
     } catch (error) {
@@ -39,14 +50,29 @@ export async function signUpWithEmail(email, password) {
     }
 }
 
-export async function signInWithEmail(email, password) {
+export async function signInWithEmail(email, password, options = {}) {
     try {
         const sb = getSupabase();
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        const { data, error } = await sb.auth.signInWithPassword({
+            email,
+            password,
+            options: getAuthOptions(options)
+        });
         if (error) throw error;
         return { user: data.user, session: data.session, error: null };
     } catch (error) {
         return { user: null, session: null, error };
+    }
+}
+
+export async function resetPasswordForEmail(email, options = {}) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb.auth.resetPasswordForEmail(email, getAuthOptions(options));
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
     }
 }
 
