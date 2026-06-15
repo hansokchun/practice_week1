@@ -2860,13 +2860,15 @@ body.is-logged-in .white-band {
 
 .explore-discovery-panel.is-collapsed {
     width: auto;
+    height: auto;
+    max-height: none;
     grid-template-rows: auto;
     gap: 0;
     border-color: transparent;
     border-radius: 999px;
     background: var(--teal);
     box-shadow: 0 16px 38px rgba(12, 42, 43, 0.22);
-    padding: 10px 12px 10px 16px;
+    padding: 8px 10px 8px 14px;
 }
 
 .explore-discovery-panel.is-collapsed .explore-discovery-body {
@@ -2891,8 +2893,8 @@ body.is-logged-in .white-band {
 }
 
 .explore-discovery-panel.is-collapsed .explore-discovery-toggle {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-color: rgba(255, 255, 255, 0.18);
     background: rgba(255, 255, 255, 0.14);
     color: #ffffff;
