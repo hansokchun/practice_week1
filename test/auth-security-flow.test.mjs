@@ -15,13 +15,23 @@ test('email auth calls pass Supabase CAPTCHA tokens when available', () => {
     assert.match(authSource, /sb\.auth\.resetPasswordForEmail\(email,\s*getAuthOptions\(options\)\)/s);
 });
 
-test('auth modal exposes Google first, email signup, password reset, and Turnstile mount', () => {
+test('auth modal exposes social choices first, email signup, password reset, and Turnstile mount', () => {
     assert.match(html, /id="btn-google-login"/);
+    assert.match(html, /id="btn-kakao-login"/);
+    assert.match(html, /id="btn-email-start"/);
     assert.match(html, /id="btn-login"/);
     assert.match(html, /id="btn-signup"/);
     assert.match(html, /id="btn-reset-password"/);
+    assert.match(html, /id="auth-form" class="auth-form" hidden/);
     assert.match(html, /id="turnstile-container"/);
     assert.match(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/);
+});
+
+test('email start choice reveals the email form while auth modal opens collapsed', () => {
+    assert.match(appSource, /function resetAuthModal\(\)/);
+    assert.match(appSource, /function showEmailAuthForm\(\)/);
+    assert.match(appSource, /if \(id === '#auth-modal'\) resetAuthModal\(\);/);
+    assert.match(appSource, /#btn-email-start'\)\?\.addEventListener\('click', showEmailAuthForm\)/);
 });
 
 test('email signup waits for verification instead of opening the app as a logged-in user', () => {

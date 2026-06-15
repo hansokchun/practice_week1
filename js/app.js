@@ -249,6 +249,20 @@ function initTurnstile() {
     container.hidden = false;
 }
 
+function resetAuthModal() {
+    const form = $('#auth-form');
+    const message = $('#auth-message');
+    if (form) form.hidden = true;
+    if (message) message.textContent = '';
+}
+
+function showEmailAuthForm() {
+    const form = $('#auth-form');
+    if (form) form.hidden = false;
+    $('#email-input')?.focus();
+    initTurnstile();
+}
+
 function parseRouteHash(hash) {
     if (!hash || !hash.startsWith('#/')) return APP_SECTIONS.HOME;
     const path = hash.slice(2).split('?')[0].replace(/^\/+|\/+$/g, '');
@@ -354,6 +368,7 @@ function applyRouteHash(hash, options = {}) {
 function openModal(id) {
     const modal = $(id);
     if (!modal) return;
+    if (id === '#auth-modal') resetAuthModal();
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
 }
@@ -3798,9 +3813,11 @@ function bindEvents() {
         openModal('#auth-modal');
     });
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
+    $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
     $('#btn-signup')?.addEventListener('click', handleSignup);
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
+    $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
     initTurnstile();
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);

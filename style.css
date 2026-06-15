@@ -4113,7 +4113,8 @@ body.is-logged-in .white-band {
     gap: 10px;
 }
 
-.social-login button {
+.social-login button,
+.auth-choice-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4126,7 +4127,8 @@ body.is-logged-in .white-band {
     font-weight: 800;
 }
 
-.social-login button span {
+.social-login button span,
+.auth-choice-button span {
     display: grid;
     place-items: center;
     width: 24px;

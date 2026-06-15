@@ -26,12 +26,13 @@ test('Google OAuth keeps the default Supabase provider scopes', () => {
     });
 });
 
-test('auth modal exposes Google and email auth while Kakao is disabled for QA', () => {
+test('auth modal exposes Google, Kakao, and email start choices', () => {
     const html = readFileSync('index.html', 'utf8');
 
     assert.match(html, /id="btn-google-login"/);
-    assert.match(html, /id="auth-form"/);
-    assert.doesNotMatch(html, /id="btn-kakao-login"/);
+    assert.match(html, /id="btn-kakao-login"/);
+    assert.match(html, /id="btn-email-start"/);
+    assert.match(html, /id="auth-form" class="auth-form" hidden/);
 });
 
 test('Google login warns before redirecting from embedded mobile browsers', () => {

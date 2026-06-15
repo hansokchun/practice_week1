@@ -632,13 +632,21 @@
             <h2 id="auth-title">&#47196;&#44536;&#51064; &#46608;&#45716; &#44032;&#51077;</h2>
             <p class="auth-intro">Google &#47196;&#44536;&#51064;&#51012; &#47676;&#51200; &#52628;&#52380;&#54644;&#50836;. &#51060;&#47700;&#51068; &#44032;&#51077;&#51008; &#51064;&#51613;&#51012; &#50756;&#47308;&#54620; &#46244; &#49324;&#51652; &#50629;&#47196;&#46300;&#50752; &#44277;&#44060; &#44592;&#45733;&#51012; &#49324;&#50857;&#54624; &#49688; &#51080;&#50612;&#50836;.</p>
             <div class="social-login">
-                <button id="btn-google-login" type="button">
+                <button id="btn-google-login" class="auth-choice-button" type="button">
                     <span>G</span>
                     Google&#47196; &#44228;&#49549;&#54616;&#44592;
                 </button>
+                <button id="btn-kakao-login" class="auth-choice-button" type="button">
+                    <span>K</span>
+                    Kakao&#47196; &#44228;&#49549;&#54616;&#44592;
+                </button>
+                <button id="btn-email-start" class="auth-choice-button" type="button">
+                    <span>@</span>
+                    &#51060;&#47700;&#51068;&#47196; &#49884;&#51089;&#54616;&#44592;
+                </button>
             </div>
             <div class="auth-divider"><span>&#46608;&#45716; &#51060;&#47700;&#51068;&#47196; &#44228;&#49549;</span></div>
-            <form id="auth-form" class="auth-form">
+            <form id="auth-form" class="auth-form" hidden>
                 <label for="email-input">Email</label>
                 <input id="email-input" type="email" autocomplete="email" required>
                 <label for="password-input">Password</label>
