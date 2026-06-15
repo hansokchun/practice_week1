@@ -2797,7 +2797,8 @@ body.is-logged-in .white-band {
     grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
     width: min(370px, calc(100% - 48px));
-    max-height: calc(100svh - 220px);
+    height: clamp(280px, calc(100svh - 280px), 430px);
+    max-height: calc(100svh - 280px);
     border: 1px solid rgba(15, 88, 86, 0.12);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.94);
@@ -2851,6 +2852,8 @@ body.is-logged-in .white-band {
 }
 
 .explore-discovery-body {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
     min-height: 0;
     overflow: hidden;
 }
@@ -2900,6 +2903,7 @@ body.is-logged-in .white-band {
     display: grid;
     gap: 10px;
     min-height: 0;
+    max-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;

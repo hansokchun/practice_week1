@@ -85,8 +85,10 @@ test('Explore discovery items are thumbnail-first and only show relative upload 
 test('Explore discovery panel scrolls long photo lists inside the panel', () => {
     const css = readFileSync('style.css', 'utf8');
 
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 220px\);/s);
-    assert.match(css, /\.explore-discovery-body\s*\{[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*clamp\(280px,\s*calc\(100svh - 280px\),\s*430px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 280px\);/s);
+    assert.match(css, /\.explore-discovery-body\s*\{[^}]*display:\s*grid;[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\);[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-list\s*\{[^}]*max-height:\s*100%;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overflow-y:\s*auto;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overscroll-behavior:\s*contain;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*scrollbar-gutter:\s*stable;/s);
