@@ -13,6 +13,7 @@ import {
     signUpWithEmail,
     signInWithGoogle,
     signInWithKakao,
+    updateUserMetadata,
     updateNicknameInDB,
     updatePhotoInfo,
     updatePhotosVisibility,
@@ -58,7 +59,7 @@ import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelated
 import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
-import { getProfileDisplayName, getProfileUserId } from './profile-names.mjs';
+import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildOwnerProfileHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
@@ -156,6 +157,7 @@ const state = {
     explorePreserveViewportOnce: false,
     isExploreDiscoveryCollapsed: false,
     explorePreviewEditMode: false,
+    accountProfileEditMode: false,
     profileMap: null,
     profileMarkers: [],
     profileMapRenderToken: 0,
@@ -1090,16 +1092,189 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
 }
 
+function normalizeProfileUsername(value) {
+    const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
+    return normalized.slice(0, 30);
+}
+
+function normalizeProfileWebsite(value) {
+    const trimmed = String(value || '').trim();
+    if (!trimmed) return '';
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function getCurrentAccountProfile() {
+    const user = state.currentUser;
+    const metadata = user?.user_metadata || {};
+    const nickname = String(
+        metadata.nickname
+        || state.profileNames[user?.id]
+        || user?.email?.split('@')[0]
+        || 'Guest'
+    ).trim();
+    const username = normalizeProfileUsername(metadata.username || nickname || user?.email?.split('@')[0] || 'traveler') || 'traveler';
+    const bio = String(metadata.bio || '').trim();
+    const website = String(metadata.website || '').trim();
+    const avatarUrl = String(metadata.avatar_url || '').trim();
+    return { nickname, username, bio, website, avatarUrl };
+}
+
+function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
+    if (!imageNode || !fallbackNode) return;
+    const initials = getAuthorInitials(name || 'Guest');
+    if (avatarUrl) {
+        imageNode.src = avatarUrl;
+        imageNode.hidden = false;
+        fallbackNode.hidden = true;
+        fallbackNode.textContent = initials;
+        return;
+    }
+    imageNode.hidden = true;
+    imageNode.removeAttribute('src');
+    fallbackNode.hidden = false;
+    fallbackNode.textContent = initials;
+}
+
+function renderAccountProfilePanel() {
+    const profile = getCurrentAccountProfile();
+    const photoCount = getMySavedPhotos().length;
+    const albumCount = state.savedAlbums.filter((album) => album.owner_id === state.currentUser?.id).length;
+    const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
+    const title = $('#account-profile-title');
+    const username = $('#account-profile-username');
+    const bio = $('#account-profile-bio');
+    const website = $('#account-profile-website');
+    const photoCountNode = $('#account-profile-photo-count');
+    const albumCountNode = $('#account-profile-album-count');
+    const publicCountNode = $('#account-profile-public-count');
+
+    if (title) title.textContent = profile.nickname;
+    if (username) username.textContent = `@${profile.username}`;
+    if (bio) {
+        bio.textContent = profile.bio;
+        bio.hidden = !profile.bio;
+    }
+    if (website) {
+        const websiteUrl = normalizeProfileWebsite(profile.website);
+        website.textContent = websiteUrl.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+        website.href = websiteUrl || '#';
+        website.hidden = !websiteUrl;
+    }
+    if (photoCountNode) photoCountNode.textContent = String(photoCount);
+    if (albumCountNode) albumCountNode.textContent = String(albumCount);
+    if (publicCountNode) publicCountNode.textContent = String(publicCount);
+
+    setAvatarDisplay($('#account-profile-avatar-image'), $('#account-profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
+
+    const displayNameInput = $('#profile-display-name-input');
+    const usernameInput = $('#profile-username-input');
+    const bioInput = $('#profile-bio-input');
+    const websiteInput = $('#profile-website-input');
+    const avatarUrlInput = $('#profile-avatar-url-input');
+    if (displayNameInput) displayNameInput.value = profile.nickname;
+    if (usernameInput) usernameInput.value = profile.username;
+    if (bioInput) bioInput.value = profile.bio;
+    if (websiteInput) websiteInput.value = profile.website;
+    if (avatarUrlInput) avatarUrlInput.value = profile.avatarUrl;
+}
+
+function setAccountProfileEditMode(isEditing) {
+    state.accountProfileEditMode = Boolean(isEditing);
+    const view = $('#account-profile-view');
+    const form = $('#account-profile-form');
+    const editButton = $('#account-profile-edit');
+    const message = $('#account-profile-message');
+
+    if (view) view.hidden = state.accountProfileEditMode;
+    if (form) form.hidden = !state.accountProfileEditMode;
+    if (editButton) editButton.hidden = state.accountProfileEditMode;
+    if (message) message.textContent = '';
+}
+
+function openAccountProfileModal() {
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        return;
+    }
+    renderAccountProfilePanel();
+    setAccountProfileEditMode(false);
+    openModal('#account-profile-modal');
+}
+
+async function saveAccountProfile(event) {
+    event.preventDefault();
+    const message = $('#account-profile-message');
+    if (!state.currentUser) {
+        if (message) message.textContent = '로그인 후 수정할 수 있어요.';
+        return;
+    }
+
+    let nickname;
+    try {
+        nickname = normalizeNickname($('#profile-display-name-input')?.value || '');
+    } catch {
+        if (message) message.textContent = '이름을 입력해주세요.';
+        return;
+    }
+
+    const username = normalizeProfileUsername($('#profile-username-input')?.value || '');
+    if (!username) {
+        if (message) message.textContent = '사용자 이름을 입력해주세요.';
+        return;
+    }
+
+    const bio = String($('#profile-bio-input')?.value || '').trim();
+    const website = normalizeProfileWebsite($('#profile-website-input')?.value || '');
+    const avatarUrl = String($('#profile-avatar-url-input')?.value || '').trim();
+
+    if (message) message.textContent = '프로필을 저장하는 중입니다...';
+    const { user, error } = await updateUserMetadata({
+        nickname,
+        username,
+        bio,
+        website,
+        avatar_url: avatarUrl
+    });
+
+    if (error) {
+        if (message) message.textContent = error.message || '프로필을 저장하지 못했어요.';
+        return;
+    }
+
+    state.currentUser = user || {
+        ...state.currentUser,
+        user_metadata: {
+            ...(state.currentUser?.user_metadata || {}),
+            nickname,
+            username,
+            bio,
+            website,
+            avatar_url: avatarUrl
+        }
+    };
+    await updateNicknameInDB(state.currentUser.id, nickname);
+    state.profileNames = { ...state.profileNames, [state.currentUser.id]: nickname };
+    updateAccountUI();
+    renderAccountProfilePanel();
+    setAccountProfileEditMode(false);
+    renderSavedPhotoSurfaces();
+    renderPublicSurfaces();
+    showToast('프로필을 저장했어요.');
+}
+
 function updateAccountUI() {
-    const name = state.currentUser?.user_metadata?.nickname
-        || state.currentUser?.email?.split('@')[0]
-        || 'Guest';
+    const profile = getCurrentAccountProfile();
     const label = $('#account-label');
+    const guestLabel = $('#account-guest-label');
     const button = $('#btn-open-auth');
+    const profileButton = $('#btn-open-profile');
     document.body.classList.toggle('is-logged-in', Boolean(state.currentUser));
     document.body.classList.toggle('is-logged-out', !state.currentUser);
-    if (label) label.textContent = name;
+    if (label) label.textContent = profile.nickname;
+    if (guestLabel) guestLabel.hidden = Boolean(state.currentUser);
+    if (profileButton) profileButton.hidden = !state.currentUser;
     if (button) button.textContent = state.currentUser ? 'Logout' : 'Login';
+    setAvatarDisplay($('#account-avatar-image'), $('#account-avatar-fallback'), profile.avatarUrl, profile.nickname);
 }
 
 async function ensureCurrentUserPublicProfile() {
@@ -3523,6 +3698,12 @@ function bindEvents() {
             return;
         }
 
+        const collapsedDiscoveryPanel = event.target.closest('#explore-list.is-collapsed');
+        if (collapsedDiscoveryPanel) {
+            toggleExploreDiscoveryPanel();
+            return;
+        }
+
         const discoveryToggleButton = event.target.closest('#btn-toggle-explore-discovery');
         if (discoveryToggleButton) {
             toggleExploreDiscoveryPanel();
@@ -3842,6 +4023,7 @@ function bindEvents() {
             if (droppedFiles.length) handlePhotoFiles(droppedFiles);
         });
     }
+    $('#btn-open-profile')?.addEventListener('click', openAccountProfileModal);
     $('#btn-open-auth')?.addEventListener('click', async () => {
         if (state.currentUser) {
             await signOut();
@@ -3849,6 +4031,7 @@ function bindEvents() {
             state.savedPhotos = [];
             state.savedAlbums = [];
             state.lastSavedPhotoIds = [];
+            closeModals();
             updateAccountUI();
             renderSavedPhotoSurfaces();
             showToast('로그아웃했습니다.');
@@ -3856,6 +4039,9 @@ function bindEvents() {
         }
         openModal('#auth-modal');
     });
+    $('#account-profile-edit')?.addEventListener('click', () => setAccountProfileEditMode(true));
+    $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
+    $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
     $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));

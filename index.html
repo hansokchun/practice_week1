@@ -23,7 +23,14 @@
             <a href="#/explore" data-route="explore">Explore</a>
         </nav>
         <div class="account-area">
-            <span id="account-label" class="account-label">Guest</span>
+            <span id="account-guest-label" class="account-label">Guest</span>
+            <button id="btn-open-profile" class="account-profile-trigger" type="button" hidden>
+                <span id="account-avatar" class="avatar account-avatar">
+                    <img id="account-avatar-image" alt="" hidden>
+                    <span id="account-avatar-fallback">GU</span>
+                </span>
+                <span id="account-label" class="account-profile-name">Guest</span>
+            </button>
             <button id="btn-open-auth" class="nav-action" type="button">Login</button>
         </div>
     </header>
@@ -663,6 +670,52 @@
             </form>
             <p class="auth-policy-note">&#44032;&#51077; &#51649;&#54980;&#50640;&#45716; &#54616;&#47336; &#50629;&#47196;&#46300; 20&#51109;, &#44277;&#44060; &#51204;&#54872; 5&#51109;&#51004;&#47196; &#51228;&#54620;&#46121;&#45768;&#45796;.</p>
             <p id="auth-message" class="auth-message"></p>
+        </div>
+    </div>
+
+    <div id="account-profile-modal" class="modal" aria-hidden="true">
+        <div class="modal-card account-profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="account-profile-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="닫기">&times;</button>
+            <div class="account-profile-summary">
+                <div id="account-profile-avatar" class="avatar large-avatar account-profile-avatar">
+                    <img id="account-profile-avatar-image" alt="" hidden>
+                    <span id="account-profile-avatar-fallback">IK</span>
+                </div>
+                <div class="account-profile-copy">
+                    <p class="eyebrow">My Profile</p>
+                    <h2 id="account-profile-title">Ikkyee</h2>
+                    <p id="account-profile-username" class="account-profile-username">@ikkyee</p>
+                    <div class="account-profile-metrics">
+                        <span><strong id="account-profile-photo-count">0</strong> posts</span>
+                        <span><strong id="account-profile-album-count">0</strong> albums</span>
+                        <span><strong id="account-profile-public-count">0</strong> public</span>
+                    </div>
+                    <div class="account-profile-actions">
+                        <button id="account-profile-edit" class="btn-secondary" type="button">수정하기</button>
+                    </div>
+                </div>
+            </div>
+            <div id="account-profile-view" class="account-profile-view">
+                <p id="account-profile-bio" class="account-profile-bio" hidden></p>
+                <a id="account-profile-website" class="account-profile-website" href="#" target="_blank" rel="noreferrer" hidden></a>
+            </div>
+            <form id="account-profile-form" class="account-profile-form" hidden>
+                <label for="profile-display-name-input">이름</label>
+                <input id="profile-display-name-input" type="text" maxlength="40" placeholder="Ikkyee">
+                <label for="profile-username-input">사용자 이름</label>
+                <input id="profile-username-input" type="text" maxlength="30" placeholder="ikkyee">
+                <label for="profile-bio-input">소개</label>
+                <textarea id="profile-bio-input" rows="4" maxlength="160" placeholder="여행 기록과 장소 아카이브"></textarea>
+                <label for="profile-website-input">웹사이트</label>
+                <input id="profile-website-input" type="url" maxlength="120" placeholder="https://example.com">
+                <label for="profile-avatar-url-input">프로필 이미지 URL</label>
+                <input id="profile-avatar-url-input" type="url" maxlength="240" placeholder="https://images.example.com/avatar.jpg">
+                <div class="auth-actions">
+                    <button id="account-profile-save" class="btn-primary" type="submit">저장</button>
+                    <button id="account-profile-cancel" class="btn-secondary" type="button">취소</button>
+                </div>
+                <p id="account-profile-message" class="auth-message"></p>
+            </form>
         </div>
     </div>
 
