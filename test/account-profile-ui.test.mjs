@@ -32,6 +32,11 @@ test('personal profile modal includes nickname, bio, and avatar file upload fiel
     assert.match(html, /id="account-profile-save"/);
     assert.match(css, /\.account-profile-modal-card\s*\{/);
     assert.match(css, /\.account-profile-metrics\s*\{/);
+    assert.match(html, /class="account-profile-fields"/);
+    assert.match(html, /class="account-profile-field"/);
+    assert.match(css, /\.account-profile-fields\s*\{/);
+    assert.match(css, /\.account-profile-field\s*\{/);
+    assert.match(css, /\.account-profile-field input,\s*\.account-profile-field textarea\s*\{/s);
     assert.match(css, /\.account-profile-upload\s*\{/);
     assert.doesNotMatch(html, /profile-display-name-input/);
     assert.doesNotMatch(html, /profile-username-input/);

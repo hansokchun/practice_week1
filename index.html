@@ -699,14 +699,22 @@
                 <p id="account-profile-bio" class="account-profile-bio" hidden></p>
             </div>
             <form id="account-profile-form" class="account-profile-form" hidden>
-                <label for="profile-nickname-input">닉네임</label>
-                <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
-                <label for="profile-bio-input">소개</label>
-                <textarea id="profile-bio-input" rows="4" maxlength="160" placeholder="여행 기록과 장소 아카이브"></textarea>
-                <label for="profile-avatar-input">프로필 이미지</label>
-                <div class="account-profile-upload">
-                    <input id="profile-avatar-input" type="file" accept="image/*">
-                    <p>정사각형 사진이 가장 자연스럽게 보여요.</p>
+                <div class="account-profile-fields">
+                    <div class="account-profile-field">
+                        <label for="profile-nickname-input">닉네임</label>
+                        <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
+                    </div>
+                    <div class="account-profile-field">
+                        <label for="profile-bio-input">소개</label>
+                        <textarea id="profile-bio-input" rows="4" maxlength="160" placeholder="여행 기록과 장소 아카이브"></textarea>
+                    </div>
+                    <div class="account-profile-field">
+                        <label for="profile-avatar-input">프로필 이미지</label>
+                        <div class="account-profile-upload">
+                            <input id="profile-avatar-input" type="file" accept="image/*">
+                            <p>정사각형 사진이 가장 자연스럽게 보여요.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="auth-actions">
                     <button id="account-profile-save" class="btn-primary" type="submit">저장</button>
