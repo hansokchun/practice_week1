@@ -4164,15 +4164,17 @@ body.is-logged-in .white-band {
 }
 
 .account-profile-copy h2 {
-    font-size: 28px;
-    line-height: 1.1;
+    font-size: 30px;
+    line-height: 1.05;
 }
 
-.account-profile-username {
-    margin-top: -8px;
+.account-profile-subtitle {
+    margin-top: -10px;
     color: var(--muted);
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .account-profile-metrics {
@@ -4197,7 +4199,10 @@ body.is-logged-in .white-band {
 .account-profile-view {
     display: grid;
     gap: 10px;
-    padding-top: 4px;
+    padding: 18px 20px;
+    border: 1px solid rgba(26, 77, 78, 0.1);
+    border-radius: 18px;
+    background: rgba(249, 247, 242, 0.92);
 }
 
 .account-profile-bio {
@@ -4207,13 +4212,6 @@ body.is-logged-in .white-band {
     white-space: pre-line;
 }
 
-.account-profile-website {
-    color: var(--teal);
-    font-size: 14px;
-    font-weight: 800;
-    text-decoration: none;
-}
-
 .account-profile-form {
     display: grid;
     gap: 10px;
@@ -4221,6 +4219,26 @@ body.is-logged-in .white-band {
 
 .account-profile-form[hidden] {
     display: none;
+}
+
+.account-profile-upload {
+    display: grid;
+    gap: 8px;
+    border: 1px dashed rgba(26, 77, 78, 0.24);
+    border-radius: 16px;
+    background: rgba(249, 247, 242, 0.92);
+    padding: 14px 16px;
+}
+
+.account-profile-upload input {
+    color: var(--teal);
+    font-weight: 700;
+}
+
+.account-profile-upload p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .auth-intro,

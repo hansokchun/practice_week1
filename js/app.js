@@ -44,7 +44,7 @@ import {
     storePendingAuthContext,
     takePendingAuthAction
 } from './pending-auth-action.mjs';
-import { filterAcceptedPhotoFiles } from './photo-file-validation.mjs';
+import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
 import { readPhotoExif } from './photo-exif-reader.mjs';
 import {
     getSelectedPersonalPhotos,
@@ -1092,17 +1092,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
 }
 
-function normalizeProfileUsername(value) {
-    const normalized = String(value || '').trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
-    return normalized.slice(0, 30);
-}
-
-function normalizeProfileWebsite(value) {
-    const trimmed = String(value || '').trim();
-    if (!trimmed) return '';
-    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-}
-
 function getCurrentAccountProfile() {
     const user = state.currentUser;
     const metadata = user?.user_metadata || {};
@@ -1112,11 +1101,9 @@ function getCurrentAccountProfile() {
         || user?.email?.split('@')[0]
         || 'Guest'
     ).trim();
-    const username = normalizeProfileUsername(metadata.username || nickname || user?.email?.split('@')[0] || 'traveler') || 'traveler';
     const bio = String(metadata.bio || '').trim();
-    const website = String(metadata.website || '').trim();
     const avatarUrl = String(metadata.avatar_url || '').trim();
-    return { nickname, username, bio, website, avatarUrl };
+    return { nickname, bio, avatarUrl };
 }
 
 function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
@@ -1141,24 +1128,15 @@ function renderAccountProfilePanel() {
     const albumCount = state.savedAlbums.filter((album) => album.owner_id === state.currentUser?.id).length;
     const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
     const title = $('#account-profile-title');
-    const username = $('#account-profile-username');
     const bio = $('#account-profile-bio');
-    const website = $('#account-profile-website');
     const photoCountNode = $('#account-profile-photo-count');
     const albumCountNode = $('#account-profile-album-count');
     const publicCountNode = $('#account-profile-public-count');
 
     if (title) title.textContent = profile.nickname;
-    if (username) username.textContent = `@${profile.username}`;
     if (bio) {
         bio.textContent = profile.bio;
         bio.hidden = !profile.bio;
-    }
-    if (website) {
-        const websiteUrl = normalizeProfileWebsite(profile.website);
-        website.textContent = websiteUrl.replace(/^https?:\/\//i, '').replace(/\/$/, '');
-        website.href = websiteUrl || '#';
-        website.hidden = !websiteUrl;
     }
     if (photoCountNode) photoCountNode.textContent = String(photoCount);
     if (albumCountNode) albumCountNode.textContent = String(albumCount);
@@ -1166,16 +1144,12 @@ function renderAccountProfilePanel() {
 
     setAvatarDisplay($('#account-profile-avatar-image'), $('#account-profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
 
-    const displayNameInput = $('#profile-display-name-input');
-    const usernameInput = $('#profile-username-input');
+    const displayNameInput = $('#profile-nickname-input');
     const bioInput = $('#profile-bio-input');
-    const websiteInput = $('#profile-website-input');
-    const avatarUrlInput = $('#profile-avatar-url-input');
     if (displayNameInput) displayNameInput.value = profile.nickname;
-    if (usernameInput) usernameInput.value = profile.username;
     if (bioInput) bioInput.value = profile.bio;
-    if (websiteInput) websiteInput.value = profile.website;
-    if (avatarUrlInput) avatarUrlInput.value = profile.avatarUrl;
+    const avatarInput = $('#profile-avatar-input');
+    if (avatarInput) avatarInput.value = '';
 }
 
 function setAccountProfileEditMode(isEditing) {
@@ -1201,6 +1175,25 @@ function openAccountProfileModal() {
     openModal('#account-profile-modal');
 }
 
+function handleAccountProfileAvatarChange(event) {
+    const avatarFile = event.target?.files?.[0];
+    const message = $('#account-profile-message');
+    if (!avatarFile) return;
+    const validation = validatePhotoFile(avatarFile);
+    if (!validation.accepted) {
+        if (event.target) event.target.value = '';
+        if (message) message.textContent = validation.reason || '이미지 파일만 등록할 수 있어요.';
+        return;
+    }
+    setAvatarDisplay(
+        $('#account-profile-avatar-image'),
+        $('#account-profile-avatar-fallback'),
+        URL.createObjectURL(avatarFile),
+        $('#profile-nickname-input')?.value || getCurrentAccountProfile().nickname
+    );
+    if (message) message.textContent = '저장하면 프로필 이미지가 반영됩니다.';
+}
+
 async function saveAccountProfile(event) {
     event.preventDefault();
     const message = $('#account-profile-message');
@@ -1211,28 +1204,29 @@ async function saveAccountProfile(event) {
 
     let nickname;
     try {
-        nickname = normalizeNickname($('#profile-display-name-input')?.value || '');
+        nickname = normalizeNickname($('#profile-nickname-input')?.value || '');
     } catch {
-        if (message) message.textContent = '이름을 입력해주세요.';
-        return;
-    }
-
-    const username = normalizeProfileUsername($('#profile-username-input')?.value || '');
-    if (!username) {
-        if (message) message.textContent = '사용자 이름을 입력해주세요.';
+        if (message) message.textContent = '닉네임을 입력해주세요.';
         return;
     }
 
     const bio = String($('#profile-bio-input')?.value || '').trim();
-    const website = normalizeProfileWebsite($('#profile-website-input')?.value || '');
-    const avatarUrl = String($('#profile-avatar-url-input')?.value || '').trim();
+    const avatarFile = $('#profile-avatar-input')?.files?.[0] || null;
+    let avatarUrl = getCurrentAccountProfile().avatarUrl;
 
     if (message) message.textContent = '프로필을 저장하는 중입니다...';
+    if (avatarFile) {
+        const fileName = `${state.currentUser.id}/profile-${Date.now()}-${safeFileName(avatarFile.name)}`;
+        const { url, error: uploadError } = await uploadImage(avatarFile, fileName);
+        if (uploadError || !url) {
+            if (message) message.textContent = uploadError?.message || '프로필 이미지를 업로드하지 못했어요.';
+            return;
+        }
+        avatarUrl = url;
+    }
     const { user, error } = await updateUserMetadata({
         nickname,
-        username,
         bio,
-        website,
         avatar_url: avatarUrl
     });
 
@@ -1246,9 +1240,7 @@ async function saveAccountProfile(event) {
         user_metadata: {
             ...(state.currentUser?.user_metadata || {}),
             nickname,
-            username,
             bio,
-            website,
             avatar_url: avatarUrl
         }
     };
@@ -4042,6 +4034,7 @@ function bindEvents() {
     $('#account-profile-edit')?.addEventListener('click', () => setAccountProfileEditMode(true));
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
+    $('#profile-avatar-input')?.addEventListener('change', handleAccountProfileAvatarChange);
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
     $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));
