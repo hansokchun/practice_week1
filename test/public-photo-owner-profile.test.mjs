@@ -22,6 +22,21 @@ test('photo owner profile route preserves the owner when there is no public albu
     assert.match(source, /buildOwnerProfileHash\(state\.selectedPublicOwnerId\)/);
 });
 
+test('profile route prefers the selected owner even when a public album is currently selected', () => {
+    const fnStart = source.indexOf('function renderPublicSurfaces()');
+    const fnEnd = source.indexOf('state.selectedPublicOwnerId = selected.owner_id || state.selectedPublicOwnerId;', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /if \(document\.body\.dataset\.page === 'profile' && state\.selectedPublicOwnerId\) \{\s*renderPublicOwnerProfile\(state\.selectedPublicOwnerId, explorePhotos\);\s*return;\s*\}/s);
+});
+
+test('public profile actions pass the clicked owner id through the route handler', () => {
+    assert.match(source, /profileButton\.dataset\.publicOwnerId = ownerId/);
+    assert.match(source, /const ownerAlbum = albumId/);
+    assert.match(source, /state\.selectedPublicOwnerId = ownerId \|\| ownerAlbum\?\.owner_id \|\| null/);
+    assert.match(source, /routeToProfileFromAuthor\(button\.dataset\.publicAlbumId, button\.dataset\.publicOwnerId\)/);
+});
+
 test('profile route restores owner id from the hash after refresh', () => {
     const fnStart = source.indexOf('function applyRouteHash');
     const fnEnd = source.indexOf('function updateExplorePhotoScopeControls', fnStart);

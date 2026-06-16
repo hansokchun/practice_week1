@@ -122,6 +122,7 @@ const state = {
     savedPhotos: [],
     savedAlbums: [],
     profileNames: {},
+    publicProfiles: {},
     lastSavedPhotoIds: [],
     albumDrafts: [],
     visibility: 'private',
@@ -721,7 +722,10 @@ function updateExploreAlbumPreview(album) {
         `;
     }
     if (tripButton) tripButton.dataset.publicAlbumId = album.id || '';
-    if (profileButton) profileButton.dataset.publicAlbumId = album.id || '';
+    if (profileButton) {
+        profileButton.dataset.publicAlbumId = album.id || '';
+        profileButton.dataset.publicOwnerId = album.owner_id || '';
+    }
 }
 
 function getExploreCurrentBounds() {
@@ -1106,6 +1110,81 @@ function getCurrentAccountProfile() {
     return { nickname, bio, avatarUrl };
 }
 
+function getPublicProfileDetails(ownerId) {
+    const publicProfile = ownerId ? state.publicProfiles[ownerId] || null : null;
+    const isCurrentUser = Boolean(ownerId && state.currentUser?.id === ownerId);
+    if (isCurrentUser) {
+        const currentProfile = getCurrentAccountProfile();
+        return {
+            nickname: currentProfile.nickname,
+            bio: currentProfile.bio,
+            avatarUrl: currentProfile.avatarUrl
+        };
+    }
+
+    const nickname = getPublicAuthorName({ owner_id: ownerId }, {
+        currentUser: state.currentUser,
+        profileNames: state.profileNames
+    });
+    const bio = String(publicProfile?.bio || '').trim();
+    const avatarUrl = String(publicProfile?.avatar_url || publicProfile?.avatarUrl || '').trim();
+    return { nickname, bio, avatarUrl };
+}
+
+function ensureProfileHeaderShell() {
+    const profileCard = $('.profile-card');
+    if (!profileCard || profileCard.querySelector('#profile-bio')) return;
+    profileCard.innerHTML = `
+        <div id="profile-avatar" class="avatar large-avatar account-profile-avatar">
+            <img id="profile-avatar-image" alt="" hidden>
+            <span id="profile-avatar-fallback">IK</span>
+        </div>
+        <div class="profile-card-copy">
+            <div class="profile-card-topline">
+                <div>
+                    <p id="profile-eyebrow" class="eyebrow">Public Profile</p>
+                    <h1 id="profile-title">Ikkyee</h1>
+                </div>
+                <div class="profile-owner-actions">
+                    <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
+                </div>
+            </div>
+            <div id="account-profile-view" class="account-profile-view profile-header-view">
+                <p id="profile-bio" class="account-profile-bio" hidden></p>
+                <div class="account-profile-metrics">
+                    <span><strong id="profile-photo-count">0</strong> posts</span>
+                    <span><strong id="profile-album-count">0</strong> albums</span>
+                    <span><strong id="profile-public-count">0</strong> public</span>
+                </div>
+            </div>
+            <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
+                <div class="account-profile-fields">
+                    <div class="account-profile-field">
+                        <label for="profile-nickname-input">닉네임</label>
+                        <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
+                    </div>
+                    <div class="account-profile-field">
+                        <label for="profile-bio-input">소개</label>
+                        <textarea id="profile-bio-input" rows="4" maxlength="160" placeholder="여행 기록과 장소 아카이브"></textarea>
+                    </div>
+                    <div class="account-profile-field">
+                        <label for="profile-avatar-input">프로필 이미지</label>
+                        <div class="account-profile-upload">
+                            <input id="profile-avatar-input" type="file" accept="image/*">
+                            <p>정사각형 사진이 가장 자연스럽게 보여요.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="auth-actions">
+                    <button id="account-profile-save" class="btn-primary" type="submit">저장</button>
+                    <button id="account-profile-cancel" class="btn-secondary" type="button">취소</button>
+                </div>
+                <p id="account-profile-message" class="auth-message"></p>
+            </form>
+        </div>
+    `;
+}
+
 function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
     if (!imageNode || !fallbackNode) return;
     const initials = getAuthorInitials(name || 'Guest');
@@ -1123,15 +1202,16 @@ function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
 }
 
 function renderAccountProfilePanel() {
+    ensureProfileHeaderShell();
     const profile = getCurrentAccountProfile();
     const photoCount = getMySavedPhotos().length;
     const albumCount = state.savedAlbums.filter((album) => album.owner_id === state.currentUser?.id).length;
     const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
-    const title = $('#account-profile-title');
-    const bio = $('#account-profile-bio');
-    const photoCountNode = $('#account-profile-photo-count');
-    const albumCountNode = $('#account-profile-album-count');
-    const publicCountNode = $('#account-profile-public-count');
+    const title = $('#profile-title');
+    const bio = $('#profile-bio');
+    const photoCountNode = $('#profile-photo-count');
+    const albumCountNode = $('#profile-album-count');
+    const publicCountNode = $('#profile-public-count');
 
     if (title) title.textContent = profile.nickname;
     if (bio) {
@@ -1142,7 +1222,7 @@ function renderAccountProfilePanel() {
     if (albumCountNode) albumCountNode.textContent = String(albumCount);
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
 
-    setAvatarDisplay($('#account-profile-avatar-image'), $('#account-profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
+    setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
 
     const displayNameInput = $('#profile-nickname-input');
     const bioInput = $('#profile-bio-input');
@@ -1154,6 +1234,7 @@ function renderAccountProfilePanel() {
 
 function setAccountProfileEditMode(isEditing) {
     state.accountProfileEditMode = Boolean(isEditing);
+    ensureProfileHeaderShell();
     const view = $('#account-profile-view');
     const form = $('#account-profile-form');
     const editButton = $('#account-profile-edit');
@@ -1161,18 +1242,21 @@ function setAccountProfileEditMode(isEditing) {
 
     if (view) view.hidden = state.accountProfileEditMode;
     if (form) form.hidden = !state.accountProfileEditMode;
-    if (editButton) editButton.hidden = state.accountProfileEditMode;
+    if (editButton) editButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
     if (message) message.textContent = '';
 }
 
-function openAccountProfileModal() {
+function openAccountProfilePage() {
     if (!state.currentUser) {
         openModal('#auth-modal');
         return;
     }
-    renderAccountProfilePanel();
+    state.selectedPublicOwnerId = state.currentUser.id;
+    state.selectedPublicAlbumId = null;
     setAccountProfileEditMode(false);
-    openModal('#account-profile-modal');
+    const hash = buildOwnerProfileHash(state.currentUser.id);
+    if (window.location.hash !== hash) window.location.hash = hash;
+    else renderRoute('profile');
 }
 
 function handleAccountProfileAvatarChange(event) {
@@ -1186,8 +1270,8 @@ function handleAccountProfileAvatarChange(event) {
         return;
     }
     setAvatarDisplay(
-        $('#account-profile-avatar-image'),
-        $('#account-profile-avatar-fallback'),
+        $('#profile-avatar-image'),
+        $('#profile-avatar-fallback'),
         URL.createObjectURL(avatarFile),
         $('#profile-nickname-input')?.value || getCurrentAccountProfile().nickname
     );
@@ -1246,6 +1330,16 @@ async function saveAccountProfile(event) {
     };
     await updateNicknameInDB(state.currentUser.id, nickname);
     state.profileNames = { ...state.profileNames, [state.currentUser.id]: nickname };
+    state.publicProfiles = {
+        ...state.publicProfiles,
+        [state.currentUser.id]: {
+            ...(state.publicProfiles[state.currentUser.id] || {}),
+            id: state.currentUser.id,
+            nickname,
+            bio,
+            avatar_url: avatarUrl
+        }
+    };
     updateAccountUI();
     renderAccountProfilePanel();
     setAccountProfileEditMode(false);
@@ -1426,18 +1520,16 @@ function setSelectedPublicAlbum(albumId) {
 }
 
 function routeToProfileFromAuthor(albumId, ownerId) {
-    const ownerAlbum = ownerId
-        ? getPublicAlbums().find((album) => album.owner_id === ownerId)
-        : null;
+    const ownerAlbum = albumId
+        ? getPublicAlbums().find((album) => album.id === albumId)
+        : ownerId
+            ? getPublicAlbums().find((album) => album.owner_id === ownerId)
+            : null;
     state.selectedPublicOwnerId = ownerId || ownerAlbum?.owner_id || null;
-    const targetAlbumId = albumId || ownerAlbum?.id || null;
-    if (targetAlbumId) routeToPublic('profile', targetAlbumId);
-    else {
-        state.selectedPublicAlbumId = null;
-        const hash = buildOwnerProfileHash(state.selectedPublicOwnerId);
-        if (window.location.hash !== hash) window.location.hash = hash;
-        renderRoute('profile');
-    }
+    state.selectedPublicAlbumId = albumId || ownerAlbum?.id || null;
+    const hash = buildOwnerProfileHash(state.selectedPublicOwnerId);
+    if (window.location.hash !== hash) window.location.hash = hash;
+    else renderRoute('profile');
 }
 
 function getCurrentShareUrl() {
@@ -1520,22 +1612,34 @@ function renderEmptyPublicSurfaces() {
 }
 
 function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
+    ensureProfileHeaderShell();
     const ownerPhotos = publicPhotos.filter((photo) => photo.owner_id === ownerId || photo.albumOwnerId === ownerId);
     const ownerAlbums = getSavedPublicAlbums().filter((album) => album.owner_id === ownerId && ['public', 'link'].includes(album.visibility));
-    const authorName = getPublicAuthorName({ owner_id: ownerId }, {
-        currentUser: state.currentUser,
-        profileNames: state.profileNames
-    });
+    const authorDetails = getPublicProfileDetails(ownerId);
+    const authorName = authorDetails.nickname;
     const authorInitials = getAuthorInitials(authorName);
-    const locatedCount = ownerPhotos.filter(hasPhotoLocation).length;
+    const profileBio = authorDetails.bio;
+    const avatarUrl = authorDetails.avatarUrl;
+    const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
     const cover = ownerPhotos[0]?.url || 'images/main_bg4.jpg';
 
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = authorName;
     });
-    $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
+    $$('.public-author-card .avatar, .pin-author .avatar').forEach((avatar) => {
         avatar.textContent = authorInitials;
     });
+    setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), avatarUrl, authorName);
+    if ($('#profile-bio')) {
+        $('#profile-bio').textContent = profileBio;
+        $('#profile-bio').hidden = !profileBio;
+    }
+    if ($('#profile-photo-count')) $('#profile-photo-count').textContent = String(ownerPhotos.length);
+    if ($('#profile-album-count')) $('#profile-album-count').textContent = String(ownerAlbums.length);
+    if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
+    if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
+    if (isOwnProfile) renderAccountProfilePanel();
+    else setAccountProfileEditMode(false);
     const profileCopy = $('.profile-card p:not(.eyebrow)');
     if (profileCopy) profileCopy.textContent = '공개한 사진을 모아 볼 수 있는 프로필입니다.';
     const profileHeroImage = $('.profile-cover > img');
@@ -1875,15 +1979,16 @@ async function renderTripReviewMap(albumPhotos) {
 }
 
 function renderPublicSurfaces() {
+    ensureProfileHeaderShell();
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
-    const selected = getSelectedPublicAlbum(albums);
     renderExplorePhotoScopeControls();
     const explorePhotos = getPublicPhotoMapItems();
+    if (document.body.dataset.page === 'profile' && state.selectedPublicOwnerId) {
+        renderPublicOwnerProfile(state.selectedPublicOwnerId, explorePhotos);
+        return;
+    }
+    const selected = getSelectedPublicAlbum(albums);
     if (!selected) {
-        if (document.body.dataset.page === 'profile' && state.selectedPublicOwnerId) {
-            renderPublicOwnerProfile(state.selectedPublicOwnerId, explorePhotos);
-            return;
-        }
         if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
             renderExploreMapMarkers(explorePhotos, null);
             const selectedPhoto = explorePhotos.find((photo) => photo.id === state.selectedPhotoId) || explorePhotos[0];
@@ -4015,7 +4120,7 @@ function bindEvents() {
             if (droppedFiles.length) handlePhotoFiles(droppedFiles);
         });
     }
-    $('#btn-open-profile')?.addEventListener('click', openAccountProfileModal);
+    $('#btn-open-profile')?.addEventListener('click', openAccountProfilePage);
     $('#btn-open-auth')?.addEventListener('click', async () => {
         if (state.currentUser) {
             await signOut();
@@ -4069,6 +4174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSavedPhotos();
     await loadSavedAlbums();
     await loadPublicProfileNames();
+    ensureProfileHeaderShell();
     bindEvents();
     renderStagedPhotos();
     renderSavedPhotoSurfaces();

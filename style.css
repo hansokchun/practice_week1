@@ -3771,6 +3771,30 @@ body.is-logged-in .white-band {
     margin: 0 auto;
 }
 
+.profile-card-copy {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+
+.profile-card-topline {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.profile-owner-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.profile-header-view,
+.profile-edit-form {
+    max-width: 680px;
+}
+
 .large-avatar {
     width: 76px;
     height: 76px;

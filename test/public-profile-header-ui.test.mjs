@@ -20,3 +20,14 @@ test('public profile card stays inside the cover without negative overlap', () =
     assert.match(cardCss, /margin:\s*0 auto;/);
     assert.doesNotMatch(cardCss, /-\d+px/);
 });
+
+test('public profile header supports inline owner metadata and editing actions', () => {
+    assert.match(app, /function ensureProfileHeaderShell\(\)/);
+    assert.match(app, /id="profile-bio"/);
+    assert.match(app, /id="profile-photo-count"/);
+    assert.match(app, /id="profile-album-count"/);
+    assert.match(app, /id="profile-public-count"/);
+    assert.match(app, /class="profile-owner-actions"/);
+    assert.match(css, /\.profile-owner-actions\s*\{/);
+    assert.match(css, /\.profile-card-copy\s*\{/);
+});

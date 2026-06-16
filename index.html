@@ -543,10 +543,20 @@
             <div class="profile-cover">
                 <img src="images/main_bg4.jpg" alt="">
                 <div class="profile-card">
-                    <div class="avatar large-avatar">IK</div>
-                    <div>
-                        <p class="eyebrow">Public Profile</p>
-                        <h1 id="profile-title">Ikkyee</h1>
+                    <div id="profile-avatar" class="avatar large-avatar account-profile-avatar">
+                        <img id="profile-avatar-image" alt="" hidden>
+                        <span id="profile-avatar-fallback">IK</span>
+                    </div>
+                    <div class="profile-card-copy">
+                        <div class="profile-card-topline">
+                            <div>
+                                <p id="profile-eyebrow" class="eyebrow">Public Profile</p>
+                                <h1 id="profile-title">Ikkyee</h1>
+                            </div>
+                            <div class="profile-owner-actions">
+                                <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
+                            </div>
+                        </div>
                         <p>지도에 공개한 여행만 모아둔 공개 프로필입니다.</p>
                     </div>
                 </div>
@@ -714,6 +724,38 @@
                             <input id="profile-avatar-input" type="file" accept="image/*">
                             <p>정사각형 사진이 가장 자연스럽게 보여요.</p>
                         </div>
+                        <div id="account-profile-view" class="account-profile-view profile-header-view">
+                            <p id="profile-bio" class="account-profile-bio" hidden></p>
+                            <div class="account-profile-metrics">
+                                <span><strong id="profile-photo-count">0</strong> posts</span>
+                                <span><strong id="profile-album-count">0</strong> albums</span>
+                                <span><strong id="profile-public-count">0</strong> public</span>
+                            </div>
+                        </div>
+                        <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
+                            <div class="account-profile-fields">
+                                <div class="account-profile-field">
+                                    <label for="profile-nickname-input">닉네임</label>
+                                    <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
+                                </div>
+                                <div class="account-profile-field">
+                                    <label for="profile-bio-input">소개</label>
+                                    <textarea id="profile-bio-input" rows="4" maxlength="160" placeholder="여행 기록과 장소 아카이브"></textarea>
+                                </div>
+                                <div class="account-profile-field">
+                                    <label for="profile-avatar-input">프로필 이미지</label>
+                                    <div class="account-profile-upload">
+                                        <input id="profile-avatar-input" type="file" accept="image/*">
+                                        <p>정사각형 사진이 가장 자연스럽게 보여요.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="auth-actions">
+                                <button id="account-profile-save" class="btn-primary" type="submit">저장</button>
+                                <button id="account-profile-cancel" class="btn-secondary" type="button">취소</button>
+                            </div>
+                            <p id="account-profile-message" class="auth-message"></p>
+                        </form>
                     </div>
                 </div>
                 <div class="auth-actions">
