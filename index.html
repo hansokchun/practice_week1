@@ -37,6 +37,98 @@
 
     <main id="site-main">
         <section id="page-home" class="page page-home active" aria-labelledby="home-title">
+            <section class="home-minimal-shell" aria-labelledby="home-minimal-title">
+                <div class="home-minimal-hero">
+                    <p class="eyebrow">Personal Travel Map Archive</p>
+                    <h1 id="home-minimal-title">여행 사진을 올리면, 기억이 지도 위에서 다시 선명해집니다</h1>
+                    <p>
+                        Travelgram은 흩어진 여행 사진을 날짜와 장소의 흐름으로 정리하는 개인 여행 아카이브입니다.
+                        먼저 다른 사람의 공개 사진을 둘러보고, 필요할 때 내 사진으로 나만의 여행 지도를 만들 수 있습니다.
+                    </p>
+                    <div class="home-minimal-actions">
+                        <button id="btn-home-explore" class="btn-primary" type="button">Explore 둘러보기</button>
+                        <button id="btn-home-myphoto" class="btn-secondary" type="button">내 사진으로 시작하기</button>
+                    </div>
+                </div>
+
+                <div class="home-minimal-cards" aria-label="Travelgram 주요 사용 방식">
+                    <button class="home-minimal-card" data-route="explore" type="button">
+                        <span class="material-symbols-outlined">travel_explore</span>
+                        <strong>공개 사진을 지도에서 발견</strong>
+                        <small>Explore에서 다른 사람이 공개한 여행 사진과 장소를 먼저 둘러봅니다.</small>
+                    </button>
+                    <button class="home-minimal-card" data-route="upload" type="button">
+                        <span class="material-symbols-outlined">add_photo_alternate</span>
+                        <strong>내 사진을 조용히 보관</strong>
+                        <small>업로드한 사진은 기본 비공개로 저장되고, 위치가 있으면 지도에 정리됩니다.</small>
+                    </button>
+                    <button class="home-minimal-card" data-route="album" type="button">
+                        <span class="material-symbols-outlined">map</span>
+                        <strong>여행 앨범을 지도처럼 보기</strong>
+                        <small>사진을 날짜별로 묶고, 장소의 흐름을 따라 다시 여행을 꺼내봅니다.</small>
+                    </button>
+                </div>
+
+                <section class="home-minimal-preview" aria-labelledby="home-minimal-preview-title">
+                    <div class="home-preview-copy">
+                        <p class="eyebrow">Explore First</p>
+                        <h2 id="home-minimal-preview-title">처음 방문했다면 지도에서 공개 사진부터 살펴보세요</h2>
+                        <p>
+                            Explore는 공개된 사진만 모아 보여주는 지도입니다.
+                            핀을 누르면 사진과 작성자 정보를 확인하고, 마음에 드는 장소를 내 다음 여행의 실마리로 남길 수 있습니다.
+                        </p>
+                        <button class="btn-primary" data-route="explore" type="button">공개 지도 열기</button>
+                    </div>
+                    <div class="home-preview-map" aria-label="Explore 공개 사진 지도 미리보기">
+                        <img src="images/home-explore-guide.png" alt="Explore 지도에서 공개 사진 핀과 사진 패널을 보는 이미지">
+                    </div>
+                </section>
+
+                <section class="home-minimal-gallery" aria-labelledby="home-gallery-title">
+                    <div class="home-gallery-heading">
+                        <p class="eyebrow">Vivid Memories</p>
+                        <h2 id="home-gallery-title">사진은 장소와 함께 있을 때 더 오래 기억됩니다</h2>
+                    </div>
+                    <div class="home-gallery-grid">
+                        <article>
+                            <img src="images/home-travel-replay.png" alt="지도 위 여행 사진 아카이브 이미지">
+                            <strong>여행을 다시 생생하게</strong>
+                            <span>사진과 장소를 함께 보며 그때의 흐름을 다시 떠올립니다.</span>
+                        </article>
+                        <article>
+                            <img src="images/home-map-memory-board.png" alt="지도 위에 여행 사진이 정리된 이미지">
+                            <strong>내 기록은 기본 비공개</strong>
+                            <span>공개하고 싶은 사진과 앨범만 직접 선택해서 공유합니다.</span>
+                        </article>
+                        <article>
+                            <img src="images/main_bg2.jpg" alt="여행 사진 예시">
+                            <strong>앨범은 여행의 흐름으로</strong>
+                            <span>날짜와 위치를 기준으로 사진을 묶어 하나의 여행으로 정리합니다.</span>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="home-minimal-process" aria-labelledby="home-process-title">
+                    <h2 id="home-process-title">사진에서 지도까지, 세 단계로 충분합니다</h2>
+                    <div class="home-process-steps">
+                        <article>
+                            <span class="material-symbols-outlined">upload_file</span>
+                            <strong>사진 올리기</strong>
+                            <small>여행 사진을 선택하거나 끌어다 놓습니다.</small>
+                        </article>
+                        <article>
+                            <span class="material-symbols-outlined">location_on</span>
+                            <strong>장소 정리</strong>
+                            <small>사진의 날짜와 위치를 확인하고 필요한 위치만 직접 지정합니다.</small>
+                        </article>
+                        <article>
+                            <span class="material-symbols-outlined">auto_stories</span>
+                            <strong>아카이브 완성</strong>
+                            <small>내 사진과 앨범을 지도 위에서 다시 꺼내봅니다.</small>
+                        </article>
+                    </div>
+                </section>
+            </section>
             <div class="hero">
                 <div class="hero-content">
                     <h1 id="home-title">다른 사람들의 여행 사진을 지도에서 둘러보세요</h1>
@@ -44,8 +136,8 @@
                         공개된 여행 사진을 지도에서 먼저 발견하고, 마음에 드는 장소를 찾았다면 내 사진으로 나만의 여행 지도도 만들어보세요.
                     </p>
                     <div class="hero-actions">
-                        <button id="btn-home-explore" class="btn-primary" type="button">둘러보기</button>
-                        <button id="btn-home-myphoto" class="btn-secondary" type="button">내 사진으로 지도 만들기</button>
+                        <button class="btn-primary" data-route="explore" type="button">둘러보기</button>
+                        <button class="btn-secondary" data-route="upload" type="button">내 사진으로 지도 만들기</button>
                     </div>
                 </div>
                 <div class="hero-visual" aria-label="여행 지도 생성 미리보기">

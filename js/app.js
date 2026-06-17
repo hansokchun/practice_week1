@@ -3599,6 +3599,28 @@ async function searchExploreMap(event) {
     });
 }
 
+function normalizeHomeStaticCopy() {
+    const setText = (selector, text) => {
+        const node = $(selector);
+        if (node) node.textContent = text;
+    };
+    setText('#myphoto-title', '내 사진과 앨범을 정리하는 공간');
+    const myphotoIntro = $('#myphoto-title')?.nextElementSibling;
+    if (myphotoIntro) myphotoIntro.textContent = '선택한 사진만 업로드됩니다. 모든 사진과 앨범은 기본 비공개입니다.';
+    setText('#btn-open-upload strong', '사진 올리기');
+    setText('#btn-open-upload small', '파일 선택, 위치 정보 확인, 비공개 저장');
+    setText('#btn-open-album strong', '앨범 만들기');
+    setText('#btn-open-album small', '사진 묶기, 앨범 이름 지정, 공개 여부 선택');
+    setText('#btn-dismiss-missing-location', '나중에 하기');
+    setText('#btn-direct-missing-location', '직접 지정하기');
+    $('#missing-location-list')?.setAttribute('aria-label', '위치 지정이 필요한 사진');
+    setText('#recent-photo-title', '최근 사진');
+    setText('#btn-open-photos', '전체 보기');
+    setText('#my-albums-title', '여행 앨범');
+    const albumDescription = $('#my-albums-title')?.nextElementSibling;
+    if (albumDescription) albumDescription.textContent = '여행 단위로 정리한 나의 앨범';
+}
+
 function renderExploreList() {
     renderPublicSurfaces();
 }
@@ -4180,6 +4202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
     renderExploreList();
+    normalizeHomeStaticCopy();
     setVisibilityMode(state.visibility);
     setProfileTab(state.profileTab);
     if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
