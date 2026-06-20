@@ -108,9 +108,13 @@ test('Explore discovery collapsed state uses a compact Explore control', () => {
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*background:\s*var\(--teal\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*height:\s*auto;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*max-height:\s*none;/s);
-    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*padding:\s*8px\s+10px\s+8px\s+14px;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*min-width:\s*84px;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*padding:\s*10px\s+18px;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*cursor:\s*pointer;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header\s*\{[^}]*justify-items:\s*center;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header\s*\{[^}]*text-align:\s*center;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header h2\s*\{[^}]*color:\s*#ffffff;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header h2\s*\{[^}]*text-align:\s*center;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-toggle\s*\{[^}]*display:\s*none;/s);
     assert.match(source, /const collapsedDiscoveryPanel = event\.target\.closest\('#explore-list\.is-collapsed'\);/);
     assert.match(source, /if \(collapsedDiscoveryPanel\) \{\s*toggleExploreDiscoveryPanel\(\);\s*return;\s*\}/s);

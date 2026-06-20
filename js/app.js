@@ -2698,6 +2698,29 @@ function setVisibilityMode(mode) {
     if (status) status.textContent = getVisibilityStatusText(state.visibility);
 }
 
+function startHomeHeroSlider() {
+    const slides = $$('.hero-photo-slide');
+    if (slides.length <= 1) return;
+    let currentIndex = slides.findIndex((slide) => slide.classList.contains('is-active'));
+    if (currentIndex < 0) currentIndex = 0;
+    slides.forEach((slide, index) => {
+        slide.classList.toggle('is-active', index === currentIndex);
+        slide.classList.remove('is-exiting');
+    });
+
+    window.setInterval(() => {
+        const currentSlide = slides[currentIndex];
+        const nextIndex = (currentIndex + 1) % slides.length;
+        const nextSlide = slides[nextIndex];
+        currentSlide.classList.remove('is-active');
+        currentSlide.classList.add('is-exiting');
+        nextSlide.classList.remove('is-exiting');
+        nextSlide.classList.add('is-active');
+        window.setTimeout(() => currentSlide.classList.remove('is-exiting'), 680);
+        currentIndex = nextIndex;
+    }, 3000);
+}
+
 function applyShareSaveState() {
     const controlState = getShareSaveControlState(state.isSavingShare);
     const saveButton = $('#btn-save-share-settings');
@@ -4176,6 +4199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadPublicProfileNames();
     ensureProfileHeaderShell();
     bindEvents();
+    startHomeHeroSlider();
     renderStagedPhotos();
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
