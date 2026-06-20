@@ -13,9 +13,8 @@
     --shadow: 0 20px 60px rgba(26, 77, 78, 0.08);
     --header-height: 76px;
     --container: 1280px;
-    --google-ui: 'Roboto', 'Noto Sans KR', Arial, sans-serif;
-    --headline: var(--google-ui);
-    --body: var(--google-ui);
+    --headline: 'Be Vietnam Pro', 'Pretendard', sans-serif;
+    --body: 'Hanken Grotesk', 'Pretendard', sans-serif;
 }
 
 * {
@@ -79,9 +78,9 @@ img {
     width: fit-content;
     color: var(--teal);
     text-decoration: none;
-    font-family: var(--headline);
-    font-size: 25px;
-    font-weight: 700;
+    font-family: Georgia, 'Times New Roman', var(--headline);
+    font-size: 26px;
+    font-weight: 600;
     letter-spacing: 0;
 }
 
