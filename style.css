@@ -453,6 +453,7 @@ body.is-logged-in .home-fit-band,
 body.is-logged-in .home-replay-hero,
 body.is-logged-in .home-explore-guide,
 body.is-logged-in .home-album-guide,
+body.is-logged-in .home-reference-section,
 body.is-logged-in .home-east-asia-demo,
 body.is-logged-in .home-story-band,
 body.is-logged-in .white-band {
@@ -981,6 +982,253 @@ body.is-logged-in .white-band {
 
 .home-album-feature-list strong {
     color: var(--teal);
+}
+
+.home-reference-section {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.86fr) minmax(0, 1.14fr);
+    gap: 42px;
+    align-items: center;
+    border-top: 1px solid var(--line);
+}
+
+.home-reference-log {
+    grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+}
+
+.home-reference-copy {
+    display: grid;
+    gap: 16px;
+}
+
+.home-reference-copy h2 {
+    margin: 0;
+    color: var(--teal);
+    font-family: var(--headline);
+    font-size: 34px;
+    line-height: 1.17;
+    letter-spacing: 0;
+}
+
+.home-reference-copy p:not(.eyebrow) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.72;
+}
+
+.route-story-board,
+.album-flow-board {
+    position: relative;
+    min-height: 360px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f5fbfa 0%, #eef3ed 100%);
+    box-shadow: 0 22px 58px rgba(26, 77, 78, 0.1);
+}
+
+.route-story-map {
+    position: absolute;
+    inset: 28px;
+    border-radius: 16px;
+    background:
+        linear-gradient(rgba(26, 77, 78, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 77, 78, 0.055) 1px, transparent 1px);
+    background-size: 44px 44px;
+}
+
+.route-node {
+    position: absolute;
+    z-index: 2;
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+    background: var(--teal);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 8px 12px;
+    box-shadow: 0 14px 28px rgba(26, 77, 78, 0.22);
+}
+
+.node-start {
+    left: 11%;
+    top: 54%;
+}
+
+.node-mid {
+    left: 45%;
+    top: 31%;
+}
+
+.node-end {
+    right: 9%;
+    top: 62%;
+}
+
+.route-line {
+    position: absolute;
+    z-index: 1;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(244, 140, 113, 0.82);
+    transform-origin: left center;
+}
+
+.route-line-a {
+    left: 22%;
+    top: 55%;
+    width: 33%;
+    transform: rotate(-24deg);
+}
+
+.route-line-b {
+    left: 53%;
+    top: 43%;
+    width: 34%;
+    transform: rotate(20deg);
+}
+
+.route-story-summary {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.86);
+    padding: 16px;
+    backdrop-filter: blur(12px);
+}
+
+.route-story-summary strong {
+    color: var(--teal);
+    font-size: 20px;
+}
+
+.route-story-summary span {
+    color: var(--muted);
+    line-height: 1.5;
+    text-align: right;
+}
+
+.travel-log-stack {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.travel-log-stack article {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 18px 46px rgba(26, 77, 78, 0.09);
+}
+
+.travel-log-stack article:nth-child(2) {
+    margin-top: 34px;
+}
+
+.travel-log-stack article:nth-child(3) {
+    margin-top: 68px;
+}
+
+.travel-log-stack img {
+    width: 100%;
+    aspect-ratio: 0.82;
+    object-fit: cover;
+}
+
+.travel-log-stack span {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 7px 10px;
+}
+
+.album-flow-board {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(150px, 0.46fr) minmax(0, 0.72fr);
+    gap: 14px;
+    align-items: stretch;
+    padding: 18px;
+    background: #ffffff;
+}
+
+.album-flow-photo {
+    overflow: hidden;
+    border-radius: 14px;
+    background: #f5f8f7;
+}
+
+.album-flow-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album-flow-list {
+    display: grid;
+    gap: 10px;
+    align-content: center;
+}
+
+.album-flow-list span {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #f7faf9;
+    color: var(--teal);
+    font-weight: 900;
+    padding: 13px 14px;
+}
+
+.album-flow-map {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at 68% 24%, rgba(244, 140, 113, 0.18), transparent 18%),
+        linear-gradient(rgba(26, 77, 78, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 77, 78, 0.06) 1px, transparent 1px),
+        #f5fbfa;
+    background-size: auto, 36px 36px, 36px 36px, auto;
+}
+
+.album-flow-map span {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 3px solid #ffffff;
+    border-radius: 999px;
+    background: var(--coral);
+    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.22);
+}
+
+.album-flow-map span:nth-child(1) {
+    left: 28%;
+    top: 30%;
+}
+
+.album-flow-map span:nth-child(2) {
+    left: 62%;
+    top: 48%;
+}
+
+.album-flow-map span:nth-child(3) {
+    left: 42%;
+    top: 70%;
 }
 
 .home-east-asia-demo {
@@ -5158,6 +5406,86 @@ body.is-logged-in .white-band {
     .home-album-feature-list span {
         grid-template-columns: 1fr;
         gap: 4px;
+    }
+
+    .home-reference-section,
+    .home-reference-log {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .home-reference-copy {
+        gap: 14px;
+    }
+
+    .home-reference-copy h2 {
+        font-size: 28px;
+        line-height: 1.18;
+    }
+
+    .home-reference-copy p:not(.eyebrow) {
+        font-size: 15px;
+        line-height: 1.62;
+    }
+
+    .route-story-board,
+    .album-flow-board {
+        min-height: 300px;
+        border-radius: 14px;
+    }
+
+    .route-story-summary {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        display: grid;
+        gap: 4px;
+    }
+
+    .route-story-summary span {
+        text-align: left;
+    }
+
+    .travel-log-stack {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .travel-log-stack article:nth-child(2),
+    .travel-log-stack article:nth-child(3) {
+        margin-top: 0;
+    }
+
+    .travel-log-stack span {
+        left: 8px;
+        bottom: 8px;
+        font-size: 10px;
+        padding: 5px 7px;
+    }
+
+    .album-flow-board {
+        grid-template-columns: 1fr;
+        padding: 14px;
+    }
+
+    .album-flow-photo img {
+        aspect-ratio: 1.32;
+        height: auto;
+    }
+
+    .album-flow-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .album-flow-list span {
+        padding: 10px;
+        text-align: center;
+    }
+
+    .album-flow-map {
+        min-height: 180px;
     }
 
     .home-east-asia-map {
