@@ -242,13 +242,14 @@ body.is-logged-in #account-guest-label {
 .hero {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+    grid-template-columns: 1fr;
     align-items: center;
-    gap: 54px 80px;
+    gap: 0;
     width: min(var(--container), calc(100% - 48px));
-    min-height: 620px;
+    min-height: 640px;
     margin: 0 auto;
-    overflow: visible;
+    overflow: hidden;
+    border-radius: 28px;
     background:
         radial-gradient(circle at 80% 20%, rgba(244, 140, 113, 0.14), transparent 32%),
         radial-gradient(circle at 20% 80%, rgba(158, 207, 208, 0.16), transparent 34%);
@@ -280,34 +281,38 @@ body.is-logged-in #account-guest-label {
 }
 
 .hero-world-panel {
+    position: absolute;
+    inset: 0;
     align-self: stretch;
     display: grid;
     place-items: center;
+    padding: 0;
+    pointer-events: none;
 }
 
 .hero-world-map {
     position: relative;
-    width: min(100%, 580px);
-    aspect-ratio: 1.82;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    border: 1px solid rgba(26, 77, 78, 0.12);
-    border-radius: 28px;
+    border: 0;
+    border-radius: inherit;
     background:
         linear-gradient(rgba(26, 77, 78, 0.055) 1px, transparent 1px),
         linear-gradient(90deg, rgba(26, 77, 78, 0.055) 1px, transparent 1px),
         radial-gradient(circle at 75% 38%, rgba(244, 140, 113, 0.16), transparent 18%),
         linear-gradient(135deg, #f5fbfa 0%, #e8f2ef 100%);
     background-size: 42px 42px, 42px 42px, auto, auto;
-    box-shadow: 0 24px 68px rgba(26, 77, 78, 0.11);
+    box-shadow: inset 0 0 0 1px rgba(26, 77, 78, 0.1);
 }
 
 .hero-world-map > img {
     position: absolute;
-    inset: 9% 5%;
-    width: 90%;
-    height: 82%;
+    inset: 4% 2%;
+    width: 96%;
+    height: 92%;
     object-fit: contain;
-    opacity: 0.94;
+    opacity: 0.98;
     pointer-events: none;
 }
 
@@ -456,6 +461,9 @@ body.is-logged-in .white-band {
 
 .hero-visual {
     position: relative;
+    z-index: 4;
+    width: min(46%, 520px);
+    margin-left: clamp(24px, 6vw, 72px);
 }
 
 .hero-map-card {
@@ -4890,10 +4898,11 @@ body.is-logged-in .white-band {
 
     .hero {
         width: calc(100% - 32px);
-        min-height: auto;
+        min-height: 520px;
         grid-template-columns: 1fr;
-        gap: 28px;
-        padding: 42px 0;
+        gap: 0;
+        padding: 32px 0;
+        border-radius: 22px;
     }
 
     .hero-memory-line {
@@ -4919,9 +4928,19 @@ body.is-logged-in .white-band {
 
     .hero-world-map {
         width: 100%;
-        max-width: 520px;
-        margin: 0 auto;
+        height: 100%;
         border-radius: 20px;
+    }
+
+    .hero-world-map > img {
+        inset: 8% -24%;
+        width: 148%;
+        height: 84%;
+    }
+
+    .hero-visual {
+        width: min(84%, 360px);
+        margin-left: 18px;
     }
 
     .world-pin {

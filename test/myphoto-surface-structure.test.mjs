@@ -57,6 +57,7 @@ test('home no longer renders temporary preview bands or removed intro candidates
 test('home hero keeps the map and rotating country photo preview without extra copy', () => {
     const markup = html();
     const app = source();
+    const styles = css();
 
     const heroStart = markup.indexOf('<div class="hero">');
     const heroEnd = markup.indexOf('<section class="content-band home-explore-guide"', heroStart);
@@ -68,6 +69,10 @@ test('home hero keeps the map and rotating country photo preview without extra c
     assert.match(hero, /class="hero-world-map"[\s\S]*data-hero-map-pin="korea"[\s\S]*data-hero-map-pin="japan"[\s\S]*data-hero-map-pin="turkey"/);
     assert.match(hero, /class="hero-photo-slider"[\s\S]*Korea[\s\S]*Japan[\s\S]*Turkey/);
     assert.doesNotMatch(hero, /btn-home-explore|btn-home-myphoto|hero-memory-line/);
+    assert.match(styles, /\.hero\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*min-height:\s*640px;[^}]*overflow:\s*hidden;/s);
+    assert.match(styles, /\.hero-world-panel\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;/s);
+    assert.match(styles, /\.hero-world-map\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
+    assert.match(styles, /\.hero-visual\s*\{[^}]*z-index:\s*4;[^}]*width:\s*min\(46%,\s*520px\);[^}]*margin-left:\s*clamp\(24px,\s*6vw,\s*72px\);/s);
     assert.match(app, /function startHomeHeroSlider\(\)/);
     assert.match(app, /const mapPins = \$\$\('\[data-hero-map-pin\]'\)/);
     assert.match(app, /pin\.classList\.toggle\('is-active', pin\.dataset\.heroMapPin === place\)/);
