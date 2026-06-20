@@ -42,10 +42,11 @@ test('home leads with public discovery while keeping upload as the secondary act
     assert.match(hero, /id="home-title" class="sr-only"[\s\S]*Ikkyee 여행 사진 지도/);
     assert.doesNotMatch(hero, /btn-home-explore/);
     assert.doesNotMatch(hero, /btn-home-myphoto/);
-    assert.match(hero, /class="hero-world-map"[\s\S]*data-hero-map-pin="jeju"[\s\S]*data-hero-map-pin="tokyo"[\s\S]*data-hero-map-pin="busan"/);
+    assert.match(hero, /images\/home-world-map\.png/);
+    assert.match(hero, /class="hero-world-map"[\s\S]*data-hero-map-pin="korea"[\s\S]*data-hero-map-pin="japan"[\s\S]*data-hero-map-pin="turkey"/);
     assert.match(hero, /class="hero-memory-line"[\s\S]*지도 위에서 다시 선명해지는 여행의 기억\./);
-    assert.match(html, /class="hero-photo-slider"[\s\S]*Jeju[\s\S]*Tokyo[\s\S]*Busan/);
-    assert.match(html, /data-hero-place="jeju"[\s\S]*data-hero-place="tokyo"[\s\S]*data-hero-place="busan"/);
+    assert.match(html, /class="hero-photo-slider"[\s\S]*Korea[\s\S]*Japan[\s\S]*Turkey/);
+    assert.match(html, /data-hero-place="korea"[\s\S]*data-hero-place="japan"[\s\S]*data-hero-place="turkey"/);
     assert.equal(html.includes('앨범 생성 중'), false);
     assert.match(source, /function startHomeHeroSlider\(\)/);
     assert.match(source, /const mapPins = \$\$\('\[data-hero-map-pin\]'\)/);
