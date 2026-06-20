@@ -13,8 +13,8 @@
     --shadow: 0 20px 60px rgba(26, 77, 78, 0.08);
     --header-height: 76px;
     --container: 1280px;
-    --headline: 'Be Vietnam Pro', 'Pretendard', sans-serif;
-    --body: 'Hanken Grotesk', 'Pretendard', sans-serif;
+    --headline: 'Inter', 'Pretendard', sans-serif;
+    --body: 'Inter', 'Pretendard', sans-serif;
 }
 
 * {
