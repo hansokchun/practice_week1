@@ -1,7 +1,7 @@
 {
   "name": "ikkyee",
   "version": "1.0.0",
-  "description": "Travelgram - photo-based travel journal web app",
+  "description": "Ikkyee - photo-based travel journal website",
   "private": true,
   "scripts": {
     "dev": "vite",

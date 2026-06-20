@@ -823,7 +823,7 @@ function loadGoogleMapsApi() {
         if (!key) return null;
 
         return new Promise((resolve, reject) => {
-            const callbackName = `initTravelgramGoogleMap${Date.now()}`;
+            const callbackName = `initIkkyeeGoogleMap${Date.now()}`;
             window[callbackName] = () => {
                 resolve(window.google.maps);
                 delete window[callbackName];

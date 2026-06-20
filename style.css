@@ -74,17 +74,22 @@ img {
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     width: fit-content;
     color: var(--teal);
     text-decoration: none;
-    font-family: var(--headline);
-    font-size: 24px;
-    font-weight: 700;
+    font-family: Georgia, 'Times New Roman', var(--headline);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
 .brand img {
-    display: none;
+    display: block;
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    flex: 0 0 auto;
 }
 
 .top-nav {
