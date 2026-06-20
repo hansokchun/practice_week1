@@ -2700,13 +2700,21 @@ function setVisibilityMode(mode) {
 
 function startHomeHeroSlider() {
     const slides = $$('.hero-photo-slide');
+    const mapPins = $$('[data-hero-map-pin]');
     if (slides.length <= 1) return;
     let currentIndex = slides.findIndex((slide) => slide.classList.contains('is-active'));
     if (currentIndex < 0) currentIndex = 0;
+    const syncMapPin = (slide) => {
+        const place = slide?.dataset?.heroPlace || '';
+        mapPins.forEach((pin) => {
+            pin.classList.toggle('is-active', pin.dataset.heroMapPin === place);
+        });
+    };
     slides.forEach((slide, index) => {
         slide.classList.toggle('is-active', index === currentIndex);
         slide.classList.remove('is-exiting');
     });
+    syncMapPin(slides[currentIndex]);
 
     window.setInterval(() => {
         const currentSlide = slides[currentIndex];
@@ -2716,6 +2724,7 @@ function startHomeHeroSlider() {
         currentSlide.classList.add('is-exiting');
         nextSlide.classList.remove('is-exiting');
         nextSlide.classList.add('is-active');
+        syncMapPin(nextSlide);
         window.setTimeout(() => currentSlide.classList.remove('is-exiting'), 680);
         currentIndex = nextIndex;
     }, 3000);
@@ -3746,8 +3755,6 @@ function bindEvents() {
         });
     });
     $$('[data-mobile-route]').forEach((button) => button.addEventListener('click', () => routeTo(button.dataset.mobileRoute)));
-    $('#btn-home-myphoto')?.addEventListener('click', () => routeTo('upload'));
-    $('#btn-home-explore')?.addEventListener('click', () => routeTo(APP_SECTIONS.EXPLORE));
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));

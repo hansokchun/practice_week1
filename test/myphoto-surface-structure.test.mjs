@@ -36,18 +36,23 @@ test('home leads with public discovery while keeping upload as the secondary act
     const html = readFileSync('index.html', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
 
-    assert.match(html, /id="home-title"[\s\S]*다른 사람들의 여행 사진을 지도에서 둘러보세요/);
-    assert.match(html, /id="btn-home-explore" class="btn-primary"[\s\S]*둘러보기/);
-    assert.match(html, /id="btn-home-myphoto" class="btn-secondary"[\s\S]*내 사진으로 지도 만들기/);
+    const heroStart = html.indexOf('<div class="hero">');
+    const heroEnd = html.indexOf('<section class="home-choice-band"', heroStart);
+    const hero = html.slice(heroStart, heroEnd);
+    assert.match(hero, /id="home-title" class="sr-only"[\s\S]*Ikkyee 여행 사진 지도/);
+    assert.doesNotMatch(hero, /btn-home-explore/);
+    assert.doesNotMatch(hero, /btn-home-myphoto/);
+    assert.match(hero, /class="hero-world-map"[\s\S]*data-hero-map-pin="jeju"[\s\S]*data-hero-map-pin="tokyo"[\s\S]*data-hero-map-pin="busan"/);
     assert.match(html, /class="hero-photo-slider"[\s\S]*Jeju[\s\S]*Tokyo[\s\S]*Busan/);
+    assert.match(html, /data-hero-place="jeju"[\s\S]*data-hero-place="tokyo"[\s\S]*data-hero-place="busan"/);
     assert.equal(html.includes('앨범 생성 중'), false);
     assert.match(source, /function startHomeHeroSlider\(\)/);
+    assert.match(source, /const mapPins = \$\$\('\[data-hero-map-pin\]'\)/);
+    assert.match(source, /pin\.classList\.toggle\('is-active', pin\.dataset\.heroMapPin === place\)/);
     assert.match(source, /window\.setInterval\(\(\) => \{[\s\S]*\}, 3000\)/);
     assert.match(source, /startHomeHeroSlider\(\)/);
     assert.match(html, /id="home-public-preview-title"[\s\S]*지금 지도에서 볼 수 있는 공개 사진/);
     assert.match(html, /class="home-public-photo-grid"[\s\S]*data-route="explore"/);
-    assert.match(source, /\$\('#btn-home-explore'\)\?\.addEventListener\('click', \(\) => routeTo\(APP_SECTIONS\.EXPLORE\)\)/);
-    assert.match(source, /\$\('#btn-home-myphoto'\)\?\.addEventListener\('click', \(\) => routeTo\('upload'\)\)/);
 });
 
 test('home includes a concise site explanation section with map photo artwork', () => {

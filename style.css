@@ -259,6 +259,159 @@ body.is-logged-in #account-guest-label {
     color: var(--text);
 }
 
+.hero-world-panel {
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+}
+
+.hero-world-map {
+    position: relative;
+    width: min(100%, 580px);
+    aspect-ratio: 1.42;
+    overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 28px;
+    background:
+        linear-gradient(rgba(26, 77, 78, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 77, 78, 0.055) 1px, transparent 1px),
+        radial-gradient(circle at 75% 28%, rgba(244, 140, 113, 0.16), transparent 20%),
+        linear-gradient(135deg, #f5fbfa 0%, #e8f2ef 100%);
+    background-size: 42px 42px, 42px 42px, auto, auto;
+    box-shadow: 0 24px 68px rgba(26, 77, 78, 0.11);
+}
+
+.hero-world-map::before {
+    content: "";
+    position: absolute;
+    inset: 42px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.world-land {
+    position: absolute;
+    background: rgba(26, 77, 78, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(26, 77, 78, 0.08);
+}
+
+.land-americas {
+    top: 20%;
+    left: 11%;
+    width: 24%;
+    height: 48%;
+    border-radius: 48% 38% 56% 44%;
+    transform: rotate(-18deg);
+}
+
+.land-europe-africa {
+    top: 23%;
+    left: 43%;
+    width: 18%;
+    height: 46%;
+    border-radius: 46% 54% 42% 58%;
+    transform: rotate(8deg);
+}
+
+.land-asia {
+    top: 21%;
+    left: 58%;
+    width: 28%;
+    height: 36%;
+    border-radius: 58% 42% 54% 46%;
+    transform: rotate(-4deg);
+}
+
+.land-australia {
+    top: 66%;
+    left: 72%;
+    width: 13%;
+    height: 12%;
+    border-radius: 50%;
+    transform: rotate(14deg);
+}
+
+.world-route {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(244, 140, 113, 0.7);
+    opacity: 0.56;
+}
+
+.route-jeju { top: 42%; left: 71%; }
+.route-tokyo { top: 37%; left: 78%; }
+.route-busan { top: 39%; left: 73%; }
+
+.world-pin {
+    position: absolute;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    min-width: 68px;
+    transform: translate(-50%, -100%) scale(0.86);
+    opacity: 0.58;
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 900;
+    transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 420ms ease;
+}
+
+.world-pin::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    border: 3px solid #ffffff;
+    border-radius: 50% 50% 50% 0;
+    background: var(--teal);
+    transform: rotate(-45deg);
+    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.22);
+}
+
+.world-pin b {
+    margin-top: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.86);
+    padding: 5px 9px;
+    box-shadow: 0 8px 18px rgba(26, 77, 78, 0.1);
+}
+
+.world-pin.is-active {
+    transform: translate(-50%, -100%) scale(1.18);
+    opacity: 1;
+}
+
+.world-pin.is-active::before {
+    background: var(--coral);
+    animation: heroMapPinPulse 900ms ease;
+}
+
+.pin-jeju {
+    top: 42%;
+    left: 71%;
+}
+
+.pin-tokyo {
+    top: 37%;
+    left: 78%;
+}
+
+.pin-busan {
+    top: 39%;
+    left: 73%;
+}
+
+@keyframes heroMapPinPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(244, 140, 113, 0.38), 0 12px 24px rgba(26, 77, 78, 0.22);
+    }
+    100% {
+        box-shadow: 0 0 0 18px rgba(244, 140, 113, 0), 0 12px 24px rgba(26, 77, 78, 0.22);
+    }
+}
+
 .eyebrow {
     margin: 0 0 12px;
     color: var(--coral);
@@ -4775,6 +4928,29 @@ body.is-logged-in .white-band {
     .hero-content {
         width: 100%;
         padding: 0;
+    }
+
+    .hero-world-map {
+        width: 100%;
+        max-width: 520px;
+        margin: 0 auto;
+        border-radius: 20px;
+    }
+
+    .world-pin {
+        min-width: 58px;
+        font-size: 11px;
+    }
+
+    .world-pin::before {
+        width: 15px;
+        height: 15px;
+        border-width: 2px;
+    }
+
+    .world-pin b {
+        margin-top: 4px;
+        padding: 4px 7px;
     }
 
     .hero h1 {

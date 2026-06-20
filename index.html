@@ -38,28 +38,33 @@
     <main id="site-main">
         <section id="page-home" class="page page-home active" aria-labelledby="home-title">
             <div class="hero">
-                <div class="hero-content">
-                    <h1 id="home-title">다른 사람들의 여행 사진을 지도에서 둘러보세요</h1>
-                    <p class="hero-copy">
-                        공개된 여행 사진을 지도에서 먼저 발견하고, 마음에 드는 장소를 찾았다면 내 사진으로 나만의 여행 지도도 만들어보세요.
-                    </p>
-                    <div class="hero-actions">
-                        <button id="btn-home-explore" class="btn-primary" type="button">둘러보기</button>
-                        <button id="btn-home-myphoto" class="btn-secondary" type="button">내 사진으로 지도 만들기</button>
+                <div class="hero-content hero-world-panel" aria-label="슬라이드 사진 위치 세계지도">
+                    <h1 id="home-title" class="sr-only">Ikkyee 여행 사진 지도</h1>
+                    <div class="hero-world-map" aria-hidden="true">
+                        <div class="world-land land-americas"></div>
+                        <div class="world-land land-europe-africa"></div>
+                        <div class="world-land land-asia"></div>
+                        <div class="world-land land-australia"></div>
+                        <span class="world-route route-jeju"></span>
+                        <span class="world-route route-tokyo"></span>
+                        <span class="world-route route-busan"></span>
+                        <span class="world-pin pin-jeju is-active" data-hero-map-pin="jeju"><b>Jeju</b></span>
+                        <span class="world-pin pin-tokyo" data-hero-map-pin="tokyo"><b>Tokyo</b></span>
+                        <span class="world-pin pin-busan" data-hero-map-pin="busan"><b>Busan</b></span>
                     </div>
                 </div>
                 <div class="hero-visual" aria-label="여행 지도 생성 미리보기">
                     <div class="hero-map-card">
                         <div class="hero-photo-slider" aria-label="여행 사진 미리보기">
-                            <figure class="hero-photo-slide is-active">
+                            <figure class="hero-photo-slide is-active" data-hero-place="jeju">
                                 <img src="images/main_bg2.jpg" alt="제주 여행 사진 미리보기">
                                 <figcaption>Jeju</figcaption>
                             </figure>
-                            <figure class="hero-photo-slide">
+                            <figure class="hero-photo-slide" data-hero-place="tokyo">
                                 <img src="images/main_bg3.jpg" alt="도쿄 여행 사진 미리보기">
                                 <figcaption>Tokyo</figcaption>
                             </figure>
-                            <figure class="hero-photo-slide">
+                            <figure class="hero-photo-slide" data-hero-place="busan">
                                 <img src="images/main_bg4.jpg" alt="부산 여행 사진 미리보기">
                                 <figcaption>Busan</figcaption>
                             </figure>
