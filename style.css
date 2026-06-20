@@ -244,7 +244,7 @@ body.is-logged-in #account-guest-label {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
     align-items: center;
-    gap: 80px;
+    gap: 54px 80px;
     width: min(var(--container), calc(100% - 48px));
     min-height: 620px;
     margin: 0 auto;
@@ -252,6 +252,26 @@ body.is-logged-in #account-guest-label {
     background:
         radial-gradient(circle at 80% 20%, rgba(244, 140, 113, 0.14), transparent 32%),
         radial-gradient(circle at 20% 80%, rgba(158, 207, 208, 0.16), transparent 34%);
+}
+
+.hero-memory-line {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: fit-content;
+    max-width: min(720px, 100%);
+    margin: -18px 0 34px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.62);
+    color: rgba(26, 77, 78, 0.82);
+    font-family: var(--headline);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    padding: 11px 22px;
+    box-shadow: 0 14px 34px rgba(26, 77, 78, 0.07);
+    backdrop-filter: blur(12px);
 }
 
 .hero-content {
@@ -4915,6 +4935,14 @@ body.is-logged-in .white-band {
         grid-template-columns: 1fr;
         gap: 28px;
         padding: 42px 0;
+    }
+
+    .hero-memory-line {
+        margin: -4px auto 0;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 10px 14px;
     }
 
     .hero-media {
