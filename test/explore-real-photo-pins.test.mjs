@@ -40,6 +40,15 @@ test('Explore renders a selected photo overlay when the photo is hidden in a clu
     assert.match(body, /state\.exploreMarkers\.push\(selectedMarker\)/);
 });
 
+test('Explore marks a normal pin selected only when the photo itself is selected', () => {
+    const fnStart = source.indexOf('async function renderExploreMapMarkers');
+    const fnEnd = source.indexOf('function updatePhotoDetailModal', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /const selected = Boolean\(photo\.id && photo\.id === state\.selectedPhotoId\)/);
+    assert.doesNotMatch(body, /const selected = photo\.album_id === selectedAlbumId \|\| photo\.id === state\.selectedPhotoId/);
+});
+
 test('Explore clears selected pin highlight when the user clicks an empty map area', () => {
     const fnStart = source.indexOf('function clearExplorePinSelection');
     const fnEnd = source.indexOf('function getExplorePinPosition', fnStart);

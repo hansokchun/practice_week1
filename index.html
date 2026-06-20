@@ -81,6 +81,68 @@
                 </div>
             </section>
 
+            <section class="content-band home-explore-guide" aria-labelledby="home-explore-guide-title">
+                <div class="home-explore-guide-copy">
+                    <p class="eyebrow">How Explore Works</p>
+                    <h2 id="home-explore-guide-title">지도를 움직이며 사진이 남겨진 장소를 찾아보세요</h2>
+                    <p>
+                        장소를 검색하고, 지도 위 핀을 눌러 사진과 기록을 확인하고, 마음에 드는 사용자의 공개 프로필로 이어집니다.
+                        처음 방문한 사람도 무엇을 눌러야 하는지 바로 알 수 있게 Explore 흐름을 홈에서 먼저 보여줍니다.
+                    </p>
+                    <div class="home-explore-guide-actions">
+                        <button class="btn-primary" data-route="explore" type="button">Explore 열기</button>
+                        <button class="btn-secondary" data-route="upload" type="button">내 사진 올리기</button>
+                    </div>
+                </div>
+                <div class="home-explore-guide-media">
+                    <img src="images/home-explore-guide.png" alt="Explore 지도에서 장소 검색, 공개 사진 핀, 사진 패널을 안내하는 이미지">
+                </div>
+            </section>
+
+            <section class="content-band home-album-guide" aria-labelledby="home-album-guide-title">
+                <div class="home-album-guide-media">
+                    <img src="images/home-map-memory-board.png" alt="날짜별 사진과 지도 핀이 함께 보이는 앨범 화면 예시">
+                </div>
+                <div class="home-album-guide-copy">
+                    <p class="eyebrow">Album Archive</p>
+                    <h2 id="home-album-guide-title">사진을 날짜별로 모아 하나의 여행 앨범으로 정리하세요</h2>
+                    <p>
+                        여행 앨범은 사진을 날짜 흐름으로 보여주고, 위치 정보가 있는 사진은 옆 지도에 함께 표시합니다.
+                        내 사진 보관함에서 고른 사진만 앨범에 넣고, 공개 여부는 앨범을 저장할 때 선택합니다.
+                    </p>
+                    <div class="home-album-feature-list" aria-label="앨범 기능 소개">
+                        <span><strong>날짜별 정리</strong> 촬영일 기준으로 사진이 묶입니다.</span>
+                        <span><strong>지도 핀 확인</strong> 위치가 있는 사진만 지도에 표시됩니다.</span>
+                        <span><strong>비공개 우선</strong> 공개 전까지 내 앨범으로만 보관됩니다.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-band home-east-asia-demo" aria-labelledby="home-east-asia-demo-title">
+                <div class="section-heading">
+                    <p class="eyebrow">Explore Preview</p>
+                    <h2 id="home-east-asia-demo-title">동아시아 지도 위에서 공개 사진 핀을 먼저 살펴보세요</h2>
+                    <p>예시 핀을 클릭하면 Explore로 이동합니다. 실제 공개 사진이 연결되면 해당 사진 미리보기로 이어집니다.</p>
+                </div>
+                <div class="home-east-asia-map" aria-label="동아시아 공개 사진 지도 예시">
+                    <span class="east-asia-label label-korea">Korea</span>
+                    <span class="east-asia-label label-japan">Japan</span>
+                    <span class="east-asia-label label-taiwan">Taiwan</span>
+                    <button class="home-map-photo-pin pin-seoul" data-route="explore" data-home-sample-pin="seoul" type="button" aria-label="서울 공개 사진 Explore에서 보기">
+                        <span class="pin-stem"></span>
+                        <img src="images/main_bg1.jpg" alt="서울 공개 사진 예시">
+                    </button>
+                    <button class="home-map-photo-pin pin-tokyo" data-route="explore" data-home-sample-pin="tokyo" type="button" aria-label="도쿄 공개 사진 Explore에서 보기">
+                        <span class="pin-stem"></span>
+                        <img src="images/main_bg3.jpg" alt="도쿄 공개 사진 예시">
+                    </button>
+                    <button class="home-map-photo-pin pin-jeju" data-route="explore" data-home-sample-pin="jeju" type="button" aria-label="제주 공개 사진 Explore에서 보기">
+                        <span class="pin-stem"></span>
+                        <img src="images/main_bg5.jpg" alt="제주 공개 사진 예시">
+                    </button>
+                </div>
+            </section>
+
             <section class="content-band home-public-preview" aria-labelledby="home-public-preview-title">
                 <div class="section-heading">
                     <p class="eyebrow">Explore First</p>
@@ -154,24 +216,6 @@
                     <h2 id="home-replay-title">사진이 흩어져 있어도 여행의 흐름은 남아 있습니다</h2>
                     <p>날짜와 위치가 있는 사진을 모으면 지나간 여행이 지도 위에서 다시 이어집니다.</p>
                     <button class="btn-primary" data-route="upload" type="button">내 여행 지도 만들기</button>
-                </div>
-            </section>
-
-            <section class="content-band home-explore-guide" aria-labelledby="home-explore-guide-title">
-                <div class="home-explore-guide-copy">
-                    <p class="eyebrow">How Explore Works</p>
-                    <h2 id="home-explore-guide-title">지도를 움직이며 사진이 남겨진 장소를 찾아보세요</h2>
-                    <p>
-                        장소를 검색하고, 지도 위 핀을 눌러 사진과 기록을 확인하고, 마음에 드는 사용자의 공개 프로필로 이어집니다.
-                        처음 방문한 사람도 무엇을 눌러야 하는지 바로 알 수 있게 Explore 흐름을 홈에서 먼저 보여줍니다.
-                    </p>
-                    <div class="home-explore-guide-actions">
-                        <button class="btn-primary" data-route="explore" type="button">Explore 열기</button>
-                        <button class="btn-secondary" data-route="upload" type="button">내 사진 올리기</button>
-                    </div>
-                </div>
-                <div class="home-explore-guide-media">
-                    <img src="images/home-explore-guide.png" alt="Explore 지도에서 장소 검색, 공개 사진 핀, 사진 패널을 안내하는 이미지">
                 </div>
             </section>
 

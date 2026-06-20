@@ -913,7 +913,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     state.exploreMarkers = clusters.map((cluster) => {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
-            const selected = photo.album_id === selectedAlbumId || photo.id === state.selectedPhotoId;
+            const selected = Boolean(photo.id && photo.id === state.selectedPhotoId);
             const marker = new maps.Marker({
                 map,
                 position: cluster.position || { lat: Number(photo.lat), lng: Number(photo.lng) },

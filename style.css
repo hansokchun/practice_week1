@@ -315,6 +315,8 @@ body.is-logged-in .home-public-preview,
 body.is-logged-in .home-fit-band,
 body.is-logged-in .home-replay-hero,
 body.is-logged-in .home-explore-guide,
+body.is-logged-in .home-album-guide,
+body.is-logged-in .home-east-asia-demo,
 body.is-logged-in .home-story-band,
 body.is-logged-in .white-band {
     display: none;
@@ -761,6 +763,187 @@ body.is-logged-in .white-band {
     width: 100%;
     aspect-ratio: 1.78;
     object-fit: cover;
+}
+
+.home-album-guide {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+    gap: 42px;
+    align-items: center;
+    background: #f5f8f7;
+}
+
+.home-album-guide-media {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 22px 56px rgba(26, 77, 78, 0.1);
+}
+
+.home-album-guide-media img {
+    width: 100%;
+    aspect-ratio: 1.48;
+    object-fit: cover;
+}
+
+.home-album-guide-copy {
+    display: grid;
+    gap: 18px;
+}
+
+.home-album-guide-copy h2 {
+    margin: 0;
+    color: var(--teal);
+    font-family: var(--headline);
+    font-size: 36px;
+    line-height: 1.16;
+    letter-spacing: 0;
+}
+
+.home-album-guide-copy p:not(.eyebrow) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.72;
+}
+
+.home-album-feature-list {
+    display: grid;
+    gap: 10px;
+}
+
+.home-album-feature-list span {
+    display: grid;
+    grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.76);
+    color: var(--muted);
+    padding: 10px 14px;
+    line-height: 1.45;
+}
+
+.home-album-feature-list strong {
+    color: var(--teal);
+}
+
+.home-east-asia-demo {
+    background: #ffffff;
+}
+
+.home-east-asia-map {
+    position: relative;
+    min-height: 520px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background:
+        radial-gradient(ellipse at 44% 32%, rgba(26, 77, 78, 0.08) 0 11%, transparent 12%),
+        radial-gradient(ellipse at 62% 38%, rgba(26, 77, 78, 0.08) 0 13%, transparent 14%),
+        radial-gradient(ellipse at 53% 70%, rgba(26, 77, 78, 0.08) 0 7%, transparent 8%),
+        linear-gradient(135deg, #edf5f4 0%, #f8fbfa 46%, #e7f0ed 100%);
+    box-shadow: 0 22px 56px rgba(26, 77, 78, 0.1);
+}
+
+.home-east-asia-map::before,
+.home-east-asia-map::after {
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(26, 77, 78, 0.18);
+    border-radius: 42% 58% 48% 52%;
+    background: rgba(255, 255, 255, 0.58);
+    transform: rotate(-14deg);
+}
+
+.home-east-asia-map::before {
+    top: 18%;
+    left: 33%;
+    width: 22%;
+    height: 46%;
+}
+
+.home-east-asia-map::after {
+    top: 20%;
+    left: 57%;
+    width: 25%;
+    height: 56%;
+    transform: rotate(18deg);
+}
+
+.east-asia-label {
+    position: absolute;
+    z-index: 2;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: rgba(26, 77, 78, 0.72);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 10px;
+}
+
+.label-korea { top: 31%; left: 40%; }
+.label-japan { top: 35%; left: 67%; }
+.label-taiwan { top: 72%; left: 52%; }
+
+.home-map-photo-pin {
+    position: absolute;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 116px;
+    height: 116px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--teal);
+    padding: 7px;
+    box-shadow: 0 18px 34px rgba(26, 77, 78, 0.22);
+}
+
+.home-map-photo-pin::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    width: 24px;
+    height: 24px;
+    border-radius: 0 0 8px 0;
+    background: var(--teal);
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.home-map-photo-pin img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border: 4px solid #ffffff;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
+.home-map-photo-pin:hover,
+.home-map-photo-pin:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 42px rgba(26, 77, 78, 0.28);
+}
+
+.home-map-photo-pin.pin-seoul {
+    top: 24%;
+    left: 37%;
+}
+
+.home-map-photo-pin.pin-tokyo {
+    top: 30%;
+    left: 62%;
+}
+
+.home-map-photo-pin.pin-jeju {
+    top: 61%;
+    left: 47%;
 }
 
 .home-story-band {
@@ -4742,6 +4925,66 @@ body.is-logged-in .white-band {
 
     .home-explore-guide-media img {
         aspect-ratio: 1.28;
+    }
+
+    .home-album-guide {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .home-album-guide-media {
+        border-radius: 14px;
+    }
+
+    .home-album-guide-media img {
+        aspect-ratio: 1.18;
+    }
+
+    .home-album-guide-copy {
+        gap: 14px;
+    }
+
+    .home-album-guide-copy h2 {
+        font-size: 28px;
+        line-height: 1.18;
+    }
+
+    .home-album-guide-copy p:not(.eyebrow) {
+        font-size: 15px;
+        line-height: 1.62;
+    }
+
+    .home-album-feature-list span {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .home-east-asia-map {
+        min-height: 360px;
+        border-radius: 14px;
+    }
+
+    .home-map-photo-pin {
+        width: 78px;
+        height: 78px;
+        padding: 5px;
+    }
+
+    .home-map-photo-pin::after {
+        bottom: -9px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .home-map-photo-pin img {
+        border-width: 3px;
+    }
+
+    .east-asia-label {
+        font-size: 10px;
+        padding: 4px 8px;
     }
 
     .home-story-band {
