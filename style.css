@@ -1434,7 +1434,7 @@ body.is-logged-in .white-band {
 
 .easol-intro-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 208px;
+    grid-template-columns: minmax(0, 1fr) clamp(160px, 17vw, 208px);
     gap: 16px;
     align-items: start;
 }
@@ -1500,11 +1500,12 @@ body.is-logged-in .white-band {
 }
 
 .easol-intro-media-top {
-    width: 208px;
+    width: 100%;
+    max-width: 208px;
     aspect-ratio: 0.84;
     justify-self: end;
     align-self: start;
-    margin-top: 132px;
+    margin-top: clamp(88px, 10vw, 132px);
     margin-right: 10px;
 }
 
@@ -5502,6 +5503,19 @@ body.is-logged-in .white-band {
 
 .mobile-bottom-nav .material-symbols-outlined {
     font-size: 22px;
+}
+
+@media (max-width: 1180px) {
+    .easol-intro-hero {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .easol-intro-media-top {
+        width: min(220px, 34vw);
+        max-width: none;
+        margin-top: 18px;
+        margin-right: 0;
+    }
 }
 
 @media (max-width: 860px) {
