@@ -1749,6 +1749,14 @@ body.is-logged-in .white-band {
     filter: drop-shadow(0 2px 5px rgba(0,0,0,0.28));
 }
 
+.liked-photo-section {
+    margin-top: 0;
+}
+
+.liked-photo-badge {
+    color: #ff5a7a !important;
+}
+
 .personal-photo-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4653,6 +4661,51 @@ body.is-logged-in .white-band {
     font-size: 14px;
     font-weight: 900;
     padding: 10px 14px;
+}
+
+.photo-detail-like-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.photo-like-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--teal);
+    font-size: 14px;
+    font-weight: 900;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.photo-like-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(255, 90, 122, 0.42);
+}
+
+.photo-like-button.is-liked {
+    border-color: rgba(255, 90, 122, 0.34);
+    background: rgba(255, 90, 122, 0.1);
+    color: #c72f56;
+}
+
+.photo-like-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+#photo-detail-like-count {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
 }
 
 .detail-actions {

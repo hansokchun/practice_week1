@@ -3,7 +3,9 @@ import {
     createAlbum,
     deleteAlbum,
     detachPhotosFromAlbum,
+    deleteLike,
     fetchAlbums,
+    fetchMyLikes,
     fetchPhotos,
     fetchProfilesByIds,
     getCurrentUser,
@@ -13,6 +15,8 @@ import {
     signUpWithEmail,
     signInWithGoogle,
     signInWithKakao,
+    insertLike,
+    toggleLikePhoto,
     updateUserMetadata,
     updateNicknameInDB,
     updatePhotoInfo,
@@ -121,6 +125,7 @@ const state = {
     stagedPhotos: [],
     savedPhotos: [],
     savedAlbums: [],
+    likedPhotoIds: [],
     profileNames: {},
     publicProfiles: {},
     lastSavedPhotoIds: [],
@@ -178,7 +183,7 @@ const state = {
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
-const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'album-photos', 'trip', 'profile']);
+const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'profile']);
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const TURNSTILE_SITE_KEY = window.TRAVELGRAM_TURNSTILE_SITE_KEY || '';
@@ -365,7 +370,7 @@ function renderRoute(section) {
         clearUploadQueue();
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'album', 'album-photos', 'trip'].includes(normalized)
+    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip'].includes(normalized)
         ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -378,6 +383,7 @@ function renderRoute(section) {
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
+    if (normalized === 'liked') renderLikedPhotoSurfaces();
     if (renderedRoute === APP_SECTIONS.HOME) renderSavedPhotoSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
@@ -1051,11 +1057,15 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
+    const likeButton = $('#photo-detail-like');
+    const likeCount = $('#photo-detail-like-count');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
     const description = String(photo.description || '').trim();
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
+    const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
+    const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
     const locationLabel = hasPhotoLocation(photo)
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
@@ -1083,6 +1093,15 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         }
     }
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
+    if (likeButton) {
+        likeButton.disabled = !photo.id || !state.currentUser;
+        likeButton.classList.toggle('is-liked', isLiked);
+        likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
+        likeButton.dataset.photoId = photo.id || '';
+        const label = likeButton.querySelector('[data-like-label]');
+        if (label) label.textContent = isLiked ? '좋아요 취소' : '좋아요';
+    }
+    if (likeCount) likeCount.textContent = `좋아요 ${likeTotal}개`;
     if (editButton) editButton.hidden = !canEdit;
     if (showOnMapButton) {
         const canShowOnTripMap = Boolean(
@@ -1094,6 +1113,55 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         showOnMapButton.hidden = !canShowOnTripMap;
         showOnMapButton.dataset.photoId = canShowOnTripMap ? String(photo.id || photo.localId) : '';
     }
+}
+
+async function toggleSelectedPhotoLike(eventOrPhotoId) {
+    const photoId = typeof eventOrPhotoId === 'string'
+        ? eventOrPhotoId
+        : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        showToast('좋아요를 누르려면 먼저 로그인해주세요.');
+        return;
+    }
+    const photo = state.savedPhotos.find((candidate) => String(candidate.id) === String(photoId));
+    if (!photo?.id) return;
+
+    const likedIds = new Set(state.likedPhotoIds.map(String));
+    const nextLiked = !likedIds.has(String(photo.id));
+    const likeButton = $('#photo-detail-like');
+    if (likeButton) likeButton.disabled = true;
+
+    const likeRowResult = nextLiked
+        ? await insertLike(state.currentUser.id, photo.id)
+        : await deleteLike(state.currentUser.id, photo.id);
+    if (likeRowResult.error) {
+        if (likeButton) likeButton.disabled = false;
+        showToast(likeRowResult.error.message || '좋아요 상태를 저장하지 못했습니다.');
+        return;
+    }
+
+    const countResult = await toggleLikePhoto(photo.id, nextLiked);
+    if (countResult.error) {
+        if (likeButton) likeButton.disabled = false;
+        showToast(countResult.error.message || '좋아요 수를 반영하지 못했습니다.');
+        return;
+    }
+
+    state.likedPhotoIds = nextLiked
+        ? [...likedIds, String(photo.id)]
+        : [...likedIds].filter((id) => id !== String(photo.id));
+    const delta = nextLiked ? 1 : -1;
+    state.savedPhotos = state.savedPhotos.map((savedPhoto) => (
+        String(savedPhoto.id) === String(photo.id)
+            ? { ...savedPhoto, liked: Math.max(0, Number(savedPhoto.liked || 0) + delta) }
+            : savedPhoto
+    ));
+    const updatedPhoto = state.savedPhotos.find((candidate) => String(candidate.id) === String(photo.id));
+    renderLikedPhotoSurfaces();
+    renderPublicSurfaces();
+    updatePhotoDetailModal(updatedPhoto || photo);
+    showToast(nextLiked ? '좋아요에 추가했습니다.' : '좋아요를 취소했습니다.');
 }
 
 function getCurrentAccountProfile() {
@@ -1391,6 +1459,7 @@ function normalizeSavedPhoto(photo) {
         lng: hasLocation ? Number(photo.lng) : null,
         shared: !!photo.shared || photo.visibility === 'public',
         owner_id: photo.owner_id,
+        liked: Number(photo.liked || 0),
         album_id: photo.album_id || null,
         visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
         album: photo.album || null
@@ -1413,6 +1482,12 @@ function normalizeSavedAlbum(album) {
 function getMySavedPhotos() {
     if (!state.currentUser) return [];
     return state.savedPhotos.filter((photo) => photo.owner_id === state.currentUser.id);
+}
+
+function getLikedPhotos() {
+    if (!state.currentUser) return [];
+    const likedIds = new Set(state.likedPhotoIds.map(String));
+    return state.savedPhotos.filter((photo) => likedIds.has(String(photo.id)));
 }
 
 function getDraftPhotos() {
@@ -2233,6 +2308,23 @@ async function loadSavedPhotos() {
     renderPublicSurfaces();
 }
 
+async function loadMyLikedPhotos() {
+    if (!state.currentUser) {
+        state.likedPhotoIds = [];
+        renderLikedPhotoSurfaces();
+        return;
+    }
+    const { data, error } = await fetchMyLikes(state.currentUser.id);
+    if (error) {
+        state.likedPhotoIds = [];
+        showToast('좋아요한 사진을 불러오지 못했습니다.');
+        renderLikedPhotoSurfaces();
+        return;
+    }
+    state.likedPhotoIds = (data || []).map(String);
+    renderLikedPhotoSurfaces();
+}
+
 async function loadSavedAlbums() {
     const { data, error } = await fetchAlbums();
     if (error) {
@@ -2289,6 +2381,7 @@ function renderSavedPhotoSurfaces() {
     }
     renderMissingLocationTasks(missingLocationPhotos);
     renderPersonalPhotosPage(myPhotos);
+    renderLikedPhotoSurfaces();
 
     if (recentGrid) {
         recentGrid.innerHTML = myPhotos.length
@@ -2315,6 +2408,63 @@ function renderSavedPhotoSurfaces() {
     } else {
         renderAlbumDrafts();
     }
+}
+
+function renderLikedPhotoSurfaces() {
+    const likedPhotos = getLikedPhotos();
+    const compactGrid = $('#liked-photo-grid');
+    const fullGrid = $('#liked-photo-full-grid');
+    const summary = $('#liked-photo-summary');
+    if (summary) summary.textContent = formatPhotoCount(likedPhotos.length);
+
+    const emptyMarkup = `
+        <article class="empty-state album-empty-state recent-photo-empty">
+            <div>
+                <strong>아직 좋아요한 사진이 없습니다.</strong>
+                <span>Explore에서 마음에 드는 사진을 눌러 모아보세요.</span>
+            </div>
+            <button class="btn-secondary" data-route="explore" type="button">Explore 열기</button>
+        </article>
+    `;
+
+    if (compactGrid) {
+        compactGrid.innerHTML = likedPhotos.length
+            ? likedPhotos.slice(0, 8).map((photo) => `
+            <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                <span class="material-symbols-outlined liked-photo-badge">favorite</span>
+            </article>
+        `).join('')
+            : emptyMarkup;
+    }
+
+    if (!fullGrid) return;
+    if (!likedPhotos.length) {
+        fullGrid.innerHTML = `
+            <article class="empty-state">
+                <strong>아직 좋아요한 사진이 없습니다</strong>
+                <span>Explore에서 공개 사진을 둘러보고 좋아요를 눌러보세요.</span>
+                <button class="btn-secondary" data-route="explore" type="button">Explore 열기</button>
+            </article>
+        `;
+        return;
+    }
+
+    fullGrid.innerHTML = likedPhotos.map((photo) => {
+        const ownerName = getPublicAuthorName(photo, {
+            currentUser: state.currentUser,
+            profileNames: state.profileNames
+        });
+        return `
+            <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                <div>
+                    <strong>${escapeHtml(getPhotoFallbackLabel(photo))}</strong>
+                    <span>${escapeHtml(ownerName)} · 좋아요 ${Number(photo.liked || 0)}개</span>
+                </div>
+            </article>
+        `;
+    }).join('');
 }
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
@@ -3658,6 +3808,7 @@ async function handleAuthSubmit(event) {
     updateAccountUI();
     await ensureCurrentUserPublicProfile();
     await loadSavedPhotos();
+    await loadMyLikedPhotos();
     await loadSavedAlbums();
     closeModals();
     showToast('\uB85C\uADF8\uC778\uD588\uC5B4\uC694.');
@@ -3757,6 +3908,7 @@ function bindEvents() {
     $$('[data-mobile-route]').forEach((button) => button.addEventListener('click', () => routeTo(button.dataset.mobileRoute)));
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
+    $('#btn-open-liked-photos')?.addEventListener('click', () => routeTo('liked'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
@@ -3816,6 +3968,12 @@ function bindEvents() {
         if (routeButton) {
             event.preventDefault();
             routeTo(routeButton.dataset.route);
+            return;
+        }
+
+        const photoLikeButton = event.target.closest('[data-toggle-photo-like]');
+        if (photoLikeButton) {
+            toggleSelectedPhotoLike({ currentTarget: photoLikeButton });
             return;
         }
 
@@ -4157,6 +4315,7 @@ function bindEvents() {
             state.currentUser = null;
             state.savedPhotos = [];
             state.savedAlbums = [];
+            state.likedPhotoIds = [];
             state.lastSavedPhotoIds = [];
             closeModals();
             updateAccountUI();
@@ -4202,6 +4361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateAccountUI();
     await ensureCurrentUserPublicProfile();
     await loadSavedPhotos();
+    await loadMyLikedPhotos();
     await loadSavedAlbums();
     await loadPublicProfileNames();
     ensureProfileHeaderShell();

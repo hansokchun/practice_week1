@@ -270,6 +270,22 @@
                     </div>
                 </section>
 
+                <section class="recent-photo-section liked-photo-section" aria-labelledby="liked-photo-title">
+                    <div class="panel-topline">
+                        <h2 id="liked-photo-title">좋아요한 사진</h2>
+                        <button id="btn-open-liked-photos" class="text-button" type="button">전체 보기</button>
+                    </div>
+                    <div id="liked-photo-grid" class="recent-photo-grid liked-photo-grid">
+                        <article class="empty-state album-empty-state recent-photo-empty">
+                            <div>
+                                <strong>아직 좋아요한 사진이 없습니다.</strong>
+                                <span>Explore에서 마음에 드는 사진을 눌러 모아보세요.</span>
+                            </div>
+                            <button class="btn-secondary" data-route="explore" type="button">Explore 열기</button>
+                        </article>
+                    </div>
+                </section>
+
                 <section class="dashboard-panel full-panel album-panel" aria-labelledby="my-albums-title">
                     <div class="panel-topline">
                         <div>
@@ -306,6 +322,29 @@
                         </div>
                     </div>
                     <div id="personal-photo-grid" class="personal-photo-grid"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="page-liked" class="page page-liked" aria-labelledby="liked-photos-title">
+            <div class="page-container">
+                <button class="back-link" data-go-myphoto type="button">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Home
+                </button>
+                <div class="page-intro">
+                    <p class="eyebrow">Liked Photos</p>
+                    <h1 id="liked-photos-title">내가 좋아요한 사진</h1>
+                    <p>Explore와 사진 상세에서 좋아요를 누른 사진을 한곳에 모아 봅니다.</p>
+                </div>
+                <section class="dashboard-panel full-panel">
+                    <div class="panel-topline">
+                        <div>
+                            <h2>좋아요 모음</h2>
+                            <p id="liked-photo-summary">0장</p>
+                        </div>
+                    </div>
+                    <div id="liked-photo-full-grid" class="personal-photo-grid liked-photo-full-grid"></div>
                 </section>
             </div>
         </section>
@@ -599,6 +638,13 @@
                     <span data-photo-detail-meta="place"><span class="material-symbols-outlined">place</span> 위치 정보 없음</span>
                 </div>
                 <div id="photo-detail-visibility" class="photo-detail-visibility">비공개</div>
+                <div class="photo-detail-like-panel">
+                    <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-pressed="false">
+                        <span class="material-symbols-outlined">favorite</span>
+                        <span data-like-label>좋아요</span>
+                    </button>
+                    <span id="photo-detail-like-count">좋아요 0개</span>
+                </div>
                 <div class="detail-actions">
                     <button class="btn-primary" data-show-photo-on-map type="button" hidden>지도에서 보기</button>
                     <button class="btn-secondary" data-open-photo-editor type="button">수정</button>
@@ -789,4 +835,3 @@
 </body>
 
 </html>
-
