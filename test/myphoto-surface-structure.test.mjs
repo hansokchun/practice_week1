@@ -138,7 +138,7 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     assert.match(markup, /class="easol-intro-brand"[\s\S]*Travelgram/);
     assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
     assert.match(markup, /class="easol-intro-categories"[\s\S]*FESTIVALS[\s\S]*FOOD \+ DRINK[\s\S]*ADVENTURE/);
-    assert.match(markup, /class="easol-intro-media easol-intro-media-top"[\s\S]*images\/main_bg4\.jpg/);
+    assert.doesNotMatch(markup, /class="easol-intro-media easol-intro-media-top"/);
     assert.match(markup, /class="easol-intro-media easol-intro-media-wide"[\s\S]*images\/main_bg2\.jpg/);
     assert.match(markup, /class="easol-intro-copy"[\s\S]*Travelgram is the map-first archive/);
     assert.match(markup, /class="easol-intro-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
@@ -147,13 +147,10 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     assert.doesNotMatch(markup, /INTRODUCING/);
     assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
     assert.match(styles, /\.site-header-inner\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);/s);
-    assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*sticky;[^}]*top:\s*64px;[^}]*width:\s*100%;[^}]*background:\s*var\(--bg\);/s);
+    assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*fixed;[^}]*top:\s*64px;[^}]*left:\s*50%;[^}]*transform:\s*translateX\(-50%\);[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*background:\s*var\(--bg\);/s);
     assert.match(styles, /\.easol-intro-links\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*white-space:\s*nowrap;/s);
     assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*500;/s);
-    assert.match(styles, /\.easol-intro-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*clamp\(160px,\s*17vw,\s*208px\);[^}]*align-items:\s*start;/s);
-    assert.match(styles, /\.easol-intro-media-top\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*208px;[^}]*aspect-ratio:\s*0\.84;[^}]*margin-top:\s*clamp\(88px,\s*10vw,\s*132px\);/s);
-    assert.match(styles, /@media\s*\(max-width:\s*1180px\)\s*\{[\s\S]*\.easol-intro-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s);
-    assert.match(styles, /@media\s*\(max-width:\s*1180px\)\s*\{[\s\S]*\.easol-intro-media-top\s*\{[^}]*width:\s*min\(220px,\s*34vw\);[^}]*margin-top:\s*18px;/s);
+    assert.match(styles, /\.easol-intro-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s);
     assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
 });
 

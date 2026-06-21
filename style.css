@@ -1394,18 +1394,20 @@ body.is-logged-in .white-band {
 }
 
 .easol-intro-top {
-    padding: 20px 16px 0;
+    padding: 76px 16px 0;
 }
 
 .easol-intro-nav {
-    position: sticky;
+    position: fixed;
     top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 8;
     display: flex;
     align-items: start;
     justify-content: space-between;
     gap: 20px;
-    width: 100%;
+    width: min(var(--container), calc(100% - 48px));
     margin-bottom: 12px;
     padding: 10px 0 12px;
     background: var(--bg);
@@ -1434,7 +1436,7 @@ body.is-logged-in .white-band {
 
 .easol-intro-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(160px, 17vw, 208px);
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     align-items: start;
 }
@@ -1497,16 +1499,6 @@ body.is-logged-in .white-band {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.easol-intro-media-top {
-    width: 100%;
-    max-width: 208px;
-    aspect-ratio: 0.84;
-    justify-self: end;
-    align-self: start;
-    margin-top: clamp(88px, 10vw, 132px);
-    margin-right: 10px;
 }
 
 .easol-intro-media-wide {
@@ -5505,19 +5497,6 @@ body.is-logged-in .white-band {
     font-size: 22px;
 }
 
-@media (max-width: 1180px) {
-    .easol-intro-hero {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .easol-intro-media-top {
-        width: min(220px, 34vw);
-        max-width: none;
-        margin-top: 18px;
-        margin-right: 0;
-    }
-}
-
 @media (max-width: 860px) {
     :root {
         --header-height: auto;
@@ -5574,6 +5553,9 @@ body.is-logged-in .white-band {
 
     .easol-intro-nav {
         top: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
     }
 
     .hero-memory-line {
