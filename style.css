@@ -1383,7 +1383,7 @@ body.is-logged-in .white-band {
 .home-easol-intro {
     width: min(var(--container), calc(100% - 48px));
     margin: 0 auto 72px;
-    background: #ffffff;
+    background: var(--bg);
     color: #050505;
 }
 
@@ -1392,11 +1392,16 @@ body.is-logged-in .white-band {
 }
 
 .easol-intro-nav {
+    position: sticky;
+    top: 64px;
+    z-index: 8;
     display: flex;
     align-items: start;
     justify-content: space-between;
     gap: 20px;
     margin-bottom: 12px;
+    padding: 10px 0 12px;
+    background: var(--bg);
 }
 
 .easol-intro-brand {
@@ -1530,7 +1535,7 @@ body.is-logged-in .white-band {
     grid-template-columns: minmax(0, 0.92fr) minmax(280px, 1.08fr);
     align-items: end;
     gap: 0;
-    background: #f6f1e8;
+    background: var(--bg);
 }
 
 .easol-intro-bottom-art {
@@ -5582,6 +5587,10 @@ body.is-logged-in .white-band {
         gap: 0;
         padding: 32px 0;
         border-radius: 22px;
+    }
+
+    .easol-intro-nav {
+        top: 0;
     }
 
     .hero-memory-line {

@@ -83,6 +83,8 @@ test('home keeps only the remaining public explanation sections before the priva
     const markup = html();
     const styles = css();
 
+    const easolIndex = markup.indexOf('class="home-easol-intro"');
+    const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const albumIndex = markup.indexOf('class="content-band home-album-guide"');
     const publicPreviewIndex = markup.indexOf('class="content-band home-public-preview"');
@@ -90,17 +92,18 @@ test('home keeps only the remaining public explanation sections before the priva
     const logReferenceIndex = markup.indexOf('data-reference-style="findpenguins"');
     const albumReferenceIndex = markup.indexOf('data-reference-style="journi"');
     const experienceIndex = markup.indexOf('class="home-experience-commerce"');
-    const easolIndex = markup.indexOf('class="home-easol-intro"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
+    assert.ok(easolIndex > -1);
+    assert.ok(heroIndex > easolIndex);
     assert.ok(exploreIndex > -1);
+    assert.ok(exploreIndex > heroIndex);
     assert.ok(albumIndex > exploreIndex);
     assert.ok(publicPreviewIndex > albumIndex);
     assert.ok(routeReferenceIndex > publicPreviewIndex);
     assert.ok(logReferenceIndex > routeReferenceIndex);
     assert.ok(albumReferenceIndex > logReferenceIndex);
     assert.ok(experienceIndex > albumReferenceIndex);
-    assert.ok(easolIndex > experienceIndex);
     assert.ok(workspaceIndex > experienceIndex);
     assert.match(markup, /images\/home-explore-guide\.png/);
     assert.match(markup, /images\/home-map-memory-board\.png/);
@@ -139,10 +142,11 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     assert.match(markup, /class="easol-intro-copy"[\s\S]*Travelgram is the map-first archive/);
     assert.match(markup, /class="easol-intro-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
     assert.match(markup, /class="easol-intro-bottom"[\s\S]*class="easol-intro-bottom-art"[\s\S]*class="easol-intro-bottom-copy"/);
-    assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*#050505;[^}]*color:\s*#f6f1e8;/s);
+    assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
+    assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*sticky;[^}]*top:\s*64px;[^}]*background:\s*var\(--bg\);/s);
     assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);/s);
     assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
-    assert.match(styles, /\.easol-intro-bottom\s*\{[^}]*background:\s*#f6f1e8;/s);
+    assert.match(styles, /\.easol-intro-bottom\s*\{[^}]*background:\s*var\(--bg\);/s);
 });
 
 test('home private workspace is only visible after login', () => {
