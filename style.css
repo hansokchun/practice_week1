@@ -455,6 +455,7 @@ body.is-logged-in .home-explore-guide,
 body.is-logged-in .home-album-guide,
 body.is-logged-in .home-reference-section,
 body.is-logged-in .home-experience-commerce,
+body.is-logged-in .home-easol-intro,
 body.is-logged-in .home-east-asia-demo,
 body.is-logged-in .home-story-band,
 body.is-logged-in .white-band {
@@ -1377,6 +1378,197 @@ body.is-logged-in .white-band {
     font-size: clamp(24px, 3vw, 38px);
     font-weight: 500;
     line-height: 1.05;
+}
+
+.home-easol-intro {
+    width: min(var(--container), calc(100% - 48px));
+    margin: 0 auto 72px;
+    background: #050505;
+    color: #f6f1e8;
+}
+
+.easol-intro-top {
+    padding: 20px 16px 0;
+}
+
+.easol-intro-nav {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.easol-intro-brand {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.easol-intro-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 18px;
+    color: rgba(246, 241, 232, 0.84);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.easol-intro-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 156px;
+    gap: 16px;
+    align-items: start;
+}
+
+.easol-intro-headline-wrap {
+    min-width: 0;
+}
+
+.easol-intro-headline {
+    margin: 0;
+    color: #f6f1e8;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: clamp(88px, 16vw, 228px);
+    font-weight: 900;
+    line-height: 0.86;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.easol-intro-headline span {
+    display: block;
+}
+
+.easol-intro-headline span:last-child {
+    text-align: right;
+    padding-right: clamp(0px, 3vw, 24px);
+}
+
+.easol-intro-categories {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 32px;
+    overflow: hidden;
+    padding: 16px 0 22px;
+    color: rgba(246, 241, 232, 0.82);
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.easol-intro-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.04fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.easol-intro-left {
+    display: grid;
+    gap: 18px;
+}
+
+.easol-intro-media {
+    overflow: hidden;
+    background: #111111;
+}
+
+.easol-intro-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.easol-intro-media-top {
+    width: 156px;
+    aspect-ratio: 0.95;
+    justify-self: end;
+}
+
+.easol-intro-media-wide {
+    aspect-ratio: 2.88;
+}
+
+.easol-intro-media-large {
+    aspect-ratio: 1.2;
+    align-self: end;
+}
+
+.easol-intro-copy {
+    display: grid;
+    gap: 18px;
+    padding: 4px 0 18px;
+}
+
+.easol-intro-copy p {
+    max-width: 390px;
+    margin: 0;
+    color: rgba(246, 241, 232, 0.9);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.easol-intro-proof {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    color: rgba(246, 241, 232, 0.9);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.easol-intro-bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(280px, 1.08fr);
+    align-items: end;
+    gap: 0;
+    background: #f6f1e8;
+}
+
+.easol-intro-bottom-art {
+    min-height: 332px;
+    overflow: hidden;
+}
+
+.easol-intro-bottom-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left center;
+}
+
+.easol-intro-bottom-copy {
+    display: grid;
+    gap: 18px;
+    align-content: center;
+    min-height: 332px;
+    padding: 40px 20px 28px 0;
+    color: #050505;
+}
+
+.easol-intro-bottom-kicker {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.easol-intro-bottom-copy h3 {
+    margin: 0;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: clamp(84px, 11vw, 188px);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: 0;
+    text-transform: uppercase;
 }
 
 .home-east-asia-demo {

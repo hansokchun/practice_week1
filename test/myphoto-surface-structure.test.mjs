@@ -90,6 +90,7 @@ test('home keeps only the remaining public explanation sections before the priva
     const logReferenceIndex = markup.indexOf('data-reference-style="findpenguins"');
     const albumReferenceIndex = markup.indexOf('data-reference-style="journi"');
     const experienceIndex = markup.indexOf('class="home-experience-commerce"');
+    const easolIndex = markup.indexOf('class="home-easol-intro"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(exploreIndex > -1);
@@ -99,6 +100,7 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.ok(logReferenceIndex > routeReferenceIndex);
     assert.ok(albumReferenceIndex > logReferenceIndex);
     assert.ok(experienceIndex > albumReferenceIndex);
+    assert.ok(easolIndex > experienceIndex);
     assert.ok(workspaceIndex > experienceIndex);
     assert.match(markup, /images\/home-explore-guide\.png/);
     assert.match(markup, /images\/home-map-memory-board\.png/);
@@ -124,6 +126,25 @@ test('home adds an Easol-inspired dark landing section for Travelgram', () => {
     assert.match(styles, /\.experience-product-strip\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
+test('home adds a lapa-style intro section with oversized headline, category rail, and staggered image blocks', () => {
+    const markup = html();
+    const styles = css();
+
+    assert.match(markup, /class="home-easol-intro"[\s\S]*class="easol-intro-top"/);
+    assert.match(markup, /class="easol-intro-brand"[\s\S]*Travelgram/);
+    assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
+    assert.match(markup, /class="easol-intro-categories"[\s\S]*FESTIVALS[\s\S]*FOOD \+ DRINK[\s\S]*ADVENTURE/);
+    assert.match(markup, /class="easol-intro-media easol-intro-media-top"[\s\S]*images\/main_bg4\.jpg/);
+    assert.match(markup, /class="easol-intro-media easol-intro-media-wide"[\s\S]*images\/main_bg2\.jpg/);
+    assert.match(markup, /class="easol-intro-copy"[\s\S]*Travelgram is the map-first archive/);
+    assert.match(markup, /class="easol-intro-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
+    assert.match(markup, /class="easol-intro-bottom"[\s\S]*class="easol-intro-bottom-art"[\s\S]*class="easol-intro-bottom-copy"/);
+    assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*#050505;[^}]*color:\s*#f6f1e8;/s);
+    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);/s);
+    assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
+    assert.match(styles, /\.easol-intro-bottom\s*\{[^}]*background:\s*#f6f1e8;/s);
+});
+
 test('home private workspace is only visible after login', () => {
     const markup = html();
     const styles = css();
@@ -140,7 +161,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-public-preview,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.home-album-guide,[\s\S]*body\.is-logged-in\s+\.home-reference-section,[\s\S]*body\.is-logged-in\s+\.home-experience-commerce[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-public-preview,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.home-album-guide,[\s\S]*body\.is-logged-in\s+\.home-reference-section,[\s\S]*body\.is-logged-in\s+\.home-experience-commerce,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {
