@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ikkyee | Personal Travel Map Archive</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="icon" href="images/logo.png" type="image/png">
     <link rel="stylesheet" href="style.css">
@@ -14,24 +14,26 @@
 
 <body class="is-logged-out" data-page="home">
     <header class="site-header">
-        <a class="brand" href="#/" aria-label="Ikkyee home">
-            <img src="images/logo.png" alt="">
-            <span>Ikkyee</span>
-        </a>
-        <nav class="top-nav" aria-label="Main navigation">
-            <a href="#/" data-route="home" class="active">Home</a>
-            <a href="#/explore" data-route="explore">Explore</a>
-        </nav>
-        <div class="account-area">
-            <span id="account-guest-label" class="account-label">Guest</span>
-            <button id="btn-open-profile" class="account-profile-trigger" type="button" hidden>
-                <span id="account-avatar" class="avatar account-avatar">
-                    <img id="account-avatar-image" alt="" hidden>
-                    <span id="account-avatar-fallback">GU</span>
-                </span>
-                <span id="account-label" class="account-profile-name">Guest</span>
-            </button>
-            <button id="btn-open-auth" class="nav-action" type="button">Login</button>
+        <div class="site-header-inner">
+            <a class="brand" href="#/" aria-label="Ikkyee home">
+                <img src="images/logo.png" alt="">
+                <span>Ikkyee</span>
+            </a>
+            <nav class="top-nav" aria-label="Main navigation">
+                <a href="#/" data-route="home" class="active">Home</a>
+                <a href="#/explore" data-route="explore">Explore</a>
+            </nav>
+            <div class="account-area">
+                <span id="account-guest-label" class="account-label">Guest</span>
+                <button id="btn-open-profile" class="account-profile-trigger" type="button" hidden>
+                    <span id="account-avatar" class="avatar account-avatar">
+                        <img id="account-avatar-image" alt="" hidden>
+                        <span id="account-avatar-fallback">GU</span>
+                    </span>
+                    <span id="account-label" class="account-profile-name">Guest</span>
+                </button>
+                <button id="btn-open-auth" class="nav-action" type="button">Login</button>
+            </div>
         </div>
     </header>
 

@@ -133,6 +133,7 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     const markup = html();
     const styles = css();
 
+    assert.match(markup, /class="site-header-inner"/);
     assert.match(markup, /class="home-easol-intro"[\s\S]*class="easol-intro-top"/);
     assert.match(markup, /class="easol-intro-brand"[\s\S]*Travelgram/);
     assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
@@ -143,10 +144,13 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     assert.match(markup, /class="easol-intro-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
     assert.match(markup, /class="easol-intro-bottom"[\s\S]*class="easol-intro-bottom-art"[\s\S]*class="easol-intro-bottom-copy"/);
     assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
-    assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*sticky;[^}]*top:\s*64px;[^}]*background:\s*var\(--bg\);/s);
-    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);/s);
+    assert.match(styles, /\.site-header-inner\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);/s);
+    assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*sticky;[^}]*top:\s*64px;[^}]*width:\s*100%;[^}]*background:\s*var\(--bg\);/s);
+    assert.match(styles, /\.easol-intro-links\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*white-space:\s*nowrap;/s);
+    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*400;/s);
     assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
     assert.match(styles, /\.easol-intro-bottom\s*\{[^}]*background:\s*var\(--bg\);/s);
+    assert.match(styles, /\.easol-intro-bottom-copy h3\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-weight:\s*400;/s);
 });
 
 test('home private workspace is only visible after login', () => {
