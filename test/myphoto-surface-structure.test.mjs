@@ -135,8 +135,9 @@ test('home adds a lapa-style intro section with oversized headline, category rai
 
     assert.match(markup, /class="site-header-inner"/);
     assert.match(markup, /class="home-easol-intro"[\s\S]*class="easol-intro-top"/);
-    assert.match(markup, /class="easol-intro-brand"[\s\S]*Travelgram/);
+    assert.match(markup, /class="easol-intro-brand"[\s\S]*images\/logo\.png[\s\S]*Ikkyee/);
     assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
+    assert.match(markup, /class="home-easol-intro home-easol-intro-translated"[\s\S]*더 많은[\s\S]*당신의 방식대로/);
     assert.match(markup, /class="easol-intro-categories"[\s\S]*FESTIVALS[\s\S]*FOOD \+ DRINK[\s\S]*ADVENTURE/);
     assert.doesNotMatch(markup, /class="easol-intro-media easol-intro-media-top"/);
     assert.match(markup, /class="easol-intro-media easol-intro-media-wide"[\s\S]*images\/main_bg2\.jpg/);
@@ -147,7 +148,8 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     assert.doesNotMatch(markup, /INTRODUCING/);
     assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
     assert.match(styles, /\.site-header-inner\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);/s);
-    assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*fixed;[^}]*top:\s*64px;[^}]*left:\s*50%;[^}]*transform:\s*translateX\(-50%\);[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*background:\s*var\(--bg\);/s);
+    assert.match(styles, /\.easol-intro-nav\.is-fixed\s*\{[^}]*position:\s*fixed;[^}]*top:\s*64px;[^}]*left:\s*50%;[^}]*transform:\s*translateX\(-50%\);[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*background:\s*var\(--bg\);/s);
+    assert.match(styles, /\.home-easol-intro-translated\s*\{[^}]*margin-top:\s*48px;/s);
     assert.match(styles, /\.easol-intro-links\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*white-space:\s*nowrap;/s);
     assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*500;/s);
     assert.match(styles, /\.easol-intro-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s);

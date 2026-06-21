@@ -1398,28 +1398,43 @@ body.is-logged-in .white-band {
 }
 
 .easol-intro-nav {
-    position: fixed;
-    top: 64px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 8;
     display: flex;
     align-items: start;
     justify-content: space-between;
     gap: 20px;
-    width: min(var(--container), calc(100% - 48px));
+    width: 100%;
     margin-bottom: 12px;
     padding: 10px 0 12px;
     background: var(--bg);
 }
 
+.easol-intro-nav.is-fixed {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 8;
+    width: min(var(--container), calc(100% - 48px));
+    background: var(--bg);
+}
+
 .easol-intro-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     color: #050505;
     font-size: 24px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0;
     text-transform: uppercase;
+}
+
+.easol-intro-brand img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex: 0 0 auto;
 }
 
 .easol-intro-links {
@@ -1483,6 +1498,17 @@ body.is-logged-in .white-band {
     grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.04fr);
     gap: 24px;
     align-items: start;
+}
+
+.home-easol-intro-translated {
+    margin-top: 48px;
+}
+
+.easol-intro-headline-korean {
+    font-size: clamp(72px, 12vw, 172px);
+    line-height: 0.98;
+    letter-spacing: 0;
+    word-break: keep-all;
 }
 
 .easol-intro-left {
@@ -5555,6 +5581,10 @@ body.is-logged-in .white-band {
         top: 0;
         left: 0;
         transform: none;
+        width: 100%;
+    }
+
+    .easol-intro-nav.is-fixed {
         width: 100%;
     }
 
