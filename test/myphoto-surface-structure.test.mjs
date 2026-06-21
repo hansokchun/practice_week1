@@ -142,15 +142,17 @@ test('home adds a lapa-style intro section with oversized headline, category rai
     assert.match(markup, /class="easol-intro-media easol-intro-media-wide"[\s\S]*images\/main_bg2\.jpg/);
     assert.match(markup, /class="easol-intro-copy"[\s\S]*Travelgram is the map-first archive/);
     assert.match(markup, /class="easol-intro-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
-    assert.match(markup, /class="easol-intro-bottom"[\s\S]*class="easol-intro-bottom-art"[\s\S]*class="easol-intro-bottom-copy"/);
+    assert.doesNotMatch(markup, /class="easol-intro-bottom"/);
+    assert.doesNotMatch(markup, /THE GAME IS CHANGING/);
+    assert.doesNotMatch(markup, /INTRODUCING/);
     assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
     assert.match(styles, /\.site-header-inner\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);/s);
     assert.match(styles, /\.easol-intro-nav\s*\{[^}]*position:\s*sticky;[^}]*top:\s*64px;[^}]*width:\s*100%;[^}]*background:\s*var\(--bg\);/s);
     assert.match(styles, /\.easol-intro-links\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*white-space:\s*nowrap;/s);
-    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*400;/s);
+    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*500;/s);
+    assert.match(styles, /\.easol-intro-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*176px;[^}]*align-items:\s*end;/s);
+    assert.match(styles, /\.easol-intro-media-top\s*\{[^}]*width:\s*176px;[^}]*aspect-ratio:\s*0\.72;[^}]*margin-top:\s*18px;/s);
     assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
-    assert.match(styles, /\.easol-intro-bottom\s*\{[^}]*background:\s*var\(--bg\);/s);
-    assert.match(styles, /\.easol-intro-bottom-copy h3\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-weight:\s*400;/s);
 });
 
 test('home private workspace is only visible after login', () => {

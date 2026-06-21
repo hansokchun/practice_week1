@@ -1434,9 +1434,9 @@ body.is-logged-in .white-band {
 
 .easol-intro-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 156px;
+    grid-template-columns: minmax(0, 1fr) 176px;
     gap: 16px;
-    align-items: start;
+    align-items: end;
 }
 
 .easol-intro-headline-wrap {
@@ -1448,7 +1448,7 @@ body.is-logged-in .white-band {
     color: #050505;
     font-family: 'Oswald', 'Arial Narrow', sans-serif;
     font-size: clamp(88px, 16vw, 228px);
-    font-weight: 400;
+    font-weight: 500;
     line-height: 0.88;
     letter-spacing: 0.01em;
     text-transform: uppercase;
@@ -1500,9 +1500,11 @@ body.is-logged-in .white-band {
 }
 
 .easol-intro-media-top {
-    width: 156px;
-    aspect-ratio: 0.95;
+    width: 176px;
+    aspect-ratio: 0.72;
     justify-self: end;
+    align-self: end;
+    margin-top: 18px;
 }
 
 .easol-intro-media-wide {
@@ -1535,52 +1537,6 @@ body.is-logged-in .white-band {
     color: rgba(5, 5, 5, 0.88);
     font-size: 11px;
     font-weight: 700;
-    text-transform: uppercase;
-}
-
-.easol-intro-bottom {
-    display: grid;
-    grid-template-columns: minmax(0, 0.92fr) minmax(280px, 1.08fr);
-    align-items: end;
-    gap: 0;
-    background: var(--bg);
-}
-
-.easol-intro-bottom-art {
-    min-height: 332px;
-    overflow: hidden;
-}
-
-.easol-intro-bottom-art img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: left center;
-}
-
-.easol-intro-bottom-copy {
-    display: grid;
-    gap: 18px;
-    align-content: center;
-    min-height: 332px;
-    padding: 40px 20px 28px 0;
-    color: #050505;
-}
-
-.easol-intro-bottom-kicker {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.easol-intro-bottom-copy h3 {
-    margin: 0;
-    font-family: 'Oswald', 'Arial Narrow', sans-serif;
-    font-size: clamp(84px, 11vw, 188px);
-    font-weight: 400;
-    line-height: 0.9;
-    letter-spacing: 0.01em;
     text-transform: uppercase;
 }
 
