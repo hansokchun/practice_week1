@@ -1383,8 +1383,8 @@ body.is-logged-in .white-band {
 .home-easol-intro {
     width: min(var(--container), calc(100% - 48px));
     margin: 0 auto 72px;
-    background: #050505;
-    color: #f6f1e8;
+    background: #ffffff;
+    color: #050505;
 }
 
 .easol-intro-top {
@@ -1400,7 +1400,7 @@ body.is-logged-in .white-band {
 }
 
 .easol-intro-brand {
-    color: #ffffff;
+    color: #050505;
     font-size: 24px;
     font-weight: 900;
     line-height: 1;
@@ -1413,7 +1413,7 @@ body.is-logged-in .white-band {
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 18px;
-    color: rgba(246, 241, 232, 0.84);
+    color: rgba(5, 5, 5, 0.78);
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
@@ -1432,7 +1432,7 @@ body.is-logged-in .white-band {
 
 .easol-intro-headline {
     margin: 0;
-    color: #f6f1e8;
+    color: #050505;
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
     font-size: clamp(88px, 16vw, 228px);
     font-weight: 900;
@@ -1456,7 +1456,7 @@ body.is-logged-in .white-band {
     gap: 32px;
     overflow: hidden;
     padding: 16px 0 22px;
-    color: rgba(246, 241, 232, 0.82);
+    color: rgba(5, 5, 5, 0.78);
     font-size: 14px;
     font-weight: 500;
     text-transform: uppercase;
@@ -1510,7 +1510,7 @@ body.is-logged-in .white-band {
 .easol-intro-copy p {
     max-width: 390px;
     margin: 0;
-    color: rgba(246, 241, 232, 0.9);
+    color: rgba(5, 5, 5, 0.88);
     font-size: 16px;
     line-height: 1.55;
 }
@@ -1519,7 +1519,7 @@ body.is-logged-in .white-band {
     display: flex;
     flex-wrap: wrap;
     gap: 18px;
-    color: rgba(246, 241, 232, 0.9);
+    color: rgba(5, 5, 5, 0.88);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
