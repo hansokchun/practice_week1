@@ -3387,8 +3387,9 @@ body.is-logged-in .white-band {
 
 .explore-pin-preview.is-expanded {
     width: min(760px, calc(100% - 48px));
-    max-height: calc(100vh - 128px);
+    max-height: min(calc(100svh - 128px), 720px);
     overflow: auto;
+    overscroll-behavior: contain;
     box-shadow: 0 30px 90px rgba(26, 77, 78, 0.34);
 }
 
@@ -3417,7 +3418,7 @@ body.is-logged-in .white-band {
 }
 
 .explore-pin-preview.is-expanded .pin-preview-photo-button img {
-    max-height: min(68vh, 620px);
+    max-height: min(52svh, 460px);
     aspect-ratio: auto;
     object-fit: contain;
     background: #0d1f1f;

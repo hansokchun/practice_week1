@@ -607,7 +607,7 @@ function updateExplorePhotoPreview(photo) {
     if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
     if (authorNameNode) authorNameNode.textContent = authorName;
     if (authorTimeNode) authorTimeNode.textContent = `사진 기록 · ${uploadTimeLabel}`;
-    updatePhotoDetailModal(photo);
+    updatePhotoDetailModal(photo, { context: 'explore' });
 }
 
 function setExploreDiscoverySelection(photoId) {
@@ -700,7 +700,7 @@ async function saveExplorePreviewEdits(event) {
     updateExplorePhotoPreview(updated);
     document.body.classList.add('explore-pin-selected');
     $('#explore-pin-preview')?.removeAttribute('hidden');
-    updatePhotoDetailModal(updated);
+    updatePhotoDetailModal(updated, { context: 'explore' });
     showToast('사진 정보를 저장했습니다.');
 }
 
@@ -1057,6 +1057,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
     const visibilityValue = $('#photo-detail-visibility');
+    const likePanel = modal?.querySelector('.photo-detail-like-panel');
     const likeButton = $('#photo-detail-like');
     const likeCount = $('#photo-detail-like-count');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
@@ -1064,6 +1065,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const description = String(photo.description || '').trim();
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
+    const canLike = context === 'explore';
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
@@ -1093,8 +1095,9 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         }
     }
     if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
+    if (likePanel) likePanel.hidden = !canLike;
     if (likeButton) {
-        likeButton.disabled = !photo.id || !state.currentUser;
+        likeButton.disabled = !canLike || !photo.id || !state.currentUser;
         likeButton.classList.toggle('is-liked', isLiked);
         likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
         likeButton.dataset.photoId = photo.id || '';
@@ -1116,6 +1119,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
 }
 
 async function toggleSelectedPhotoLike(eventOrPhotoId) {
+    if ($('#photo-detail-modal')?.dataset.photoDetailContext !== 'explore') return;
     const photoId = typeof eventOrPhotoId === 'string'
         ? eventOrPhotoId
         : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
@@ -1160,7 +1164,7 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
     const updatedPhoto = state.savedPhotos.find((candidate) => String(candidate.id) === String(photo.id));
     renderLikedPhotoSurfaces();
     renderPublicSurfaces();
-    updatePhotoDetailModal(updatedPhoto || photo);
+    updatePhotoDetailModal(updatedPhoto || photo, { context: 'explore' });
     showToast(nextLiked ? '좋아요에 추가했습니다.' : '좋아요를 취소했습니다.');
 }
 
