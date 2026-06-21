@@ -58,6 +58,7 @@ test('photo detail click handling separates album photos from individual photos'
     const source = readFileSync('js/app.js', 'utf8');
 
     assert.match(source, /const isTripPhoto = Boolean\(photoCard\.closest\('#public-trip-photo-grid'\)\)/);
-    assert.match(source, /context: isTripPhoto \? 'album' : 'photo'/);
+    assert.match(source, /const isLikedPhoto = Boolean\(photoCard\.closest\('#liked-photo-grid, #liked-photo-full-grid'\)\)/);
+    assert.match(source, /const context = isTripPhoto \? 'album' : \(isLikedPhoto \? 'liked' : 'photo'\)/);
     assert.match(source, /document\.body\.dataset\.page === 'trip' \? 'album' : 'photo'/);
 });

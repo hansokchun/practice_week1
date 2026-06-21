@@ -557,6 +557,9 @@ function updateExplorePhotoPreview(photo) {
     const authorNameNode = preview.querySelector('.pin-author strong');
     const authorTimeNode = preview.querySelector('.pin-author-time');
     const ownerActions = preview.querySelector('.pin-preview-owner-actions');
+    const likePanel = preview.querySelector('.pin-preview-like-panel');
+    const likeButton = $('#pin-preview-like');
+    const likeCount = $('#pin-preview-like-count');
     const descriptionInput = $('#pin-preview-description-input');
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
@@ -580,6 +583,7 @@ function updateExplorePhotoPreview(photo) {
     const visibilityMeta = isOwnPhoto
         ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span> ${visibilityLabel}</span>`
         : '';
+    const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
         image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
@@ -607,6 +611,15 @@ function updateExplorePhotoPreview(photo) {
     if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
     if (authorNameNode) authorNameNode.textContent = authorName;
     if (authorTimeNode) authorTimeNode.textContent = `사진 기록 · ${uploadTimeLabel}`;
+    if (likePanel) likePanel.hidden = false;
+    if (likeButton) {
+        likeButton.disabled = !photo.id || !state.currentUser;
+        likeButton.classList.toggle('is-liked', isLiked);
+        likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
+        likeButton.dataset.photoId = photo.id || '';
+        likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
+    }
+    if (likeCount) likeCount.textContent = `좋아요 ${Number(photo.liked || 0)}개`;
     updatePhotoDetailModal(photo, { context: 'explore' });
 }
 
@@ -712,6 +725,7 @@ function updateExploreAlbumPreview(album) {
     const meta = preview.querySelector('.pin-preview-meta');
     const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
+    const likePanel = preview.querySelector('.pin-preview-like-panel');
     if (image) {
         image.src = album.cover_url || 'images/main_bg2.jpg';
         image.alt = album.title || 'Public album';
@@ -732,6 +746,7 @@ function updateExploreAlbumPreview(album) {
         profileButton.dataset.publicAlbumId = album.id || '';
         profileButton.dataset.publicOwnerId = album.owner_id || '';
     }
+    if (likePanel) likePanel.hidden = true;
 }
 
 function getExploreCurrentBounds() {
@@ -1065,7 +1080,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const description = String(photo.description || '').trim();
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
-    const canLike = context === 'explore';
+    const canLike = ['explore', 'liked'].includes(context);
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
@@ -1101,8 +1116,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         likeButton.classList.toggle('is-liked', isLiked);
         likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
         likeButton.dataset.photoId = photo.id || '';
-        const label = likeButton.querySelector('[data-like-label]');
-        if (label) label.textContent = isLiked ? '좋아요 취소' : '좋아요';
+        likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
     }
     if (likeCount) likeCount.textContent = `좋아요 ${likeTotal}개`;
     if (editButton) editButton.hidden = !canEdit;
@@ -1119,7 +1133,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
 }
 
 async function toggleSelectedPhotoLike(eventOrPhotoId) {
-    if ($('#photo-detail-modal')?.dataset.photoDetailContext !== 'explore') return;
     const photoId = typeof eventOrPhotoId === 'string'
         ? eventOrPhotoId
         : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
@@ -1128,12 +1141,12 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
         showToast('좋아요를 누르려면 먼저 로그인해주세요.');
         return;
     }
-    const photo = state.savedPhotos.find((candidate) => String(candidate.id) === String(photoId));
+    const photo = getAllDisplayPhotos().find((candidate) => String(candidate.id) === String(photoId));
     if (!photo?.id) return;
 
     const likedIds = new Set(state.likedPhotoIds.map(String));
     const nextLiked = !likedIds.has(String(photo.id));
-    const likeButton = $('#photo-detail-like');
+    const likeButton = eventOrPhotoId?.currentTarget || $('#photo-detail-like');
     if (likeButton) likeButton.disabled = true;
 
     const likeRowResult = nextLiked
@@ -1162,9 +1175,13 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
             : savedPhoto
     ));
     const updatedPhoto = state.savedPhotos.find((candidate) => String(candidate.id) === String(photo.id));
+    const detailContext = $('#photo-detail-modal')?.dataset.photoDetailContext || 'photo';
     renderLikedPhotoSurfaces();
     renderPublicSurfaces();
-    updatePhotoDetailModal(updatedPhoto || photo, { context: 'explore' });
+    if (state.selectedPhotoId && String(state.selectedPhotoId) === String(photo.id)) {
+        updateExplorePhotoPreview(updatedPhoto || photo);
+        updatePhotoDetailModal(updatedPhoto || photo, { context: detailContext });
+    }
     showToast(nextLiked ? '좋아요에 추가했습니다.' : '좋아요를 취소했습니다.');
 }
 
@@ -2436,7 +2453,9 @@ function renderLikedPhotoSurfaces() {
             ? likedPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
-                <span class="material-symbols-outlined liked-photo-badge">favorite</span>
+                <button class="photo-like-button liked-photo-like-button is-liked" data-toggle-photo-like data-like-surface="home" data-photo-id="${escapeHtml(photo.id)}" type="button" aria-label="좋아요 취소" aria-pressed="true">
+                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                </button>
             </article>
         `).join('')
             : emptyMarkup;
@@ -2462,6 +2481,9 @@ function renderLikedPhotoSurfaces() {
         return `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                <button class="photo-like-button liked-photo-like-button is-liked" data-toggle-photo-like data-like-surface="home" data-photo-id="${escapeHtml(photo.id)}" type="button" aria-label="좋아요 취소" aria-pressed="true">
+                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                </button>
                 <div>
                     <strong>${escapeHtml(getPhotoFallbackLabel(photo))}</strong>
                     <span>${escapeHtml(ownerName)} · 좋아요 ${Number(photo.liked || 0)}개</span>
@@ -3977,6 +3999,8 @@ function bindEvents() {
 
         const photoLikeButton = event.target.closest('[data-toggle-photo-like]');
         if (photoLikeButton) {
+            event.preventDefault();
+            event.stopPropagation();
             toggleSelectedPhotoLike({ currentTarget: photoLikeButton });
             return;
         }
@@ -4207,10 +4231,12 @@ function bindEvents() {
         const photoCard = event.target.closest('[data-open-photo-detail][data-photo-id]');
         if (photoCard) {
             const isTripPhoto = Boolean(photoCard.closest('#public-trip-photo-grid'));
+            const isLikedPhoto = Boolean(photoCard.closest('#liked-photo-grid, #liked-photo-full-grid'));
             const photo = isTripPhoto
                 ? state.albumDetailPhotos.find((candidate) => getTripReviewPhotoId(candidate) === String(photoCard.dataset.photoId))
                 : getAllDisplayPhotos().find((candidate) => candidate.id === photoCard.dataset.photoId);
-            updatePhotoDetailModal(photo || getDefaultDetailPhoto(), { context: isTripPhoto ? 'album' : 'photo' });
+            const context = isTripPhoto ? 'album' : (isLikedPhoto ? 'liked' : 'photo');
+            updatePhotoDetailModal(photo || getDefaultDetailPhoto(), { context });
             openModal('#photo-detail-modal');
             return;
         }

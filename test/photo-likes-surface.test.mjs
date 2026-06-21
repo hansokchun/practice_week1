@@ -11,6 +11,19 @@ test('photo detail exposes like action and total like count', () => {
     assert.match(detail, /id="photo-detail-like"/);
     assert.match(detail, /data-toggle-photo-like/);
     assert.match(detail, /id="photo-detail-like-count"/);
+    assert.doesNotMatch(detail, /data-like-label/);
+});
+
+test('Explore photo preview exposes a heart-only like control', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+
+    assert.match(preview, /id="pin-preview-like"/);
+    assert.match(preview, /data-toggle-photo-like/);
+    assert.match(preview, /aria-label="좋아요"/);
+    assert.doesNotMatch(preview, /data-like-label/);
 });
 
 test('home has a liked photos section with an all-liked route action', () => {
@@ -34,4 +47,6 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     assert.match(source, /likedPhotoIds:\s*\[\]/);
     assert.match(source, /function renderLikedPhotoSurfaces/);
     assert.match(source, /async function toggleSelectedPhotoLike/);
+    assert.match(source, /data-like-surface="home"/);
+    assert.doesNotMatch(source, /dataset\.photoDetailContext !== 'explore'/);
 });

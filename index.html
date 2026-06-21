@@ -226,6 +226,60 @@
                 </div>
             </section>
 
+            <section class="home-experience-commerce" aria-labelledby="home-experience-title">
+                <div class="experience-kicker">
+                    <span>Travelgram OS</span>
+                    <span>Photo Map</span>
+                    <span>Private First</span>
+                </div>
+                <div class="experience-hero">
+                    <p class="eyebrow">Built For Personal Travel Archives</p>
+                    <h2 id="home-experience-title">여행 사진을 올리고, 지도에 남기고, 공개할 순간만 고르세요</h2>
+                    <p>
+                        Ikkyee는 사진 업로드, 위치 확인, 앨범 정리, 공개 지도 탐색을 한 흐름 안에 묶습니다.
+                        흩어진 여행 사진을 나만의 기록으로 보관하고, 원할 때만 다른 사람에게 열어둘 수 있습니다.
+                    </p>
+                    <div class="experience-actions">
+                        <button class="btn-primary" data-route="upload" type="button">사진으로 시작하기</button>
+                        <button class="btn-secondary" data-route="explore" type="button">공개 지도 보기</button>
+                    </div>
+                </div>
+                <div class="experience-product-strip" aria-label="Ikkyee 주요 기능">
+                    <article>
+                        <img src="images/home-explore-guide.png" alt="">
+                        <span>01</span>
+                        <strong>지도 위 공개 사진</strong>
+                        <p>위치가 있는 공개 사진은 Explore 핀으로 남고, 좋아요로 다시 모아볼 수 있습니다.</p>
+                    </article>
+                    <article>
+                        <img src="images/home-map-memory-board.png" alt="">
+                        <span>02</span>
+                        <strong>날짜별 앨범 정리</strong>
+                        <p>촬영일과 위치를 기준으로 여행의 순서가 살아있는 앨범을 만듭니다.</p>
+                    </article>
+                    <article>
+                        <img src="images/main_bg2.jpg" alt="">
+                        <span>03</span>
+                        <strong>비공개 우선 보관</strong>
+                        <p>사진과 앨범은 기본 비공개로 저장되고, 공개 여부는 나중에 직접 선택합니다.</p>
+                    </article>
+                </div>
+                <div class="experience-proof-grid" aria-label="Ikkyee가 해결하는 흐름">
+                    <div>
+                        <small>The problem</small>
+                        <strong>사진은 많은데 여행의 맥락은 사라집니다</strong>
+                    </div>
+                    <div>
+                        <small>The solution</small>
+                        <strong>사진, 날짜, 위치, 공개 범위를 하나의 기록 흐름으로 묶습니다</strong>
+                    </div>
+                    <div>
+                        <small>Result</small>
+                        <strong>보관은 조용하게, 공유는 선택적으로, 탐색은 지도 위에서</strong>
+                    </div>
+                </div>
+            </section>
+
             <section class="home-workspace page-container" aria-labelledby="myphoto-title">
                 <div class="page-intro">
                     <p class="eyebrow">Home Archive</p>
@@ -481,6 +535,12 @@
                         <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span> 2025-08-03</span>
                         <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> 35.6997, 139.7656</span>
                     </div>
+                    <div class="pin-preview-like-panel">
+                        <button id="pin-preview-like" class="photo-like-button" data-toggle-photo-like data-like-surface="explore" type="button" aria-label="좋아요" aria-pressed="false">
+                            <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                        </button>
+                        <span id="pin-preview-like-count">좋아요 0개</span>
+                    </div>
                     <div class="pin-preview-owner-actions" hidden>
                         <button id="btn-edit-pin-preview" class="btn-secondary" type="button">수정하기</button>
                     </div>
@@ -639,9 +699,8 @@
                 </div>
                 <div id="photo-detail-visibility" class="photo-detail-visibility">비공개</div>
                 <div class="photo-detail-like-panel">
-                    <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-pressed="false">
-                        <span class="material-symbols-outlined">favorite</span>
-                        <span data-like-label>좋아요</span>
+                    <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
+                        <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
                     </button>
                     <span id="photo-detail-like-count">좋아요 0개</span>
                 </div>
