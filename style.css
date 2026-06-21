@@ -1504,11 +1504,41 @@ body.is-logged-in .white-band {
     margin-top: 48px;
 }
 
+.home-easol-intro-translated .easol-intro-top {
+    padding-top: 52px;
+}
+
+.home-easol-intro-translated .easol-intro-nav {
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+}
+
+.home-easol-intro-translated .easol-intro-links {
+    gap: 22px;
+    color: rgba(5, 5, 5, 0.84);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .easol-intro-headline-korean {
     font-size: clamp(72px, 12vw, 172px);
+    font-weight: 560;
     line-height: 0.98;
     letter-spacing: 0;
     word-break: keep-all;
+    text-wrap: balance;
+}
+
+.home-easol-intro-translated .easol-intro-headline span:first-child {
+    margin-bottom: 6px;
+}
+
+.home-easol-intro-translated .easol-intro-headline span:nth-child(2) {
+    margin-left: clamp(4px, 1vw, 18px);
+}
+
+.home-easol-intro-translated .easol-intro-headline span:last-child {
+    padding-right: clamp(8px, 4vw, 36px);
 }
 
 .easol-intro-left {
@@ -1536,6 +1566,31 @@ body.is-logged-in .white-band {
     align-self: end;
 }
 
+.home-easol-intro-translated .easol-intro-categories {
+    gap: 34px;
+    padding: 18px 0 26px;
+    color: rgba(5, 5, 5, 0.84);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.home-easol-intro-translated .easol-intro-grid {
+    grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1fr);
+    gap: 28px;
+}
+
+.home-easol-intro-translated .easol-intro-left {
+    gap: 22px;
+}
+
+.home-easol-intro-translated .easol-intro-media-wide {
+    aspect-ratio: 2.7;
+}
+
+.home-easol-intro-translated .easol-intro-media-large {
+    aspect-ratio: 1.08;
+}
+
 .easol-intro-copy {
     display: grid;
     gap: 18px;
@@ -1558,6 +1613,25 @@ body.is-logged-in .white-band {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.home-easol-intro-translated .easol-intro-copy {
+    gap: 20px;
+    padding: 10px 0 12px;
+}
+
+.home-easol-intro-translated .easol-intro-copy p {
+    max-width: 440px;
+    color: rgba(5, 5, 5, 0.92);
+    font-size: 18px;
+    line-height: 1.72;
+}
+
+.home-easol-intro-translated .easol-intro-proof {
+    gap: 20px 22px;
+    color: rgba(5, 5, 5, 0.82);
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .home-east-asia-demo {
