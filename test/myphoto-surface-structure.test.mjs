@@ -150,13 +150,13 @@ test('home adds the screenshot-matched Korean editorial section at the very bott
     assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*width:\s*100%;[^}]*overflow:\s*hidden;[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;[^}]*margin:\s*0 auto;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__nav\s*\{[^}]*font-size:\s*11px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*246px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*0;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*1038px;[^}]*max-width:\s*1038px;[^}]*font-size:\s*196px;[^}]*line-height:\s*0\.94;[^}]*letter-spacing:\s*-0\.072em;[^}]*transform:\s*scaleX\(0\.82\);/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__categories\s*\{[^}]*gap:\s*48px;[^}]*margin-top:\s*16px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*756px\s*544px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*544px;[^}]*max-width:\s*544px;[^}]*font-size:\s*142px;[^}]*transform:\s*scaleX\(0\.8\);/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*480px\s*820px;[^}]*gap:\s*36px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*312px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*42px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*944px;[^}]*max-width:\s*944px;[^}]*font-size:\s*182px;[^}]*line-height:\s*0\.93;[^}]*letter-spacing:\s*-0\.068em;[^}]*transform:\s*scaleX\(0\.79\);/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__categories\s*\{[^}]*gap:\s*56px;[^}]*margin-top:\s*22px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*744px\s*500px;[^}]*gap:\s*44px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*500px;[^}]*max-width:\s*500px;[^}]*font-size:\s*128px;[^}]*line-height:\s*0\.9;[^}]*letter-spacing:\s*-0\.07em;[^}]*transform:\s*scaleX\(0\.74\);/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*454px\s*790px;[^}]*gap:\s*44px;/s);
 });
 
 test('home private workspace is only visible after login', () => {

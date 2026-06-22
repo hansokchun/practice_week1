@@ -32,9 +32,9 @@ test('mobile Home keeps the private workspace visible without logged-in intro se
     assert.match(mobile, /\.editorial-feature\s*\{[^}]*width:\s*calc\(100% - 32px\);/s);
     assert.match(mobile, /\.editorial-feature__hero,[\s\S]*\.editorial-feature__hero-row,[\s\S]*\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*0;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*1038px;[^}]*max-width:\s*1038px;[^}]*font-size:\s*196px;[^}]*white-space:\s*nowrap;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*544px;[^}]*max-width:\s*544px;[^}]*font-size:\s*142px;[^}]*white-space:\s*nowrap;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*42px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*944px;[^}]*max-width:\s*944px;[^}]*font-size:\s*182px;[^}]*white-space:\s*nowrap;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*500px;[^}]*max-width:\s*500px;[^}]*font-size:\s*128px;[^}]*white-space:\s*nowrap;/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 
