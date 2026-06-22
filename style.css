@@ -1682,16 +1682,16 @@ body.is-logged-in .white-band {
     width: 118%;
     font-size: clamp(110px, 10.6vw, 212px);
     font-weight: 900;
-    line-height: 0.9;
-    letter-spacing: -0.08em;
+    line-height: 0.94;
+    letter-spacing: -0.072em;
     white-space: nowrap;
     transform: scaleX(0.84);
     transform-origin: left center;
 }
 
 .editorial-feature--korean .editorial-feature__categories {
-    gap: 36px;
-    margin-top: 12px;
+    gap: 48px;
+    margin-top: 16px;
     padding-right: 24px;
     font-size: 15px;
     font-weight: 700;
