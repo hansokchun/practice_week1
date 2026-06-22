@@ -1678,7 +1678,7 @@ body.is-logged-in .white-band {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
     margin-bottom: 16px;
-    padding-right: 262px;
+    padding-right: 260px;
 }
 
 .editorial-feature--korean .editorial-feature__hero-copy {
@@ -1687,7 +1687,7 @@ body.is-logged-in .white-band {
 
 .editorial-feature--korean .editorial-feature__headline {
     width: 118%;
-    font-size: clamp(110px, 10.6vw, 212px);
+    font-size: 212px;
     font-weight: 900;
     line-height: 0.94;
     letter-spacing: -0.072em;
@@ -1706,7 +1706,7 @@ body.is-logged-in .white-band {
 
 .editorial-feature--korean .editorial-feature__side-image {
     position: absolute;
-    top: 58px;
+    top: 62px;
     right: 0;
     width: 232px;
     aspect-ratio: 0.8;
@@ -1726,7 +1726,7 @@ body.is-logged-in .white-band {
 
 .editorial-feature--korean .editorial-feature__statement {
     width: 118%;
-    font-size: clamp(92px, 7.3vw, 156px);
+    font-size: 156px;
     font-weight: 900;
     letter-spacing: -0.08em;
     white-space: nowrap;
@@ -6173,7 +6173,7 @@ body.is-logged-in .white-band {
 
     .editorial-feature--korean .editorial-feature__side-image {
         position: absolute;
-        top: 58px;
+        top: 62px;
         right: 0;
         width: 232px;
     }
@@ -6181,6 +6181,20 @@ body.is-logged-in .white-band {
     .editorial-feature--korean .editorial-feature__inner {
         width: 1360px;
         min-width: 1360px;
+    }
+
+    .editorial-feature--korean .editorial-feature__headline {
+        width: 118%;
+        font-size: 212px;
+        white-space: nowrap;
+        transform: scaleX(0.84);
+    }
+
+    .editorial-feature--korean .editorial-feature__statement {
+        width: 118%;
+        font-size: 156px;
+        white-space: nowrap;
+        transform: scaleX(0.82);
     }
 
     .easol-clone-nav {

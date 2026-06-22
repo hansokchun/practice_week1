@@ -32,7 +32,9 @@ test('mobile Home keeps the private workspace visible without logged-in intro se
     assert.match(mobile, /\.editorial-feature\s*\{[^}]*width:\s*calc\(100% - 32px\);/s);
     assert.match(mobile, /\.editorial-feature__hero,[\s\S]*\.editorial-feature__hero-row,[\s\S]*\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*58px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*62px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*font-size:\s*212px;[^}]*white-space:\s*nowrap;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*font-size:\s*156px;[^}]*white-space:\s*nowrap;/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 
