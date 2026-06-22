@@ -1678,7 +1678,7 @@ body.is-logged-in .white-band {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
     margin-bottom: 16px;
-    padding-right: 272px;
+    padding-right: 246px;
 }
 
 .editorial-feature--korean .editorial-feature__hero-copy {
@@ -1686,13 +1686,14 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__headline {
-    width: 107%;
-    font-size: 212px;
+    width: 1038px;
+    max-width: 1038px;
+    font-size: 196px;
     font-weight: 900;
     line-height: 0.94;
     letter-spacing: -0.072em;
     white-space: nowrap;
-    transform: scaleX(0.84);
+    transform: scaleX(0.82);
     transform-origin: left center;
 }
 
@@ -1706,7 +1707,7 @@ body.is-logged-in .white-band {
 
 .editorial-feature--korean .editorial-feature__side-image {
     position: absolute;
-    top: 28px;
+    top: 0;
     right: 0;
     width: 232px;
     aspect-ratio: 0.8;
@@ -1714,7 +1715,7 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__hero-row {
-    grid-template-columns: minmax(0, 0.57fr) minmax(360px, 0.43fr);
+    grid-template-columns: 756px 544px;
     gap: 36px;
     align-items: end;
     margin-bottom: 22px;
@@ -1725,18 +1726,19 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__statement {
-    width: 90%;
-    font-size: 156px;
+    width: 544px;
+    max-width: 544px;
+    font-size: 142px;
     font-weight: 900;
     letter-spacing: -0.08em;
     white-space: nowrap;
-    transform: scaleX(0.82);
+    transform: scaleX(0.8);
     transform-origin: left center;
 }
 
 .editorial-feature--korean .editorial-feature__intro {
-    grid-template-columns: minmax(320px, 0.37fr) minmax(0, 0.63fr);
-    gap: 44px;
+    grid-template-columns: 480px 820px;
+    gap: 36px;
     align-items: start;
 }
 
@@ -6173,7 +6175,7 @@ body.is-logged-in .white-band {
 
     .editorial-feature--korean .editorial-feature__side-image {
         position: absolute;
-        top: 28px;
+        top: 0;
         right: 0;
         width: 232px;
     }
@@ -6184,17 +6186,19 @@ body.is-logged-in .white-band {
     }
 
     .editorial-feature--korean .editorial-feature__headline {
-        width: 107%;
-        font-size: 212px;
+        width: 1038px;
+        max-width: 1038px;
+        font-size: 196px;
         white-space: nowrap;
-        transform: scaleX(0.84);
+        transform: scaleX(0.82);
     }
 
     .editorial-feature--korean .editorial-feature__statement {
-        width: 90%;
-        font-size: 156px;
+        width: 544px;
+        max-width: 544px;
+        font-size: 142px;
         white-space: nowrap;
-        transform: scaleX(0.82);
+        transform: scaleX(0.8);
     }
 
     .easol-clone-nav {
