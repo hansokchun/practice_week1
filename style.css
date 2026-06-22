@@ -1634,6 +1634,165 @@ body.is-logged-in .white-band {
     font-weight: 700;
 }
 
+.home-easol-intro-clone {
+    margin-top: 20px;
+    margin-bottom: 92px;
+}
+
+.home-easol-intro-clone .easol-intro-top {
+    padding: 34px 0 0;
+}
+
+.easol-clone-nav {
+    margin-bottom: 36px;
+    padding: 0;
+}
+
+.easol-clone-brand {
+    gap: 14px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.easol-clone-links {
+    gap: 34px;
+    color: #050505;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    text-transform: none;
+}
+
+.easol-clone-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 232px;
+    gap: 34px;
+    align-items: start;
+    margin-bottom: 24px;
+}
+
+.easol-clone-hero-copy {
+    min-width: 0;
+}
+
+.easol-clone-headline {
+    margin: 0;
+    color: #050505;
+    font-family: Pretendard, Inter, sans-serif;
+    font-size: clamp(98px, 9.6vw, 198px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.08em;
+    word-break: keep-all;
+    white-space: nowrap;
+}
+
+.easol-clone-headline span,
+.easol-clone-subheadline span {
+    display: inline-block;
+    transform: scaleX(0.82);
+    transform-origin: left center;
+}
+
+.easol-clone-categories {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 54px;
+    overflow: hidden;
+    margin-top: 24px;
+    color: #141414;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+}
+
+.easol-clone-side-image,
+.easol-clone-wide-image,
+.easol-clone-large-image {
+    overflow: hidden;
+    background: #111111;
+}
+
+.easol-clone-side-image {
+    aspect-ratio: 0.8;
+    align-self: start;
+    margin-top: 10px;
+}
+
+.easol-clone-side-image img,
+.easol-clone-wide-image img,
+.easol-clone-large-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.easol-clone-middle {
+    display: grid;
+    grid-template-columns: minmax(0, 0.58fr) minmax(360px, 0.42fr);
+    gap: 36px;
+    align-items: end;
+    margin-bottom: 28px;
+}
+
+.easol-clone-wide-image {
+    aspect-ratio: 2.8;
+}
+
+.easol-clone-subheadline {
+    margin: 0;
+    color: #050505;
+    font-family: Pretendard, Inter, sans-serif;
+    font-size: clamp(82px, 7.6vw, 150px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.08em;
+    word-break: keep-all;
+    white-space: nowrap;
+}
+
+.easol-clone-bottom {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.35fr) minmax(0, 0.65fr);
+    gap: 34px;
+    align-items: end;
+}
+
+.easol-clone-copy {
+    display: grid;
+    gap: 26px;
+    padding: 6px 0 14px;
+}
+
+.easol-clone-copy p {
+    max-width: 390px;
+    margin: 0;
+    color: #111111;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.62;
+    letter-spacing: -0.04em;
+    word-break: keep-all;
+}
+
+.easol-clone-proof {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    margin-top: 22px;
+    color: #111111;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+}
+
+.easol-clone-large-image {
+    aspect-ratio: 1.98;
+}
+
 .home-east-asia-demo {
     background: #ffffff;
 }
@@ -5660,6 +5819,58 @@ body.is-logged-in .white-band {
 
     .easol-intro-nav.is-fixed {
         width: 100%;
+    }
+
+    .home-easol-intro-clone .easol-intro-top {
+        padding-top: 24px;
+    }
+
+    .easol-clone-nav {
+        margin-bottom: 20px;
+        gap: 16px;
+    }
+
+    .easol-clone-brand {
+        font-size: 20px;
+    }
+
+    .easol-clone-links {
+        gap: 14px;
+        font-size: 14px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .easol-clone-hero,
+    .easol-clone-middle,
+    .easol-clone-bottom {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .easol-clone-side-image {
+        width: min(52vw, 220px);
+        justify-self: end;
+        margin-top: 0;
+    }
+
+    .easol-clone-headline,
+    .easol-clone-subheadline {
+        font-size: clamp(46px, 12vw, 82px);
+        white-space: normal;
+    }
+
+    .easol-clone-categories {
+        gap: 20px 24px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+        font-size: 14px;
+    }
+
+    .easol-clone-copy p,
+    .easol-clone-proof {
+        max-width: none;
+        font-size: 16px;
     }
 
     .hero-memory-line {
