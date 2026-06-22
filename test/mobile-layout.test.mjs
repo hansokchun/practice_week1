@@ -31,6 +31,8 @@ test('mobile Home keeps the private workspace visible without logged-in intro se
     assert.match(mobile, /\.home-explore-guide-media img\s*\{[^}]*aspect-ratio:\s*1\.28;/s);
     assert.match(mobile, /\.editorial-feature\s*\{[^}]*width:\s*calc\(100% - 32px\);/s);
     assert.match(mobile, /\.editorial-feature__hero,[\s\S]*\.editorial-feature__hero-row,[\s\S]*\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*padding-right:\s*0;/s);
+    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*static;[^}]*width:\s*min\(52vw,\s*220px\);/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 

@@ -1647,6 +1647,115 @@ body.is-logged-in .white-band {
     color: #050505;
 }
 
+.editorial-feature--korean .editorial-feature__inner {
+    position: relative;
+    padding: 28px 0 24px;
+}
+
+.editorial-feature--korean .editorial-feature__brand {
+    gap: 10px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.editorial-feature--korean .editorial-feature__nav {
+    gap: 24px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.editorial-feature--korean .editorial-feature__hero {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin-bottom: 16px;
+    padding-right: 280px;
+}
+
+.editorial-feature--korean .editorial-feature__hero-copy {
+    min-width: 0;
+}
+
+.editorial-feature--korean .editorial-feature__headline {
+    width: 118%;
+    font-size: clamp(110px, 10.6vw, 212px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.08em;
+    white-space: nowrap;
+    transform: scaleX(0.84);
+    transform-origin: left center;
+}
+
+.editorial-feature--korean .editorial-feature__categories {
+    gap: 36px;
+    margin-top: 12px;
+    padding-right: 24px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.editorial-feature--korean .editorial-feature__side-image {
+    position: absolute;
+    top: 74px;
+    right: 0;
+    width: 232px;
+    aspect-ratio: 0.8;
+    margin-top: 0;
+}
+
+.editorial-feature--korean .editorial-feature__hero-row {
+    grid-template-columns: minmax(0, 0.57fr) minmax(360px, 0.43fr);
+    gap: 36px;
+    align-items: end;
+    margin-bottom: 22px;
+}
+
+.editorial-feature--korean .editorial-feature__wide-image {
+    aspect-ratio: 2.92;
+}
+
+.editorial-feature--korean .editorial-feature__statement {
+    width: 118%;
+    font-size: clamp(92px, 7.3vw, 156px);
+    font-weight: 900;
+    letter-spacing: -0.08em;
+    white-space: nowrap;
+    transform: scaleX(0.82);
+    transform-origin: left center;
+}
+
+.editorial-feature--korean .editorial-feature__intro {
+    grid-template-columns: minmax(320px, 0.37fr) minmax(0, 0.63fr);
+    gap: 44px;
+    align-items: start;
+}
+
+.editorial-feature--korean .editorial-feature__intro-copy {
+    gap: 28px;
+    padding: 22px 0 18px;
+}
+
+.editorial-feature--korean .editorial-feature__intro-copy p {
+    max-width: 420px;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.72;
+    letter-spacing: -0.04em;
+}
+
+.editorial-feature--korean .editorial-feature__proof {
+    gap: 28px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.editorial-feature--korean .editorial-feature__large-image {
+    aspect-ratio: 1.95;
+}
+
 .editorial-feature__inner {
     padding: 38px 0 28px;
 }
@@ -6053,6 +6162,23 @@ body.is-logged-in .white-band {
     .editorial-feature__proof {
         max-width: none;
         font-size: 16px;
+    }
+
+    .editorial-feature--korean .editorial-feature__hero {
+        padding-right: 0;
+    }
+
+    .editorial-feature--korean .editorial-feature__side-image {
+        position: static;
+        width: min(52vw, 220px);
+    }
+
+    .editorial-feature--korean .editorial-feature__headline,
+    .editorial-feature--korean .editorial-feature__statement {
+        width: auto;
+        transform: none;
+        font-size: clamp(46px, 12vw, 82px);
+        white-space: normal;
     }
 
     .easol-clone-nav {

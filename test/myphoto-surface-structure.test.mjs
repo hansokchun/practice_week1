@@ -148,9 +148,12 @@ test('home adds the screenshot-matched Korean editorial section at the very bott
     assert.match(markup, /class="editorial-feature__proof"[\s\S]*IBIZA ROCKS[\s\S]*GCN[\s\S]*LOVE TRAILS[\s\S]*ENVISION/);
     assert.doesNotMatch(markup, /class="intro-image-section"/);
     assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
-    assert.match(styles, /\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*232px;/s);
-    assert.match(styles, /\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.58fr\)\s*minmax\(360px,\s*0\.42fr\);/s);
-    assert.match(styles, /\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*minmax\(300px,\s*0\.35fr\)\s*minmax\(0,\s*0\.65fr\);/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__nav\s*\{[^}]*font-size:\s*11px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*280px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*74px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*118%;[^}]*transform:\s*scaleX\(0\.84\);/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.57fr\)\s*minmax\(360px,\s*0\.43fr\);/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.37fr\)\s*minmax\(0,\s*0\.63fr\);/s);
 });
 
 test('home private workspace is only visible after login', () => {
