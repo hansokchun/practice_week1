@@ -87,14 +87,14 @@ test('home keeps only the remaining public explanation sections before the priva
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
-    const editorialIndex = markup.indexOf('class="editorial-feature"');
+    const introImageIndex = markup.indexOf('class="intro-image-section"');
 
     assert.ok(easolIndex > -1);
     assert.ok(heroIndex > easolIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
     assert.ok(workspaceIndex > exploreIndex);
-    assert.ok(editorialIndex > workspaceIndex);
+    assert.ok(introImageIndex > workspaceIndex);
     assert.match(markup, /images\/home-explore-guide\.png/);
     assert.doesNotMatch(markup, /class="content-band home-album-guide"/);
     assert.doesNotMatch(markup, /class="content-band home-public-preview"/);
@@ -112,7 +112,7 @@ test('home keeps the original intro stack before the hero', () => {
     assert.match(markup, /class="home-easol-intro"[\s\S]*class="easol-intro-top"/);
     assert.match(markup, /class="easol-intro-brand"[\s\S]*images\/logo\.png[\s\S]*Ikkyee/);
     assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
-    assert.match(markup, /class="home-easol-intro home-easol-intro-translated"[\s\S]*더 많은[\s\S]*당신의 방식대로/);
+    assert.match(markup, /class="home-easol-intro home-easol-intro-translated"[\s\S]*class="easol-intro-headline easol-intro-headline-korean"/);
     assert.match(markup, /class="easol-intro-categories"[\s\S]*FESTIVALS[\s\S]*FOOD \+ DRINK[\s\S]*ADVENTURE/);
     assert.doesNotMatch(markup, /class="easol-intro-media easol-intro-media-top"/);
     assert.match(markup, /class="easol-intro-media easol-intro-media-wide"[\s\S]*images\/main_bg2\.jpg/);
@@ -131,24 +131,19 @@ test('home keeps the original intro stack before the hero', () => {
     assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
 });
 
-test('home adds the new editorial showcase at the very bottom of the homepage', () => {
+test('home adds the screenshot intro image section at the very bottom of the homepage', () => {
     const markup = html();
     const styles = css();
 
-    assert.match(markup, /class="editorial-feature"[\s\S]*class="editorial-feature__header"[\s\S]*class="editorial-feature__hero"[\s\S]*class="editorial-feature__intro"/);
-    assert.match(markup, /class="editorial-feature__headline"[^>]*>흩어진 사진을 하나로</);
-    assert.match(markup, /class="editorial-feature__categories"[\s\S]*여행 사진[\s\S]*지도 기록[\s\S]*날짜별 앨범[\s\S]*장소별 정리[\s\S]*비공개 보관[\s\S]*선택 공유/);
-    assert.match(markup, /class="editorial-feature__statement"[^>]*>지도 위에 남기다</);
-    assert.match(markup, /class="editorial-feature__intro-copy"[\s\S]*Ikkyee는 여행 사진의 위치와 시간을 읽어[\s\S]*공유하고 싶은 순간만 골라 보여줄 수 있어요/);
-    assert.match(markup, /class="editorial-feature__proof"[\s\S]*IBIZA ROCKS[\s\S]*GCN[\s\S]*LOVE TRAILS[\s\S]*ENVISION/);
-    assert.match(markup, /class="editorial-feature__side-image"[\s\S]*images\/main_bg5\.jpg/);
-    assert.match(markup, /class="editorial-feature__wide-image"[\s\S]*images\/main_bg2\.jpg/);
-    assert.match(markup, /class="editorial-feature__large-image"[\s\S]*images\/main_bg3\.jpg/);
-    assert.match(styles, /\.editorial-feature\s*\{[^}]*margin:\s*0 auto 96px;[^}]*background:\s*#ffffff;/s);
-    assert.match(styles, /\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*232px;/s);
-    assert.match(styles, /\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.58fr\)\s*minmax\(360px,\s*0\.42fr\);/s);
-    assert.match(styles, /\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*minmax\(300px,\s*0\.35fr\)\s*minmax\(0,\s*0\.65fr\);/s);
-    assert.match(styles, /\.editorial-feature__intro-copy\s*\{[^}]*padding:\s*6px 0 52px;/s);
+    assert.match(markup, /class="intro-image-section"[\s\S]*class="intro-image-section__frame"[\s\S]*class="intro-image-section__desktop"/);
+    assert.match(markup, /class="intro-image-section__desktop"[\s\S]*images\/home-intro-reference\.png/);
+    assert.match(markup, /class="intro-image-section__mobile"[\s\S]*images\/home-intro-reference\.png/);
+    assert.doesNotMatch(markup, /class="editorial-feature"/);
+    assert.match(styles, /\.intro-image-section\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*margin:\s*0 auto 96px;[^}]*background:\s*transparent;/s);
+    assert.match(styles, /\.intro-image-section__frame\s*\{[^}]*background:\s*transparent;/s);
+    assert.match(styles, /\.intro-image-section__desktop,\s*\.intro-image-section__mobile\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;/s);
+    assert.match(styles, /\.intro-image-section__desktop\s*\{[^}]*display:\s*block;/s);
+    assert.match(styles, /\.intro-image-section__mobile\s*\{[^}]*display:\s*none;/s);
 });
 
 test('home private workspace is only visible after login', () => {
@@ -167,7 +162,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.intro-image-section,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {
