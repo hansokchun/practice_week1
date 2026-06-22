@@ -86,47 +86,21 @@ test('home keeps only the remaining public explanation sections before the priva
     const easolIndex = markup.indexOf('class="home-easol-intro"');
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
-    const albumIndex = markup.indexOf('class="content-band home-album-guide"');
-    const publicPreviewIndex = markup.indexOf('class="content-band home-public-preview"');
-    const routeReferenceIndex = markup.indexOf('data-reference-style="polarsteps"');
-    const logReferenceIndex = markup.indexOf('data-reference-style="findpenguins"');
-    const albumReferenceIndex = markup.indexOf('data-reference-style="journi"');
-    const experienceIndex = markup.indexOf('class="home-experience-commerce"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(easolIndex > -1);
     assert.ok(heroIndex > easolIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
-    assert.ok(albumIndex > exploreIndex);
-    assert.ok(publicPreviewIndex > albumIndex);
-    assert.ok(routeReferenceIndex > publicPreviewIndex);
-    assert.ok(logReferenceIndex > routeReferenceIndex);
-    assert.ok(albumReferenceIndex > logReferenceIndex);
-    assert.ok(experienceIndex > albumReferenceIndex);
-    assert.ok(workspaceIndex > experienceIndex);
+    assert.ok(workspaceIndex > exploreIndex);
     assert.match(markup, /images\/home-explore-guide\.png/);
-    assert.match(markup, /images\/home-map-memory-board\.png/);
-    assert.match(markup, /class="home-public-photo-grid"[\s\S]*data-route="explore"/);
-    assert.match(markup, /여행이 지나간 길을 하나의 흐름으로 다시 봅니다/);
-    assert.match(markup, /사진 하나가 장소의 기록이 되고, 공개하면 누군가의 다음 여행이 됩니다/);
-    assert.match(markup, /사진을 고르면 날짜별 앨범과 지도 기록으로 정리됩니다/);
+    assert.doesNotMatch(markup, /class="content-band home-album-guide"/);
+    assert.doesNotMatch(markup, /class="content-band home-public-preview"/);
+    assert.doesNotMatch(markup, /data-reference-style="polarsteps"/);
+    assert.doesNotMatch(markup, /data-reference-style="findpenguins"/);
+    assert.doesNotMatch(markup, /data-reference-style="journi"/);
+    assert.doesNotMatch(markup, /class="home-experience-commerce"/);
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
-    assert.match(styles, /\.home-album-guide\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.05fr\)\s*minmax\(360px,\s*0\.95fr\);/s);
-    assert.match(styles, /\.home-reference-section\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.86fr\)\s*minmax\(0,\s*1\.14fr\);/s);
-});
-
-test('home adds an Easol-inspired dark landing section for Travelgram', () => {
-    const markup = html();
-    const styles = css();
-
-    assert.match(markup, /class="home-experience-commerce"[\s\S]*Travelgram OS/);
-    assert.match(markup, /여행 사진을 올리고, 지도에 남기고, 공개할 순간만 고르세요/);
-    assert.match(markup, /class="experience-product-strip"[\s\S]*지도 위 공개 사진[\s\S]*날짜별 앨범 정리[\s\S]*비공개 우선 보관/);
-    assert.match(markup, /class="experience-proof-grid"[\s\S]*The problem[\s\S]*The solution[\s\S]*Result/);
-    assert.match(styles, /\.home-experience-commerce\s*\{[^}]*background:\s*#070807;[^}]*color:\s*#f7f4ec;/s);
-    assert.match(styles, /\.experience-hero h2\s*\{[^}]*font-family:\s*Georgia,[^}]*font-size:\s*clamp\(52px,\s*8vw,\s*118px\);/s);
-    assert.match(styles, /\.experience-product-strip\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
 test('home adds a lapa-style intro section with oversized headline, category rail, and staggered image blocks', () => {
@@ -172,7 +146,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-public-preview,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.home-album-guide,[\s\S]*body\.is-logged-in\s+\.home-reference-section,[\s\S]*body\.is-logged-in\s+\.home-experience-commerce,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {
