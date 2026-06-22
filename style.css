@@ -1678,7 +1678,7 @@ body.is-logged-in .white-band {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
     margin-bottom: 16px;
-    padding-right: 260px;
+    padding-right: 272px;
 }
 
 .editorial-feature--korean .editorial-feature__hero-copy {
@@ -1686,7 +1686,7 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__headline {
-    width: 118%;
+    width: 107%;
     font-size: 212px;
     font-weight: 900;
     line-height: 0.94;
@@ -1706,7 +1706,7 @@ body.is-logged-in .white-band {
 
 .editorial-feature--korean .editorial-feature__side-image {
     position: absolute;
-    top: 62px;
+    top: 28px;
     right: 0;
     width: 232px;
     aspect-ratio: 0.8;
@@ -1725,7 +1725,7 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__statement {
-    width: 118%;
+    width: 90%;
     font-size: 156px;
     font-weight: 900;
     letter-spacing: -0.08em;
@@ -6173,7 +6173,7 @@ body.is-logged-in .white-band {
 
     .editorial-feature--korean .editorial-feature__side-image {
         position: absolute;
-        top: 62px;
+        top: 28px;
         right: 0;
         width: 232px;
     }
@@ -6184,14 +6184,14 @@ body.is-logged-in .white-band {
     }
 
     .editorial-feature--korean .editorial-feature__headline {
-        width: 118%;
+        width: 107%;
         font-size: 212px;
         white-space: nowrap;
         transform: scaleX(0.84);
     }
 
     .editorial-feature--korean .editorial-feature__statement {
-        width: 118%;
+        width: 90%;
         font-size: 156px;
         white-space: nowrap;
         transform: scaleX(0.82);
