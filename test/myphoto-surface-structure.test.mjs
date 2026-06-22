@@ -83,17 +83,18 @@ test('home keeps only the remaining public explanation sections before the priva
     const markup = html();
     const styles = css();
 
-    const easolIndex = markup.indexOf('class="home-easol-intro"');
+    const introIndex = markup.indexOf('class="home-easol-intro home-easol-intro-clone"');
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
-    assert.ok(easolIndex > -1);
-    assert.ok(heroIndex > easolIndex);
+    assert.ok(introIndex > -1);
+    assert.ok(heroIndex > introIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
     assert.ok(workspaceIndex > exploreIndex);
     assert.match(markup, /images\/home-explore-guide\.png/);
+    assert.doesNotMatch(markup, /class="home-easol-intro-translated"/);
     assert.doesNotMatch(markup, /class="content-band home-album-guide"/);
     assert.doesNotMatch(markup, /class="content-band home-public-preview"/);
     assert.doesNotMatch(markup, /data-reference-style="polarsteps"/);
@@ -103,32 +104,24 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
 });
 
-test('home adds a lapa-style intro section with oversized headline, category rail, and staggered image blocks', () => {
+test('home uses the screenshot-matched Korean intro section as the top landing section', () => {
     const markup = html();
     const styles = css();
 
-    assert.match(markup, /class="site-header-inner"/);
-    assert.match(markup, /class="home-easol-intro"[\s\S]*class="easol-intro-top"/);
-    assert.match(markup, /class="easol-intro-brand"[\s\S]*images\/logo\.png[\s\S]*Ikkyee/);
-    assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
-    assert.match(markup, /class="home-easol-intro home-easol-intro-translated home-easol-intro-clone"[\s\S]*트래민 사진을 하나로[\s\S]*지도 위에 남기다/);
-    assert.match(markup, /class="easol-clone-categories"[\s\S]*여행 사진[\s\S]*선택 공유/);
-    assert.match(markup, /class="easol-intro-categories"[\s\S]*FESTIVALS[\s\S]*FOOD \+ DRINK[\s\S]*ADVENTURE/);
+    assert.match(markup, /class="home-easol-intro home-easol-intro-clone"[\s\S]*트래민 사진을 하나로[\s\S]*지도 위에 남기다/);
+    assert.match(markup, /easol-clone-brand[\s\S]*images\/logo\.png[\s\S]*IKKYEE/);
+    assert.match(markup, /easol-clone-links[\s\S]*아카이브[\s\S]*탐색[\s\S]*앨범[\s\S]*지도[\s\S]*기록/);
+    assert.match(markup, /class="easol-clone-categories"[\s\S]*여행 사진[\s\S]*지도 기록[\s\S]*날짜별 앨범[\s\S]*장소별 정리[\s\S]*비공개 보관[\s\S]*선택 공유/);
     assert.match(markup, /class="easol-clone-side-image"[\s\S]*images\/main_bg5\.jpg/);
     assert.match(markup, /class="easol-clone-wide-image"[\s\S]*images\/main_bg2\.jpg/);
     assert.match(markup, /class="easol-clone-large-image"[\s\S]*images\/main_bg3\.jpg/);
-    assert.match(markup, /class="easol-intro-copy"[\s\S]*Travelgram is the map-first archive/);
     assert.match(markup, /class="easol-clone-copy"[\s\S]*Ikkyee는 여행 사진의 위치와 시간을 읽어/);
     assert.match(markup, /class="easol-clone-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
-    assert.doesNotMatch(markup, /class="easol-intro-bottom"/);
-    assert.doesNotMatch(markup, /THE GAME IS CHANGING/);
-    assert.doesNotMatch(markup, /INTRODUCING/);
+    assert.doesNotMatch(markup, /SELL MORE|EXPERIENCES|YOUR WAY/);
     assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
-    assert.match(styles, /\.site-header-inner\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);/s);
-    assert.match(styles, /\.easol-intro-nav\.is-fixed\s*\{[^}]*position:\s*fixed;[^}]*top:\s*64px;[^}]*left:\s*50%;[^}]*transform:\s*translateX\(-50%\);[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*background:\s*var\(--bg\);/s);
     assert.match(styles, /\.home-easol-intro-clone\s*\{[^}]*margin-top:\s*20px;[^}]*margin-bottom:\s*92px;/s);
-    assert.match(styles, /\.easol-intro-links\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*white-space:\s*nowrap;/s);
-    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*500;/s);
+    assert.match(styles, /\.easol-clone-links\s*\{[^}]*gap:\s*34px;[^}]*font-size:\s*17px;[^}]*text-transform:\s*none;/s);
+    assert.match(styles, /\.easol-clone-headline\s*\{[^}]*font-family:\s*Pretendard,\s*Inter,\s*sans-serif;[^}]*font-size:\s*clamp\(98px,\s*9\.6vw,\s*198px\);[^}]*font-weight:\s*900;/s);
     assert.match(styles, /\.easol-clone-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*232px;/s);
     assert.match(styles, /\.easol-clone-middle\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.58fr\)\s*minmax\(360px,\s*0\.42fr\);/s);
     assert.match(styles, /\.easol-clone-bottom\s*\{[^}]*grid-template-columns:\s*minmax\(300px,\s*0\.35fr\)\s*minmax\(0,\s*0\.65fr\);/s);
