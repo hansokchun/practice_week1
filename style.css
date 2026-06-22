@@ -1643,12 +1643,19 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean {
+    width: 100%;
+    margin: 0 0 96px;
+    overflow: hidden;
     background: transparent;
     color: #050505;
 }
 
 .editorial-feature--korean .editorial-feature__inner {
     position: relative;
+    width: 1360px;
+    min-width: 1360px;
+    max-width: none;
+    margin: 0 auto;
     padding: 28px 0 24px;
 }
 
@@ -1671,7 +1678,7 @@ body.is-logged-in .white-band {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
     margin-bottom: 16px;
-    padding-right: 280px;
+    padding-right: 262px;
 }
 
 .editorial-feature--korean .editorial-feature__hero-copy {
@@ -1699,7 +1706,7 @@ body.is-logged-in .white-band {
 
 .editorial-feature--korean .editorial-feature__side-image {
     position: absolute;
-    top: 74px;
+    top: 58px;
     right: 0;
     width: 232px;
     aspect-ratio: 0.8;
@@ -6164,21 +6171,16 @@ body.is-logged-in .white-band {
         font-size: 16px;
     }
 
-    .editorial-feature--korean .editorial-feature__hero {
-        padding-right: 0;
-    }
-
     .editorial-feature--korean .editorial-feature__side-image {
-        position: static;
-        width: min(52vw, 220px);
+        position: absolute;
+        top: 58px;
+        right: 0;
+        width: 232px;
     }
 
-    .editorial-feature--korean .editorial-feature__headline,
-    .editorial-feature--korean .editorial-feature__statement {
-        width: auto;
-        transform: none;
-        font-size: clamp(46px, 12vw, 82px);
-        white-space: normal;
+    .editorial-feature--korean .editorial-feature__inner {
+        width: 1360px;
+        min-width: 1360px;
     }
 
     .easol-clone-nav {

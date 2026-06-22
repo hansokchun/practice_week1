@@ -147,10 +147,11 @@ test('home adds the screenshot-matched Korean editorial section at the very bott
     assert.match(markup, /class="editorial-feature__intro-copy"[\s\S]*Ikkyee는 여행 사진의 위치와 시간을 읽어[\s\S]*공유하고 싶은 순간만 골라 보여줄 수 있어요/);
     assert.match(markup, /class="editorial-feature__proof"[\s\S]*IBIZA ROCKS[\s\S]*GCN[\s\S]*LOVE TRAILS[\s\S]*ENVISION/);
     assert.doesNotMatch(markup, /class="intro-image-section"/);
-    assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
+    assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*width:\s*100%;[^}]*overflow:\s*hidden;[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;[^}]*margin:\s*0 auto;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__nav\s*\{[^}]*font-size:\s*11px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*280px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*74px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*262px;/s);
+    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*58px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*118%;[^}]*line-height:\s*0\.94;[^}]*letter-spacing:\s*-0\.072em;[^}]*transform:\s*scaleX\(0\.84\);/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__categories\s*\{[^}]*gap:\s*48px;[^}]*margin-top:\s*16px;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.57fr\)\s*minmax\(360px,\s*0\.43fr\);/s);
