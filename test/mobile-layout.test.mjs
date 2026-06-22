@@ -29,6 +29,7 @@ test('mobile Home keeps the private workspace visible without logged-in intro se
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{/s);
     assert.match(mobile, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.home-explore-guide-media img\s*\{[^}]*aspect-ratio:\s*1\.28;/s);
+    assert.match(mobile, /\.editorial-feature__hero,[\s\S]*\.editorial-feature__hero-row,[\s\S]*\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 
