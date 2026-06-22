@@ -83,19 +83,25 @@ test('home keeps only the remaining public explanation sections before the priva
     const markup = html();
     const styles = css();
 
-    const easolIndex = markup.indexOf('class="home-easol-intro"');
+    const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
-    const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
 
-    assert.ok(easolIndex > -1);
-    assert.ok(heroIndex > easolIndex);
+    assert.ok(introImageIndex > -1);
+    assert.ok(heroIndex > introImageIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
     assert.ok(workspaceIndex > exploreIndex);
-    assert.ok(introImageIndex > workspaceIndex);
+    assert.ok(workspaceIndex > -1);
     assert.match(markup, /images\/home-explore-guide\.png/);
+    assert.doesNotMatch(markup, /class="home-easol-intro"/);
+    assert.doesNotMatch(markup, /SELL MORE/);
+    assert.doesNotMatch(markup, /EXPERIENCES/);
+    assert.doesNotMatch(markup, /YOUR WAY/);
+    assert.doesNotMatch(markup, /더 많은/);
+    assert.doesNotMatch(markup, /여행의 순간을/);
+    assert.doesNotMatch(markup, /당신의 방식대로/);
     assert.doesNotMatch(markup, /class="content-band home-album-guide"/);
     assert.doesNotMatch(markup, /class="content-band home-public-preview"/);
     assert.doesNotMatch(markup, /data-reference-style="polarsteps"/);
@@ -105,30 +111,18 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
 });
 
-test('home keeps the original intro stack before the hero', () => {
+test('home no longer renders the removed easol intro sections', () => {
     const markup = html();
-    const styles = css();
 
-    assert.match(markup, /class="home-easol-intro"[\s\S]*class="easol-intro-top"/);
-    assert.match(markup, /class="easol-intro-brand"[\s\S]*images\/logo\.png[\s\S]*Ikkyee/);
-    assert.match(markup, /class="easol-intro-headline"[\s\S]*SELL MORE[\s\S]*YOUR WAY/);
-    assert.match(markup, /class="home-easol-intro home-easol-intro-translated"[\s\S]*class="easol-intro-headline easol-intro-headline-korean"/);
-    assert.match(markup, /class="easol-intro-categories"[\s\S]*FESTIVALS[\s\S]*FOOD \+ DRINK[\s\S]*ADVENTURE/);
     assert.doesNotMatch(markup, /class="easol-intro-media easol-intro-media-top"/);
-    assert.match(markup, /class="easol-intro-media easol-intro-media-wide"[\s\S]*images\/main_bg2\.jpg/);
-    assert.match(markup, /class="easol-intro-copy"[\s\S]*Travelgram is the map-first archive/);
-    assert.match(markup, /class="easol-intro-proof"[\s\S]*IBIZA ROCKS[\s\S]*LOVE TRAILS/);
+    assert.doesNotMatch(markup, /class="home-easol-intro"/);
+    assert.doesNotMatch(markup, /class="easol-intro-brand"/);
+    assert.doesNotMatch(markup, /class="easol-intro-headline"/);
+    assert.doesNotMatch(markup, /class="easol-intro-categories"/);
+    assert.doesNotMatch(markup, /Travelgram is the map-first archive/);
     assert.doesNotMatch(markup, /class="easol-intro-bottom"/);
     assert.doesNotMatch(markup, /THE GAME IS CHANGING/);
     assert.doesNotMatch(markup, /INTRODUCING/);
-    assert.match(styles, /\.home-easol-intro\s*\{[^}]*background:\s*var\(--bg\);[^}]*color:\s*#050505;/s);
-    assert.match(styles, /\.site-header-inner\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);/s);
-    assert.match(styles, /\.easol-intro-nav\.is-fixed\s*\{[^}]*position:\s*fixed;[^}]*top:\s*64px;[^}]*left:\s*50%;[^}]*transform:\s*translateX\(-50%\);[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*background:\s*var\(--bg\);/s);
-    assert.match(styles, /\.home-easol-intro-translated\s*\{[^}]*margin-top:\s*48px;/s);
-    assert.match(styles, /\.easol-intro-links\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*white-space:\s*nowrap;/s);
-    assert.match(styles, /\.easol-intro-headline\s*\{[^}]*font-family:\s*'Oswald',[^}]*font-size:\s*clamp\(88px,\s*16vw,\s*228px\);[^}]*font-weight:\s*500;/s);
-    assert.match(styles, /\.easol-intro-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s);
-    assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
 });
 
 test('home adds the screenshot-matched Korean editorial section at the very bottom of the homepage', () => {
@@ -175,7 +169,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {
