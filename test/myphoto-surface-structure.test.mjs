@@ -87,7 +87,7 @@ test('home keeps only the remaining public explanation sections before the priva
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
-    const introImageIndex = markup.indexOf('class="intro-image-section"');
+    const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
 
     assert.ok(easolIndex > -1);
     assert.ok(heroIndex > easolIndex);
@@ -131,19 +131,26 @@ test('home keeps the original intro stack before the hero', () => {
     assert.match(styles, /\.easol-intro-grid\s*\{[^}]*grid-template-columns:\s*minmax\(280px,\s*0\.78fr\)\s*minmax\(0,\s*1\.04fr\);/s);
 });
 
-test('home adds the screenshot intro image section at the very bottom of the homepage', () => {
+test('home adds the screenshot-matched Korean editorial section at the very bottom of the homepage', () => {
     const markup = html();
     const styles = css();
 
-    assert.match(markup, /class="intro-image-section"[\s\S]*class="intro-image-section__frame"[\s\S]*class="intro-image-section__desktop"/);
-    assert.match(markup, /class="intro-image-section__desktop"[\s\S]*images\/home-intro-reference\.png/);
-    assert.match(markup, /class="intro-image-section__mobile"[\s\S]*images\/home-intro-reference\.png/);
-    assert.doesNotMatch(markup, /class="editorial-feature"/);
-    assert.match(styles, /\.intro-image-section\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100%\s*-\s*48px\)\);[^}]*margin:\s*0 auto 96px;[^}]*background:\s*transparent;/s);
-    assert.match(styles, /\.intro-image-section__frame\s*\{[^}]*background:\s*transparent;/s);
-    assert.match(styles, /\.intro-image-section__desktop,\s*\.intro-image-section__mobile\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;/s);
-    assert.match(styles, /\.intro-image-section__desktop\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /\.intro-image-section__mobile\s*\{[^}]*display:\s*none;/s);
+    assert.match(markup, /class="editorial-feature editorial-feature--korean"[\s\S]*class="editorial-feature__header"[\s\S]*class="editorial-feature__hero"[\s\S]*class="editorial-feature__intro"/);
+    assert.match(markup, /class="editorial-feature__brand"[\s\S]*images\/logo\.png[\s\S]*IKKYEE/);
+    assert.match(markup, /class="editorial-feature__nav"[\s\S]*아카이브[\s\S]*탐색[\s\S]*앨범[\s\S]*지도[\s\S]*기록/);
+    assert.match(markup, /class="editorial-feature__headline"[\s\S]*흩어진 사진을 하나로/);
+    assert.match(markup, /class="editorial-feature__categories"[\s\S]*여행 사진[\s\S]*지도 기록[\s\S]*날짜별 앨범[\s\S]*장소별 정리[\s\S]*비공개 보관[\s\S]*선택 공유/);
+    assert.match(markup, /class="editorial-feature__statement"[^>]*>지도 위에 남기다</);
+    assert.match(markup, /class="editorial-feature__wide-image"[\s\S]*images\/main_bg2\.jpg/);
+    assert.match(markup, /class="editorial-feature__side-image"[\s\S]*images\/main_bg5\.jpg/);
+    assert.match(markup, /class="editorial-feature__large-image"[\s\S]*images\/main_bg3\.jpg/);
+    assert.match(markup, /class="editorial-feature__intro-copy"[\s\S]*Ikkyee는 여행 사진의 위치와 시간을 읽어[\s\S]*공유하고 싶은 순간만 골라 보여줄 수 있어요/);
+    assert.match(markup, /class="editorial-feature__proof"[\s\S]*IBIZA ROCKS[\s\S]*GCN[\s\S]*LOVE TRAILS[\s\S]*ENVISION/);
+    assert.doesNotMatch(markup, /class="intro-image-section"/);
+    assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
+    assert.match(styles, /\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*232px;/s);
+    assert.match(styles, /\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.58fr\)\s*minmax\(360px,\s*0\.42fr\);/s);
+    assert.match(styles, /\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*minmax\(300px,\s*0\.35fr\)\s*minmax\(0,\s*0\.65fr\);/s);
 });
 
 test('home private workspace is only visible after login', () => {
@@ -162,7 +169,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.intro-image-section,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature,[\s\S]*body\.is-logged-in\s+\.home-easol-intro[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {

@@ -461,7 +461,7 @@ body.is-logged-in .home-explore-guide,
 body.is-logged-in .home-album-guide,
 body.is-logged-in .home-reference-section,
 body.is-logged-in .home-experience-commerce,
-body.is-logged-in .intro-image-section,
+body.is-logged-in .editorial-feature,
 body.is-logged-in .home-easol-intro,
 body.is-logged-in .home-east-asia-demo,
 body.is-logged-in .home-story-band,
@@ -1635,35 +1635,15 @@ body.is-logged-in .white-band {
     font-weight: 700;
 }
 
-.intro-image-section {
-    width: min(var(--container), calc(100% - 48px));
-    margin: 0 auto 96px;
-    background: transparent;
-}
-
-.intro-image-section__frame {
-    background: transparent;
-}
-
-.intro-image-section__desktop,
-.intro-image-section__mobile {
-    width: 100%;
-    height: auto;
-    background: transparent;
-}
-
-.intro-image-section__desktop {
-    display: block;
-}
-
-.intro-image-section__mobile {
-    display: none;
-}
-
 .editorial-feature {
     width: min(var(--container), calc(100% - 48px));
     margin: 0 auto 96px;
     background: #ffffff;
+    color: #050505;
+}
+
+.editorial-feature--korean {
+    background: transparent;
     color: #050505;
 }
 
@@ -6015,17 +5995,64 @@ body.is-logged-in .white-band {
         padding-top: 24px;
     }
 
-    .intro-image-section {
-        width: min(var(--container), calc(100% - 24px));
+    .editorial-feature {
+        width: calc(100% - 32px);
         margin-bottom: 72px;
     }
 
-    .intro-image-section__desktop {
-        display: none;
+    .editorial-feature__inner {
+        padding-top: 24px;
     }
 
-    .intro-image-section__mobile {
-        display: block;
+    .editorial-feature__header {
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .editorial-feature__brand {
+        font-size: 20px;
+    }
+
+    .editorial-feature__nav {
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        font-size: 14px;
+    }
+
+    .editorial-feature__hero,
+    .editorial-feature__hero-row,
+    .editorial-feature__intro {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .editorial-feature__side-image {
+        width: min(52vw, 220px);
+        justify-self: end;
+        margin-top: 0;
+    }
+
+    .editorial-feature__headline,
+    .editorial-feature__statement {
+        font-size: clamp(46px, 12vw, 82px);
+        white-space: normal;
+    }
+
+    .editorial-feature__categories {
+        gap: 20px 24px;
+        flex-wrap: wrap;
+        font-size: 14px;
+    }
+
+    .editorial-feature__intro-copy {
+        padding-bottom: 22px;
+    }
+
+    .editorial-feature__intro-copy p,
+    .editorial-feature__proof {
+        max-width: none;
+        font-size: 16px;
     }
 
     .easol-clone-nav {
