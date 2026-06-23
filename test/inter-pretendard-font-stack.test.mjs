@@ -14,5 +14,5 @@ test('site uses Inter and Pretendard as the primary public font stack', () => {
 
 test('brand logo uses the wordmark asset instead of serif text styling', () => {
   assert.match(html, /class="brand"[\s\S]*images\/logo-wordmark\.svg/);
-  assert.match(css, /\.brand img\s*\{[^}]*width:\s*176px;[^}]*height:\s*auto;/s);
+  assert.match(css, /\.brand img\s*\{[^}]*width:\s*190px;[^}]*height:\s*auto;/s);
 });

@@ -389,6 +389,7 @@ function renderRoute(section) {
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
+    $$('.nav-home-link').forEach((link) => link.classList.toggle('is-active', navSection === APP_SECTIONS.HOME));
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();

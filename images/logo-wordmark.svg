@@ -1,7 +1,7 @@
-<svg width="430" height="108" viewBox="0 0 430 108" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M36 88C48 72 58 59 58 43C58 25.3269 43.6731 11 26 11C8.32689 11 -6 25.3269 -6 43C-6 59 4 72 16 88L22.8 98.8C24.1 100.9 27.2 100.9 28.5 98.8L36 88Z" transform="translate(18 4)" stroke="#0B5752" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M39 47.5C26.8 47.5 17.5 56.2 17.5 67.8C17.5 69.7 17.7 71.6 18.2 73.4C29.8 71 38.8 62 39 47.5Z" transform="translate(18 4)" fill="#0B5752"/>
-  <path d="M21 95C21.5 83.5 24.8 70.7 34.5 57.5" transform="translate(18 4)" stroke="#0B5752" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M0 0C13 -8 28 -8 40 0" transform="translate(10 86)" stroke="#0B5752" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="5 10"/>
-  <text x="122" y="71" fill="#0B5752" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-1.8">Ikkyee</text>
+<svg width="472" height="118" viewBox="0 0 472 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M95.611 16C68.644 16 46.777 37.948 46.777 65.025C46.777 88.889 63.676 106.512 80.823 127.401L92.642 141.676C94.012 143.332 96.54 143.321 97.896 141.654L110.239 126.463C127.366 105.336 144.445 87.44 144.445 65.025C144.445 37.948 122.578 16 95.611 16Z" transform="translate(0 -8)" stroke="#0B5B56" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M107.964 58.691C89.829 58.691 75.369 71.568 72.319 88.325C89.946 84.577 104.676 71.117 107.964 58.691Z" fill="#0B5B56"/>
+  <path d="M79.164 111.098C79.331 94.468 84.98 79.719 96.324 64.908" stroke="#0B5B56" stroke-width="5" stroke-linecap="round"/>
+  <path d="M19 102.822C32.151 92.923 49.719 92.136 64.285 99.839" stroke="#0B5B56" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 12"/>
+  <text x="175" y="78" fill="#0B5B56" font-family="Poppins, Inter, Arial, sans-serif" font-size="78" font-weight="600" letter-spacing="-2.8">Ikkyee</text>
 </svg>

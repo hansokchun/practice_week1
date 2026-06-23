@@ -24,7 +24,7 @@ test('home absorbs the myphoto dashboard and top-level navigation is reduced to 
     assert.equal(markup.includes('data-route="myphoto"'), false);
     assert.equal(markup.includes('data-mobile-route="myphoto"'), false);
     assert.equal(markup.includes('>Home</a>'), false);
-    assert.match(markup, /class="top-nav"[\s\S]*data-route="explore"[\s\S]*data-home-scroll="home-how-it-works"/);
+    assert.match(markup, /class="top-nav"[\s\S]*data-home-scroll="editorial-feature-top"[\s\S]*data-route="explore"[\s\S]*data-home-scroll="home-how-it-works"/);
     assert.match(markup, /id="page-home"[\s\S]*id="recent-photo-grid"[\s\S]*id="album-list"/);
     assert.match(app, /renderedRoute === APP_SECTIONS\.HOME[\s\S]*renderSavedPhotoSurfaces\(\)/);
 });
