@@ -21,7 +21,7 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-pin-preview\.is-expanded\s*\{[^}]*max-height:\s*calc\(100svh - 120px\);/s);
 });
 
-test('mobile Home keeps the private workspace visible without logged-in intro sections', () => {
+test('mobile Home keeps the private workspace and bottom reference visible while hiding top logged-in promos', () => {
     const mobile = mobileBlock();
 
     assert.match(mobile, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*padding-top:\s*24px;/s);
@@ -35,6 +35,9 @@ test('mobile Home keeps the private workspace visible without logged-in intro se
     assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*42px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
     assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*912px;[^}]*max-width:\s*912px;[^}]*font-size:\s*188px;[^}]*white-space:\s*nowrap;/s);
     assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*472px;[^}]*max-width:\s*472px;[^}]*font-size:\s*134px;[^}]*white-space:\s*nowrap;/s);
+    assert.match(mobile, /\.home-houses-reference\s*\{[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;[^}]*padding-top:\s*72px;/s);
+    assert.match(mobile, /\.home-houses-reference__collage\s*\{[^}]*height:\s*360px;[^}]*margin-top:\s*52px;/s);
+    assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 

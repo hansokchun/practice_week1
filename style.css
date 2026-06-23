@@ -11,6 +11,11 @@
     --gold: #c9a050;
     --line: rgba(26, 77, 78, 0.14);
     --shadow: 0 20px 60px rgba(26, 77, 78, 0.08);
+    --ink: #050505;
+    --houses-surface: var(--bg);
+    --houses-word: rgba(26, 77, 78, 0.16);
+    --houses-base: var(--teal);
+    --houses-text: var(--text);
     --header-height: 76px;
     --container: 1280px;
     --headline: 'Inter', 'Pretendard', sans-serif;
@@ -469,6 +474,10 @@ body.is-logged-in .white-band {
     display: none;
 }
 
+body.is-logged-in .home-houses-reference {
+    display: block;
+}
+
 .hero-visual {
     position: relative;
     z-index: 4;
@@ -551,6 +560,182 @@ body.is-logged-in .white-band {
     background: #ffffff;
     padding-left: max(24px, calc((100% - var(--container)) / 2));
     padding-right: max(24px, calc((100% - var(--container)) / 2));
+}
+
+.home-houses-reference {
+    position: relative;
+    overflow: hidden;
+    background: var(--houses-surface);
+    padding-top: 124px;
+    padding-bottom: 0;
+}
+
+.home-houses-reference__word {
+    position: absolute;
+    top: -46px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--houses-word);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(210px, 25vw, 430px);
+    font-weight: 400;
+    line-height: 0.86;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.home-houses-reference__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    justify-items: center;
+    gap: 26px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding-top: 154px;
+    text-align: center;
+}
+
+.home-houses-reference__copy {
+    margin: 0;
+    color: var(--houses-text);
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.56;
+}
+
+.home-houses-reference__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--teal);
+    font-size: 17px;
+    font-weight: 700;
+    padding: 0 18px;
+    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.12);
+}
+
+.home-houses-reference__action .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.home-houses-reference__collage {
+    position: relative;
+    height: 540px;
+    margin-top: 86px;
+}
+
+.home-houses-reference__base {
+    position: absolute;
+    left: 50%;
+    bottom: -182px;
+    width: 1280px;
+    height: 360px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: var(--houses-base);
+}
+
+.home-houses-reference__photo {
+    position: absolute;
+    margin: 0;
+    overflow: hidden;
+    background: #f6f0ea;
+    box-shadow: 0 22px 44px rgba(70, 40, 32, 0.16);
+}
+
+.home-houses-reference__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 260ms ease;
+}
+
+.home-houses-reference__photo figcaption {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    opacity: 0;
+    transform: translateY(8px);
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--teal-dark);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.2;
+    padding: 8px 12px;
+    text-align: center;
+    transition: opacity 180ms ease, transform 180ms ease;
+    pointer-events: none;
+}
+
+.home-houses-reference__photo:hover img,
+.home-houses-reference__photo:focus-within img {
+    transform: scale(1.035);
+}
+
+.home-houses-reference__photo:hover figcaption,
+.home-houses-reference__photo:focus-within figcaption {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.home-houses-reference__photo--a {
+    left: 58px;
+    bottom: 74px;
+    width: 248px;
+    aspect-ratio: 0.78;
+    transform: rotate(-8deg);
+}
+
+.home-houses-reference__photo--b {
+    left: 232px;
+    bottom: 136px;
+    width: 264px;
+    aspect-ratio: 0.76;
+    transform: rotate(3deg);
+}
+
+.home-houses-reference__photo--c {
+    left: 50%;
+    bottom: 124px;
+    width: 284px;
+    aspect-ratio: 0.9;
+    transform: translateX(-50%) rotate(-2deg);
+    z-index: 2;
+}
+
+.home-houses-reference__photo--d {
+    right: 228px;
+    bottom: 134px;
+    width: 264px;
+    aspect-ratio: 0.78;
+    transform: rotate(-4deg);
+}
+
+.home-houses-reference__photo--e {
+    right: 56px;
+    bottom: 78px;
+    width: 248px;
+    aspect-ratio: 0.84;
+    transform: rotate(6deg);
+}
+
+.home-houses-reference__photo--f {
+    left: 50%;
+    bottom: 22px;
+    width: 276px;
+    aspect-ratio: 1.08;
+    transform: translateX(-50%) rotate(-5deg);
+    z-index: 3;
 }
 
 .soft-band {
@@ -6418,6 +6603,83 @@ body.is-logged-in .white-band {
 
     .home-explore-guide-media img {
         aspect-ratio: 1.28;
+    }
+
+    .home-houses-reference {
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-top: 72px;
+    }
+
+    .home-houses-reference__word {
+        top: 4px;
+        font-size: clamp(100px, 31vw, 190px);
+    }
+
+    .home-houses-reference__content {
+        gap: 18px;
+        padding-top: 96px;
+    }
+
+    .home-houses-reference__copy {
+        font-size: 17px;
+        line-height: 1.52;
+    }
+
+    .home-houses-reference__action {
+        min-height: 44px;
+        font-size: 15px;
+        padding: 0 16px;
+    }
+
+    .home-houses-reference__collage {
+        height: 360px;
+        margin-top: 52px;
+    }
+
+    .home-houses-reference__base {
+        bottom: -124px;
+        width: 760px;
+        height: 220px;
+    }
+
+    .home-houses-reference__photo--a {
+        left: 0;
+        bottom: 58px;
+        width: 116px;
+    }
+
+    .home-houses-reference__photo--b {
+        left: 52px;
+        bottom: 116px;
+        width: 136px;
+    }
+
+    .home-houses-reference__photo--c {
+        bottom: 118px;
+        width: 150px;
+    }
+
+    .home-houses-reference__photo--d {
+        right: 52px;
+        bottom: 114px;
+        width: 136px;
+    }
+
+    .home-houses-reference__photo--e {
+        right: 0;
+        bottom: 60px;
+        width: 116px;
+    }
+
+    .home-houses-reference__photo--f {
+        bottom: 18px;
+        width: 148px;
+    }
+
+    .home-houses-reference__photo figcaption {
+        font-size: 11px;
+        padding: 6px 8px;
     }
 
     .home-album-guide {

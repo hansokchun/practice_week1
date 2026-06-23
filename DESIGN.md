@@ -1,0 +1,151 @@
+# Ikkyee Design System
+
+## 1. Atmosphere & Identity
+
+Ikkyee feels like a quiet travel archive: personal photographs become a map, and the product gives users enough structure to keep memories organized without making the interface feel like a social feed. The signature is editorial cartography, pairing restrained archive surfaces with oversized place-driven visual moments.
+
+## 2. Color
+
+### Palette
+
+| Role | Token | Light | Dark | Usage |
+| --- | --- | --- | --- | --- |
+| Surface/primary | `--bg` | `#f9f7f2` | `#191c1c` | App background |
+| Surface/elevated | `--surface` | `#ffffff` | `#1f2424` | Cards, panels, modals |
+| Surface/soft | `--surface-soft` | `#edeeed` | `#2a3030` | Soft panels |
+| Surface/muted | `--surface-muted` | `#e2e3e2` | `#343a3a` | Muted fields and placeholders |
+| Text/primary | `--text` | `#191c1c` | `#f9f7f2` | Body and headings |
+| Text/strong | `--ink` | `#050505` | `#ffffff` | Navigation and high-emphasis labels |
+| Text/secondary | `--muted` | `#70787d` | `#a7b0b3` | Supporting copy |
+| Accent/primary | `--teal` | `#1a4d4e` | `#6fb4b0` | Primary actions and map surfaces |
+| Accent/deep | `--teal-dark` | `#003637` | `#9ad8d3` | Strong teal surfaces |
+| Accent/warm | `--coral` | `#f48c71` | `#ffb39f` | Warm highlights |
+| Accent/gold | `--gold` | `#c9a050` | `#dfc276` | Rare archival emphasis |
+| Border/default | `--line` | `rgba(26, 77, 78, 0.14)` | `rgba(249, 247, 242, 0.16)` | Dividers and outlines |
+| Feature/houses surface | `--houses-surface` | `var(--bg)` | `var(--bg)` | Ikkyee bottom intro band |
+| Feature/houses word | `--houses-word` | `rgba(26, 77, 78, 0.16)` | `rgba(26, 77, 78, 0.16)` | Oversized Ikkyee word |
+| Feature/houses base | `--houses-base` | `var(--teal)` | `var(--teal)` | Collage base shape |
+| Feature/houses text | `--houses-text` | `var(--text)` | `var(--text)` | Houses intro copy |
+
+### Rules
+
+- Teal remains the main product accent for navigation, maps, and primary commands.
+- Warm feature colors are reserved for editorial landing sections, not app dashboards.
+- Add a token here before adding any new semantic color to CSS.
+
+## 3. Typography
+
+### Scale
+
+| Level | Size | Weight | Line Height | Tracking | Usage |
+| --- | --- | --- | --- | --- | --- |
+| Display/editorial | `clamp(120px, 34vw, 470px)` | 400 | 0.86 | 0 | Oversized editorial words |
+| Display | `clamp(54px, 9vw, 136px)` | 700-900 | 0.9-1.05 | 0 | Landing hero statements |
+| H1 | `34px-48px` | 800-900 | 1.12-1.2 | 0 | Page titles |
+| H2 | `26px-42px` | 800-900 | 1.18-1.24 | 0 | Section headers |
+| H3 | `20px-24px` | 800 | 1.3 | 0 | Panel titles |
+| Body/lg | `17px-21px` | 400-700 | 1.52-1.7 | 0 | Lead paragraphs |
+| Body | `15px-16px` | 400-600 | 1.58-1.7 | 0 | Default text |
+| Caption | `12px-14px` | 700-900 | 1.3-1.5 | 0.02em | Metadata, badges, labels |
+
+### Font Stack
+
+- Primary: `Inter`, `Pretendard`, system sans-serif.
+- Serif: Georgia and Times New Roman only for the brand wordmark and editorial feature words.
+- Icon: Material Symbols Outlined.
+
+### Rules
+
+- Korean copy must keep comfortable line height and avoid compressed letter spacing.
+- Use serif only for deliberate editorial moments or the brand mark.
+- Body text stays at 14px or larger.
+
+## 4. Spacing & Layout
+
+### Base Unit
+
+All spacing derives from a base of 4px.
+
+| Token | Value | Usage |
+| --- | --- | --- |
+| `--space-1` | `4px` | Icon and compact inline gaps |
+| `--space-2` | `8px` | Navigation and compact groups |
+| `--space-3` | `12px` | Form and button inner rhythm |
+| `--space-4` | `16px` | Mobile page margin |
+| `--space-6` | `24px` | Default page gutters |
+| `--space-8` | `32px` | Card and grid gaps |
+| `--space-10` | `40px` | Section internals |
+| `--space-12` | `48px` | Mobile section padding |
+| `--space-16` | `64px` | Header and major rhythm |
+| `--space-20` | `80px` | Large section padding |
+| `--space-24` | `96px` | Maximum ordinary section separation |
+
+### Grid
+
+- Max content width: `--container` = `1280px`.
+- Header height: 64px in active CSS, with `--header-height` retained for older surfaces.
+- Breakpoints: mobile rules currently pivot at 860px.
+
+### Rules
+
+- Landing bands may use full-width compositions; dashboard and form surfaces stay within the container.
+- Fixed-format visual features must declare stable heights, widths, or aspect ratios at desktop and mobile.
+
+## 5. Components
+
+### Primary and Secondary Buttons
+
+- **Structure**: Native `button` with `.btn-primary`, `.btn-secondary`, `.nav-action`, or feature-specific action class.
+- **Variants**: Primary teal fill, secondary white/translucent fill, danger secondary, editorial pill action.
+- **Spacing**: 42px minimum height for app actions, 44-48px for editorial CTA pills.
+- **States**: Default, disabled, hover where the existing selector family provides it, focus through browser-visible focus.
+- **Accessibility**: Use visible text, not icon-only labels, unless a tooltip or accessible name exists.
+- **Motion**: Keep button motion to transform and opacity.
+
+### White Landing Band
+
+- **Structure**: Full-width section with `.white-band`.
+- **Variants**: Standard white feature band and feature-specific color override.
+- **Spacing**: Full width, container-derived side padding.
+- **States**: Static content.
+- **Accessibility**: Landmark section with an accessible heading.
+- **Motion**: Static unless a feature owns its own scroll-safe animation.
+
+### Houses Reference Band
+
+- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, CTA, and absolutely positioned image collage.
+- **Variants**: Single bottom-of-home feature.
+- **Spacing**: Desktop top padding 124px; mobile top padding 72px.
+- **States**: CTA default and focus/hover via button affordance; photo captions reveal on hover and focus.
+- **Accessibility**: Decorative word hidden with `aria-hidden`; section heading is screen-reader only; collage has a group label, individual image alt text, and location captions.
+- **Motion**: Static collage, using transforms only for rotation/position.
+
+## 6. Motion & Interaction
+
+### Timing
+
+| Type | Duration | Easing | Usage |
+| --- | --- | --- | --- |
+| Micro | 100-150ms | ease-out | Button press |
+| Standard | 200-300ms | ease-in-out | Panel and control transitions |
+| Emphasis | 400-640ms | cubic-bezier(0.2, 0.8, 0.2, 1) | Hero image slider |
+
+### Rules
+
+- Animate transform and opacity only.
+- Respect reduced motion for any future non-essential animation.
+- Hero slider and map pin updates must not reflow the page.
+
+## 7. Depth & Surface
+
+### Strategy
+
+Ikkyee uses a mixed but restrained strategy: tonal-shift surfaces for app structure, subtle borders for clarity, and soft shadows only for elevated media, floating panels, and editorial photo cards.
+
+| Level | Value | Usage |
+| --- | --- | --- |
+| App shadow | `--shadow` = `0 20px 60px rgba(26, 77, 78, 0.08)` | Panels and elevated surfaces |
+| Media shadow | `0 22px 44px rgba(70, 40, 32, 0.16)` | Houses reference collage |
+| Hero shadow | `0 28px 80px rgba(26, 77, 78, 0.22)` | Hero photo/map card |
+
+Borders use `--line` or a low-alpha color derived from the relevant section text color.

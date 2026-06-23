@@ -108,6 +108,51 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
 });
 
+test('home appends the Ikkyee editorial collage section at the very bottom of the landing flow', () => {
+    const markup = html();
+    const styles = css();
+
+    const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
+    const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
+    const pageHomeEnd = markup.indexOf('</section>', housesIndex);
+
+    assert.ok(workspaceIndex > -1);
+    assert.ok(housesIndex > workspaceIndex);
+    assert.ok(pageHomeEnd > housesIndex);
+    assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
+    assert.match(markup, /이 사진은 어디서 찍은 걸까\?/);
+    assert.match(markup, /Ikkyee에서 장소와 여행자의 기록을 확인하세요\./);
+    assert.match(markup, /class="home-houses-reference__action"[\s\S]*공개 장소 둘러보기/);
+    assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--f/);
+    assert.match(markup, /<figcaption>France · Nice<\/figcaption>/);
+    assert.match(markup, /<figcaption>Japan · Kyoto<\/figcaption>/);
+    assert.match(markup, /<figcaption>Morocco · Merzouga<\/figcaption>/);
+    assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
+    assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
+    assert.match(styles, /--houses-base:\s*var\(--teal\);/);
+    assert.match(styles, /\.home-houses-reference\s*\{[^}]*background:\s*var\(--houses-surface\);[^}]*padding-top:\s*124px;/s);
+    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*color:\s*var\(--houses-word\);[^}]*font-family:\s*Georgia,\s*"Times New Roman",\s*serif;/s);
+    assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*540px;/s);
+    assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
+    assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
+    assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
+});
+
+test('logged-in home keeps the bottom houses reference visible after white bands are hidden', () => {
+    const styles = css();
+
+    const hiddenWhiteBandIndex = styles.indexOf('body.is-logged-in .hero,');
+    const hiddenWhiteBandRuleEnd = styles.indexOf('}', hiddenWhiteBandIndex);
+    const housesVisibleIndex = styles.indexOf('body.is-logged-in .home-houses-reference');
+
+    assert.ok(hiddenWhiteBandIndex > -1);
+    assert.ok(hiddenWhiteBandRuleEnd > hiddenWhiteBandIndex);
+    assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.white-band/);
+    assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /display:\s*none;/);
+    assert.ok(housesVisibleIndex > hiddenWhiteBandRuleEnd);
+    assert.match(styles.slice(housesVisibleIndex, styles.indexOf('}', housesVisibleIndex)), /display:\s*block;/);
+});
+
 test('home no longer renders the removed easol intro sections', () => {
     const markup = html();
 
