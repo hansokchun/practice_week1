@@ -12,7 +12,6 @@ test('site uses Inter and Pretendard as the primary public font stack', () => {
   assert.match(css, /--body:\s*'Inter',\s*'Pretendard',\s*sans-serif;/);
 });
 
-test('brand logo uses the wordmark asset instead of serif text styling', () => {
-  assert.match(html, /class="brand"[\s\S]*images\/logo-wordmark\.svg/);
-  assert.match(css, /\.brand img\s*\{[^}]*width:\s*190px;[^}]*height:\s*auto;/s);
+test('brand logo typography keeps its existing serif treatment', () => {
+  assert.match(css, /\.brand\s*\{[^}]*font-family:\s*Georgia,\s*'Times New Roman',\s*var\(--headline\);/s);
 });

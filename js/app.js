@@ -350,15 +350,6 @@ function routeToPublic(section, albumId, { replace = false } = {}) {
     renderRoute(normalized);
 }
 
-function scrollToHomeSection(sectionId) {
-    if (!sectionId) return;
-    const target = document.getElementById(sectionId);
-    if (!target) return;
-    window.requestAnimationFrame(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-}
-
 function routeToTrip(albumId, options = {}) {
     state.tripReviewDateFilter = null;
     state.tripReviewFocusPhotoId = null;
@@ -389,7 +380,6 @@ function renderRoute(section) {
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
-    $$('.nav-home-link').forEach((link) => link.classList.toggle('is-active', navSection === APP_SECTIONS.HOME));
     $$('[data-mobile-route]').forEach((button) => button.classList.toggle('active', button.dataset.mobileRoute === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
@@ -3939,19 +3929,6 @@ function bindEvents() {
             event.preventDefault();
             event.stopPropagation();
             routeTo(link.dataset.route);
-        });
-    });
-    $$('[data-home-scroll]').forEach((link) => {
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const sectionId = link.dataset.homeScroll;
-            if (parseRouteHash(window.location.hash) !== APP_SECTIONS.HOME) {
-                routeTo(APP_SECTIONS.HOME);
-                window.setTimeout(() => scrollToHomeSection(sectionId), 40);
-                return;
-            }
-            scrollToHomeSection(sectionId);
         });
     });
     $$('[data-mobile-route]').forEach((button) => button.addEventListener('click', () => routeTo(button.dataset.mobileRoute)));

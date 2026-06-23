@@ -16,15 +16,13 @@ test('myphoto dashboard no longer renders the stats strip', () => {
     assert.equal(markup.includes('id="stat-album-count"'), false);
 });
 
-test('home absorbs the myphoto dashboard and top-level navigation is reduced to explore plus a home guide anchor', () => {
+test('home absorbs the myphoto dashboard and top-level navigation is reduced to home and explore', () => {
     const markup = html();
     const app = source();
 
     assert.equal(markup.includes('id="page-myphoto"'), false);
     assert.equal(markup.includes('data-route="myphoto"'), false);
     assert.equal(markup.includes('data-mobile-route="myphoto"'), false);
-    assert.equal(markup.includes('>Home</a>'), false);
-    assert.match(markup, /class="top-nav"[\s\S]*data-home-scroll="editorial-feature-top"[\s\S]*data-route="explore"[\s\S]*data-home-scroll="home-how-it-works"/);
     assert.match(markup, /id="page-home"[\s\S]*id="recent-photo-grid"[\s\S]*id="album-list"/);
     assert.match(app, /renderedRoute === APP_SECTIONS\.HOME[\s\S]*renderSavedPhotoSurfaces\(\)/);
 });
@@ -62,7 +60,7 @@ test('home hero keeps the map and rotating country photo preview without extra c
     const styles = css();
 
     const heroStart = markup.indexOf('<div class="hero">');
-    const heroEnd = markup.indexOf('class="content-band home-explore-guide"', heroStart);
+    const heroEnd = markup.indexOf('<section class="content-band home-explore-guide"', heroStart);
     const hero = markup.slice(heroStart, heroEnd);
 
     assert.notEqual(heroStart, -1);
@@ -127,12 +125,12 @@ test('home no longer renders the removed easol intro sections', () => {
     assert.doesNotMatch(markup, /INTRODUCING/);
 });
 
-test('home adds the screenshot-matched Korean editorial section at the top of the homepage', () => {
+test('home adds the screenshot-matched Korean editorial section at the very bottom of the homepage', () => {
     const markup = html();
     const styles = css();
 
     assert.match(markup, /class="editorial-feature editorial-feature--korean"[\s\S]*class="editorial-feature__header"[\s\S]*class="editorial-feature__hero"[\s\S]*class="editorial-feature__intro"/);
-    assert.match(markup, /class="editorial-feature__brand"[\s\S]*images\/logo-wordmark\.svg/);
+    assert.match(markup, /class="editorial-feature__brand"[\s\S]*images\/logo\.png[\s\S]*IKKYEE/);
     assert.match(markup, /class="editorial-feature__nav"[\s\S]*아카이브[\s\S]*탐색[\s\S]*앨범[\s\S]*지도[\s\S]*기록/);
     assert.match(markup, /class="editorial-feature__headline"[\s\S]*흩어진 사진을 하나로/);
     assert.match(markup, /class="editorial-feature__categories"[\s\S]*여행 사진[\s\S]*지도 기록[\s\S]*날짜별 앨범[\s\S]*장소별 정리[\s\S]*비공개 보관[\s\S]*선택 공유/);
