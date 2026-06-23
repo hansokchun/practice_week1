@@ -80,20 +80,18 @@ img {
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 0;
     width: fit-content;
     color: var(--teal);
     text-decoration: none;
-    font-family: Georgia, 'Times New Roman', var(--headline);
-    font-size: 26px;
-    font-weight: 600;
+    line-height: 1;
     letter-spacing: 0;
 }
 
 .brand img {
     display: block;
-    width: 34px;
-    height: 34px;
+    width: 176px;
+    height: auto;
     object-fit: contain;
     flex: 0 0 auto;
 }
@@ -102,7 +100,7 @@ img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 28px;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -116,7 +114,7 @@ img {
     text-align: center;
     text-decoration: none;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     padding: 21px 0 16px;
     border-bottom: 2px solid transparent;
 }
@@ -884,6 +882,7 @@ body.is-logged-in .white-band {
     background: #ffffff;
     padding-left: max(24px, calc((100% - var(--container)) / 2));
     padding-right: max(24px, calc((100% - var(--container)) / 2));
+    scroll-margin-top: 92px;
 }
 
 .home-explore-guide-copy {
@@ -1660,10 +1659,7 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__brand {
-    gap: 10px;
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: 0;
+    gap: 0;
 }
 
 .editorial-feature--korean .editorial-feature__nav {
@@ -1781,7 +1777,7 @@ body.is-logged-in .white-band {
 .editorial-feature__brand {
     display: inline-flex;
     align-items: center;
-    gap: 14px;
+    gap: 0;
     font-size: 28px;
     font-weight: 800;
     line-height: 1;
@@ -1790,8 +1786,8 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature__brand img {
-    width: 22px;
-    height: 22px;
+    width: 172px;
+    height: auto;
     object-fit: contain;
 }
 
@@ -6080,13 +6076,18 @@ body.is-logged-in .white-band {
         justify-self: center;
     }
 
+    .brand img {
+        width: 154px;
+    }
+
     .top-nav {
         width: 100%;
+        justify-content: center;
+        gap: 20px;
     }
 
     .top-nav a {
         min-width: 0;
-        flex: 1;
         padding: 10px 8px;
     }
 
@@ -6130,6 +6131,10 @@ body.is-logged-in .white-band {
 
     .editorial-feature__brand {
         font-size: 20px;
+    }
+
+    .editorial-feature__brand img {
+        width: 146px;
     }
 
     .editorial-feature__nav {

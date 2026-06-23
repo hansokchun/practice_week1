@@ -350,6 +350,15 @@ function routeToPublic(section, albumId, { replace = false } = {}) {
     renderRoute(normalized);
 }
 
+function scrollToHomeSection(sectionId) {
+    if (!sectionId) return;
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+    window.requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+}
+
 function routeToTrip(albumId, options = {}) {
     state.tripReviewDateFilter = null;
     state.tripReviewFocusPhotoId = null;
@@ -3929,6 +3938,19 @@ function bindEvents() {
             event.preventDefault();
             event.stopPropagation();
             routeTo(link.dataset.route);
+        });
+    });
+    $$('[data-home-scroll]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const sectionId = link.dataset.homeScroll;
+            if (parseRouteHash(window.location.hash) !== APP_SECTIONS.HOME) {
+                routeTo(APP_SECTIONS.HOME);
+                window.setTimeout(() => scrollToHomeSection(sectionId), 40);
+                return;
+            }
+            scrollToHomeSection(sectionId);
         });
     });
     $$('[data-mobile-route]').forEach((button) => button.addEventListener('click', () => routeTo(button.dataset.mobileRoute)));
