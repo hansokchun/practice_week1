@@ -87,17 +87,14 @@ test('home keeps only the remaining public explanation sections before the priva
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
-    const productIntroIndex = markup.indexOf('class="home-product-intro"');
 
     assert.ok(introImageIndex > -1);
     assert.ok(heroIndex > introImageIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
     assert.ok(workspaceIndex > exploreIndex);
-    assert.ok(productIntroIndex > workspaceIndex);
+    assert.ok(workspaceIndex > -1);
     assert.match(markup, /images\/home-explore-guide\.png/);
-    assert.match(markup, /class="home-product-intro"[\s\S]*여행 사진을 올리면, 장소와 날짜를 따라 다시 정리됩니다\./);
-    assert.match(markup, /class="home-product-intro__actions"[\s\S]*Explore 먼저 보기[\s\S]*사진 올리기/);
     assert.doesNotMatch(markup, /class="home-easol-intro"/);
     assert.doesNotMatch(markup, /SELL MORE/);
     assert.doesNotMatch(markup, /EXPERIENCES/);
@@ -112,7 +109,6 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.doesNotMatch(markup, /data-reference-style="journi"/);
     assert.doesNotMatch(markup, /class="home-experience-commerce"/);
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
-    assert.match(styles, /\.home-product-intro\s*\{[^}]*margin:\s*0 auto 112px;[^}]*padding-top:\s*56px;/s);
 });
 
 test('home no longer renders the removed easol intro sections', () => {
@@ -173,7 +169,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature,[\s\S]*body\.is-logged-in\s+\.home-product-intro[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {
