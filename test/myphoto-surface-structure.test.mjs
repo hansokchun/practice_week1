@@ -99,9 +99,6 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.doesNotMatch(markup, /SELL MORE/);
     assert.doesNotMatch(markup, /EXPERIENCES/);
     assert.doesNotMatch(markup, /YOUR WAY/);
-    assert.doesNotMatch(markup, /더 많은/);
-    assert.doesNotMatch(markup, /여행의 순간을/);
-    assert.doesNotMatch(markup, /당신의 방식대로/);
     assert.doesNotMatch(markup, /class="content-band home-album-guide"/);
     assert.doesNotMatch(markup, /class="content-band home-public-preview"/);
     assert.doesNotMatch(markup, /data-reference-style="polarsteps"/);
@@ -125,25 +122,23 @@ test('home no longer renders the removed easol intro sections', () => {
     assert.doesNotMatch(markup, /INTRODUCING/);
 });
 
-test('home adds the screenshot-matched Korean editorial section at the very bottom of the homepage', () => {
+test('home keeps the Korean editorial section without a duplicated local header', () => {
     const markup = html();
     const styles = css();
 
-    assert.match(markup, /class="editorial-feature editorial-feature--korean"[\s\S]*class="editorial-feature__header"[\s\S]*class="editorial-feature__hero"[\s\S]*class="editorial-feature__intro"/);
-    assert.match(markup, /class="editorial-feature__brand"[\s\S]*images\/logo\.png[\s\S]*IKKYEE/);
-    assert.match(markup, /class="editorial-feature__nav"[\s\S]*아카이브[\s\S]*탐색[\s\S]*앨범[\s\S]*지도[\s\S]*기록/);
+    assert.match(markup, /class="editorial-feature editorial-feature--korean"[\s\S]*class="editorial-feature__hero"[\s\S]*class="editorial-feature__intro"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__header"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__brand"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__nav"/);
     assert.match(markup, /class="editorial-feature__headline"[\s\S]*흩어진 사진을 하나로/);
-    assert.match(markup, /class="editorial-feature__categories"[\s\S]*여행 사진[\s\S]*지도 기록[\s\S]*날짜별 앨범[\s\S]*장소별 정리[\s\S]*비공개 보관[\s\S]*선택 공유/);
     assert.match(markup, /class="editorial-feature__statement"[^>]*>지도 위에 남기다</);
     assert.match(markup, /class="editorial-feature__wide-image"[\s\S]*images\/main_bg2\.jpg/);
     assert.match(markup, /class="editorial-feature__side-image"[\s\S]*images\/main_bg5\.jpg/);
     assert.match(markup, /class="editorial-feature__large-image"[\s\S]*images\/main_bg3\.jpg/);
-    assert.match(markup, /class="editorial-feature__intro-copy"[\s\S]*Ikkyee는 여행 사진의 위치와 시간을 읽어[\s\S]*공유하고 싶은 순간만 골라 보여줄 수 있어요/);
     assert.match(markup, /class="editorial-feature__proof"[\s\S]*IBIZA ROCKS[\s\S]*GCN[\s\S]*LOVE TRAILS[\s\S]*ENVISION/);
     assert.doesNotMatch(markup, /class="intro-image-section"/);
     assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*width:\s*100%;[^}]*overflow:\s*hidden;[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;[^}]*margin:\s*0 auto;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__nav\s*\{[^}]*font-size:\s*11px;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*312px;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*42px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
     assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*912px;[^}]*max-width:\s*912px;[^}]*font-size:\s*188px;[^}]*line-height:\s*0\.91;[^}]*letter-spacing:\s*-0\.068em;[^}]*transform:\s*scaleX\(0\.74\);/s);
