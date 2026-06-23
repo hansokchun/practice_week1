@@ -1686,14 +1686,14 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__headline {
-    width: 944px;
-    max-width: 944px;
-    font-size: 182px;
+    width: 912px;
+    max-width: 912px;
+    font-size: 188px;
     font-weight: 900;
-    line-height: 0.93;
+    line-height: 0.91;
     letter-spacing: -0.068em;
     white-space: nowrap;
-    transform: scaleX(0.79);
+    transform: scaleX(0.74);
     transform-origin: left center;
 }
 
@@ -1726,14 +1726,14 @@ body.is-logged-in .white-band {
 }
 
 .editorial-feature--korean .editorial-feature__statement {
-    width: 500px;
-    max-width: 500px;
-    font-size: 128px;
+    width: 472px;
+    max-width: 472px;
+    font-size: 134px;
     font-weight: 900;
-    line-height: 0.9;
+    line-height: 0.88;
     letter-spacing: -0.07em;
     white-space: nowrap;
-    transform: scaleX(0.74);
+    transform: scaleX(0.68);
     transform-origin: left center;
 }
 
@@ -6187,19 +6187,19 @@ body.is-logged-in .white-band {
     }
 
     .editorial-feature--korean .editorial-feature__headline {
-        width: 944px;
-        max-width: 944px;
-        font-size: 182px;
+        width: 912px;
+        max-width: 912px;
+        font-size: 188px;
         white-space: nowrap;
-        transform: scaleX(0.79);
+        transform: scaleX(0.74);
     }
 
     .editorial-feature--korean .editorial-feature__statement {
-        width: 500px;
-        max-width: 500px;
-        font-size: 128px;
+        width: 472px;
+        max-width: 472px;
+        font-size: 134px;
         white-space: nowrap;
-        transform: scaleX(0.74);
+        transform: scaleX(0.68);
     }
 
     .easol-clone-nav {
