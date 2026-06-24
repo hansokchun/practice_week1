@@ -112,7 +112,7 @@ All spacing derives from a base of 4px.
 
 ### Houses Reference Band
 
-- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage with shadow depth.
+- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, absolutely positioned image collage with shadow depth, and a quiet dotted divider below.
 - **Variants**: Single top-of-home feature.
 - **Spacing**: Desktop top padding 140px; mobile top padding 84px.
 - **States**: Photo captions reveal on hover and focus.

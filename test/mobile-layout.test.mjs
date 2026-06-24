@@ -40,6 +40,7 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /\.home-houses-reference__collage\s*\{[^}]*height:\s*380px;[^}]*margin-top:\s*44px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__mapline\s*\{/);
     assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
+    assert.match(mobile, /\.home-houses-reference__divider\s*\{[^}]*height:\s*96px;[^}]*margin-top:\s*-10px;/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 
