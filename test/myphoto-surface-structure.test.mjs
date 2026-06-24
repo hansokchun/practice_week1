@@ -59,7 +59,7 @@ test('home hero keeps the map and rotating country photo preview without extra c
     const styles = css();
 
     const heroStart = markup.indexOf('<div class="hero">');
-    const heroEnd = markup.indexOf('<section class="content-band home-explore-guide"', heroStart);
+    const heroEnd = markup.indexOf('<section class="home-workspace page-container"', heroStart);
     const hero = markup.slice(heroStart, heroEnd);
 
     assert.notEqual(heroStart, -1);
@@ -86,7 +86,6 @@ test('home keeps only the remaining public explanation sections before the priva
     const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
     const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
     const heroIndex = markup.indexOf('<div class="hero">');
-    const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(housesIndex > -1);
@@ -94,15 +93,15 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.ok(introImageIndex > -1);
     assert.ok(introImageIndex > featureStoriesIndex);
     assert.ok(heroIndex > introImageIndex);
-    assert.ok(exploreIndex > -1);
-    assert.ok(exploreIndex > heroIndex);
-    assert.ok(workspaceIndex > exploreIndex);
+    assert.ok(workspaceIndex > heroIndex);
     assert.ok(workspaceIndex > -1);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*다른 여행자의 공개 장소를 지도에서 발견합니다/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
+    assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*장소를 검색하고,[\s\S]*Explore 흐름을 홈에서 먼저 보여줍니다\.[\s\S]*Explore 열기[\s\S]*내 사진 올리기/);
     assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*images\/home-explore-guide\.png/);
     assert.match(markup, /images\/home-explore-guide\.png/);
+    assert.doesNotMatch(markup, /class="content-band home-explore-guide"/);
     assert.doesNotMatch(markup, /class="home-easol-intro"/);
     assert.doesNotMatch(markup, /SELL MORE/);
     assert.doesNotMatch(markup, /EXPERIENCES/);
@@ -116,7 +115,7 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*padding-left:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);[^}]*padding-right:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);/s);
     assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
     assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*18px;[^}]*object-fit:\s*contain;/s);
-    assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
+    assert.match(styles, /\.home-feature-story__actions\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*10px;/s);
 });
 
 test('home starts the landing flow with the Ikkyee editorial collage section', () => {
@@ -236,7 +235,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-feature-stories,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-feature-stories,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {

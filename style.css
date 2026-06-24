@@ -469,7 +469,6 @@ body.is-logged-in .home-public-preview,
 body.is-logged-in .home-fit-band,
 body.is-logged-in .home-replay-hero,
 body.is-logged-in .home-feature-stories,
-body.is-logged-in .home-explore-guide,
 body.is-logged-in .home-album-guide,
 body.is-logged-in .home-reference-section,
 body.is-logged-in .home-experience-commerce,
@@ -773,6 +772,12 @@ body.is-logged-in .home-houses-reference {
     font-size: 17px;
     line-height: 1.72;
     word-break: keep-all;
+}
+
+.home-feature-story__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .home-public-preview {
@@ -1090,59 +1095,6 @@ body.is-logged-in .home-houses-reference {
 .home-replay-copy .btn-primary {
     width: fit-content;
     margin-top: 8px;
-}
-
-.home-explore-guide {
-    display: grid;
-    grid-template-columns: minmax(320px, 0.78fr) minmax(0, 1.22fr);
-    gap: 38px;
-    align-items: center;
-    width: 100%;
-    max-width: none;
-    background: #ffffff;
-    padding-left: max(24px, calc((100% - var(--container)) / 2));
-    padding-right: max(24px, calc((100% - var(--container)) / 2));
-}
-
-.home-explore-guide-copy {
-    display: grid;
-    gap: 18px;
-}
-
-.home-explore-guide-copy h2 {
-    margin: 0;
-    color: var(--teal);
-    font-family: var(--headline);
-    font-size: 36px;
-    line-height: 1.16;
-    letter-spacing: 0;
-}
-
-.home-explore-guide-copy p:not(.eyebrow) {
-    margin: 0;
-    color: var(--muted);
-    font-size: 17px;
-    line-height: 1.72;
-}
-
-.home-explore-guide-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.home-explore-guide-media {
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: #f5f8f7;
-    box-shadow: 0 24px 64px rgba(26, 77, 78, 0.12);
-}
-
-.home-explore-guide-media img {
-    width: 100%;
-    aspect-ratio: 1.78;
-    object-fit: cover;
 }
 
 .home-album-guide {
@@ -6599,45 +6551,6 @@ body.is-logged-in .home-houses-reference {
         width: 100%;
     }
 
-    .home-explore-guide {
-        grid-template-columns: 1fr;
-        gap: 22px;
-        padding-left: 16px;
-        padding-right: 16px;
-    }
-
-    .home-explore-guide-copy {
-        gap: 14px;
-    }
-
-    .home-explore-guide-copy h2 {
-        font-size: 28px;
-        line-height: 1.18;
-    }
-
-    .home-explore-guide-copy p:not(.eyebrow) {
-        font-size: 15px;
-        line-height: 1.62;
-    }
-
-    .home-explore-guide-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-        width: 100%;
-    }
-
-    .home-explore-guide-actions button {
-        width: 100%;
-    }
-
-    .home-explore-guide-media {
-        border-radius: 14px;
-    }
-
-    .home-explore-guide-media img {
-        aspect-ratio: 1.28;
-    }
-
     .home-feature-stories {
         width: 100%;
         gap: 0;
@@ -6671,6 +6584,16 @@ body.is-logged-in .home-houses-reference {
     .home-feature-story__copy h3 {
         font-size: 28px;
         line-height: 1.18;
+    }
+
+    .home-feature-story__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .home-feature-story__actions button {
+        width: 100%;
     }
 
     .home-feature-story__copy p:not(.eyebrow) {
