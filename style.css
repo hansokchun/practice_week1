@@ -606,25 +606,6 @@ body.is-logged-in .home-houses-reference {
     line-height: 1.56;
 }
 
-.home-houses-reference__action {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 48px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: #ffffff;
-    color: var(--teal);
-    font-size: 17px;
-    font-weight: 700;
-    padding: 0 18px;
-    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.12);
-}
-
-.home-houses-reference__action .material-symbols-outlined {
-    font-size: 20px;
-}
-
 .home-houses-reference__collage {
     position: relative;
     height: 540px;
@@ -6624,12 +6605,6 @@ body.is-logged-in .home-houses-reference {
     .home-houses-reference__copy {
         font-size: 17px;
         line-height: 1.52;
-    }
-
-    .home-houses-reference__action {
-        min-height: 44px;
-        font-size: 15px;
-        padding: 0 16px;
     }
 
     .home-houses-reference__collage {

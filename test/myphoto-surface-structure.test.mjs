@@ -83,12 +83,15 @@ test('home keeps only the remaining public explanation sections before the priva
     const markup = html();
     const styles = css();
 
+    const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
     const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
+    assert.ok(housesIndex > -1);
     assert.ok(introImageIndex > -1);
+    assert.ok(introImageIndex > housesIndex);
     assert.ok(heroIndex > introImageIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
@@ -108,21 +111,23 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
 });
 
-test('home appends the Ikkyee editorial collage section at the very bottom of the landing flow', () => {
+test('home starts the landing flow with the Ikkyee editorial collage section', () => {
     const markup = html();
     const styles = css();
 
-    const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
+    const pageHomeIndex = markup.indexOf('<section id="page-home"');
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
-    const pageHomeEnd = markup.indexOf('</section>', housesIndex);
+    const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
 
-    assert.ok(workspaceIndex > -1);
-    assert.ok(housesIndex > workspaceIndex);
-    assert.ok(pageHomeEnd > housesIndex);
+    assert.ok(pageHomeIndex > -1);
+    assert.ok(housesIndex > pageHomeIndex);
+    assert.ok(housesIndex < introImageIndex);
     assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
     assert.match(markup, /이 사진은 어디서 찍은 걸까\?/);
     assert.match(markup, /Ikkyee에서 장소와 여행자의 기록을 확인하세요\./);
-    assert.match(markup, /class="home-houses-reference__action"[\s\S]*공개 장소 둘러보기/);
+    assert.doesNotMatch(markup, /class="home-houses-reference__action"/);
+    assert.doesNotMatch(markup, /공개 장소 둘러보기/);
+    assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
     assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--f/);
     assert.match(markup, /<figcaption>France · Nice<\/figcaption>/);
     assert.match(markup, /<figcaption>Japan · Kyoto<\/figcaption>/);
@@ -138,7 +143,7 @@ test('home appends the Ikkyee editorial collage section at the very bottom of th
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
 });
 
-test('logged-in home keeps the bottom houses reference visible after white bands are hidden', () => {
+test('logged-in home keeps the houses reference visible after white bands are hidden', () => {
     const styles = css();
 
     const hiddenWhiteBandIndex = styles.indexOf('body.is-logged-in .hero,');
