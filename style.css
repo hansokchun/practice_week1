@@ -566,21 +566,21 @@ body.is-logged-in .home-houses-reference {
     position: relative;
     overflow: hidden;
     background: var(--houses-surface);
-    padding-top: 124px;
-    padding-bottom: 0;
+    padding-top: 140px;
+    padding-bottom: 96px;
 }
 
 .home-houses-reference__word {
     position: absolute;
-    top: -46px;
+    top: -70px;
     left: 50%;
     transform: translateX(-50%);
     color: var(--houses-word);
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(210px, 25vw, 430px);
+    font-size: clamp(250px, 30vw, 540px);
     font-weight: 400;
     line-height: 0.86;
-    letter-spacing: -0.03em;
+    letter-spacing: 0.015em;
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
@@ -594,7 +594,7 @@ body.is-logged-in .home-houses-reference {
     gap: 26px;
     max-width: 720px;
     margin: 0 auto;
-    padding-top: 154px;
+    padding-top: 184px;
     text-align: center;
 }
 
@@ -608,16 +608,16 @@ body.is-logged-in .home-houses-reference {
 
 .home-houses-reference__collage {
     position: relative;
-    height: 540px;
-    margin-top: 86px;
+    height: 604px;
+    margin-top: 78px;
 }
 
 .home-houses-reference__base {
     position: absolute;
     left: 50%;
-    bottom: -182px;
+    bottom: -92px;
     width: 1280px;
-    height: 360px;
+    height: 320px;
     transform: translateX(-50%);
     border-radius: 50%;
     background: var(--houses-base);
@@ -6589,17 +6589,18 @@ body.is-logged-in .home-houses-reference {
     .home-houses-reference {
         padding-left: 16px;
         padding-right: 16px;
-        padding-top: 72px;
+        padding-top: 84px;
+        padding-bottom: 68px;
     }
 
     .home-houses-reference__word {
-        top: 4px;
-        font-size: clamp(100px, 31vw, 190px);
+        top: -4px;
+        font-size: clamp(126px, 38vw, 230px);
     }
 
     .home-houses-reference__content {
         gap: 18px;
-        padding-top: 96px;
+        padding-top: 124px;
     }
 
     .home-houses-reference__copy {
@@ -6608,12 +6609,12 @@ body.is-logged-in .home-houses-reference {
     }
 
     .home-houses-reference__collage {
-        height: 360px;
-        margin-top: 52px;
+        height: 408px;
+        margin-top: 44px;
     }
 
     .home-houses-reference__base {
-        bottom: -124px;
+        bottom: -64px;
         width: 760px;
         height: 220px;
     }

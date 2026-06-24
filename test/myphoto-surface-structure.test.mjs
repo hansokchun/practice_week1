@@ -135,9 +135,10 @@ test('home starts the landing flow with the Ikkyee editorial collage section', (
     assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
     assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
     assert.match(styles, /--houses-base:\s*var\(--teal\);/);
-    assert.match(styles, /\.home-houses-reference\s*\{[^}]*background:\s*var\(--houses-surface\);[^}]*padding-top:\s*124px;/s);
-    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*color:\s*var\(--houses-word\);[^}]*font-family:\s*Georgia,\s*"Times New Roman",\s*serif;/s);
-    assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*540px;/s);
+    assert.match(styles, /\.home-houses-reference\s*\{[^}]*background:\s*var\(--houses-surface\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
+    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(250px,\s*30vw,\s*540px\);[^}]*letter-spacing:\s*0\.015em;/s);
+    assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*604px;[^}]*margin-top:\s*78px;/s);
+    assert.match(styles, /\.home-houses-reference__base\s*\{[^}]*bottom:\s*-92px;[^}]*height:\s*320px;/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
