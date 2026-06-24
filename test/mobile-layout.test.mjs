@@ -27,7 +27,7 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*padding-top:\s*24px;/s);
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.hero\s*\{/s);
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{/s);
-    assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*gap:\s*0;[^}]*margin-bottom:\s*72px;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
+    assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*gap:\s*0;[^}]*margin-bottom:\s*0;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
     assert.match(mobile, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*gap:\s*22px;[^}]*padding:\s*48px 0;/s);
     assert.match(mobile, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*1\.72;[^}]*border-radius:\s*14px;/s);
     assert.match(mobile, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*12px;/s);

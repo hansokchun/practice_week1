@@ -209,6 +209,26 @@ test('logged-in home hides public intro sections and shows only the private work
     assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-feature-stories,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
+test('site footer provides global archive information after the app pages', () => {
+    const markup = html();
+    const styles = css();
+
+    const mainEndIndex = markup.indexOf('</main>');
+    const footerIndex = markup.indexOf('class="site-footer"');
+
+    assert.ok(mainEndIndex > -1);
+    assert.ok(footerIndex > mainEndIndex);
+    assert.match(markup, /<footer class="site-footer" aria-labelledby="site-footer-title">/);
+    assert.match(markup, /<h2 id="site-footer-title">Ikkyee<\/h2>/);
+    assert.match(markup, /장소로 기억하는 여행 사진 아카이브/);
+    assert.match(markup, /href="#\/">Home<\/a>/);
+    assert.match(markup, /href="#\/explore">Explore<\/a>/);
+    assert.match(markup, /사진은 기본 비공개로 보관됩니다\./);
+    assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*1px solid var\(--line\);[^}]*background:\s*var\(--surface\);/s);
+    assert.match(styles, /\.site-footer__inner\s*\{[^}]*grid-template-columns:/s);
+    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*background:\s*var\(--teal\);/s);
+});
+
 test('photo detail modal keeps the right information panel inside the viewport', () => {
     const styles = css();
 
