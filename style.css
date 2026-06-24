@@ -468,6 +468,7 @@ body.is-logged-in .home-choice-band,
 body.is-logged-in .home-public-preview,
 body.is-logged-in .home-fit-band,
 body.is-logged-in .home-replay-hero,
+body.is-logged-in .home-feature-stories,
 body.is-logged-in .home-explore-guide,
 body.is-logged-in .home-album-guide,
 body.is-logged-in .home-reference-section,
@@ -709,6 +710,57 @@ body.is-logged-in .home-houses-reference {
 
 .soft-band {
     border-top: 1px solid var(--line);
+}
+
+.home-feature-stories {
+    display: grid;
+    gap: 44px;
+    width: min(var(--container), calc(100% - 48px));
+    margin: 0 auto 96px;
+}
+
+.home-feature-story {
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(320px, 0.74fr);
+    gap: 44px;
+    align-items: center;
+}
+
+.home-feature-story__media {
+    overflow: hidden;
+    background: var(--surface-soft);
+    box-shadow: var(--shadow);
+}
+
+.home-feature-story__media img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1.6;
+    object-fit: cover;
+}
+
+.home-feature-story__copy {
+    display: grid;
+    gap: 16px;
+    max-width: 460px;
+}
+
+.home-feature-story__copy h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 900;
+    line-height: 1.18;
+    letter-spacing: 0;
+    word-break: keep-all;
+}
+
+.home-feature-story__copy p:not(.eyebrow) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.72;
+    word-break: keep-all;
 }
 
 .home-public-preview {
@@ -6572,6 +6624,36 @@ body.is-logged-in .home-houses-reference {
 
     .home-explore-guide-media img {
         aspect-ratio: 1.28;
+    }
+
+    .home-feature-stories {
+        width: calc(100% - 32px);
+        gap: 32px;
+        margin-bottom: 72px;
+    }
+
+    .home-feature-story {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .home-feature-story__media img {
+        aspect-ratio: 1.28;
+    }
+
+    .home-feature-story__copy {
+        max-width: none;
+        gap: 12px;
+    }
+
+    .home-feature-story__copy h3 {
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    .home-feature-story__copy p:not(.eyebrow) {
+        font-size: 15px;
+        line-height: 1.62;
     }
 
     .home-houses-reference {

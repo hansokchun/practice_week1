@@ -27,6 +27,10 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*padding-top:\s*24px;/s);
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.hero\s*\{/s);
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{/s);
+    assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*calc\(100% - 32px\);[^}]*gap:\s*32px;[^}]*margin-bottom:\s*72px;/s);
+    assert.match(mobile, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*gap:\s*18px;/s);
+    assert.match(mobile, /\.home-feature-story__media img\s*\{[^}]*aspect-ratio:\s*1\.28;/s);
+    assert.match(mobile, /\.home-feature-story__copy h3\s*\{[^}]*font-size:\s*28px;[^}]*line-height:\s*1\.2;/s);
     assert.match(mobile, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.home-explore-guide-media img\s*\{[^}]*aspect-ratio:\s*1\.28;/s);
     assert.match(mobile, /\.editorial-feature\s*\{[^}]*width:\s*calc\(100% - 32px\);/s);

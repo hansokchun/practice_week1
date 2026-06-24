@@ -45,7 +45,6 @@ test('home no longer renders temporary preview bands or removed intro candidates
         'When It Fits',
         'home-replay-hero',
         'Replay Your Journey',
-        'images/home-travel-replay.png',
         'home-story-band',
         'home-flow-title',
         'process-grid',
@@ -84,19 +83,24 @@ test('home keeps only the remaining public explanation sections before the priva
     const styles = css();
 
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
+    const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
     const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
     const heroIndex = markup.indexOf('<div class="hero">');
     const exploreIndex = markup.indexOf('class="content-band home-explore-guide"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(housesIndex > -1);
+    assert.ok(featureStoriesIndex > housesIndex);
     assert.ok(introImageIndex > -1);
-    assert.ok(introImageIndex > housesIndex);
+    assert.ok(introImageIndex > featureStoriesIndex);
     assert.ok(heroIndex > introImageIndex);
     assert.ok(exploreIndex > -1);
     assert.ok(exploreIndex > heroIndex);
     assert.ok(workspaceIndex > exploreIndex);
     assert.ok(workspaceIndex > -1);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*다른 여행자의 공개 장소를 지도에서 발견합니다/);
     assert.match(markup, /images\/home-explore-guide\.png/);
     assert.doesNotMatch(markup, /class="home-easol-intro"/);
     assert.doesNotMatch(markup, /SELL MORE/);
@@ -108,6 +112,7 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.doesNotMatch(markup, /data-reference-style="findpenguins"/);
     assert.doesNotMatch(markup, /data-reference-style="journi"/);
     assert.doesNotMatch(markup, /class="home-experience-commerce"/);
+    assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.96fr\)\s*minmax\(320px,\s*0\.74fr\);/s);
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
 });
 
@@ -117,10 +122,13 @@ test('home starts the landing flow with the Ikkyee editorial collage section', (
 
     const pageHomeIndex = markup.indexOf('<section id="page-home"');
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
+    const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
     const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
 
     assert.ok(pageHomeIndex > -1);
     assert.ok(housesIndex > pageHomeIndex);
+    assert.ok(featureStoriesIndex > housesIndex);
+    assert.ok(featureStoriesIndex < introImageIndex);
     assert.ok(housesIndex < introImageIndex);
     assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
     assert.match(markup, /이 사진은 어디서 찍은 걸까\?/);
@@ -163,6 +171,7 @@ test('logged-in home keeps the houses reference visible after white bands are hi
     assert.ok(hiddenWhiteBandIndex > -1);
     assert.ok(hiddenWhiteBandRuleEnd > hiddenWhiteBandIndex);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.white-band/);
+    assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-feature-stories/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /display:\s*none;/);
     assert.ok(housesVisibleIndex > hiddenWhiteBandRuleEnd);
     assert.match(styles.slice(housesVisibleIndex, styles.indexOf('}', housesVisibleIndex)), /display:\s*block;/);
@@ -224,7 +233,7 @@ test('logged-in home hides public intro sections and shows only the private work
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-feature-stories,[\s\S]*body\.is-logged-in\s+\.home-explore-guide,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {
