@@ -112,7 +112,7 @@ All spacing derives from a base of 4px.
 
 ### Houses Reference Band
 
-- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, subtle cartography background, and absolutely positioned image collage.
+- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage with shadow depth.
 - **Variants**: Single top-of-home feature.
 - **Spacing**: Desktop top padding 140px; mobile top padding 84px.
 - **States**: Photo captions reveal on hover and focus.
@@ -144,7 +144,7 @@ Ikkyee uses a mixed but restrained strategy: tonal-shift surfaces for app struct
 | Level | Value | Usage |
 | --- | --- | --- |
 | App shadow | `--shadow` = `0 20px 60px rgba(26, 77, 78, 0.08)` | Panels and elevated surfaces |
-| Media shadow | `0 22px 44px rgba(70, 40, 32, 0.16)` | Houses reference collage |
+| Media shadow | `0 30px 70px rgba(70, 40, 32, 0.22), 0 12px 28px rgba(26, 77, 78, 0.12)` | Houses reference collage |
 | Hero shadow | `0 28px 80px rgba(26, 77, 78, 0.22)` | Hero photo/map card |
 
 Borders use `--line` or a low-alpha color derived from the relevant section text color.

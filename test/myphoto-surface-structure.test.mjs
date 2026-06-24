@@ -128,7 +128,8 @@ test('home starts the landing flow with the Ikkyee editorial collage section', (
     assert.doesNotMatch(markup, /class="home-houses-reference__action"/);
     assert.doesNotMatch(markup, /공개 장소 둘러보기/);
     assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
-    assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__mapline[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
+    assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
+    assert.doesNotMatch(markup, /home-houses-reference__mapline/);
     assert.doesNotMatch(markup, /home-houses-reference__photo--f/);
     assert.doesNotMatch(markup, /France · Paris/);
     assert.doesNotMatch(markup, /home-houses-reference__base/);
@@ -138,12 +139,13 @@ test('home starts the landing flow with the Ikkyee editorial collage section', (
     assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
     assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
     assert.doesNotMatch(styles, /--houses-base:/);
-    assert.match(styles, /\.home-houses-reference::before\s*\{[^}]*border-top:\s*1px solid var\(--line\);[^}]*linear-gradient\(rgba\(26,\s*77,\s*78,\s*0\.08\)\s*1px,\s*transparent\s*1px\)/s);
-    assert.match(styles, /\.home-houses-reference__mapline\s*\{[^}]*background:[^}]*linear-gradient\(90deg,\s*transparent,[^}]*var\(--line\)/s);
+    assert.doesNotMatch(styles, /\.home-houses-reference::before\s*\{/);
+    assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
     assert.match(styles, /\.home-houses-reference\s*\{[^}]*background:\s*var\(--houses-surface\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(250px,\s*30vw,\s*540px\);[^}]*letter-spacing:\s*0\.015em;/s);
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
+    assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);

@@ -569,25 +569,6 @@ body.is-logged-in .home-houses-reference {
     padding-bottom: 96px;
 }
 
-.home-houses-reference::before {
-    content: "";
-    position: absolute;
-    left: max(24px, calc((100% - var(--container)) / 2));
-    right: max(24px, calc((100% - var(--container)) / 2));
-    bottom: 88px;
-    height: 344px;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-    background:
-        linear-gradient(rgba(26, 77, 78, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(26, 77, 78, 0.08) 1px, transparent 1px),
-        radial-gradient(circle at 18% 36%, rgba(244, 140, 113, 0.16), transparent 30%),
-        radial-gradient(circle at 82% 34%, rgba(201, 160, 80, 0.14), transparent 28%);
-    background-size: 48px 48px, 48px 48px, auto, auto;
-    opacity: 0.64;
-    pointer-events: none;
-}
-
 .home-houses-reference__word {
     position: absolute;
     top: -70px;
@@ -630,23 +611,14 @@ body.is-logged-in .home-houses-reference {
     margin-top: 78px;
 }
 
-.home-houses-reference__mapline {
-    position: absolute;
-    inset: 58px 46px 28px;
-    background:
-        linear-gradient(90deg, transparent, var(--line), transparent),
-        linear-gradient(16deg, transparent 34%, rgba(26, 77, 78, 0.18) 35%, transparent 37%),
-        linear-gradient(-18deg, transparent 42%, rgba(26, 77, 78, 0.12) 43%, transparent 45%);
-    opacity: 0.82;
-    pointer-events: none;
-}
-
 .home-houses-reference__photo {
     position: absolute;
     margin: 0;
     overflow: hidden;
     background: #f6f0ea;
-    box-shadow: 0 22px 44px rgba(70, 40, 32, 0.16);
+    box-shadow:
+        0 30px 70px rgba(70, 40, 32, 0.22),
+        0 12px 28px rgba(26, 77, 78, 0.12);
 }
 
 .home-houses-reference__photo img {
@@ -6620,18 +6592,6 @@ body.is-logged-in .home-houses-reference {
     .home-houses-reference__collage {
         height: 380px;
         margin-top: 44px;
-    }
-
-    .home-houses-reference::before {
-        left: 16px;
-        right: 16px;
-        bottom: 74px;
-        height: 224px;
-        background-size: 36px 36px, 36px 36px, auto, auto;
-    }
-
-    .home-houses-reference__mapline {
-        inset: 44px 2px 18px;
     }
 
     .home-houses-reference__photo--a {

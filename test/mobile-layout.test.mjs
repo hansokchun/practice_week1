@@ -38,7 +38,7 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /\.home-houses-reference\s*\{[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;[^}]*padding-top:\s*84px;[^}]*padding-bottom:\s*68px;/s);
     assert.match(mobile, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(126px,\s*38vw,\s*230px\);/s);
     assert.match(mobile, /\.home-houses-reference__collage\s*\{[^}]*height:\s*380px;[^}]*margin-top:\s*44px;/s);
-    assert.match(mobile, /\.home-houses-reference__mapline\s*\{[^}]*inset:\s*44px 2px 18px;/s);
+    assert.doesNotMatch(mobile, /\.home-houses-reference__mapline\s*\{/);
     assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
     assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
