@@ -24,7 +24,6 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 | Border/default | `--line` | `rgba(26, 77, 78, 0.14)` | `rgba(249, 247, 242, 0.16)` | Dividers and outlines |
 | Feature/houses surface | `--houses-surface` | `var(--bg)` | `var(--bg)` | Ikkyee top intro band |
 | Feature/houses word | `--houses-word` | `rgba(26, 77, 78, 0.16)` | `rgba(26, 77, 78, 0.16)` | Oversized Ikkyee word |
-| Feature/houses base | `--houses-base` | `var(--teal)` | `var(--teal)` | Collage base shape |
 | Feature/houses text | `--houses-text` | `var(--text)` | `var(--text)` | Houses intro copy |
 
 ### Rules
@@ -113,9 +112,9 @@ All spacing derives from a base of 4px.
 
 ### Houses Reference Band
 
-- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage.
+- **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, subtle cartography background, and absolutely positioned image collage.
 - **Variants**: Single top-of-home feature.
-- **Spacing**: Desktop top padding 124px; mobile top padding 72px.
+- **Spacing**: Desktop top padding 140px; mobile top padding 84px.
 - **States**: Photo captions reveal on hover and focus.
 - **Accessibility**: Decorative word hidden with `aria-hidden`; section heading is screen-reader only; collage has a group label, individual image alt text, and location captions.
 - **Motion**: Static collage, using transforms only for rotation/position.
