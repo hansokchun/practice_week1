@@ -724,13 +724,15 @@ body.is-logged-in .home-houses-reference {
 
 .home-feature-story {
     display: grid;
-    grid-template-columns: minmax(0, 1.22fr) minmax(320px, 0.78fr);
-    gap: 38px;
+    grid-template-columns: minmax(0, 0.82fr) minmax(360px, 0.98fr);
+    gap: 44px;
     align-items: center;
     padding: 78px 0;
 }
 
 .home-feature-story__media {
+    width: min(100%, 620px);
+    justify-self: start;
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -6566,6 +6568,7 @@ body.is-logged-in .home-houses-reference {
     }
 
     .home-feature-story__media {
+        width: min(100%, 560px);
         border-radius: 14px;
     }
 

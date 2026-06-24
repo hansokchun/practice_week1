@@ -29,6 +29,7 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{/s);
     assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*gap:\s*0;[^}]*margin-bottom:\s*72px;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
     assert.match(mobile, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*gap:\s*22px;[^}]*padding:\s*48px 0;/s);
+    assert.match(mobile, /\.home-feature-story__media\s*\{[^}]*width:\s*min\(100%,\s*560px\);[^}]*border-radius:\s*14px;/s);
     assert.match(mobile, /\.home-feature-story__media img\s*\{[^}]*aspect-ratio:\s*1\.28;/s);
     assert.match(mobile, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*12px;/s);
     assert.match(mobile, /\.home-feature-story__copy h3\s*\{[^}]*font-size:\s*28px;[^}]*line-height:\s*1\.18;/s);
