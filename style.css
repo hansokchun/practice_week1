@@ -16,6 +16,10 @@
     --houses-word: rgba(26, 77, 78, 0.16);
     --houses-base: var(--teal);
     --houses-text: var(--text);
+    --houses-map-water: #dfe9e4;
+    --houses-map-land: #f6f1e7;
+    --houses-map-road: rgba(26, 77, 78, 0.2);
+    --houses-map-pin: var(--coral);
     --header-height: 76px;
     --container: 1280px;
     --headline: 'Inter', 'Pretendard', sans-serif;
@@ -736,6 +740,298 @@ body.is-logged-in .home-houses-reference {
     aspect-ratio: 1.08;
     transform: translateX(-50%) rotate(-5deg);
     z-index: 3;
+}
+
+.home-houses-reference__map-motion {
+    position: relative;
+    z-index: 2;
+    width: min(1040px, calc(100% - 48px));
+    margin: 44px auto 96px;
+}
+
+.home-houses-reference__map-stage {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--houses-map-water);
+    box-shadow: 0 24px 56px rgba(26, 77, 78, 0.12);
+    isolation: isolate;
+}
+
+.home-houses-reference__map-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.24) 1px, transparent 1px);
+    background-size: 68px 68px;
+    opacity: 0.48;
+    pointer-events: none;
+}
+
+.home-houses-reference__map-viewport {
+    position: absolute;
+    inset: -22%;
+    z-index: 1;
+    transform: translate3d(0, 0, 0);
+    animation: housesMapPan 14s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+    will-change: transform;
+}
+
+.home-houses-reference__map-land,
+.home-houses-reference__map-road {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+}
+
+.home-houses-reference__map-land {
+    background: var(--houses-map-land);
+    border: 1px solid rgba(26, 77, 78, 0.1);
+    box-shadow: inset 0 0 0 18px rgba(255, 255, 255, 0.18);
+}
+
+.home-houses-reference__map-land--a {
+    top: 12%;
+    left: 6%;
+    width: 36%;
+    height: 42%;
+    border-radius: 48% 52% 42% 58%;
+    transform: rotate(-9deg);
+}
+
+.home-houses-reference__map-land--b {
+    top: 6%;
+    right: 5%;
+    width: 34%;
+    height: 34%;
+    border-radius: 55% 45% 58% 42%;
+    transform: rotate(11deg);
+}
+
+.home-houses-reference__map-land--c {
+    right: 14%;
+    bottom: 4%;
+    width: 44%;
+    height: 42%;
+    border-radius: 42% 58% 52% 48%;
+    transform: rotate(-4deg);
+}
+
+.home-houses-reference__map-land--d {
+    left: 18%;
+    bottom: 0;
+    width: 25%;
+    height: 24%;
+    border-radius: 52% 48% 45% 55%;
+    transform: rotate(13deg);
+}
+
+.home-houses-reference__map-road {
+    height: 2px;
+    border-radius: 999px;
+    background: var(--houses-map-road);
+    transform-origin: left center;
+}
+
+.home-houses-reference__map-road--a {
+    top: 33%;
+    left: 9%;
+    width: 76%;
+    transform: rotate(7deg);
+}
+
+.home-houses-reference__map-road--b {
+    top: 58%;
+    left: 17%;
+    width: 68%;
+    transform: rotate(-13deg);
+}
+
+.home-houses-reference__map-road--c {
+    top: 18%;
+    left: 52%;
+    width: 44%;
+    transform: rotate(65deg);
+}
+
+.home-houses-reference__map-road--d {
+    top: 76%;
+    left: 3%;
+    width: 50%;
+    transform: rotate(-38deg);
+}
+
+.home-houses-reference__pin-field {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+}
+
+.home-houses-reference__pin {
+    position: absolute;
+    top: var(--pin-y);
+    left: var(--pin-x);
+    width: 28px;
+    height: 28px;
+    opacity: 0;
+    transform: translate3d(-50%, -100%, 0) scale(0.66);
+    transform-origin: 50% 100%;
+    animation: housesPinPulse 14s ease-in-out infinite;
+    animation-delay: var(--pin-delay);
+    will-change: transform, opacity;
+}
+
+.home-houses-reference__pin::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50% 50% 50% 0;
+    background: var(--houses-map-pin);
+    box-shadow: 0 10px 18px rgba(26, 77, 78, 0.2);
+    transform: rotate(-45deg);
+}
+
+.home-houses-reference__pin::after {
+    content: "";
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.home-houses-reference__pin:nth-child(1) {
+    --pin-x: 23%;
+    --pin-y: 52%;
+    --pin-delay: 0s;
+}
+
+.home-houses-reference__pin:nth-child(2) {
+    --pin-x: 36%;
+    --pin-y: 35%;
+    --pin-delay: 0.12s;
+}
+
+.home-houses-reference__pin:nth-child(3) {
+    --pin-x: 52%;
+    --pin-y: 62%;
+    --pin-delay: 0.24s;
+}
+
+.home-houses-reference__pin:nth-child(4) {
+    --pin-x: 67%;
+    --pin-y: 44%;
+    --pin-delay: 0.36s;
+}
+
+.home-houses-reference__pin:nth-child(5) {
+    --pin-x: 61%;
+    --pin-y: 28%;
+    --pin-delay: 4.7s;
+}
+
+.home-houses-reference__pin:nth-child(6) {
+    --pin-x: 76%;
+    --pin-y: 37%;
+    --pin-delay: 4.82s;
+}
+
+.home-houses-reference__pin:nth-child(7) {
+    --pin-x: 83%;
+    --pin-y: 57%;
+    --pin-delay: 4.94s;
+}
+
+.home-houses-reference__pin:nth-child(8) {
+    --pin-x: 69%;
+    --pin-y: 68%;
+    --pin-delay: 5.06s;
+}
+
+.home-houses-reference__pin:nth-child(9) {
+    --pin-x: 16%;
+    --pin-y: 34%;
+    --pin-delay: 9.3s;
+}
+
+.home-houses-reference__pin:nth-child(10) {
+    --pin-x: 28%;
+    --pin-y: 67%;
+    --pin-delay: 9.42s;
+}
+
+.home-houses-reference__pin:nth-child(11) {
+    --pin-x: 39%;
+    --pin-y: 49%;
+    --pin-delay: 9.54s;
+}
+
+.home-houses-reference__pin:nth-child(12) {
+    --pin-x: 48%;
+    --pin-y: 25%;
+    --pin-delay: 9.66s;
+}
+
+@keyframes housesMapPan {
+    0%,
+    18% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    31%,
+    43% {
+        transform: translate3d(-18%, -14%, 0);
+    }
+
+    56%,
+    68% {
+        transform: translate3d(14%, -10%, 0);
+    }
+
+    82%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes housesPinPulse {
+    0%,
+    7% {
+        opacity: 0;
+        transform: translate3d(-50%, -100%, 0) scale(0.66);
+    }
+
+    11%,
+    22% {
+        opacity: 1;
+        transform: translate3d(-50%, -100%, 0) scale(1);
+    }
+
+    29%,
+    100% {
+        opacity: 0;
+        transform: translate3d(-50%, -100%, 0) scale(0.82);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-houses-reference__map-viewport,
+    .home-houses-reference__pin {
+        animation: none;
+        will-change: auto;
+    }
+
+    .home-houses-reference__pin[data-map-scene="start"] {
+        opacity: 1;
+        transform: translate3d(-50%, -100%, 0) scale(1);
+    }
 }
 
 .soft-band {
@@ -6635,6 +6931,32 @@ body.is-logged-in .home-houses-reference {
     .home-houses-reference__collage {
         height: 360px;
         margin-top: 52px;
+    }
+
+    .home-houses-reference__map-motion {
+        width: 100%;
+        margin: 24px auto 64px;
+    }
+
+    .home-houses-reference__map-stage {
+        height: 300px;
+        border-radius: 14px;
+    }
+
+    .home-houses-reference__map-stage::before {
+        background-size: 48px 48px;
+    }
+
+    .home-houses-reference__pin {
+        width: 24px;
+        height: 24px;
+    }
+
+    .home-houses-reference__pin::after {
+        top: 8px;
+        left: 8px;
+        width: 8px;
+        height: 8px;
     }
 
     .home-houses-reference__base {

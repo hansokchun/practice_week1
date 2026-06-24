@@ -138,6 +138,32 @@ test('home appends the Ikkyee editorial collage section at the very bottom of th
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
 });
 
+test('home houses reference includes the looping map pin animation', () => {
+    const markup = html();
+    const styles = css();
+
+    const mapStart = markup.indexOf('class="home-houses-reference__map-motion"');
+    const mapEnd = markup.indexOf('</section>', mapStart);
+    const mapMarkup = markup.slice(mapStart, mapEnd);
+
+    assert.ok(mapStart > -1);
+    assert.match(mapMarkup, /aria-label="지도 시점이 이동하며 여행 핀이 반복해서 표시되는 애니메이션"/);
+    assert.match(mapMarkup, /class="home-houses-reference__map-stage"/);
+    assert.match(mapMarkup, /class="home-houses-reference__map-viewport"/);
+    assert.match(mapMarkup, /data-map-scene="start"/);
+    assert.match(mapMarkup, /data-map-scene="northeast"/);
+    assert.match(mapMarkup, /data-map-scene="west"/);
+    assert.equal((mapMarkup.match(/class="home-houses-reference__pin"/g) || []).length, 12);
+    assert.equal((mapMarkup.match(/data-map-scene="start"/g) || []).length, 4);
+    assert.equal((mapMarkup.match(/data-map-scene="northeast"/g) || []).length, 4);
+    assert.equal((mapMarkup.match(/data-map-scene="west"/g) || []).length, 4);
+    assert.match(styles, /\.home-houses-reference__map-viewport\s*\{[^}]*animation:\s*housesMapPan/s);
+    assert.match(styles, /\.home-houses-reference__pin\s*\{[^}]*animation:\s*housesPinPulse/s);
+    assert.match(styles, /@keyframes housesMapPan/);
+    assert.match(styles, /@keyframes housesPinPulse/);
+    assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*\.home-houses-reference__map-viewport[\s\S]*animation:\s*none;/);
+});
+
 test('logged-in home keeps the bottom houses reference visible after white bands are hidden', () => {
     const styles = css();
 

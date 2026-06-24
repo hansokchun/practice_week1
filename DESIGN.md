@@ -26,6 +26,10 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 | Feature/houses word | `--houses-word` | `rgba(26, 77, 78, 0.16)` | `rgba(26, 77, 78, 0.16)` | Oversized Ikkyee word |
 | Feature/houses base | `--houses-base` | `var(--teal)` | `var(--teal)` | Collage base shape |
 | Feature/houses text | `--houses-text` | `var(--text)` | `var(--text)` | Houses intro copy |
+| Feature/map water | `--houses-map-water` | `#dfe9e4` | `#253232` | Bottom intro map animation base |
+| Feature/map land | `--houses-map-land` | `#f6f1e7` | `#303934` | Bottom intro map animation land shapes |
+| Feature/map road | `--houses-map-road` | `rgba(26, 77, 78, 0.2)` | `rgba(249, 247, 242, 0.18)` | Bottom intro map animation roads |
+| Feature/map pin | `--houses-map-pin` | `var(--coral)` | `var(--coral)` | Animated map pins |
 
 ### Rules
 
@@ -120,6 +124,15 @@ All spacing derives from a base of 4px.
 - **Accessibility**: Decorative word hidden with `aria-hidden`; section heading is screen-reader only; collage has a group label, individual image alt text, and location captions.
 - **Motion**: Static collage, using transforms only for rotation/position.
 
+### Houses Map Motion
+
+- **Structure**: `.home-houses-reference__map-motion` follows the collage inside the bottom intro band and contains a decorative map stage with twelve pins grouped into three four-pin scenes.
+- **Variants**: Single looping home intro animation.
+- **Spacing**: Desktop width stays within the main container and uses a stable 420px stage; mobile compresses to a 300px stage.
+- **States**: Passive animation only; no pointer interaction.
+- **Accessibility**: Container has a concise aria label describing the loop; visual map layers are decorative.
+- **Motion**: Map viewport pans through start, northeast, west, then back to start; each scene reveals four pins using transform and opacity only. Reduced motion freezes the first scene.
+
 ## 6. Motion & Interaction
 
 ### Timing
@@ -129,6 +142,7 @@ All spacing derives from a base of 4px.
 | Micro | 100-150ms | ease-out | Button press |
 | Standard | 200-300ms | ease-in-out | Panel and control transitions |
 | Emphasis | 400-640ms | cubic-bezier(0.2, 0.8, 0.2, 1) | Hero image slider |
+| Ambient loop | 14000ms | cubic-bezier(0.76, 0, 0.24, 1) | Houses map viewport pan and grouped pin reveals |
 
 ### Rules
 
