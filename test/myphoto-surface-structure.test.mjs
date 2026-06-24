@@ -53,29 +53,13 @@ test('home no longer renders temporary preview bands or removed intro candidates
     }
 });
 
-test('home hero keeps the map and rotating country photo preview without extra copy', () => {
+test('home no longer renders the bottom map-photo animation section', () => {
     const markup = html();
-    const app = source();
-    const styles = css();
 
-    const heroStart = markup.indexOf('<div class="hero">');
-    const heroEnd = markup.indexOf('<section class="home-workspace page-container"', heroStart);
-    const hero = markup.slice(heroStart, heroEnd);
-
-    assert.notEqual(heroStart, -1);
-    assert.notEqual(heroEnd, -1);
-    assert.match(hero, /images\/home-world-map\.png/);
-    assert.match(hero, /class="hero-world-map"[\s\S]*data-hero-map-pin="korea"[\s\S]*data-hero-map-pin="japan"[\s\S]*data-hero-map-pin="turkey"/);
-    assert.match(hero, /class="hero-photo-slider"[\s\S]*Korea[\s\S]*Japan[\s\S]*Turkey/);
-    assert.doesNotMatch(hero, /btn-home-explore|btn-home-myphoto|hero-memory-line/);
-    assert.match(styles, /\.hero\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*min-height:\s*640px;[^}]*overflow:\s*hidden;/s);
-    assert.match(styles, /\.hero-world-panel\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;/s);
-    assert.match(styles, /\.hero-world-map\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
-    assert.match(styles, /\.hero-visual\s*\{[^}]*z-index:\s*4;[^}]*width:\s*min\(46%,\s*520px\);[^}]*margin-left:\s*clamp\(24px,\s*6vw,\s*72px\);/s);
-    assert.match(app, /function startHomeHeroSlider\(\)/);
-    assert.match(app, /const mapPins = \$\$\('\[data-hero-map-pin\]'\)/);
-    assert.match(app, /pin\.classList\.toggle\('is-active', pin\.dataset\.heroMapPin === place\)/);
-    assert.match(app, /window\.setInterval\(\(\) => \{[\s\S]*\}, 3000\)/);
+    assert.doesNotMatch(markup, /class="hero-world-map"/);
+    assert.doesNotMatch(markup, /class="hero-photo-slider"/);
+    assert.doesNotMatch(markup, /data-hero-map-pin/);
+    assert.doesNotMatch(markup, /images\/home-world-map\.png/);
 });
 
 test('home keeps only the remaining public explanation sections before the private workspace', () => {
@@ -84,22 +68,19 @@ test('home keeps only the remaining public explanation sections before the priva
 
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
     const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
-    const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
-    const heroIndex = markup.indexOf('<div class="hero">');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(housesIndex > -1);
     assert.ok(featureStoriesIndex > housesIndex);
-    assert.ok(introImageIndex > -1);
-    assert.ok(introImageIndex > featureStoriesIndex);
-    assert.ok(heroIndex > introImageIndex);
-    assert.ok(workspaceIndex > heroIndex);
+    assert.ok(workspaceIndex > featureStoriesIndex);
     assert.ok(workspaceIndex > -1);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
-    assert.doesNotMatch(markup, /images\/home-travel-replay\.png/);
-    assert.doesNotMatch(markup, /images\/home-explore-guide\.png/);
-    assert.doesNotMatch(markup, /class="home-feature-story home-feature-story--explore"/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
+    assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*장소를 검색하고,[\s\S]*Explore 흐름을 홈에서 먼저 보여줍니다\.[\s\S]*Explore 열기[\s\S]*내 사진 올리기/);
     assert.doesNotMatch(markup, /class="content-band home-explore-guide"/);
+    assert.doesNotMatch(markup, /class="editorial-feature editorial-feature--korean"/);
+    assert.doesNotMatch(markup, /class="hero-world-map"/);
     assert.doesNotMatch(markup, /class="home-easol-intro"/);
     assert.doesNotMatch(markup, /SELL MORE/);
     assert.doesNotMatch(markup, /EXPERIENCES/);
@@ -114,22 +95,23 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
     assert.match(styles, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*2\.35;[^}]*box-shadow:\s*0 24px 64px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(styles, /\.home-feature-story__media img\s*\{[^}]*height:\s*100%;[^}]*box-sizing:\s*border-box;[^}]*object-fit:\s*cover;/s);
+    assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*18px;[^}]*object-fit:\s*contain;/s);
+    assert.match(styles, /\.home-feature-story__actions\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*10px;/s);
 });
 
-test('home starts the landing flow with the Ikkyee editorial collage section', () => {
+test('home starts the landing flow with the Ikkyee collage and feature stories', () => {
     const markup = html();
     const styles = css();
 
     const pageHomeIndex = markup.indexOf('<section id="page-home"');
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
     const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
-    const introImageIndex = markup.indexOf('class="editorial-feature editorial-feature--korean"');
+    const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(pageHomeIndex > -1);
     assert.ok(housesIndex > pageHomeIndex);
     assert.ok(featureStoriesIndex > housesIndex);
-    assert.ok(featureStoriesIndex < introImageIndex);
-    assert.ok(housesIndex < introImageIndex);
+    assert.ok(workspaceIndex > featureStoriesIndex);
     assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
     assert.match(markup, /이 사진은 어디서 찍은 걸까\?/);
     assert.match(markup, /Ikkyee에서 장소와 여행자의 기록을 확인하세요\./);
@@ -191,30 +173,21 @@ test('home no longer renders the removed easol intro sections', () => {
     assert.doesNotMatch(markup, /INTRODUCING/);
 });
 
-test('home keeps the Korean editorial section without a duplicated local header', () => {
+test('home no longer renders the bottom Korean editorial section', () => {
     const markup = html();
-    const styles = css();
 
-    assert.match(markup, /class="editorial-feature editorial-feature--korean"[\s\S]*class="editorial-feature__hero"[\s\S]*class="editorial-feature__intro"/);
+    assert.doesNotMatch(markup, /class="editorial-feature editorial-feature--korean"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__hero"/);
     assert.doesNotMatch(markup, /class="editorial-feature__header"/);
     assert.doesNotMatch(markup, /class="editorial-feature__brand"/);
     assert.doesNotMatch(markup, /class="editorial-feature__nav"/);
-    assert.match(markup, /class="editorial-feature__headline"[\s\S]*흩어진 사진을 하나로/);
-    assert.match(markup, /class="editorial-feature__statement"[^>]*>지도 위에 남기다</);
-    assert.match(markup, /class="editorial-feature__wide-image"[\s\S]*images\/main_bg2\.jpg/);
-    assert.match(markup, /class="editorial-feature__side-image"[\s\S]*images\/main_bg5\.jpg/);
-    assert.match(markup, /class="editorial-feature__large-image"[\s\S]*images\/main_bg3\.jpg/);
-    assert.match(markup, /class="editorial-feature__proof"[\s\S]*IBIZA ROCKS[\s\S]*GCN[\s\S]*LOVE TRAILS[\s\S]*ENVISION/);
+    assert.doesNotMatch(markup, /class="editorial-feature__headline"[\s\S]*흩어진 사진을 하나로/);
+    assert.doesNotMatch(markup, /class="editorial-feature__statement"[^>]*>지도 위에 남기다</);
+    assert.doesNotMatch(markup, /class="editorial-feature__wide-image"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__side-image"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__large-image"/);
+    assert.doesNotMatch(markup, /class="editorial-feature__proof"/);
     assert.doesNotMatch(markup, /class="intro-image-section"/);
-    assert.match(styles, /\.editorial-feature--korean\s*\{[^}]*width:\s*100%;[^}]*overflow:\s*hidden;[^}]*background:\s*transparent;[^}]*color:\s*#050505;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;[^}]*margin:\s*0 auto;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*padding-right:\s*312px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*42px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*912px;[^}]*max-width:\s*912px;[^}]*font-size:\s*188px;[^}]*line-height:\s*0\.91;[^}]*letter-spacing:\s*-0\.068em;[^}]*transform:\s*scaleX\(0\.74\);/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__categories\s*\{[^}]*gap:\s*56px;[^}]*margin-top:\s*22px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__hero-row\s*\{[^}]*grid-template-columns:\s*744px\s*500px;[^}]*gap:\s*44px;/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*472px;[^}]*max-width:\s*472px;[^}]*font-size:\s*134px;[^}]*line-height:\s*0\.88;[^}]*letter-spacing:\s*-0\.07em;[^}]*transform:\s*scaleX\(0\.68\);/s);
-    assert.match(styles, /\.editorial-feature--korean\s+\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*454px\s*790px;[^}]*gap:\s*44px;/s);
 });
 
 test('home private workspace is only visible after login', () => {

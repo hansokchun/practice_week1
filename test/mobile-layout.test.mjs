@@ -30,20 +30,15 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*gap:\s*0;[^}]*margin-bottom:\s*72px;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
     assert.match(mobile, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*gap:\s*22px;[^}]*padding:\s*48px 0;/s);
     assert.match(mobile, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*1\.72;[^}]*border-radius:\s*14px;/s);
+    assert.match(mobile, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*12px;/s);
     assert.match(mobile, /\.home-feature-story__copy h3\s*\{[^}]*font-size:\s*28px;[^}]*line-height:\s*1\.18;/s);
-    assert.match(mobile, /\.editorial-feature\s*\{[^}]*width:\s*calc\(100% - 32px\);/s);
-    assert.match(mobile, /\.editorial-feature__hero,[\s\S]*\.editorial-feature__hero-row,[\s\S]*\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*1fr;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__side-image\s*\{[^}]*position:\s*absolute;[^}]*top:\s*42px;[^}]*right:\s*0;[^}]*width:\s*232px;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__headline\s*\{[^}]*width:\s*912px;[^}]*max-width:\s*912px;[^}]*font-size:\s*188px;[^}]*white-space:\s*nowrap;/s);
-    assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__statement\s*\{[^}]*width:\s*472px;[^}]*max-width:\s*472px;[^}]*font-size:\s*134px;[^}]*white-space:\s*nowrap;/s);
+    assert.match(mobile, /\.home-feature-story__actions\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr;[^}]*width:\s*100%;/s);
     assert.match(mobile, /\.home-houses-reference\s*\{[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;[^}]*padding-top:\s*84px;[^}]*padding-bottom:\s*68px;/s);
     assert.match(mobile, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(126px,\s*38vw,\s*230px\);/s);
     assert.match(mobile, /\.home-houses-reference__collage\s*\{[^}]*height:\s*380px;[^}]*margin-top:\s*44px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__mapline\s*\{/);
     assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__divider\s*\{/);
-    assert.match(mobile, /\.hero h1\s*\{[^}]*font-size:\s*34px;/s);
 });
 
 test('mobile album and photo detail views avoid side-by-side desktop layouts', () => {

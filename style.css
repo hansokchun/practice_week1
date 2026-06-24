@@ -747,6 +747,11 @@ body.is-logged-in .home-houses-reference {
     object-fit: cover;
 }
 
+.home-feature-story--explore .home-feature-story__media img {
+    padding: 18px;
+    object-fit: contain;
+}
+
 .home-feature-story__copy {
     display: grid;
     gap: 18px;
@@ -769,6 +774,12 @@ body.is-logged-in .home-houses-reference {
     font-size: 17px;
     line-height: 1.72;
     word-break: keep-all;
+}
+
+.home-feature-story__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .home-public-preview {
@@ -6561,6 +6572,10 @@ body.is-logged-in .home-houses-reference {
         border-radius: 14px;
     }
 
+    .home-feature-story--explore .home-feature-story__media img {
+        padding: 12px;
+    }
+
     .home-feature-story__copy {
         gap: 14px;
     }
@@ -6568,6 +6583,16 @@ body.is-logged-in .home-houses-reference {
     .home-feature-story__copy h3 {
         font-size: 28px;
         line-height: 1.18;
+    }
+
+    .home-feature-story__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .home-feature-story__actions button {
+        width: 100%;
     }
 
     .home-feature-story__copy p:not(.eyebrow) {

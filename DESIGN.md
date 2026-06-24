@@ -110,16 +110,21 @@ All spacing derives from a base of 4px.
 - **Accessibility**: Landmark section with an accessible heading.
 - **Motion**: Static unless a feature owns its own scroll-safe animation.
 
-### Feature Story Row
+### Feature Story Rows
 
-- **Structure**: `.home-feature-stories` wrapper containing one `.home-feature-story` row with left-aligned media and right-side concise copy.
-- **Variants**: Map memory row only.
-- **Spacing**: Full-width white band with container-derived side padding; the row uses 78px desktop and 48px mobile vertical padding.
-- **Media**: Image frame keeps the full feature-row width but uses a shorter vertical ratio so the screenshot feels lower and less oversized.
-- **Explore map**: Public Explore and profile maps use embedded Google Maps JSON styling to hide non-essential POI, transit, road, and neighborhood labels so uploaded photo pins remain the visual focus.
+- **Structure**: `.home-feature-stories` wrapper containing repeated `.home-feature-story` rows with left-aligned media and right-side concise copy.
+- **Variants**: Map memory, travel flow, and Explore discovery rows.
+- **Spacing**: Full-width white band with container-derived side padding; each row uses the same 78px desktop and 48px mobile vertical padding as the Explore guide section.
+- **Media**: Image frames keep the full feature-row width but use a shorter vertical ratio so the screenshots feel lower and less oversized; the Explore discovery row uses contained media so the guide screenshot is not cropped.
+- **Explore row**: The third row carries the former Explore guide headline, explanatory copy, and Explore/upload actions so the standalone guide section is not repeated elsewhere on Home.
 - **States**: Static public introduction content; hidden after login with the other public intro bands.
 - **Accessibility**: Wrapper has a screen-reader heading; every media image has descriptive alt text and stable dimensions.
 - **Motion**: Static media and copy; no layout animation.
+
+### Quiet Explore Map
+
+- **Structure**: Public Explore and profile maps use the shared `getExploreMapOptions` helper.
+- **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels so uploaded photo pins remain the visual focus.
 
 ### Houses Reference Band
 
