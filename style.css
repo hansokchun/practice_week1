@@ -711,8 +711,8 @@ body.is-logged-in .home-houses-reference {
     position: relative;
     z-index: 1;
     width: min(100%, var(--container));
-    height: 184px;
-    margin: -24px auto -4px;
+    height: 214px;
+    margin: -34px auto -14px;
     color: var(--teal);
     pointer-events: none;
 }
@@ -734,26 +734,27 @@ body.is-logged-in .home-houses-reference {
 }
 
 .home-houses-reference__divider-line {
-    opacity: 0.82;
-    stroke-width: 3;
-    stroke-dasharray: 1 9;
+    opacity: 0.84;
+    stroke-width: 5;
+    stroke-dasharray: 4 14;
+    stroke-linecap: butt;
 }
 
 .home-houses-reference__divider-stem {
     opacity: 0.82;
-    stroke-width: 4;
+    stroke-width: 7;
 }
 
 .home-houses-reference__divider-leaf {
     fill: rgba(26, 77, 78, 0.74);
     stroke: currentColor;
-    stroke-width: 4;
+    stroke-width: 7;
     stroke-linejoin: round;
 }
 
 .home-houses-reference__divider-vein {
     opacity: 0.72;
-    stroke-width: 3;
+    stroke-width: 5;
 }
 
 .soft-band {
@@ -6685,9 +6686,9 @@ body.is-logged-in .home-houses-reference {
     }
 
     .home-houses-reference__divider {
-        height: 112px;
-        margin-top: -12px;
-        margin-bottom: -4px;
+        height: 124px;
+        margin-top: -16px;
+        margin-bottom: -8px;
     }
 
     .home-album-guide {

@@ -129,7 +129,7 @@ test('home starts the landing flow with the Ikkyee editorial collage section', (
     assert.doesNotMatch(markup, /공개 장소 둘러보기/);
     assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
     assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
-    assert.match(markup, /class="home-houses-reference__divider"[^>]*aria-hidden="true"[\s\S]*viewBox="0 0 1280 180"[\s\S]*home-houses-reference__divider-line[\s\S]*home-houses-reference__divider-leaf/);
+    assert.match(markup, /class="home-houses-reference__divider"[^>]*aria-hidden="true"[\s\S]*viewBox="0 0 2048 342"[\s\S]*home-houses-reference__divider-line[\s\S]*home-houses-reference__divider-leaf/);
     assert.ok(markup.indexOf('class="home-houses-reference__divider"') > markup.indexOf('class="home-houses-reference__collage"'));
     assert.ok(markup.indexOf('class="editorial-feature editorial-feature--korean"') > markup.indexOf('class="home-houses-reference__divider"'));
     assert.doesNotMatch(markup, /home-houses-reference__mapline/);
@@ -149,9 +149,10 @@ test('home starts the landing flow with the Ikkyee editorial collage section', (
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
     assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
-    assert.match(markup, /home-houses-reference__divider-line" d="M24 116 C126 76 250 72 374 82/);
-    assert.match(styles, /\.home-houses-reference__divider\s*\{[^}]*height:\s*184px;[^}]*margin:\s*-24px auto -4px;[^}]*color:\s*var\(--teal\);/s);
-    assert.match(styles, /\.home-houses-reference__divider-line\s*\{[^}]*stroke-dasharray:\s*1 9;/s);
+    assert.match(markup, /home-houses-reference__divider-line" d="M76 236 C178 198 276 184 406 190/);
+    assert.match(markup, /home-houses-reference__divider-stem" d="M2006 218 C1986 196 1992 154 2026 126/);
+    assert.match(styles, /\.home-houses-reference__divider\s*\{[^}]*height:\s*214px;[^}]*margin:\s*-34px auto -14px;[^}]*color:\s*var\(--teal\);/s);
+    assert.match(styles, /\.home-houses-reference__divider-line\s*\{[^}]*stroke-width:\s*5;[^}]*stroke-dasharray:\s*4 14;[^}]*stroke-linecap:\s*butt;/s);
     assert.match(styles, /\.home-houses-reference__divider-leaf\s*\{[^}]*fill:\s*rgba\(26,\s*77,\s*78,\s*0\.74\);/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
