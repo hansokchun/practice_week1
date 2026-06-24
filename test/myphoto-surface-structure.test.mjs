@@ -96,11 +96,9 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.ok(workspaceIndex > heroIndex);
     assert.ok(workspaceIndex > -1);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
-    assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*장소를 검색하고,[\s\S]*Explore 흐름을 홈에서 먼저 보여줍니다\.[\s\S]*Explore 열기[\s\S]*내 사진 올리기/);
-    assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*images\/home-explore-guide\.png/);
-    assert.match(markup, /images\/home-explore-guide\.png/);
+    assert.doesNotMatch(markup, /images\/home-travel-replay\.png/);
+    assert.doesNotMatch(markup, /images\/home-explore-guide\.png/);
+    assert.doesNotMatch(markup, /class="home-feature-story home-feature-story--explore"/);
     assert.doesNotMatch(markup, /class="content-band home-explore-guide"/);
     assert.doesNotMatch(markup, /class="home-easol-intro"/);
     assert.doesNotMatch(markup, /SELL MORE/);
@@ -116,8 +114,6 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
     assert.match(styles, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*2\.35;[^}]*box-shadow:\s*0 24px 64px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(styles, /\.home-feature-story__media img\s*\{[^}]*height:\s*100%;[^}]*box-sizing:\s*border-box;[^}]*object-fit:\s*cover;/s);
-    assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*18px;[^}]*object-fit:\s*contain;/s);
-    assert.match(styles, /\.home-feature-story__actions\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*10px;/s);
 });
 
 test('home starts the landing flow with the Ikkyee editorial collage section', () => {

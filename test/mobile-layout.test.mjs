@@ -30,9 +30,7 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*gap:\s*0;[^}]*margin-bottom:\s*72px;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
     assert.match(mobile, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*gap:\s*22px;[^}]*padding:\s*48px 0;/s);
     assert.match(mobile, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*1\.72;[^}]*border-radius:\s*14px;/s);
-    assert.match(mobile, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*12px;/s);
     assert.match(mobile, /\.home-feature-story__copy h3\s*\{[^}]*font-size:\s*28px;[^}]*line-height:\s*1\.18;/s);
-    assert.match(mobile, /\.home-feature-story__actions\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr;[^}]*width:\s*100%;/s);
     assert.match(mobile, /\.editorial-feature\s*\{[^}]*width:\s*calc\(100% - 32px\);/s);
     assert.match(mobile, /\.editorial-feature__hero,[\s\S]*\.editorial-feature__hero-row,[\s\S]*\.editorial-feature__intro\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.editorial-feature--korean\s+\.editorial-feature__inner\s*\{[^}]*width:\s*1360px;[^}]*min-width:\s*1360px;/s);
