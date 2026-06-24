@@ -711,8 +711,8 @@ body.is-logged-in .home-houses-reference {
     position: relative;
     z-index: 1;
     width: min(100%, var(--container));
-    height: 160px;
-    margin: -18px auto 0;
+    height: 184px;
+    margin: -24px auto -4px;
     color: var(--teal);
     pointer-events: none;
 }
@@ -736,7 +736,7 @@ body.is-logged-in .home-houses-reference {
 .home-houses-reference__divider-line {
     opacity: 0.82;
     stroke-width: 3;
-    stroke-dasharray: 2 10;
+    stroke-dasharray: 1 9;
 }
 
 .home-houses-reference__divider-stem {
@@ -6685,8 +6685,9 @@ body.is-logged-in .home-houses-reference {
     }
 
     .home-houses-reference__divider {
-        height: 96px;
-        margin-top: -10px;
+        height: 112px;
+        margin-top: -12px;
+        margin-bottom: -4px;
     }
 
     .home-album-guide {
