@@ -101,6 +101,7 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*다른 여행자의 공개 장소를 지도에서 발견합니다/);
+    assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*images\/home-explore-guide\.png/);
     assert.match(markup, /images\/home-explore-guide\.png/);
     assert.doesNotMatch(markup, /class="home-easol-intro"/);
     assert.doesNotMatch(markup, /SELL MORE/);
@@ -112,7 +113,9 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.doesNotMatch(markup, /data-reference-style="findpenguins"/);
     assert.doesNotMatch(markup, /data-reference-style="journi"/);
     assert.doesNotMatch(markup, /class="home-experience-commerce"/);
-    assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.96fr\)\s*minmax\(320px,\s*0\.74fr\);/s);
+    assert.match(styles, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*padding-left:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);[^}]*padding-right:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);/s);
+    assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
+    assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*18px;[^}]*object-fit:\s*contain;/s);
     assert.match(styles, /\.home-explore-guide\s*\{[^}]*grid-template-columns:\s*minmax\(320px,\s*0\.78fr\)\s*minmax\(0,\s*1\.22fr\);/s);
 });
 

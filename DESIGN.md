@@ -114,7 +114,8 @@ All spacing derives from a base of 4px.
 
 - **Structure**: `.home-feature-stories` wrapper containing repeated `.home-feature-story` rows with left-aligned media and right-side concise copy.
 - **Variants**: Map memory, travel flow, and Explore discovery rows.
-- **Spacing**: Container width, 44px desktop row gaps, stacked mobile layout at 860px.
+- **Spacing**: Full-width white band with container-derived side padding; each row uses the same 78px desktop and 48px mobile vertical padding as the Explore guide section.
+- **Media**: Image frames match the Explore guide ratio and depth; the Explore discovery row uses contained media so the guide screenshot is not cropped.
 - **States**: Static public introduction content; hidden after login with the other public intro bands.
 - **Accessibility**: Wrapper has a screen-reader heading; every media image has descriptive alt text and stable dimensions.
 - **Motion**: Static media and copy; no layout animation.
