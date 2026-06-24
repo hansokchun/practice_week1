@@ -113,8 +113,9 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.doesNotMatch(markup, /data-reference-style="journi"/);
     assert.doesNotMatch(markup, /class="home-experience-commerce"/);
     assert.match(styles, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*padding-left:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);[^}]*padding-right:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);/s);
-    assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*0\.82fr\)\s*minmax\(360px,\s*0\.98fr\);[^}]*padding:\s*78px 0;/s);
-    assert.match(styles, /\.home-feature-story__media\s*\{[^}]*width:\s*min\(100%,\s*620px\);[^}]*justify-self:\s*start;/s);
+    assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
+    assert.match(styles, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*2\.35;[^}]*box-shadow:\s*0 24px 64px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
+    assert.match(styles, /\.home-feature-story__media img\s*\{[^}]*height:\s*100%;[^}]*box-sizing:\s*border-box;[^}]*object-fit:\s*cover;/s);
     assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*18px;[^}]*object-fit:\s*contain;/s);
     assert.match(styles, /\.home-feature-story__actions\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*10px;/s);
 });
