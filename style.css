@@ -711,7 +711,11 @@ body.is-logged-in .white-band {
 }
 
 .home-section-divider {
+    position: relative;
     width: 100%;
+    height: clamp(108px, 16vw, 220px);
+    margin-top: clamp(-72px, -5vw, -36px);
+    margin-bottom: clamp(-64px, -4vw, -32px);
     line-height: 0;
     overflow: hidden;
     background: var(--surface);
@@ -720,7 +724,9 @@ body.is-logged-in .white-band {
 .home-section-divider img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 52%;
 }
 
 .soft-band {
@@ -6765,7 +6771,9 @@ body.is-logged-in .white-band {
     }
 
     .home-section-divider {
-        margin-top: -1px;
+        height: 104px;
+        margin-top: -28px;
+        margin-bottom: -20px;
     }
 
     .home-album-guide {
