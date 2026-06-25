@@ -125,7 +125,7 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
     assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
     assert.doesNotMatch(markup, /home-houses-reference__divider/);
-    assert.match(markup, /class="home-section-divider"[\s\S]*home-section-divider__trail[\s\S]*home-section-divider__leaf/);
+    assert.match(markup, /class="home-section-divider"[\s\S]*images\/home-section-divider\.png[\s\S]*width="2172"[\s\S]*height="724"/);
     assert.doesNotMatch(markup, /home-houses-reference__mapline/);
     assert.doesNotMatch(markup, /home-houses-reference__photo--f/);
     assert.doesNotMatch(markup, /France · Paris/);
@@ -147,8 +147,8 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
     assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__divider/);
-    assert.match(styles, /\.home-section-divider\s*\{[^}]*height:\s*clamp\(120px,\s*12vw,\s*180px\);[^}]*background:\s*var\(--surface\);/s);
-    assert.match(styles, /\.home-section-divider__trail\s*\{[^}]*stroke:\s*var\(--teal\);[^}]*stroke-dasharray:\s*2 12;/s);
+    assert.match(styles, /\.home-section-divider\s*\{[^}]*width:\s*100%;[^}]*line-height:\s*0;[^}]*background:\s*var\(--surface\);/s);
+    assert.match(styles, /\.home-section-divider img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*auto;/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
