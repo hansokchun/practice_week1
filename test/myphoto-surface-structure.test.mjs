@@ -95,7 +95,8 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
     assert.match(styles, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*2\.35;[^}]*box-shadow:\s*0 24px 64px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(styles, /\.home-feature-story__media img\s*\{[^}]*height:\s*100%;[^}]*box-sizing:\s*border-box;[^}]*object-fit:\s*cover;/s);
-    assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*padding:\s*18px;[^}]*object-fit:\s*contain;/s);
+    assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*auto;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
+    assert.match(styles, /\.home-feature-story--explore\s+\.home-feature-story__media img\s*\{[^}]*height:\s*auto;[^}]*padding:\s*0;[^}]*object-fit:\s*contain;/s);
     assert.match(styles, /\.home-feature-story__actions\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*10px;/s);
 });
 
