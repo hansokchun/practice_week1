@@ -3,6 +3,7 @@ export const EXPLORE_MAP_MIN_ZOOM = 4;
 const QUIET_EXPLORE_MAP_STYLES = [
     { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
     { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit.line', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
     { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
     { featureType: 'administrative.neighborhood', elementType: 'labels', stylers: [{ visibility: 'off' }] }
 ];

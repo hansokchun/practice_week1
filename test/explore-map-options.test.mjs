@@ -11,12 +11,13 @@ test('Explore map has a minimum zoom so wheel zoom-out stops at the limit', () =
     assert.equal(options.gestureHandling, 'greedy');
 });
 
-test('Explore map hides non-essential place and road labels', () => {
+test('Explore map hides non-essential labels and transit route geometry', () => {
     const options = getExploreMapOptions();
 
     assert.deepEqual(options.styles, [
         { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
         { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit.line', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
         { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
         { featureType: 'administrative.neighborhood', elementType: 'labels', stylers: [{ visibility: 'off' }] }
     ]);

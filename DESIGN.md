@@ -124,7 +124,7 @@ All spacing derives from a base of 4px.
 ### Quiet Explore Map
 
 - **Structure**: Public Explore and profile maps use the shared `getExploreMapOptions` helper.
-- **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels so uploaded photo pins remain the visual focus.
+- **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels, and removes transit line geometry so uploaded photo pins remain the visual focus.
 
 ### Houses Reference Band
 
