@@ -714,7 +714,7 @@ body.is-logged-in .white-band {
     position: relative;
     width: 100%;
     height: clamp(108px, 16vw, 220px);
-    margin-top: 0;
+    margin-top: clamp(-48px, -3vw, -24px);
     margin-bottom: clamp(-48px, -3vw, -24px);
     line-height: 0;
     overflow: hidden;
