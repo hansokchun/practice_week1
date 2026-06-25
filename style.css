@@ -610,9 +610,9 @@ body.is-logged-in .white-band {
 .home-houses-reference__copy {
     margin: 0;
     color: var(--houses-text);
-    font-size: clamp(28px, 3vw, 36px);
-    font-weight: 850;
-    line-height: 1.42;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.56;
 }
 
 .home-houses-reference__collage {
@@ -4323,7 +4323,7 @@ body.is-logged-in .white-band {
     z-index: 1;
     width: 100%;
     height: 100%;
-    border-radius: 999px;
+    border-radius: 0;
     object-fit: cover;
 }
 
@@ -4395,7 +4395,7 @@ body.is-logged-in .white-band {
 .map-pin img {
     width: 100%;
     height: 100%;
-    border-radius: 8px;
+    border-radius: 0;
     object-fit: cover;
 }
 
@@ -4493,7 +4493,7 @@ body.is-logged-in .white-band {
     width: 100%;
     padding: 0;
     border: 0;
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
     background: transparent;
     box-shadow:
@@ -6770,8 +6770,8 @@ body.is-logged-in .white-band {
     }
 
     .home-houses-reference__copy {
-        font-size: 24px;
-        line-height: 1.42;
+        font-size: 17px;
+        line-height: 1.52;
     }
 
     .home-houses-reference__collage {
