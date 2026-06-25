@@ -115,7 +115,7 @@ All spacing derives from a base of 4px.
 - **Structure**: `.home-feature-stories` wrapper containing repeated `.home-feature-story` rows with left-aligned media and right-side concise copy.
 - **Variants**: Map memory, travel flow, and Explore discovery rows.
 - **Spacing**: Full-width white band with container-derived side padding; each row uses the same 78px desktop and 48px mobile vertical padding as the Explore guide section.
-- **Media**: Image frames keep the full feature-row width but use a shorter vertical ratio so the screenshots feel lower and less oversized; the Explore discovery row uses contained media so the guide screenshot is not cropped.
+- **Media**: Feature screenshots stay unframed and use contained media, with a soft ambient shadow layer behind the image to add depth without turning the screenshot into a card.
 - **Explore row**: The third row carries the former Explore guide headline, explanatory copy, and Explore/upload actions so the standalone guide section is not repeated elsewhere on Home.
 - **States**: Static public introduction content; hidden after login with the other public intro bands.
 - **Accessibility**: Wrapper has a screen-reader heading; every media image has descriptive alt text and stable dimensions.
@@ -131,6 +131,7 @@ All spacing derives from a base of 4px.
 - **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage with shadow depth.
 - **Variants**: Single top-of-home feature.
 - **Spacing**: Desktop top padding 140px; mobile top padding 84px.
+- **Backdrop**: The collage may use a simple low-contrast tonal backdrop behind the photos, drawn from the existing teal, coral, and soft surface tokens.
 - **States**: Photo captions reveal on hover and focus.
 - **Accessibility**: Decorative word hidden with `aria-hidden`; section heading is screen-reader only; collage has a group label, individual image alt text, and location captions.
 - **Motion**: Static collage, using transforms only for rotation/position.
