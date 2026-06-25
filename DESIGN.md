@@ -125,6 +125,8 @@ All spacing derives from a base of 4px.
 
 - **Structure**: Public Explore and profile maps use the shared `getExploreMapOptions` helper.
 - **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels, and removes transit line geometry so uploaded photo pins remain the visual focus.
+- **Controls**: Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces with teal-dark actions, coral metadata accents, and restrained media shadows so Explore feels connected to the landing feature rows.
+- **Discovery Cards**: Public photo cards show the image first, then one concise story/title line and relative time metadata. The card should feel like a compact archive photo, not a social feed post.
 
 ### Houses Reference Band
 

@@ -796,11 +796,13 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         const description = String(photo.description || '').trim();
         const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
         const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
+        const storyLabel = description || label;
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
             <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
                 <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
                 <span>
+                    <strong>${escapeHtml(storyLabel)}</strong>
                     <small>${escapeHtml(uploadTimeLabel)}</small>
                 </span>
             </button>
