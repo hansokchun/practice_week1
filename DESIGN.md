@@ -38,7 +38,7 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 
 | Level | Size | Weight | Line Height | Tracking | Usage |
 | --- | --- | --- | --- | --- | --- |
-| Display/editorial | `clamp(126px, 38vw, 540px)` | 400 | 0.86 | 0-0.015em | Oversized editorial words |
+| Display/editorial | `clamp(150px, 42vw, 660px)` | 400 | 0.86 | 0-0.015em | Oversized editorial words |
 | Display | `clamp(54px, 9vw, 136px)` | 700-900 | 0.9-1.05 | 0 | Landing hero statements |
 | H1 | `34px-48px` | 800-900 | 1.12-1.2 | 0 | Page titles |
 | H2 | `26px-42px` | 800-900 | 1.18-1.24 | 0 | Section headers |

@@ -135,7 +135,7 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
     assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(180deg,\s*var\(--houses-surface\)\s*0%,\s*var\(--houses-surface\)\s*78%,\s*var\(--surface\)\s*100%\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference\s*\{[^}]*background-size:\s*72px 72px/s);
-    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(250px,\s*30vw,\s*540px\);[^}]*letter-spacing:\s*0\.015em;/s);
+    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(300px,\s*36vw,\s*660px\);[^}]*letter-spacing:\s*0\.015em;/s);
     assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*212px;/s);
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__collage::before\s*\{/);
@@ -147,20 +147,19 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
 });
 
-test('logged-in home keeps the houses reference visible after white bands are hidden', () => {
+test('logged-in home hides the houses reference with the other public intro bands', () => {
     const styles = css();
 
     const hiddenWhiteBandIndex = styles.indexOf('body.is-logged-in .hero,');
     const hiddenWhiteBandRuleEnd = styles.indexOf('}', hiddenWhiteBandIndex);
-    const housesVisibleIndex = styles.indexOf('body.is-logged-in .home-houses-reference');
 
     assert.ok(hiddenWhiteBandIndex > -1);
     assert.ok(hiddenWhiteBandRuleEnd > hiddenWhiteBandIndex);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.white-band/);
+    assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-houses-reference/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-feature-stories/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /display:\s*none;/);
-    assert.ok(housesVisibleIndex > hiddenWhiteBandRuleEnd);
-    assert.match(styles.slice(housesVisibleIndex, styles.indexOf('}', housesVisibleIndex)), /display:\s*block;/);
+    assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-houses-reference\s*\{[^}]*display:\s*block;/s);
 });
 
 test('home no longer renders the removed easol intro sections', () => {

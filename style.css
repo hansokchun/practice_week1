@@ -480,12 +480,9 @@ body.is-logged-in .editorial-feature,
 body.is-logged-in .home-easol-intro,
 body.is-logged-in .home-east-asia-demo,
 body.is-logged-in .home-story-band,
+body.is-logged-in .home-houses-reference,
 body.is-logged-in .white-band {
     display: none;
-}
-
-body.is-logged-in .home-houses-reference {
-    display: block;
 }
 
 .hero-visual {
@@ -583,12 +580,12 @@ body.is-logged-in .home-houses-reference {
 
 .home-houses-reference__word {
     position: absolute;
-    top: -70px;
+    top: -92px;
     left: 50%;
     transform: translateX(-50%);
     color: var(--houses-word);
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(250px, 30vw, 540px);
+    font-size: clamp(300px, 36vw, 660px);
     font-weight: 400;
     line-height: 0.86;
     letter-spacing: 0.015em;
@@ -6700,8 +6697,8 @@ body.is-logged-in .home-houses-reference {
     }
 
     .home-houses-reference__word {
-        top: -4px;
-        font-size: clamp(126px, 38vw, 230px);
+        top: -10px;
+        font-size: clamp(150px, 42vw, 280px);
     }
 
     .home-houses-reference__content {
