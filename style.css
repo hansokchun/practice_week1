@@ -472,6 +472,7 @@ body.is-logged-in .home-choice-band,
 body.is-logged-in .home-public-preview,
 body.is-logged-in .home-fit-band,
 body.is-logged-in .home-replay-hero,
+body.is-logged-in .home-section-divider,
 body.is-logged-in .home-feature-stories,
 body.is-logged-in .home-album-guide,
 body.is-logged-in .home-reference-section,
@@ -602,7 +603,7 @@ body.is-logged-in .white-band {
     gap: 26px;
     max-width: 720px;
     margin: 0 auto;
-    padding-top: clamp(260px, 24vw, 380px);
+    padding-top: clamp(300px, calc(31vw - 120px), 440px);
     text-align: center;
 }
 
@@ -707,6 +708,53 @@ body.is-logged-in .white-band {
     width: 248px;
     aspect-ratio: 0.84;
     transform: rotate(6deg);
+}
+
+.home-section-divider {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: clamp(120px, 12vw, 180px);
+    padding: 0 max(24px, calc((100% - var(--container)) / 2));
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.home-section-divider svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.home-section-divider__trail {
+    fill: none;
+    stroke: var(--teal);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 2 12;
+    opacity: 0.78;
+}
+
+.home-section-divider__stem {
+    fill: none;
+    stroke: var(--teal);
+    stroke-width: 5;
+    stroke-linecap: round;
+}
+
+.home-section-divider__leaf {
+    fill: var(--teal);
+    stroke: var(--teal-dark);
+    stroke-width: 4;
+}
+
+.home-section-divider__leaf-vein {
+    fill: none;
+    stroke: var(--teal-dark);
+    stroke-width: 4;
+    stroke-linecap: round;
+    opacity: 0.72;
 }
 
 .soft-band {
@@ -6748,6 +6796,16 @@ body.is-logged-in .white-band {
     .home-houses-reference__photo figcaption {
         font-size: 11px;
         padding: 6px 8px;
+    }
+
+    .home-section-divider {
+        height: 96px;
+        padding: 0 8px;
+    }
+
+    .home-section-divider__trail {
+        stroke-width: 4;
+        stroke-dasharray: 2 14;
     }
 
     .home-album-guide {

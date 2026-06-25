@@ -67,11 +67,13 @@ test('home keeps only the remaining public explanation sections before the priva
     const styles = css();
 
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
+    const dividerIndex = markup.indexOf('class="home-section-divider"');
     const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(housesIndex > -1);
-    assert.ok(featureStoriesIndex > housesIndex);
+    assert.ok(dividerIndex > housesIndex);
+    assert.ok(featureStoriesIndex > dividerIndex);
     assert.ok(workspaceIndex > featureStoriesIndex);
     assert.ok(workspaceIndex > -1);
     assert.equal(markup.match(/<article class="home-feature-story(?:\s|")/g)?.length, 3);
@@ -106,12 +108,14 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
 
     const pageHomeIndex = markup.indexOf('<section id="page-home"');
     const housesIndex = markup.indexOf('class="white-band home-houses-reference"');
+    const dividerIndex = markup.indexOf('class="home-section-divider"');
     const featureStoriesIndex = markup.indexOf('class="home-feature-stories"');
     const workspaceIndex = markup.indexOf('class="home-workspace page-container"');
 
     assert.ok(pageHomeIndex > -1);
     assert.ok(housesIndex > pageHomeIndex);
-    assert.ok(featureStoriesIndex > housesIndex);
+    assert.ok(dividerIndex > housesIndex);
+    assert.ok(featureStoriesIndex > dividerIndex);
     assert.ok(workspaceIndex > featureStoriesIndex);
     assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
     assert.match(markup, /이 사진은 어디서 찍은 걸까\?/);
@@ -121,6 +125,7 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
     assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
     assert.doesNotMatch(markup, /home-houses-reference__divider/);
+    assert.match(markup, /class="home-section-divider"[\s\S]*home-section-divider__trail[\s\S]*home-section-divider__leaf/);
     assert.doesNotMatch(markup, /home-houses-reference__mapline/);
     assert.doesNotMatch(markup, /home-houses-reference__photo--f/);
     assert.doesNotMatch(markup, /France · Paris/);
@@ -136,12 +141,14 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(180deg,\s*var\(--houses-surface\)\s*0%,\s*var\(--houses-surface\)\s*78%,\s*var\(--surface\)\s*100%\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference\s*\{[^}]*background-size:\s*72px 72px/s);
     assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(300px,\s*36vw,\s*660px\);[^}]*letter-spacing:\s*0\.015em;/s);
-    assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*clamp\(260px,\s*24vw,\s*380px\);/s);
+    assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*clamp\(300px,\s*calc\(31vw - 120px\),\s*440px\);/s);
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__collage::before\s*\{/);
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
     assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__divider/);
+    assert.match(styles, /\.home-section-divider\s*\{[^}]*height:\s*clamp\(120px,\s*12vw,\s*180px\);[^}]*background:\s*var\(--surface\);/s);
+    assert.match(styles, /\.home-section-divider__trail\s*\{[^}]*stroke:\s*var\(--teal\);[^}]*stroke-dasharray:\s*2 12;/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
@@ -157,6 +164,7 @@ test('logged-in home hides the houses reference with the other public intro band
     assert.ok(hiddenWhiteBandRuleEnd > hiddenWhiteBandIndex);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.white-band/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-houses-reference/);
+    assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-section-divider/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-feature-stories/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /display:\s*none;/);
     assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-houses-reference\s*\{[^}]*display:\s*block;/s);

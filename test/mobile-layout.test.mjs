@@ -41,6 +41,8 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.doesNotMatch(mobile, /\.home-houses-reference__mapline\s*\{/);
     assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__divider\s*\{/);
+    assert.match(mobile, /\.home-section-divider\s*\{[^}]*height:\s*96px;[^}]*padding:\s*0 8px;/s);
+    assert.match(mobile, /\.home-section-divider__trail\s*\{[^}]*stroke-width:\s*4;[^}]*stroke-dasharray:\s*2 14;/s);
     assert.match(mobile, /\.site-footer\s*\{[^}]*padding:\s*38px 16px calc\(34px \+ 92px\);/s);
 });
 
