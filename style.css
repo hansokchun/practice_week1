@@ -610,9 +610,9 @@ body.is-logged-in .white-band {
 .home-houses-reference__copy {
     margin: 0;
     color: var(--houses-text);
-    font-size: 23px;
-    font-weight: 700;
-    line-height: 1.56;
+    font-size: clamp(28px, 3vw, 36px);
+    font-weight: 850;
+    line-height: 1.42;
 }
 
 .home-houses-reference__collage {
@@ -4193,7 +4193,7 @@ body.is-logged-in .white-band {
     gap: 10px;
     width: min(372px, calc(100% - 56px));
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 999px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.96);
     box-shadow:
         0 24px 60px rgba(26, 77, 78, 0.16),
@@ -4218,7 +4218,7 @@ body.is-logged-in .white-band {
 
 .map-search button {
     min-height: 36px;
-    border-radius: 999px;
+    border-radius: 8px;
     background: var(--teal-dark);
     color: #ffffff;
     font-weight: 900;
@@ -4234,7 +4234,7 @@ body.is-logged-in .white-band {
     align-items: center;
     gap: 4px;
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 999px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.96);
     box-shadow:
         0 20px 52px rgba(26, 77, 78, 0.14),
@@ -4246,7 +4246,7 @@ body.is-logged-in .white-band {
 .explore-photo-scope button {
     min-height: 34px;
     border: 0;
-    border-radius: 999px;
+    border-radius: 8px;
     background: transparent;
     color: var(--muted);
     font-size: 12px;
@@ -4463,7 +4463,7 @@ body.is-logged-in .white-band {
     display: grid;
     gap: 16px;
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 18px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.97);
     box-shadow:
         0 30px 70px rgba(70, 40, 32, 0.18),
@@ -4493,7 +4493,7 @@ body.is-logged-in .white-band {
     width: 100%;
     padding: 0;
     border: 0;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     background: transparent;
     box-shadow:
@@ -4535,7 +4535,7 @@ body.is-logged-in .white-band {
     height: clamp(560px, calc(100svh - 108px), 900px);
     max-height: calc(100svh - 108px);
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 18px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.97);
     box-shadow:
         0 30px 70px rgba(70, 40, 32, 0.16),
@@ -4577,7 +4577,7 @@ body.is-logged-in .white-band {
     width: 36px;
     height: 36px;
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 999px;
+    border-radius: 8px;
     background: #ffffff;
     color: var(--teal-dark);
     box-shadow: 0 10px 24px rgba(26, 77, 78, 0.12);
@@ -4660,7 +4660,7 @@ body.is-logged-in .white-band {
     min-height: 236px;
     overflow: hidden;
     border: 1px solid rgba(26, 77, 78, 0.12);
-    border-radius: 14px;
+    border-radius: 8px;
     background: #ffffff;
     color: var(--text);
     padding: 0;
@@ -4715,7 +4715,7 @@ body.is-logged-in .white-band {
 .explore-discovery-empty {
     margin: 0;
     border: 1px dashed var(--line);
-    border-radius: 14px;
+    border-radius: 8px;
     background: var(--bg);
     color: var(--muted);
     font-size: 13px;
@@ -4732,7 +4732,7 @@ body.is-logged-in .white-band {
     width: 34px;
     height: 34px;
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 999px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.9);
     color: var(--teal-dark);
     box-shadow: 0 10px 24px rgba(26, 77, 78, 0.12);
@@ -4750,7 +4750,7 @@ body.is-logged-in .white-band {
 
 .pin-preview-story {
     border: 1px solid rgba(26, 77, 78, 0.1);
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--bg);
     padding: 12px 14px;
 }
@@ -4778,7 +4778,7 @@ body.is-logged-in .white-band {
     gap: 6px;
     min-height: 34px;
     border: 1px solid rgba(26, 77, 78, 0.12);
-    border-radius: 999px;
+    border-radius: 8px;
     background: var(--bg);
     color: var(--muted);
     font-size: 12px;
@@ -4836,7 +4836,7 @@ body.is-logged-in .white-band {
     display: grid;
     gap: 10px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 8px;
     background: var(--bg);
     padding: 12px;
 }
@@ -4853,7 +4853,7 @@ body.is-logged-in .white-band {
     resize: vertical;
     min-height: 88px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 8px;
     background: #ffffff;
     color: var(--ink);
     font: inherit;
@@ -4869,7 +4869,7 @@ body.is-logged-in .white-band {
 
 .pin-preview-visibility button {
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: 8px;
     background: #ffffff;
     color: var(--muted);
     font-weight: 900;
@@ -6770,8 +6770,8 @@ body.is-logged-in .white-band {
     }
 
     .home-houses-reference__copy {
-        font-size: 17px;
-        line-height: 1.52;
+        font-size: 24px;
+        line-height: 1.42;
     }
 
     .home-houses-reference__collage {
@@ -7216,7 +7216,7 @@ body.is-logged-in .white-band {
         width: auto;
         max-height: min(46svh, 420px);
         overflow-y: auto;
-        border-radius: 22px 22px 18px 18px;
+        border-radius: 10px;
         padding: 14px;
         box-shadow:
             0 24px 58px rgba(70, 40, 32, 0.18),

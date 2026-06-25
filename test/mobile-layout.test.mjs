@@ -20,6 +20,7 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-photo-scope\s*\{[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*92px;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);
+    assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
     assert.match(mobile, /\.explore-pin-preview\.is-expanded\s*\{[^}]*max-height:\s*calc\(100svh - 120px\);/s);
 });
 
@@ -38,6 +39,7 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /\.home-houses-reference\s*\{[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;[^}]*padding-top:\s*84px;[^}]*padding-bottom:\s*68px;/s);
     assert.match(mobile, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(150px,\s*42vw,\s*280px\);/s);
     assert.match(mobile, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*138px;/s);
+    assert.match(mobile, /\.home-houses-reference__copy\s*\{[^}]*font-size:\s*24px;[^}]*line-height:\s*1\.42;/s);
     assert.match(mobile, /\.home-houses-reference__collage\s*\{[^}]*height:\s*380px;[^}]*margin-top:\s*44px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__collage::before\s*\{/);
     assert.doesNotMatch(mobile, /\.home-houses-reference__mapline\s*\{/);
