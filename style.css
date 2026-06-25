@@ -714,8 +714,8 @@ body.is-logged-in .white-band {
     position: relative;
     width: 100%;
     height: clamp(108px, 16vw, 220px);
-    margin-top: clamp(-72px, -5vw, -36px);
-    margin-bottom: clamp(-64px, -4vw, -32px);
+    margin-top: 0;
+    margin-bottom: clamp(-48px, -3vw, -24px);
     line-height: 0;
     overflow: hidden;
     background: var(--surface);
@@ -6772,8 +6772,8 @@ body.is-logged-in .white-band {
 
     .home-section-divider {
         height: 104px;
-        margin-top: -28px;
-        margin-bottom: -20px;
+        margin-top: 0;
+        margin-bottom: -16px;
     }
 
     .home-album-guide {
