@@ -17,6 +17,9 @@ test('logged-in header exposes a profile trigger with avatar and account name', 
     assert.match(css, /\.account-profile-trigger\s*\{/);
     assert.match(css, /body\.is-logged-out\s+#btn-open-profile\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /body\.is-logged-in\s+#account-guest-label\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /body\.is-logged-in\s+#btn-open-auth\s*\{[^}]*display:\s*none;/s);
+    assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = 'Login';\s*\}/s);
+    assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
 });
 
 test('public profile page includes shared nickname, bio, and avatar editing fields for the current user', () => {
@@ -37,6 +40,7 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(app, /type="file"/);
     assert.match(app, /accept="image\/\*"/);
     assert.match(app, /id="account-profile-save"/);
+    assert.match(app, /id="account-profile-logout"/);
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.account-profile-metrics\s*\{/);
     assert.match(app, /class="account-profile-fields"/);
@@ -72,6 +76,9 @@ test('header profile trigger routes to the shared public profile page and suppor
     assert.match(app, /function setAccountProfileEditMode\(isEditing\)/);
     assert.match(app, /function handleAccountProfileAvatarChange\(event\)/);
     assert.match(app, /\$\('#btn-open-profile'\)\?\.addEventListener\('click', openAccountProfilePage\)/);
+    assert.match(app, /async function handleLogout\(\)/);
+    assert.match(app, /const accountProfileLogout = event\.target\.closest\('#account-profile-logout'\)/);
+    assert.match(app, /if \(accountProfileLogout\) \{\s*await handleLogout\(\);\s*return;\s*\}/s);
     assert.match(app, /\$\('#account-profile-edit'\)\?\.addEventListener\('click', \(\) => setAccountProfileEditMode\(true\)\)/);
     assert.match(app, /\$\('#account-profile-form'\)\?\.addEventListener\('submit', saveAccountProfile\)/);
     assert.match(app, /\$\('#profile-avatar-input'\)\?\.addEventListener\('change', handleAccountProfileAvatarChange\)/);

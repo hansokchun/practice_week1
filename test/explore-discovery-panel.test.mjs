@@ -55,6 +55,15 @@ test('Explore shell exposes a desktop discovery panel instead of a hidden-only l
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*none;/s);
 });
 
+test('Explore map does not render the old pin instruction hint', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+
+    assert.doesNotMatch(html, /지도에서 핀을 누르면 공개 여행을 볼 수 있습니다/);
+    assert.doesNotMatch(html, /class="map-hint"/);
+    assert.doesNotMatch(css, /\.map-hint/);
+});
+
 test('Explore discovery panel can be collapsed and reopened from its header', () => {
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');

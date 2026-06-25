@@ -25,6 +25,7 @@
             </nav>
             <div class="account-area">
                 <span id="account-guest-label" class="account-label">Guest</span>
+                <button id="btn-open-auth" class="nav-action" type="button">Login</button>
                 <button id="btn-open-profile" class="account-profile-trigger" type="button" hidden>
                     <span id="account-avatar" class="avatar account-avatar">
                         <img id="account-avatar-image" alt="" hidden>
@@ -32,7 +33,6 @@
                     </span>
                     <span id="account-label" class="account-profile-name">Guest</span>
                 </button>
-                <button id="btn-open-auth" class="nav-action" type="button">Login</button>
             </div>
         </div>
     </header>
@@ -342,10 +342,6 @@
                     <button type="button" data-explore-scope="others">다른 사람 사진</button>
                     <button type="button" data-explore-scope="mine" class="active">내 사진</button>
                 </div>
-                <div class="map-hint">
-                    <span class="material-symbols-outlined">info</span>
-                    지도에서 핀을 누르면 공개 여행을 볼 수 있습니다.
-                </div>
                 <aside id="explore-pin-preview" class="explore-pin-preview" hidden>
                     <button id="btn-close-pin-preview" class="panel-close" type="button" aria-label="미리보기 닫기">
                         <span class="material-symbols-outlined">close</span>
@@ -491,6 +487,7 @@
                             </div>
                             <div class="profile-owner-actions">
                                 <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
+                                <button id="account-profile-logout" class="btn-secondary danger" type="button" hidden>로그아웃</button>
                             </div>
                         </div>
                         <p>지도에 공개한 여행만 모아둔 공개 프로필입니다.</p>

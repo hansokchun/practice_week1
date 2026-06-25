@@ -1235,6 +1235,7 @@ function ensureProfileHeaderShell() {
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
                 <div class="profile-owner-actions">
+                    <button id="account-profile-logout" class="btn-secondary danger" type="button" hidden>로그아웃</button>
                     <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
                 </div>
             </div>
@@ -1327,11 +1328,13 @@ function setAccountProfileEditMode(isEditing) {
     const view = $('#account-profile-view');
     const form = $('#account-profile-form');
     const editButton = $('#account-profile-edit');
+    const logoutButton = $('#account-profile-logout');
     const message = $('#account-profile-message');
 
     if (view) view.hidden = state.accountProfileEditMode;
     if (form) form.hidden = !state.accountProfileEditMode;
     if (editButton) editButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
+    if (logoutButton) logoutButton.hidden = state.selectedPublicOwnerId !== state.currentUser?.id;
     if (message) message.textContent = '';
 }
 
@@ -1448,8 +1451,25 @@ function updateAccountUI() {
     if (label) label.textContent = profile.nickname;
     if (guestLabel) guestLabel.hidden = Boolean(state.currentUser);
     if (profileButton) profileButton.hidden = !state.currentUser;
-    if (button) button.textContent = state.currentUser ? 'Logout' : 'Login';
+    if (button) {
+        button.hidden = Boolean(state.currentUser);
+        button.textContent = 'Login';
+    }
     setAvatarDisplay($('#account-avatar-image'), $('#account-avatar-fallback'), profile.avatarUrl, profile.nickname);
+}
+
+async function handleLogout() {
+    await signOut();
+    state.currentUser = null;
+    state.savedPhotos = [];
+    state.savedAlbums = [];
+    state.likedPhotoIds = [];
+    state.lastSavedPhotoIds = [];
+    closeModals();
+    updateAccountUI();
+    renderSavedPhotoSurfaces();
+    routeTo(APP_SECTIONS.HOME);
+    showToast('로그아웃했습니다.');
 }
 
 async function ensureCurrentUserPublicProfile() {
@@ -1734,6 +1754,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-album-count')) $('#profile-album-count').textContent = String(ownerAlbums.length);
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
+    if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
     const profileCopy = $('.profile-card p:not(.eyebrow)');
@@ -3956,8 +3977,14 @@ function bindEvents() {
         updatePhotoDetailModal(getDefaultDetailPhoto(), { context });
         openModal('#photo-detail-modal');
     }));
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
+
+        const accountProfileLogout = event.target.closest('#account-profile-logout');
+        if (accountProfileLogout) {
+            await handleLogout();
+            return;
+        }
 
         const preview = $('#explore-pin-preview');
         const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');
@@ -4339,20 +4366,7 @@ function bindEvents() {
         });
     }
     $('#btn-open-profile')?.addEventListener('click', openAccountProfilePage);
-    $('#btn-open-auth')?.addEventListener('click', async () => {
-        if (state.currentUser) {
-            await signOut();
-            state.currentUser = null;
-            state.savedPhotos = [];
-            state.savedAlbums = [];
-            state.likedPhotoIds = [];
-            state.lastSavedPhotoIds = [];
-            closeModals();
-            updateAccountUI();
-            renderSavedPhotoSurfaces();
-            showToast('로그아웃했습니다.');
-            return;
-        }
+    $('#btn-open-auth')?.addEventListener('click', () => {
         openModal('#auth-modal');
     });
     $('#account-profile-edit')?.addEventListener('click', () => setAccountProfileEditMode(true));

@@ -190,6 +190,10 @@ body.is-logged-in #account-guest-label {
     display: none;
 }
 
+body.is-logged-in #btn-open-auth {
+    display: none;
+}
+
 .nav-action,
 .btn-primary,
 .btn-secondary,
@@ -4251,8 +4255,7 @@ body.is-logged-in .home-houses-reference {
 .map-pin,
 .explore-photo-pins,
 .explore-photo-pin,
-.map-filter,
-.map-hint {
+.map-filter {
     position: absolute;
     z-index: 3;
 }
@@ -4423,26 +4426,6 @@ body.is-logged-in .home-houses-reference {
 .map-filter button.active {
     color: var(--teal);
     background: rgba(255, 255, 255, 0.9);
-}
-
-.map-hint {
-    left: 50%;
-    bottom: 44px;
-    transform: translateX(-50%);
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    background: var(--teal);
-    color: #ffffff;
-    box-shadow: 0 20px 50px rgba(26, 77, 78, 0.2);
-    padding: 12px 22px;
-    font-size: 14px;
-}
-
-.map-hint .material-symbols-outlined {
-    color: var(--coral);
 }
 
 .explore-pin-preview {
