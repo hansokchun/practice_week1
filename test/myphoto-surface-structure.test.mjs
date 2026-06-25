@@ -94,8 +94,8 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.match(styles, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*padding-left:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);[^}]*padding-right:\s*max\(24px,\s*calc\(\(100% - var\(--container\)\)\s*\/\s*2\)\);/s);
     assert.match(styles, /\.home-feature-story\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.22fr\)\s*minmax\(320px,\s*0\.78fr\);[^}]*padding:\s*78px 0;/s);
     assert.match(styles, /\.home-feature-story__media\s*\{[^}]*aspect-ratio:\s*auto;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
-    assert.match(styles, /\.home-feature-story__media::before\s*\{[^}]*radial-gradient\(circle at 22% 28%,\s*rgba\(244,\s*140,\s*113,\s*0\.14\)[\s\S]*box-shadow:[\s\S]*0 34px 92px rgba\(26,\s*77,\s*78,\s*0\.18\)/s);
-    assert.match(styles, /\.home-feature-story__media img\s*\{[^}]*height:\s*auto;[^}]*box-sizing:\s*border-box;[^}]*padding:\s*0;[^}]*object-fit:\s*contain;/s);
+    assert.doesNotMatch(styles, /\.home-feature-story__media::before\s*\{/);
+    assert.match(styles, /\.home-feature-story__media img\s*\{[^}]*height:\s*auto;[^}]*box-sizing:\s*border-box;[^}]*padding:\s*0;[^}]*filter:\s*[\s\S]*drop-shadow\(0 28px 56px rgba\(26,\s*77,\s*78,\s*0\.18\)\)[\s\S]*object-fit:\s*contain;/s);
     assert.match(styles, /\.home-feature-story__actions\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*10px;/s);
 });
 
@@ -132,11 +132,11 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /--houses-base:/);
     assert.doesNotMatch(styles, /\.home-houses-reference::before\s*\{/);
     assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
-    assert.match(styles, /\.home-houses-reference\s*\{[^}]*background:\s*var\(--houses-surface\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
+    assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(rgba\(26,\s*77,\s*78,\s*0\.055\)\s*1px,\s*transparent\s*1px\),[\s\S]*linear-gradient\(90deg,\s*rgba\(26,\s*77,\s*78,\s*0\.045\)\s*1px,\s*transparent\s*1px\),[\s\S]*var\(--houses-surface\);[\s\S]*background-size:\s*72px 72px,\s*72px 72px,\s*100% 100%,\s*auto;[\s\S]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(250px,\s*30vw,\s*540px\);[^}]*letter-spacing:\s*0\.015em;/s);
     assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*212px;/s);
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
-    assert.match(styles, /\.home-houses-reference__collage::before\s*\{[^}]*radial-gradient\(circle at 20% 38%,\s*rgba\(244,\s*140,\s*113,\s*0\.14\)[\s\S]*box-shadow:\s*0 34px 90px rgba\(26,\s*77,\s*78,\s*0\.1\);/s);
+    assert.doesNotMatch(styles, /\.home-houses-reference__collage::before\s*\{/);
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
     assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__divider/);

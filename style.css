@@ -571,7 +571,13 @@ body.is-logged-in .home-houses-reference {
 .home-houses-reference {
     position: relative;
     overflow: hidden;
-    background: var(--houses-surface);
+    background:
+        linear-gradient(rgba(26, 77, 78, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 77, 78, 0.045) 1px, transparent 1px),
+        radial-gradient(circle at 50% 54%, rgba(26, 77, 78, 0.06), transparent 42%),
+        var(--houses-surface);
+    background-position: center top, center top, center, center;
+    background-size: 72px 72px, 72px 72px, 100% 100%, auto;
     padding-top: 140px;
     padding-bottom: 96px;
 }
@@ -618,22 +624,8 @@ body.is-logged-in .home-houses-reference {
     margin-top: 78px;
 }
 
-.home-houses-reference__collage::before {
-    content: "";
-    position: absolute;
-    inset: 74px 54px 34px;
-    border-radius: 46% 54% 42% 58%;
-    background:
-        radial-gradient(circle at 20% 38%, rgba(244, 140, 113, 0.14), transparent 30%),
-        radial-gradient(circle at 78% 26%, rgba(26, 77, 78, 0.12), transparent 34%),
-        linear-gradient(118deg, rgba(255, 255, 255, 0.62), rgba(226, 227, 226, 0.42));
-    box-shadow: 0 34px 90px rgba(26, 77, 78, 0.1);
-    pointer-events: none;
-}
-
 .home-houses-reference__photo {
     position: absolute;
-    z-index: 1;
     margin: 0;
     overflow: hidden;
     background: #f6f0ea;
@@ -746,7 +738,6 @@ body.is-logged-in .home-houses-reference {
 
 .home-feature-story__media {
     position: relative;
-    isolation: isolate;
     aspect-ratio: auto;
     overflow: visible;
     border: 0;
@@ -755,30 +746,16 @@ body.is-logged-in .home-houses-reference {
     box-shadow: none;
 }
 
-.home-feature-story__media::before {
-    content: "";
-    position: absolute;
-    z-index: 0;
-    inset: 8% 3% -6%;
-    border-radius: 28px;
-    background:
-        radial-gradient(circle at 22% 28%, rgba(244, 140, 113, 0.14), transparent 34%),
-        radial-gradient(circle at 76% 70%, rgba(26, 77, 78, 0.18), transparent 36%),
-        rgba(237, 238, 237, 0.48);
-    box-shadow:
-        0 34px 92px rgba(26, 77, 78, 0.18),
-        0 16px 38px rgba(70, 40, 32, 0.12);
-    pointer-events: none;
-}
-
 .home-feature-story__media img {
     position: relative;
-    z-index: 1;
     display: block;
     width: 100%;
     height: auto;
     box-sizing: border-box;
     padding: 0;
+    filter:
+        drop-shadow(0 28px 56px rgba(26, 77, 78, 0.18))
+        drop-shadow(0 12px 22px rgba(70, 40, 32, 0.1));
     object-fit: contain;
 }
 
@@ -6759,11 +6736,6 @@ body.is-logged-in .home-houses-reference {
     .home-houses-reference__collage {
         height: 380px;
         margin-top: 44px;
-    }
-
-    .home-houses-reference__collage::before {
-        inset: 72px 4px 32px;
-        border-radius: 42% 58% 46% 54%;
     }
 
     .home-houses-reference__photo--a {
