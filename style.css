@@ -602,7 +602,7 @@ body.is-logged-in .white-band {
     gap: 26px;
     max-width: 720px;
     margin: 0 auto;
-    padding-top: 212px;
+    padding-top: clamp(260px, 24vw, 380px);
     text-align: center;
 }
 
