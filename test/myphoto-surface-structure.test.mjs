@@ -74,6 +74,7 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.ok(featureStoriesIndex > housesIndex);
     assert.ok(workspaceIndex > featureStoriesIndex);
     assert.ok(workspaceIndex > -1);
+    assert.equal(markup.match(/<article class="home-feature-story(?:\s|")/g)?.length, 3);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
@@ -132,7 +133,8 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /--houses-base:/);
     assert.doesNotMatch(styles, /\.home-houses-reference::before\s*\{/);
     assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
-    assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(rgba\(26,\s*77,\s*78,\s*0\.055\)\s*1px,\s*transparent\s*1px\),[\s\S]*linear-gradient\(90deg,\s*rgba\(26,\s*77,\s*78,\s*0\.045\)\s*1px,\s*transparent\s*1px\),[\s\S]*var\(--houses-surface\);[\s\S]*background-size:\s*72px 72px,\s*72px 72px,\s*100% 100%,\s*auto;[\s\S]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
+    assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(180deg,\s*var\(--houses-surface\)\s*0%,\s*var\(--houses-surface\)\s*78%,\s*var\(--surface\)\s*100%\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
+    assert.doesNotMatch(styles, /\.home-houses-reference\s*\{[^}]*background-size:\s*72px 72px/s);
     assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(250px,\s*30vw,\s*540px\);[^}]*letter-spacing:\s*0\.015em;/s);
     assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*212px;/s);
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
@@ -226,9 +228,9 @@ test('site footer provides global archive information after the app pages', () =
     assert.match(markup, /href="#\/">Home<\/a>/);
     assert.match(markup, /href="#\/explore">Explore<\/a>/);
     assert.match(markup, /사진은 기본 비공개로 보관됩니다\./);
-    assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*1px solid var\(--line\);[^}]*background:\s*var\(--surface\);/s);
+    assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*0;[^}]*radial-gradient\(circle at 12% 18%,\s*rgba\(255,\s*255,\s*255,\s*0\.14\),\s*transparent 34%\),[\s\S]*linear-gradient\(135deg,\s*var\(--teal-dark\)\s*0%,\s*var\(--teal\)\s*100%\);/s);
     assert.match(styles, /\.site-footer__inner\s*\{[^}]*grid-template-columns:/s);
-    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*background:\s*var\(--teal\);/s);
+    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*background:\s*var\(--surface\);[^}]*color:\s*var\(--teal-dark\);/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {

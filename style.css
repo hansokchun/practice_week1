@@ -572,12 +572,7 @@ body.is-logged-in .home-houses-reference {
     position: relative;
     overflow: hidden;
     background:
-        linear-gradient(rgba(26, 77, 78, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(26, 77, 78, 0.045) 1px, transparent 1px),
-        radial-gradient(circle at 50% 54%, rgba(26, 77, 78, 0.06), transparent 42%),
-        var(--houses-surface);
-    background-position: center top, center top, center, center;
-    background-size: 72px 72px, 72px 72px, 100% 100%, auto;
+        linear-gradient(180deg, var(--houses-surface) 0%, var(--houses-surface) 78%, var(--surface) 100%);
     padding-top: 140px;
     padding-bottom: 96px;
 }
@@ -790,9 +785,11 @@ body.is-logged-in .home-houses-reference {
 }
 
 .site-footer {
-    border-top: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--text);
+    border-top: 0;
+    background:
+        radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.14), transparent 34%),
+        linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+    color: var(--surface);
     padding: 48px max(24px, calc((100% - var(--container)) / 2)) 42px;
 }
 
@@ -810,7 +807,7 @@ body.is-logged-in .home-houses-reference {
 
 .site-footer__brand h2 {
     margin: 0;
-    color: var(--teal);
+    color: var(--surface);
     font-family: Georgia, "Times New Roman", serif;
     font-size: 34px;
     font-weight: 600;
@@ -822,7 +819,7 @@ body.is-logged-in .home-houses-reference {
 .site-footer__notes,
 .site-footer__copyright {
     margin: 0;
-    color: var(--muted);
+    color: rgba(249, 247, 242, 0.78);
     font-size: 14px;
     line-height: 1.7;
     word-break: keep-all;
@@ -838,9 +835,10 @@ body.is-logged-in .home-houses-reference {
     display: inline-flex;
     align-items: center;
     min-height: 38px;
-    border: 1px solid var(--line);
+    border: 1px solid rgba(249, 247, 242, 0.28);
     border-radius: 999px;
-    color: var(--teal-dark);
+    background: rgba(249, 247, 242, 0.08);
+    color: var(--surface);
     font-size: 14px;
     font-weight: 800;
     line-height: 1;
@@ -851,8 +849,8 @@ body.is-logged-in .home-houses-reference {
 
 .site-footer__nav a:hover,
 .site-footer__nav a:focus-visible {
-    background: var(--teal);
-    color: var(--surface);
+    background: var(--surface);
+    color: var(--teal-dark);
     transform: translateY(-1px);
 }
 
@@ -6690,7 +6688,7 @@ body.is-logged-in .home-houses-reference {
     }
 
     .site-footer {
-        padding: 38px 16px 34px;
+        padding: 38px 16px calc(34px + 92px);
     }
 
     .site-footer__inner {

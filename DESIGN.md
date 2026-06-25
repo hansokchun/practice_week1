@@ -131,7 +131,7 @@ All spacing derives from a base of 4px.
 - **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage with shadow depth.
 - **Variants**: Single top-of-home feature.
 - **Spacing**: Desktop top padding 140px; mobile top padding 84px.
-- **Backdrop**: The section may use a simple low-contrast map-grid background drawn from the existing teal and surface tokens; the collage itself should not sit on a separate blob or plate.
+- **Backdrop**: The section uses the houses surface with a soft bottom fade into the next white section; the collage itself should not sit on a separate blob, map grid, or plate.
 - **States**: Photo captions reveal on hover and focus.
 - **Accessibility**: Decorative word hidden with `aria-hidden`; section heading is screen-reader only; collage has a group label, individual image alt text, and location captions.
 - **Motion**: Static collage, using transforms only for rotation/position.
@@ -165,3 +165,5 @@ Ikkyee uses a mixed but restrained strategy: tonal-shift surfaces for app struct
 | Hero shadow | `0 28px 80px rgba(26, 77, 78, 0.22)` | Hero photo/map card |
 
 Borders use `--line` or a low-alpha color derived from the relevant section text color.
+
+The site footer is the one allowed full-width dark teal surface on the landing flow, using `--teal-dark` to `--teal` with light text so it reads as global site information rather than another intro section.
