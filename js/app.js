@@ -477,6 +477,27 @@ function openHomeReferencePhotoDetail(trigger) {
     openModal('#photo-detail-modal');
 }
 
+function getExplorePhotoDistanceScore(origin, candidate) {
+    if (!hasPhotoLocation(origin) || !hasPhotoLocation(candidate)) return Number.MAX_SAFE_INTEGER;
+    const latDelta = Number(origin.lat) - Number(candidate.lat);
+    const lngDelta = Number(origin.lng) - Number(candidate.lng);
+    return (latDelta * latDelta) + (lngDelta * lngDelta);
+}
+
+function getNearbyExplorePhotos(photo) {
+    const selectedId = String(photo?.id || '');
+    const source = state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getPublicPhotoMapItems();
+    return source
+        .filter((candidate) => candidate?.id && String(candidate.id) !== selectedId && (candidate.url || candidate.albumCoverUrl))
+        .map((candidate) => ({
+            photo: candidate,
+            distance: getExplorePhotoDistanceScore(photo, candidate)
+        }))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 6)
+        .map((item) => item.photo);
+}
+
 function hasPhotoLocation(photo) {
     return hasUsablePhotoLocation(photo);
 }
@@ -587,6 +608,8 @@ function updateExplorePhotoPreview(photo) {
     const likeButton = $('#pin-preview-like');
     const likeCount = $('#pin-preview-like-count');
     const descriptionInput = $('#pin-preview-description-input');
+    const nearbyPanel = preview.querySelector('[data-pin-preview-nearby]');
+    const nearbyList = preview.querySelector('[data-pin-preview-nearby-list]');
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
     const isOwnPhoto = Boolean(state.currentUser?.id && ownerId === state.currentUser.id);
@@ -646,6 +669,18 @@ function updateExplorePhotoPreview(photo) {
         likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
     }
     if (likeCount) likeCount.textContent = `좋아요 ${Number(photo.liked || 0)}개`;
+    const nearbyPhotos = getNearbyExplorePhotos(photo);
+    if (nearbyPanel && nearbyList) {
+        nearbyPanel.hidden = !nearbyPhotos.length;
+        nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
+            const label = getPhotoFallbackLabel(nearbyPhoto, '주변 사진');
+            return `
+                <button class="pin-preview-nearby__item" data-explore-nearby-photo="${escapeHtml(nearbyPhoto.id)}" type="button" aria-label="${escapeHtml(label)} 사진 보기">
+                    <img src="${escapeHtml(nearbyPhoto.url || nearbyPhoto.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(label)}">
+                </button>
+            `;
+        }).join('');
+    }
     updatePhotoDetailModal(photo, { context: 'explore' });
 }
 
@@ -4082,6 +4117,14 @@ function bindEvents() {
         const discoveryToggleButton = event.target.closest('#btn-toggle-explore-discovery');
         if (discoveryToggleButton) {
             toggleExploreDiscoveryPanel();
+            return;
+        }
+
+        const nearbyPhotoButton = event.target.closest('[data-explore-nearby-photo]');
+        if (nearbyPhotoButton) {
+            const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === nearbyPhotoButton.dataset.exploreNearbyPhoto)
+                || getPublicPhotoMapItems().find((candidate) => candidate.id === nearbyPhotoButton.dataset.exploreNearbyPhoto);
+            openExplorePhotoPreview(photo, { focusMap: true });
             return;
         }
 

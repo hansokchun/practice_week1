@@ -820,6 +820,10 @@ body.is-logged-in .white-band {
     padding: 48px max(24px, calc((100% - var(--container)) / 2)) 42px;
 }
 
+body[data-page="explore"] .site-footer {
+    display: none;
+}
+
 .site-footer__inner {
     display: grid;
     grid-template-columns: minmax(280px, 1.4fr) minmax(140px, auto) minmax(280px, 1fr);
@@ -4823,11 +4827,19 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     place-items: center;
     width: 34px;
     height: 34px;
-    border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.9);
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
     color: var(--teal-dark);
-    box-shadow: 0 10px 24px rgba(26, 77, 78, 0.12);
+    box-shadow: none;
+    padding: 0;
+    transition: color 150ms ease, transform 150ms ease;
+}
+
+.panel-close:hover,
+.panel-close:focus-visible {
+    color: var(--coral);
+    transform: scale(1.06);
 }
 
 .public-trip-copy h1,
@@ -4911,6 +4923,70 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .pin-preview-like-panel .photo-like-button {
     flex: 0 0 auto;
+}
+
+.pin-preview-nearby {
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid rgba(26, 77, 78, 0.1);
+    padding-top: 14px;
+}
+
+.pin-preview-nearby[hidden] {
+    display: none;
+}
+
+.pin-preview-nearby__header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.pin-preview-nearby__label {
+    margin: 0;
+    color: var(--coral);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.pin-preview-nearby__header strong {
+    color: var(--teal-dark);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.pin-preview-nearby__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.pin-preview-nearby__item {
+    overflow: hidden;
+    min-width: 0;
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    padding: 0;
+    box-shadow:
+        0 12px 28px rgba(26, 77, 78, 0.1),
+        0 6px 14px rgba(70, 40, 32, 0.06);
+}
+
+.pin-preview-nearby__item:focus-visible {
+    outline: 2px solid rgba(244, 140, 113, 0.42);
+    outline-offset: 2px;
+}
+
+.pin-preview-nearby__item img {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    object-fit: cover;
 }
 
 .pin-preview-owner-actions {

@@ -72,6 +72,11 @@ test('Explore pin preview sits in the right discovery panel position', () => {
     assert.match(css, /\.pin-preview-photo-button img\s*\{[^}]*aspect-ratio:\s*4 \/ 3;/s);
 });
 
+test('Explore photo preview uses an icon-only close action and hides the global footer on Explore', () => {
+    assert.match(css, /\.panel-close\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
+    assert.match(css, /body\[data-page="explore"\]\s+\.site-footer\s*\{[^}]*display:\s*none;/s);
+});
+
 test('Explore pin preview follows an author, photo, story, and info order', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
@@ -103,6 +108,25 @@ test('Explore photo preview hides the story block when no description exists', (
     assert.match(body, /const storyWrap = preview\.querySelector\('\.pin-preview-story'\)/);
     assert.match(body, /storyWrap\.hidden = !description/);
     assert.doesNotMatch(body, /사진에 대한 글이 아직 없습니다/);
+});
+
+test('Explore photo preview renders nearby photo thumbnails that reopen the preview', () => {
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+    const fnStart = source.indexOf('function updateExplorePhotoPreview');
+    const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+    const clickStart = source.indexOf("const nearbyPhotoButton = event.target.closest('[data-explore-nearby-photo]');");
+    const clickEnd = source.indexOf("const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');", clickStart);
+    const clickBody = source.slice(clickStart, clickEnd);
+
+    assert.match(preview, /data-pin-preview-nearby/);
+    assert.match(preview, /data-pin-preview-nearby-list/);
+    assert.match(body, /const nearbyPhotos = getNearbyExplorePhotos\(photo\);/);
+    assert.match(body, /data-explore-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id\)\}"/);
+    assert.match(css, /\.pin-preview-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(clickBody, /openExplorePhotoPreview\(photo,\s*\{ focusMap: true \}\);/);
 });
 
 test('Explore photo preview keeps capture info as compact chips below the story', () => {
