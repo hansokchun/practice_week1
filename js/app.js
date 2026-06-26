@@ -1254,6 +1254,11 @@ function openPhotoFullscreenFromDetail() {
         fullscreenImage.src = source;
         fullscreenImage.alt = alt;
     }
+    setPhotoDetailMoreMenuOpen(false);
+    if (detailModal) {
+        detailModal.classList.remove('is-open');
+        detailModal.setAttribute('aria-hidden', 'true');
+    }
     openModal('#photo-fullscreen-modal');
 }
 

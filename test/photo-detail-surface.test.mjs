@@ -73,6 +73,9 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /data-photo-detail-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id\)\}"/);
     assert.match(source, /function openPhotoFullscreenFromDetail\(\)/);
     assert.match(source, /sourceImage\?\.currentSrc \|\| sourceImage\?\.src \|\| detailModal\?\.dataset\.photoDetailImageSrc/);
+    assert.match(source, /setPhotoDetailMoreMenuOpen\(false\)/);
+    assert.match(source, /detailModal\.classList\.remove\('is-open'\)/);
+    assert.match(source, /detailModal\.setAttribute\('aria-hidden', 'true'\)/);
     assert.match(source, /function setPhotoDetailMoreMenuOpen\(isOpen\)/);
     assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*start;/s);
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*start;/s);
@@ -80,7 +83,9 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-detail-zoom-button\s*\{[^}]*position:\s*absolute;[^}]*border-radius:\s*999px;/s);
     assert.match(css, /\.photo-detail-more-menu\s*\{[^}]*position:\s*absolute;[^}]*min-width:\s*132px;/s);
     assert.match(css, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
-    assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.photo-fullscreen-modal\s*\{[^}]*z-index:\s*140;[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
+    assert.match(css, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;/s);
+    assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*width:\s*auto;[^}]*height:\s*auto;[^}]*max-width:\s*100%;[^}]*max-height:\s*100%;[^}]*object-fit:\s*contain;/s);
     assert.match(css, /\.photo-detail-map\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /\.photo-detail-map,\s*\.location-editor-map\s*\{/s);
     assert.match(css, /\.photo-detail-map\[hidden\]\s*\{[^}]*display:\s*none !important;/s);
