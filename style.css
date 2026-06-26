@@ -589,7 +589,7 @@ body.is-logged-in .white-band {
     font-size: clamp(300px, 36vw, 660px);
     font-weight: 400;
     line-height: 0.86;
-    letter-spacing: 0.015em;
+    letter-spacing: 0;
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
@@ -629,6 +629,7 @@ body.is-logged-in .white-band {
     box-shadow:
         0 30px 70px rgba(70, 40, 32, 0.22),
         0 12px 28px rgba(26, 77, 78, 0.12);
+    cursor: pointer;
 }
 
 .home-houses-reference__photo img {
@@ -659,14 +660,19 @@ body.is-logged-in .white-band {
 }
 
 .home-houses-reference__photo:hover img,
-.home-houses-reference__photo:focus-within img {
+.home-houses-reference__photo:focus-visible img {
     transform: scale(1.035);
 }
 
 .home-houses-reference__photo:hover figcaption,
-.home-houses-reference__photo:focus-within figcaption {
+.home-houses-reference__photo:focus-visible figcaption {
     opacity: 1;
     transform: translateY(0);
+}
+
+.home-houses-reference__photo:focus-visible {
+    outline: 3px solid var(--coral);
+    outline-offset: 6px;
 }
 
 .home-houses-reference__photo--a {
@@ -708,6 +714,74 @@ body.is-logged-in .white-band {
     width: 248px;
     aspect-ratio: 0.84;
     transform: rotate(6deg);
+}
+
+.home-houses-reference__info-panel {
+    position: relative;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    width: min(560px, 100%);
+    margin: -4px auto 0;
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow:
+        0 30px 70px rgba(70, 40, 32, 0.16),
+        0 12px 30px rgba(26, 77, 78, 0.14);
+    backdrop-filter: blur(14px);
+    padding: 16px 18px 16px 16px;
+}
+
+.home-houses-reference__info-panel[hidden] {
+    display: none;
+}
+
+.home-houses-reference__info-panel img {
+    width: 128px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 0;
+    box-shadow:
+        0 18px 42px rgba(26, 77, 78, 0.14),
+        0 8px 18px rgba(70, 40, 32, 0.08);
+}
+
+.home-houses-reference__info-panel .eyebrow {
+    margin: 0 0 8px;
+    color: var(--coral);
+}
+
+.home-houses-reference__info-panel h3 {
+    margin: 0;
+    color: var(--teal-dark);
+    font-family: var(--headline);
+    font-size: 24px;
+    line-height: 1.22;
+}
+
+.home-houses-reference__info-panel p:not(.eyebrow) {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.62;
+}
+
+.home-houses-reference__info-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--teal-dark);
+    padding: 0;
 }
 
 .home-section-divider {
@@ -3122,6 +3196,78 @@ body.is-logged-in .white-band {
 .album-empty-state button {
     width: fit-content;
     justify-self: center;
+}
+
+body.is-logged-in .home-workspace .page-intro,
+body.is-logged-in .home-workspace .recent-photo-section,
+body.is-logged-in .home-workspace .dashboard-panel,
+body.is-logged-in .home-workspace .attention-banner {
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow:
+        0 30px 70px rgba(70, 40, 32, 0.12),
+        0 12px 30px rgba(26, 77, 78, 0.1);
+    backdrop-filter: blur(14px);
+}
+
+body.is-logged-in .home-workspace .page-intro {
+    max-width: none;
+    padding: 24px;
+}
+
+body.is-logged-in .home-workspace .myphoto-actions {
+    margin-bottom: 24px;
+}
+
+body.is-logged-in .home-workspace .action-card {
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow:
+        0 20px 52px rgba(26, 77, 78, 0.1),
+        0 8px 22px rgba(70, 40, 32, 0.06);
+}
+
+body.is-logged-in .home-workspace .primary-action-card {
+    border-color: transparent;
+    background: var(--teal-dark);
+}
+
+body.is-logged-in .home-workspace .recent-photo-section {
+    margin: 24px 0 0;
+    padding: 22px;
+}
+
+body.is-logged-in .home-workspace .recent-photo-grid article:not(.recent-photo-empty),
+body.is-logged-in .home-workspace .personal-photo-card {
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow:
+        0 18px 42px rgba(26, 77, 78, 0.1),
+        0 8px 18px rgba(70, 40, 32, 0.06);
+}
+
+body.is-logged-in .home-workspace .recent-photo-grid img,
+body.is-logged-in .home-workspace .personal-photo-card img,
+body.is-logged-in .home-workspace .album-row img,
+body.is-logged-in .home-workspace .missing-location-list img {
+    border-radius: 0;
+}
+
+body.is-logged-in .home-workspace .recent-photo-empty,
+body.is-logged-in .home-workspace .album-empty-state {
+    border-radius: 8px;
+    background: var(--bg);
+}
+
+body.is-logged-in .home-workspace .album-row {
+    border-color: rgba(26, 77, 78, 0.14);
+    border-radius: 8px;
+    box-shadow:
+        0 22px 54px rgba(26, 77, 78, 0.1),
+        0 10px 24px rgba(70, 40, 32, 0.07);
 }
 
 .explore-map-canvas {
@@ -6811,6 +6957,26 @@ body.is-logged-in .white-band {
     .home-houses-reference__photo figcaption {
         font-size: 11px;
         padding: 6px 8px;
+    }
+
+    .home-houses-reference__info-panel {
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 12px;
+        margin-top: 2px;
+        padding: 14px;
+    }
+
+    .home-houses-reference__info-panel img {
+        width: 92px;
+    }
+
+    .home-houses-reference__info-panel h3 {
+        font-size: 18px;
+    }
+
+    .home-houses-reference__info-panel p:not(.eyebrow) {
+        font-size: 13px;
+        line-height: 1.5;
     }
 
     .home-section-divider {

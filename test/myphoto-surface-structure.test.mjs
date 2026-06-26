@@ -133,6 +133,13 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(markup, /<figcaption>France · Nice<\/figcaption>/);
     assert.match(markup, /<figcaption>Japan · Kyoto<\/figcaption>/);
     assert.match(markup, /<figcaption>Morocco · Merzouga<\/figcaption>/);
+    assert.equal(markup.match(/data-home-photo-info/g)?.length, 5);
+    assert.equal(markup.match(/aria-expanded="false"/g)?.length, 5);
+    assert.match(markup, /data-home-photo-title="거리와 카페가 있는 여행 사진"/);
+    assert.match(markup, /data-home-photo-location="Switzerland · Interlaken"/);
+    assert.match(markup, /class="home-houses-reference__info-panel"[^>]*data-home-photo-panel[^>]*hidden/);
+    assert.match(markup, /data-home-photo-panel-image/);
+    assert.match(markup, /data-home-photo-close/);
     assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
     assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
     assert.doesNotMatch(styles, /--houses-base:/);
@@ -140,7 +147,7 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
     assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(180deg,\s*var\(--houses-surface\)\s*0%,\s*var\(--houses-surface\)\s*78%,\s*var\(--surface\)\s*100%\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference\s*\{[^}]*background-size:\s*72px 72px/s);
-    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(300px,\s*36vw,\s*660px\);[^}]*letter-spacing:\s*0\.015em;/s);
+    assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(300px,\s*36vw,\s*660px\);[^}]*letter-spacing:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__copy\s*\{[^}]*font-size:\s*23px;[^}]*font-weight:\s*700;[^}]*line-height:\s*1\.56;/s);
     assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*clamp\(300px,\s*calc\(31vw - 120px\),\s*440px\);/s);
     assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
@@ -151,8 +158,24 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(styles, /\.home-section-divider\s*\{[^}]*height:\s*clamp\(108px,\s*16vw,\s*220px\);[^}]*margin-top:\s*clamp\(-48px,\s*-3vw,\s*-24px\);[^}]*margin-bottom:\s*clamp\(-48px,\s*-3vw,\s*-24px\);[^}]*background:\s*var\(--surface\);/s);
     assert.match(styles, /\.home-section-divider img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center 52%;/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
-    assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-within figcaption\s*\{[^}]*opacity:\s*1;/s);
+    assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-visible figcaption\s*\{[^}]*opacity:\s*1;/s);
+    assert.match(styles, /\.home-houses-reference__info-panel\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
+    assert.match(styles, /\.home-houses-reference__info-panel\[hidden\]\s*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /\.home-houses-reference__info-panel img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
+});
+
+test('home collage photos open an inline information panel', () => {
+    const app = source();
+
+    assert.match(app, /function openHomePhotoInfoPanel\(trigger\)\s*\{/);
+    assert.match(app, /function closeHomePhotoInfoPanel\(\)\s*\{/);
+    assert.match(app, /event\.target\.closest\('\[data-home-photo-info\]'\)/);
+    assert.match(app, /event\.target\.closest\('\[data-home-photo-close\]'\)/);
+    assert.match(app, /if \(event\.key === 'Escape'\)[\s\S]*closeHomePhotoInfoPanel\(\)/);
+    assert.match(app, /if \(!\['Enter', ' '\]\.includes\(event\.key\)/);
+    assert.match(app, /panel\.hidden = false;/);
+    assert.match(app, /item\.setAttribute\('aria-expanded', item === trigger \? 'true' : 'false'\)/);
 });
 
 test('logged-in home hides the houses reference with the other public intro bands', () => {
@@ -169,6 +192,17 @@ test('logged-in home hides the houses reference with the other public intro band
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /body\.is-logged-in\s+\.home-feature-stories/);
     assert.match(styles.slice(hiddenWhiteBandIndex, hiddenWhiteBandRuleEnd), /display:\s*none;/);
     assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-houses-reference\s*\{[^}]*display:\s*block;/s);
+});
+
+test('logged-in home panels and thumbnails follow the explore visual language', () => {
+    const styles = css();
+
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.page-intro,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.action-card\s*\{[^}]*border-radius:\s*10px;[^}]*box-shadow:\s*[\s\S]*0 20px 52px rgba\(26,\s*77,\s*78,\s*0\.1\)/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.primary-action-card\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*0;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.missing-location-list img\s*\{[^}]*border-radius:\s*0;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*8px;[^}]*box-shadow:/s);
 });
 
 test('home no longer renders the removed easol intro sections', () => {
