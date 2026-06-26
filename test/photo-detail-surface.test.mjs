@@ -103,6 +103,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*max-width:\s*none;[^}]*max-height:\s*none;[^}]*object-fit:\s*contain;/s);
     assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*padding:\s*max\(16px,\s*env\(safe-area-inset-top\)\)/s);
     assert.match(css, /\.modal-back\s*\{[^}]*position:\s*absolute;[^}]*left:\s*12px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.modal-back \.material-symbols-outlined\s*\{[^}]*display:\s*grid;[^}]*place-items:\s*center;[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;/s);
     assert.match(css, /\.photo-fullscreen-back\s*\{[^}]*left:\s*max\(12px,\s*env\(safe-area-inset-left\)\);/s);
     assert.match(css, /\.photo-detail-map\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /\.photo-detail-map,\s*\.location-editor-map\s*\{/s);

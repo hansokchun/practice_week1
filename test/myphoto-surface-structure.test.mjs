@@ -197,12 +197,31 @@ test('logged-in home hides the houses reference with the other public intro band
 test('logged-in home panels and thumbnails follow the explore visual language', () => {
     const styles = css();
 
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.page-intro,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.action-card\s*\{[^}]*border-radius:\s*10px;[^}]*box-shadow:\s*[\s\S]*0 20px 52px rgba\(26,\s*77,\s*78,\s*0\.1\)/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.primary-action-card\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
+    assert.match(styles, /\.compact-action-button\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*999px;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.missing-location-list img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*8px;[^}]*box-shadow:/s);
+});
+
+test('home archive creation actions sit in their matching section headers', () => {
+    const markup = html();
+    const homeStart = markup.indexOf('class="home-workspace');
+    const homeEnd = markup.indexOf('id="page-photos"', homeStart);
+    const home = markup.slice(homeStart, homeEnd);
+    const recentStart = home.indexOf('id="recent-photo-title"');
+    const likedStart = home.indexOf('id="liked-photo-title"');
+    const albumStart = home.indexOf('id="my-albums-title"');
+    const recentHeader = home.slice(recentStart, likedStart);
+    const albumHeader = home.slice(albumStart, home.indexOf('id="album-list"', albumStart));
+
+    assert.doesNotMatch(home, /Home Archive/);
+    assert.doesNotMatch(home, /내 사진과 앨범을 정리하는 공간/);
+    assert.doesNotMatch(home, /선택한 사진만 업로드됩니다/);
+    assert.doesNotMatch(home, /class="myphoto-actions"/);
+    assert.doesNotMatch(home, /class="action-card/);
+    assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
+    assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
 });
 
 test('home no longer renders the removed easol intro sections', () => {

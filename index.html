@@ -117,26 +117,7 @@
                 </article>
             </section>
 
-            <section class="home-workspace page-container" aria-labelledby="myphoto-title">
-                <div class="page-intro">
-                    <p class="eyebrow">Home Archive</p>
-                    <h1 id="myphoto-title">내 사진과 앨범을 정리하는 공간</h1>
-                    <p>선택한 사진만 업로드됩니다. 모든 사진과 앨범은 기본 비공개입니다.</p>
-                </div>
-
-                <div class="myphoto-actions">
-                    <button id="btn-open-upload" class="action-card primary-action-card" type="button">
-                        <span class="material-symbols-outlined">add_a_photo</span>
-                        <strong>사진 올리기</strong>
-                        <small>파일 선택, 위치 정보 확인, 비공개 저장</small>
-                    </button>
-                    <button id="btn-open-album" class="action-card" type="button">
-                        <span class="material-symbols-outlined">library_add</span>
-                        <strong>앨범 만들기</strong>
-                        <small>사진 묶기, 앨범 이름 지정, 공개 전 검토</small>
-                    </button>
-                </div>
-
+            <section class="home-workspace page-container" aria-label="사진과 앨범 보관함">
                 <section class="attention-banner" hidden>
                     <span class="material-symbols-outlined">wrong_location</span>
                     <div>
@@ -151,7 +132,10 @@
                 <section class="recent-photo-section" aria-labelledby="recent-photo-title">
                     <div class="panel-topline">
                         <h2 id="recent-photo-title">최근 사진</h2>
-                        <button id="btn-open-photos" class="text-button" type="button">전체 보기</button>
+                        <div class="panel-actions">
+                            <button id="btn-open-upload" class="btn-primary compact-action-button" type="button">사진올리기</button>
+                            <button id="btn-open-photos" class="text-button" type="button">전체 보기</button>
+                        </div>
                     </div>
                     <div id="recent-photo-grid" class="recent-photo-grid">
                         <article><img src="images/main_bg1.jpg" alt=""><span class="material-symbols-outlined">lock</span></article>
@@ -183,7 +167,10 @@
                             <h2 id="my-albums-title">여행 앨범</h2>
                             <p>여행 단위로 정리된 나의 앨범</p>
                         </div>
-                        <span id="myphoto-summary">0장 · 0개 앨범</span>
+                        <div class="panel-actions">
+                            <span id="myphoto-summary">0장 · 0개 앨범</span>
+                            <button id="btn-open-album" class="btn-primary compact-action-button" type="button">앨범만들기</button>
+                        </div>
                     </div>
                     <div id="album-list" class="album-list"></div>
                 </section>
@@ -210,7 +197,7 @@
                         </div>
                         <div class="panel-actions">
                             <button id="btn-delete-selected-photos" class="btn-secondary danger" type="button" disabled>선택 삭제</button>
-                            <button id="btn-upload-more-photos" class="btn-secondary" type="button">사진 더 올리기</button>
+                            <button id="btn-upload-more-photos" class="btn-primary compact-action-button" type="button">사진올리기</button>
                         </div>
                     </div>
                     <div id="personal-photo-grid" class="personal-photo-grid"></div>
