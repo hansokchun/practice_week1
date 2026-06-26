@@ -63,8 +63,11 @@ test('Explore pin preview uses a small entrance grow animation', () => {
     assert.match(css, /@keyframes pinPreviewPhotoEnter\s*\{[\s\S]*transform:\s*scale\(0\.975\)/);
 });
 
-test('Explore pin preview gives the photo card a roomier default size', () => {
-    assert.match(css, /\.explore-pin-preview\s*\{[^}]*width:\s*min\(408px,\s*calc\(100% - 56px\)\);/s);
+test('Explore pin preview sits in the right discovery panel position', () => {
+    assert.match(css, /\.explore-pin-preview\s*\{[^}]*top:\s*92px;[^}]*right:\s*28px;[^}]*left:\s*auto;/s);
+    assert.match(css, /\.explore-pin-preview\s*\{[^}]*width:\s*min\(390px,\s*calc\(100% - 56px\)\);/s);
+    assert.match(css, /\.explore-pin-preview\s*\{[^}]*height:\s*clamp\(560px,\s*calc\(100svh - 108px\),\s*900px\);/s);
+    assert.match(css, /body\.explore-pin-selected #page-explore \.explore-discovery-panel\s*\{[^}]*visibility:\s*hidden;[^}]*pointer-events:\s*none;/s);
     assert.match(css, /\.explore-pin-preview\s*\{[^}]*padding:\s*18px;/s);
     assert.match(css, /\.pin-preview-photo-button img\s*\{[^}]*aspect-ratio:\s*4 \/ 3;/s);
 });
