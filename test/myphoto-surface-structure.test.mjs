@@ -133,13 +133,14 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(markup, /<figcaption>France · Nice<\/figcaption>/);
     assert.match(markup, /<figcaption>Japan · Kyoto<\/figcaption>/);
     assert.match(markup, /<figcaption>Morocco · Merzouga<\/figcaption>/);
-    assert.equal(markup.match(/data-home-photo-info/g)?.length, 5);
-    assert.equal(markup.match(/aria-expanded="false"/g)?.length, 5);
+    assert.equal(markup.match(/data-home-photo-detail/g)?.length, 5);
     assert.match(markup, /data-home-photo-title="거리와 카페가 있는 여행 사진"/);
     assert.match(markup, /data-home-photo-location="Switzerland · Interlaken"/);
-    assert.match(markup, /class="home-houses-reference__info-panel"[^>]*data-home-photo-panel[^>]*hidden/);
-    assert.match(markup, /data-home-photo-panel-image/);
-    assert.match(markup, /data-home-photo-close/);
+    assert.match(markup, /data-home-photo-date="2025-06-18"/);
+    assert.match(markup, /data-home-photo-lat="46\.6863"/);
+    assert.doesNotMatch(markup, /class="home-houses-reference__info-panel"/);
+    assert.doesNotMatch(markup, /data-home-photo-panel/);
+    assert.doesNotMatch(markup, /data-home-photo-close/);
     assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
     assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
     assert.doesNotMatch(styles, /--houses-base:/);
@@ -159,23 +160,22 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(styles, /\.home-section-divider img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center 52%;/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-visible figcaption\s*\{[^}]*opacity:\s*1;/s);
-    assert.match(styles, /\.home-houses-reference__info-panel\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
-    assert.match(styles, /\.home-houses-reference__info-panel\[hidden\]\s*\{[^}]*display:\s*none;/s);
-    assert.match(styles, /\.home-houses-reference__info-panel img\s*\{[^}]*border-radius:\s*0;/s);
+    assert.doesNotMatch(styles, /\.home-houses-reference__info-panel/);
     assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
 });
 
-test('home collage photos open an inline information panel', () => {
+test('home collage photos reuse the existing photo detail modal', () => {
     const app = source();
 
-    assert.match(app, /function openHomePhotoInfoPanel\(trigger\)\s*\{/);
-    assert.match(app, /function closeHomePhotoInfoPanel\(\)\s*\{/);
-    assert.match(app, /event\.target\.closest\('\[data-home-photo-info\]'\)/);
-    assert.match(app, /event\.target\.closest\('\[data-home-photo-close\]'\)/);
-    assert.match(app, /if \(event\.key === 'Escape'\)[\s\S]*closeHomePhotoInfoPanel\(\)/);
+    assert.match(app, /function getHomeReferencePhotoDetail\(trigger\)\s*\{/);
+    assert.match(app, /function openHomeReferencePhotoDetail\(trigger\)\s*\{/);
+    assert.doesNotMatch(app, /function openHomePhotoInfoPanel/);
+    assert.doesNotMatch(app, /function closeHomePhotoInfoPanel/);
+    assert.match(app, /event\.target\.closest\('\[data-home-photo-detail\]'\)/);
     assert.match(app, /if \(!\['Enter', ' '\]\.includes\(event\.key\)/);
-    assert.match(app, /panel\.hidden = false;/);
-    assert.match(app, /item\.setAttribute\('aria-expanded', item === trigger \? 'true' : 'false'\)/);
+    assert.match(app, /updatePhotoDetailModal\(photo,\s*\{\s*context:\s*'photo'\s*\}\);/);
+    assert.match(app, /openModal\('#photo-detail-modal'\);/);
+    assert.match(app, /placeName:\s*trigger\?\.dataset\?\.homePhotoLocation/);
 });
 
 test('logged-in home hides the houses reference with the other public intro bands', () => {

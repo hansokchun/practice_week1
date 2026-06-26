@@ -204,40 +204,6 @@ function getPhotoFallbackLabel(photo, fallback = '사진') {
     return String(photo?.description || '').trim() || fallback;
 }
 
-function closeHomePhotoInfoPanel() {
-    const panel = $('[data-home-photo-panel]');
-    if (!panel) return;
-    panel.hidden = true;
-    $$('[data-home-photo-info][aria-expanded="true"]').forEach((trigger) => {
-        trigger.setAttribute('aria-expanded', 'false');
-    });
-}
-
-function openHomePhotoInfoPanel(trigger) {
-    const panel = $('[data-home-photo-panel]');
-    if (!panel || !trigger) return;
-
-    const image = panel.querySelector('[data-home-photo-panel-image]');
-    const location = panel.querySelector('[data-home-photo-panel-location]');
-    const title = panel.querySelector('[data-home-photo-panel-title]');
-    const copy = panel.querySelector('[data-home-photo-panel-copy]');
-    const src = trigger.dataset.homePhotoSrc || trigger.querySelector('img')?.getAttribute('src') || '';
-    const label = trigger.dataset.homePhotoTitle || trigger.querySelector('img')?.getAttribute('alt') || '여행 사진';
-
-    if (image) {
-        image.src = src;
-        image.alt = label;
-    }
-    if (location) location.textContent = trigger.dataset.homePhotoLocation || '';
-    if (title) title.textContent = label;
-    if (copy) copy.textContent = trigger.dataset.homePhotoCopy || '';
-
-    $$('[data-home-photo-info]').forEach((item) => {
-        item.setAttribute('aria-expanded', item === trigger ? 'true' : 'false');
-    });
-    panel.hidden = false;
-}
-
 function formatRelativeTime(value, now = new Date()) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return '방금 전';
@@ -483,6 +449,32 @@ function getDefaultDetailPhoto() {
     return selectedAlbum?.photos?.[0]
         || getAllDisplayPhotos()[0]
         || { id: 'empty-detail', name: '여행 사진', url: 'images/main_bg2.jpg', date: new Date().toISOString(), album: selectedAlbum?.title || '여행 앨범', visibility: selectedAlbum?.visibility || 'private' };
+}
+
+function getHomeReferencePhotoDetail(trigger) {
+    const image = trigger?.querySelector?.('img');
+    const lat = Number(trigger?.dataset?.homePhotoLat);
+    const lng = Number(trigger?.dataset?.homePhotoLng);
+    return {
+        id: trigger?.dataset?.homePhotoId || 'home-reference-photo',
+        url: trigger?.dataset?.homePhotoSrc || image?.getAttribute('src') || 'images/main_bg2.jpg',
+        description: trigger?.dataset?.homePhotoCopy || trigger?.dataset?.homePhotoTitle || image?.getAttribute('alt') || '여행 사진',
+        date: trigger?.dataset?.homePhotoDate || new Date().toISOString(),
+        album: 'Ikkyee 소개 사진',
+        visibility: 'public',
+        shared: true,
+        owner_id: 'demo',
+        placeName: trigger?.dataset?.homePhotoLocation || '',
+        lat: Number.isFinite(lat) ? lat : null,
+        lng: Number.isFinite(lng) ? lng : null,
+        liked: 0
+    };
+}
+
+function openHomeReferencePhotoDetail(trigger) {
+    const photo = getHomeReferencePhotoDetail(trigger);
+    updatePhotoDetailModal(photo, { context: 'photo' });
+    openModal('#photo-detail-modal');
 }
 
 function hasPhotoLocation(photo) {
@@ -1120,9 +1112,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
-    const locationLabel = hasPhotoLocation(photo)
+    const placeName = String(photo.placeName || '').trim();
+    const locationLabel = placeName || (hasPhotoLocation(photo)
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
-        : '위치 정보 없음';
+        : '위치 정보 없음');
 
     if (modal) modal.dataset.photoDetailContext = context;
     if (image) {
@@ -4016,15 +4009,9 @@ function bindEvents() {
     document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
 
-        const homePhotoCloseButton = event.target.closest('[data-home-photo-close]');
-        if (homePhotoCloseButton) {
-            closeHomePhotoInfoPanel();
-            return;
-        }
-
-        const homePhotoInfoButton = event.target.closest('[data-home-photo-info]');
-        if (homePhotoInfoButton) {
-            openHomePhotoInfoPanel(homePhotoInfoButton);
+        const homePhotoDetailButton = event.target.closest('[data-home-photo-detail]');
+        if (homePhotoDetailButton) {
+            openHomeReferencePhotoDetail(homePhotoDetailButton);
             return;
         }
 
@@ -4345,15 +4332,11 @@ function bindEvents() {
 
     });
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            closeHomePhotoInfoPanel();
-            return;
-        }
         if (!['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) return;
-        const homePhotoInfoButton = event.target.closest('[data-home-photo-info]');
-        if (homePhotoInfoButton) {
+        const homePhotoDetailButton = event.target.closest('[data-home-photo-detail]');
+        if (homePhotoDetailButton) {
             event.preventDefault();
-            openHomePhotoInfoPanel(homePhotoInfoButton);
+            openHomeReferencePhotoDetail(homePhotoDetailButton);
             return;
         }
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');

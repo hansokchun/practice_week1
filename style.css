@@ -716,74 +716,6 @@ body.is-logged-in .white-band {
     transform: rotate(6deg);
 }
 
-.home-houses-reference__info-panel {
-    position: relative;
-    z-index: 4;
-    display: grid;
-    grid-template-columns: 128px minmax(0, 1fr);
-    gap: 16px;
-    align-items: center;
-    width: min(560px, 100%);
-    margin: -4px auto 0;
-    border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.97);
-    box-shadow:
-        0 30px 70px rgba(70, 40, 32, 0.16),
-        0 12px 30px rgba(26, 77, 78, 0.14);
-    backdrop-filter: blur(14px);
-    padding: 16px 18px 16px 16px;
-}
-
-.home-houses-reference__info-panel[hidden] {
-    display: none;
-}
-
-.home-houses-reference__info-panel img {
-    width: 128px;
-    aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: 0;
-    box-shadow:
-        0 18px 42px rgba(26, 77, 78, 0.14),
-        0 8px 18px rgba(70, 40, 32, 0.08);
-}
-
-.home-houses-reference__info-panel .eyebrow {
-    margin: 0 0 8px;
-    color: var(--coral);
-}
-
-.home-houses-reference__info-panel h3 {
-    margin: 0;
-    color: var(--teal-dark);
-    font-family: var(--headline);
-    font-size: 24px;
-    line-height: 1.22;
-}
-
-.home-houses-reference__info-panel p:not(.eyebrow) {
-    margin: 10px 0 0;
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.62;
-}
-
-.home-houses-reference__info-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid rgba(26, 77, 78, 0.12);
-    border-radius: 999px;
-    background: #ffffff;
-    color: var(--teal-dark);
-    padding: 0;
-}
-
 .home-section-divider {
     position: relative;
     width: 100%;
@@ -6957,26 +6889,6 @@ body.is-logged-in .home-workspace .album-row {
     .home-houses-reference__photo figcaption {
         font-size: 11px;
         padding: 6px 8px;
-    }
-
-    .home-houses-reference__info-panel {
-        grid-template-columns: 92px minmax(0, 1fr);
-        gap: 12px;
-        margin-top: 2px;
-        padding: 14px;
-    }
-
-    .home-houses-reference__info-panel img {
-        width: 92px;
-    }
-
-    .home-houses-reference__info-panel h3 {
-        font-size: 18px;
-    }
-
-    .home-houses-reference__info-panel p:not(.eyebrow) {
-        font-size: 13px;
-        line-height: 1.5;
     }
 
     .home-section-divider {
