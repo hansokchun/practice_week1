@@ -2591,10 +2591,8 @@ function renderSavedPhotoSurfaces() {
     const shouldShowMissingLocationBanner = stats.missingLocationCount > 0 && !state.isMissingLocationBannerDismissed;
     if (attentionBanner) attentionBanner.hidden = !shouldShowMissingLocationBanner;
     const attentionTitle = $('.attention-banner strong');
-    const attentionCopy = $('.attention-banner p');
     if (shouldShowMissingLocationBanner) {
         if (attentionTitle) attentionTitle.textContent = formatMissingLocationSummary(stats.missingLocationCount);
-        if (attentionCopy) attentionCopy.textContent = '사진의 메타데이터가 부족해 지도에 표시되지 않고 있습니다.';
     }
     renderMissingLocationTasks(missingLocationPhotos);
     renderPersonalPhotosPage(myPhotos);

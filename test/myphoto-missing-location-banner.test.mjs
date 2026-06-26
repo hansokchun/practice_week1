@@ -28,7 +28,20 @@ test('missing location banner only appears when there are unresolved missing-loc
     assert.match(body, /const shouldShowMissingLocationBanner = stats\.missingLocationCount > 0 && !state\.isMissingLocationBannerDismissed/);
     assert.match(body, /attentionBanner\.hidden = !shouldShowMissingLocationBanner/);
     assert.match(body, /if \(shouldShowMissingLocationBanner\) \{[\s\S]*attentionTitle\)\s+attentionTitle\.textContent/);
+    assert.doesNotMatch(body, /attentionCopy/);
+    assert.doesNotMatch(body, /메타데이터가 부족해/);
     assert.doesNotMatch(body, /else \{[\s\S]*attentionTitle\.textContent/);
+});
+
+test('missing location banner uses a compact alert treatment without helper copy', () => {
+    const bannerStart = html.indexOf('class="attention-banner"');
+    const bannerEnd = html.indexOf('class="recent-photo-section"', bannerStart);
+    const banner = html.slice(bannerStart, bannerEnd);
+
+    assert.doesNotMatch(banner, /<p>/);
+    assert.match(css, /\.attention-banner\s*\{[^}]*gap:\s*10px;[^}]*margin-bottom:\s*16px;[^}]*border-radius:\s*10px;[^}]*padding:\s*12px 14px;/s);
+    assert.match(css, /\.attention-banner > span\s*\{[^}]*width:\s*32px;[^}]*height:\s*32px;/s);
+    assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*14px;/s);
 });
 
 test('missing location task list renders thumbnails without photo names', () => {

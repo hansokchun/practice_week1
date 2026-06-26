@@ -197,7 +197,8 @@ test('logged-in home hides the houses reference with the other public intro band
 test('logged-in home panels and thumbnails follow the explore visual language', () => {
     const styles = css();
 
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-panel\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*10px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{[^}]*border-color:\s*rgba\(153,\s*69,\s*47,\s*0\.18\);[^}]*background:\s*#ffdbd2;[^}]*box-shadow:\s*none;/s);
     assert.match(styles, /\.compact-action-button\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*999px;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.missing-location-list img\s*\{[^}]*border-radius:\s*0;/s);
@@ -222,6 +223,18 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.doesNotMatch(home, /class="action-card/);
     assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
     assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
+});
+
+test('recent photos full view uses recent-photo naming without intro copy', () => {
+    const markup = html();
+    const photosStart = markup.indexOf('id="page-photos"');
+    const likedStart = markup.indexOf('id="page-liked"', photosStart);
+    const photosPage = markup.slice(photosStart, likedStart);
+
+    assert.match(photosPage, /<h1 id="photos-title">최근사진<\/h1>/);
+    assert.doesNotMatch(photosPage, /Personal Photos/);
+    assert.doesNotMatch(photosPage, /개별사진/);
+    assert.doesNotMatch(photosPage, /앨범으로 묶지 않은 개인 사진을 확인하고/);
 });
 
 test('home no longer renders the removed easol intro sections', () => {
