@@ -204,6 +204,28 @@ function getPhotoFallbackLabel(photo, fallback = '사진') {
     return String(photo?.description || '').trim() || fallback;
 }
 
+function getPhotoImageSrc(photo = {}) {
+    return photo?.url || photo?.albumCoverUrl || 'images/main_bg2.jpg';
+}
+
+function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
+    if (photo?.albumCoverUrl && photo.albumCoverUrl !== primarySrc) return photo.albumCoverUrl;
+    return 'images/main_bg2.jpg';
+}
+
+function setImageSourceWithFallback(image, primarySrc, fallbackSrc = 'images/main_bg2.jpg') {
+    if (!image) return;
+    const source = primarySrc || fallbackSrc || 'images/main_bg2.jpg';
+    const fallback = fallbackSrc && fallbackSrc !== source ? fallbackSrc : 'images/main_bg2.jpg';
+    image.dataset.fallbackApplied = 'false';
+    image.onerror = () => {
+        if (image.dataset.fallbackApplied === 'true') return;
+        image.dataset.fallbackApplied = 'true';
+        image.src = fallback;
+    };
+    image.src = source;
+}
+
 function formatRelativeTime(value, now = new Date()) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return '방금 전';
@@ -427,6 +449,7 @@ function closeModals() {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
     });
+    document.body.classList.remove('photo-fullscreen-open');
 }
 
 function closePhotoFullscreenModal() {
@@ -434,6 +457,7 @@ function closePhotoFullscreenModal() {
     if (!modal) return;
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('photo-fullscreen-open');
 }
 
 function goBackFromPhotoDetail() {
@@ -672,7 +696,8 @@ function updateExplorePhotoPreview(photo) {
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
-        image.src = photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg';
+        const photoImageSrc = getPhotoImageSrc(photo);
+        setImageSourceWithFallback(image, photoImageSrc, getPhotoImageFallbackSrc(photo, photoImageSrc));
         image.alt = description || '공개 사진';
     }
     if (story) {
@@ -1188,17 +1213,19 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
     const placeName = String(photo.placeName || '').trim();
+    const photoImageSrc = getPhotoImageSrc(photo);
     const locationLabel = placeName || (hasPhotoLocation(photo)
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
         : '위치 정보 없음');
 
     if (modal) {
         modal.dataset.photoDetailContext = context;
-        modal.dataset.photoDetailImageSrc = photo.url || 'images/main_bg2.jpg';
+        modal.dataset.photoDetailImageSrc = photoImageSrc;
+        modal.dataset.photoDetailImageFallbackSrc = getPhotoImageFallbackSrc(photo, photoImageSrc);
         modal.dataset.photoDetailImageAlt = description || '여행 사진 상세';
     }
     if (image) {
-        image.src = photo.url || 'images/main_bg2.jpg';
+        setImageSourceWithFallback(image, photoImageSrc, getPhotoImageFallbackSrc(photo, photoImageSrc));
         image.alt = description || '여행 사진 상세';
     }
     if (descriptionNode) {
@@ -1265,14 +1292,19 @@ function openPhotoFullscreenFromDetail() {
     const detailModal = $('#photo-detail-modal');
     const sourceImage = detailModal?.querySelector('[data-photo-detail-image]');
     const fullscreenImage = $('[data-photo-fullscreen-image]');
-    const source = detailModal?.dataset.photoDetailImageSrc || sourceImage?.currentSrc || sourceImage?.src || 'images/main_bg2.jpg';
+    const renderedSource = sourceImage?.currentSrc || sourceImage?.src || '';
+    const source = sourceImage?.dataset.fallbackApplied === 'true'
+        ? renderedSource
+        : detailModal?.dataset.photoDetailImageSrc || renderedSource || 'images/main_bg2.jpg';
+    const fallbackSource = detailModal?.dataset.photoDetailImageFallbackSrc || renderedSource || 'images/main_bg2.jpg';
     const alt = sourceImage?.alt || detailModal?.dataset.photoDetailImageAlt || '여행 사진 크게보기';
     if (fullscreenImage) {
-        fullscreenImage.src = source;
+        setImageSourceWithFallback(fullscreenImage, source, fallbackSource);
         fullscreenImage.alt = alt;
     }
     setPhotoDetailMoreMenuOpen(false);
     openModal('#photo-fullscreen-modal');
+    document.body.classList.add('photo-fullscreen-open');
 }
 
 async function toggleSelectedPhotoLike(eventOrPhotoId) {

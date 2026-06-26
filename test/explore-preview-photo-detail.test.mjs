@@ -32,6 +32,22 @@ test('Explore pin preview stores the selected photo id on the preview image acti
     assert.match(body, /photoButton\.dataset\.photoId = photo\.id \|\| ''/);
 });
 
+test('Explore photo preview image falls back when the public image URL fails', () => {
+    const helperStart = source.indexOf('function getPhotoImageSrc');
+    const helperEnd = source.indexOf('function formatRelativeTime', helperStart);
+    const helpers = source.slice(helperStart, helperEnd);
+    const fnStart = source.indexOf('function updateExplorePhotoPreview');
+    const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(helpers, /function getPhotoImageSrc\(photo = \{\}\)/);
+    assert.match(helpers, /function getPhotoImageFallbackSrc\(photo = \{\}, primarySrc = ''\)/);
+    assert.match(helpers, /function setImageSourceWithFallback\(image, primarySrc, fallbackSrc = 'images\/main_bg2\.jpg'\)/);
+    assert.match(helpers, /image\.onerror = \(\) => \{/);
+    assert.match(body, /const photoImageSrc = getPhotoImageSrc\(photo\);/);
+    assert.match(body, /setImageSourceWithFallback\(image, photoImageSrc, getPhotoImageFallbackSrc\(photo, photoImageSrc\)\)/);
+});
+
 test('Explore photo preview only shows visibility for the current user photo', () => {
     const fnStart = source.indexOf('function updateExplorePhotoPreview');
     const fnEnd = source.indexOf('function updateExploreAlbumPreview', fnStart);
@@ -70,6 +86,11 @@ test('Explore pin preview sits in the right discovery panel position', () => {
     assert.match(css, /body\.explore-pin-selected #page-explore \.explore-discovery-panel\s*\{[^}]*visibility:\s*hidden;[^}]*pointer-events:\s*none;/s);
     assert.match(css, /\.explore-pin-preview\s*\{[^}]*padding:\s*18px;/s);
     assert.match(css, /\.pin-preview-photo-button img\s*\{[^}]*aspect-ratio:\s*4 \/ 3;/s);
+});
+
+test('Explore expanded photo preview keeps the large photo area visible', () => {
+    assert.match(css, /\.explore-pin-preview\.is-expanded \.pin-preview-photo-button\s*\{[^}]*display:\s*block;[^}]*min-height:\s*min\(52svh,\s*460px\);/s);
+    assert.match(css, /\.explore-pin-preview\.is-expanded \.pin-preview-photo-button img\s*\{[^}]*height:\s*min\(52svh,\s*460px\);[^}]*max-height:\s*min\(52svh,\s*460px\);[^}]*object-fit:\s*contain;/s);
 });
 
 test('Explore photo preview uses an icon-only close action and hides the global footer on Explore', () => {
