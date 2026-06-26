@@ -5844,6 +5844,36 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     padding: clamp(18px, 4vh, 48px) 0;
 }
 
+.photo-detail-zoom-button {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--teal-dark);
+    box-shadow: 0 16px 34px rgba(26, 77, 78, 0.14);
+    font-size: 13px;
+    font-weight: 900;
+    padding: 0 14px;
+    transition: transform 150ms ease, background 150ms ease;
+}
+
+.photo-detail-zoom-button:hover,
+.photo-detail-zoom-button:focus-visible {
+    transform: translateY(-1px);
+    background: var(--surface);
+}
+
+.photo-detail-zoom-button .material-symbols-outlined {
+    font-size: 18px;
+}
+
 .photo-detail-card section {
     display: grid;
     align-self: start;
@@ -5853,6 +5883,73 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     max-height: calc(100vh - 48px);
     overflow-y: auto;
     padding: 28px;
+}
+
+.photo-detail-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.photo-detail-more {
+    position: relative;
+}
+
+.photo-detail-more-button {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--teal-dark);
+    padding: 0;
+    transition: transform 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.photo-detail-more-button:hover,
+.photo-detail-more-button:focus-visible,
+.photo-detail-more-button[aria-expanded="true"] {
+    transform: translateY(-1px);
+    border-color: rgba(244, 140, 113, 0.42);
+    color: var(--coral);
+}
+
+.photo-detail-more-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 5;
+    min-width: 132px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 18px 38px rgba(26, 77, 78, 0.16);
+    padding: 6px;
+}
+
+.photo-detail-more-menu[hidden] {
+    display: none;
+}
+
+.photo-detail-more-menu button {
+    width: 100%;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--teal-dark);
+    font-size: 13px;
+    font-weight: 900;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.photo-detail-more-menu button:hover,
+.photo-detail-more-menu button:focus-visible {
+    background: var(--bg);
+    color: var(--coral);
 }
 
 .photo-detail-card h2 {
@@ -5920,6 +6017,54 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-map[hidden] {
     display: none !important;
+}
+
+.photo-detail-nearby {
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid rgba(26, 77, 78, 0.1);
+    padding-top: 14px;
+}
+
+.photo-detail-nearby[hidden] {
+    display: none;
+}
+
+.photo-detail-nearby strong {
+    color: var(--teal-dark);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.photo-detail-nearby__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.photo-detail-nearby__item {
+    overflow: hidden;
+    min-width: 0;
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    padding: 0;
+    box-shadow:
+        0 12px 28px rgba(26, 77, 78, 0.1),
+        0 6px 14px rgba(70, 40, 32, 0.06);
+}
+
+.photo-detail-nearby__item:focus-visible {
+    outline: 2px solid rgba(244, 140, 113, 0.42);
+    outline-offset: 2px;
+}
+
+.photo-detail-nearby__item img {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    object-fit: cover;
 }
 
 .location-editor-map {
@@ -6035,6 +6180,33 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .detail-actions {
     display: flex;
     gap: 10px;
+}
+
+.photo-fullscreen-modal {
+    background: rgba(5, 20, 20, 0.82);
+}
+
+.photo-fullscreen-card {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: min(1280px, calc(100vw - 32px));
+    height: min(860px, calc(100svh - 32px));
+    background: transparent;
+}
+
+.photo-fullscreen-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.photo-fullscreen-close {
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.92);
 }
 
 .photo-visibility-editor {
@@ -7485,6 +7657,13 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     .photo-detail-card > img {
         max-height: 62svh;
         background: #ffffff;
+    }
+
+    .photo-detail-zoom-button {
+        left: 14px;
+        bottom: calc(38svh + 14px);
+        min-height: 36px;
+        padding: 0 12px;
     }
 
     .photo-detail-card section {

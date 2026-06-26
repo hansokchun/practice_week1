@@ -429,6 +429,13 @@ function closeModals() {
     });
 }
 
+function closePhotoFullscreenModal() {
+    const modal = $('#photo-fullscreen-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
 function getAllDisplayPhotos() {
     return [
         ...state.savedPhotos,
@@ -488,6 +495,19 @@ function getNearbyExplorePhotos(photo) {
     const selectedId = String(photo?.id || '');
     const source = state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getPublicPhotoMapItems();
     return source
+        .filter((candidate) => candidate?.id && String(candidate.id) !== selectedId && (candidate.url || candidate.albumCoverUrl))
+        .map((candidate) => ({
+            photo: candidate,
+            distance: getExplorePhotoDistanceScore(photo, candidate)
+        }))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 6)
+        .map((item) => item.photo);
+}
+
+function getNearbyDetailPhotos(photo) {
+    const selectedId = String(photo?.id || '');
+    return getAllDisplayPhotos()
         .filter((candidate) => candidate?.id && String(candidate.id) !== selectedId && (candidate.url || candidate.albumCoverUrl))
         .map((candidate) => ({
             photo: candidate,
@@ -1128,7 +1148,7 @@ async function renderProfileMap(photos = []) {
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'photo' } = {}) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
-    const image = modal?.querySelector('.photo-detail-card > img');
+    const image = modal?.querySelector('[data-photo-detail-image]');
     const descriptionNode = $('#photo-detail-description');
     const dateMeta = modal?.querySelector('[data-photo-detail-meta="date"]');
     const placeMeta = modal?.querySelector('[data-photo-detail-meta="place"]');
@@ -1140,6 +1160,9 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const likeCount = $('#photo-detail-like-count');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
+    const reportButton = modal?.querySelector('[data-report-photo]');
+    const nearbyPanel = modal?.querySelector('[data-photo-detail-nearby]');
+    const nearbyList = modal?.querySelector('[data-photo-detail-nearby-list]');
     const description = String(photo.description || '').trim();
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
@@ -1152,7 +1175,11 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
         : '위치 정보 없음');
 
-    if (modal) modal.dataset.photoDetailContext = context;
+    if (modal) {
+        modal.dataset.photoDetailContext = context;
+        modal.dataset.photoDetailImageSrc = photo.url || 'images/main_bg2.jpg';
+        modal.dataset.photoDetailImageAlt = description || '여행 사진 상세';
+    }
     if (image) {
         image.src = photo.url || 'images/main_bg2.jpg';
         image.alt = description || '여행 사진 상세';
@@ -1194,6 +1221,40 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         showOnMapButton.hidden = !canShowOnTripMap;
         showOnMapButton.dataset.photoId = canShowOnTripMap ? String(photo.id || photo.localId) : '';
     }
+    if (reportButton) reportButton.dataset.photoId = photo.id || '';
+    const nearbyPhotos = getNearbyDetailPhotos(photo);
+    if (nearbyPanel && nearbyList) {
+        nearbyPanel.hidden = !nearbyPhotos.length;
+        nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
+            const label = getPhotoFallbackLabel(nearbyPhoto, '주변사진');
+            return `
+                <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id)}" type="button" aria-label="${escapeHtml(label)} 사진 보기">
+                    <img src="${escapeHtml(nearbyPhoto.url || nearbyPhoto.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(label)}">
+                </button>
+            `;
+        }).join('');
+    }
+    setPhotoDetailMoreMenuOpen(false);
+}
+
+function setPhotoDetailMoreMenuOpen(isOpen) {
+    const button = $('[data-photo-detail-more]');
+    const menu = $('[data-photo-detail-more-menu]');
+    if (button) button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if (menu) menu.hidden = !isOpen;
+}
+
+function openPhotoFullscreenFromDetail() {
+    const detailModal = $('#photo-detail-modal');
+    const sourceImage = detailModal?.querySelector('[data-photo-detail-image]');
+    const fullscreenImage = $('[data-photo-fullscreen-image]');
+    const source = sourceImage?.currentSrc || sourceImage?.src || detailModal?.dataset.photoDetailImageSrc || 'images/main_bg2.jpg';
+    const alt = sourceImage?.alt || detailModal?.dataset.photoDetailImageAlt || '여행 사진 크게보기';
+    if (fullscreenImage) {
+        fullscreenImage.src = source;
+        fullscreenImage.alt = alt;
+    }
+    openModal('#photo-fullscreen-modal');
 }
 
 async function toggleSelectedPhotoLike(eventOrPhotoId) {
@@ -4099,6 +4160,46 @@ function bindEvents() {
             event.preventDefault();
             event.stopPropagation();
             toggleSelectedPhotoLike({ currentTarget: photoLikeButton });
+            return;
+        }
+
+        const photoFullscreenButton = event.target.closest('[data-open-photo-fullscreen]');
+        if (photoFullscreenButton) {
+            event.preventDefault();
+            openPhotoFullscreenFromDetail();
+            return;
+        }
+
+        const closePhotoFullscreenButton = event.target.closest('[data-close-photo-fullscreen]');
+        if (closePhotoFullscreenButton) {
+            event.preventDefault();
+            closePhotoFullscreenModal();
+            return;
+        }
+
+        const photoDetailMoreButton = event.target.closest('[data-photo-detail-more]');
+        if (photoDetailMoreButton) {
+            event.preventDefault();
+            const isOpen = photoDetailMoreButton.getAttribute('aria-expanded') === 'true';
+            setPhotoDetailMoreMenuOpen(!isOpen);
+            return;
+        }
+
+        const reportPhotoButton = event.target.closest('[data-report-photo]');
+        if (reportPhotoButton) {
+            event.preventDefault();
+            setPhotoDetailMoreMenuOpen(false);
+            showToast('신고가 접수되었습니다. 검토 후 조치하겠습니다.');
+            return;
+        }
+
+        if (!event.target.closest('.photo-detail-more')) setPhotoDetailMoreMenuOpen(false);
+
+        const detailNearbyPhotoButton = event.target.closest('[data-photo-detail-nearby-photo]');
+        if (detailNearbyPhotoButton) {
+            const detailContext = $('#photo-detail-modal')?.dataset.photoDetailContext || 'photo';
+            const photo = getAllDisplayPhotos().find((candidate) => String(candidate.id) === detailNearbyPhotoButton.dataset.photoDetailNearbyPhoto);
+            updatePhotoDetailModal(photo || getDefaultDetailPhoto(), { context: detailContext });
             return;
         }
 

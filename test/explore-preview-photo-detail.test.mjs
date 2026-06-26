@@ -123,6 +123,8 @@ test('Explore photo preview renders nearby photo thumbnails that reopen the prev
 
     assert.match(preview, /data-pin-preview-nearby/);
     assert.match(preview, /data-pin-preview-nearby-list/);
+    assert.match(preview, />주변사진</);
+    assert.doesNotMatch(preview, />Nearby</);
     assert.match(body, /const nearbyPhotos = getNearbyExplorePhotos\(photo\);/);
     assert.match(body, /data-explore-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id\)\}"/);
     assert.match(css, /\.pin-preview-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);

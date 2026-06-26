@@ -393,8 +393,7 @@
                     </form>
                     <div class="pin-preview-nearby" data-pin-preview-nearby hidden>
                         <div class="pin-preview-nearby__header">
-                            <span class="pin-preview-nearby__label">Nearby</span>
-                            <strong>주변 사진</strong>
+                            <strong>주변사진</strong>
                         </div>
                         <div class="pin-preview-nearby__grid" data-pin-preview-nearby-list></div>
                     </div>
@@ -549,9 +548,23 @@
     <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
         <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">
             <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
-            <img src="images/main_bg2.jpg" alt="여행 사진 상세">
+            <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image>
+            <button class="photo-detail-zoom-button" data-open-photo-fullscreen type="button">
+                <span class="material-symbols-outlined" aria-hidden="true">open_in_full</span>
+                크게보기
+            </button>
             <section>
-                <p class="eyebrow">Archival Photo</p>
+                <div class="photo-detail-section-head">
+                    <p class="eyebrow">Archival Photo</p>
+                    <div class="photo-detail-more">
+                        <button class="photo-detail-more-button" data-photo-detail-more type="button" aria-label="더보기" aria-expanded="false">
+                            <span class="material-symbols-outlined" aria-hidden="true">more_horiz</span>
+                        </button>
+                        <div class="photo-detail-more-menu" data-photo-detail-more-menu hidden>
+                            <button data-report-photo type="button">신고하기</button>
+                        </div>
+                    </div>
+                </div>
                 <p id="photo-detail-description" class="photo-detail-description" hidden></p>
                 <div class="photo-detail-meta">
                     <span data-photo-detail-meta="date"><span class="material-symbols-outlined">calendar_today</span> 촬영 날짜 없음</span>
@@ -571,7 +584,18 @@
                 <div id="photo-detail-map" class="photo-detail-map" hidden>
                     <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
+                <div class="photo-detail-nearby" data-photo-detail-nearby hidden>
+                    <strong>주변사진</strong>
+                    <div class="photo-detail-nearby__grid" data-photo-detail-nearby-list></div>
+                </div>
             </section>
+        </div>
+    </div>
+
+    <div id="photo-fullscreen-modal" class="modal photo-fullscreen-modal" aria-hidden="true">
+        <div class="photo-fullscreen-card" role="dialog" aria-modal="true" aria-label="사진 크게보기">
+            <button class="modal-close photo-fullscreen-close" data-close-photo-fullscreen type="button" aria-label="닫기">×</button>
+            <img src="images/main_bg2.jpg" alt="여행 사진 크게보기" data-photo-fullscreen-image>
         </div>
     </div>
 
