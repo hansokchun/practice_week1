@@ -51,6 +51,12 @@ test('Explore shell exposes a desktop discovery panel instead of a hidden-only l
 
     assert.match(html, /id="explore-list" class="explore-discovery-panel"/);
     assert.match(html, /id="explore-discovery-title"[\s\S]*탐색/);
+    const panelStart = html.indexOf('id="explore-list"');
+    const panelEnd = html.indexOf('</aside>', panelStart);
+    const panel = html.slice(panelStart, panelEnd);
+
+    assert.doesNotMatch(panel, /<p class="eyebrow">Explore<\/p>/);
+    assert.doesNotMatch(panel, /현재 지도 화면 안의 공개 사진/);
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*right:\s*28px;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*none;/s);
 });

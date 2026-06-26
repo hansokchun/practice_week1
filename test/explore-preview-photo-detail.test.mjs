@@ -118,6 +118,7 @@ test('Explore photo preview fills story text and relative upload time', () => {
     assert.match(body, /const story = preview\.querySelector\('\.pin-preview-story p'\)/);
     assert.match(body, /const authorTimeNode = preview\.querySelector\('\.pin-author-time'\)/);
     assert.match(body, /formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
+    assert.doesNotMatch(body, /사진 기록/);
     assert.doesNotMatch(body, /title\.textContent = displayTitle/);
 });
 

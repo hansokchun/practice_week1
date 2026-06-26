@@ -721,7 +721,7 @@ function updateExplorePhotoPreview(photo) {
     }
     if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
     if (authorNameNode) authorNameNode.textContent = authorName;
-    if (authorTimeNode) authorTimeNode.textContent = `사진 기록 · ${uploadTimeLabel}`;
+    if (authorTimeNode) authorTimeNode.textContent = uploadTimeLabel;
     if (likePanel) likePanel.hidden = false;
     if (likeButton) {
         likeButton.disabled = !photo.id || !state.currentUser;
