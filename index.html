@@ -547,7 +547,10 @@
 
     <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
         <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">
-            <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
+            <button class="modal-back photo-detail-back" data-photo-detail-back type="button" aria-label="이전 화면으로 돌아가기">
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                뒤로
+            </button>
             <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image>
             <button class="photo-detail-zoom-button" data-open-photo-fullscreen type="button">
                 <span class="material-symbols-outlined" aria-hidden="true">open_in_full</span>
@@ -594,7 +597,10 @@
 
     <div id="photo-fullscreen-modal" class="modal photo-fullscreen-modal" aria-hidden="true">
         <div class="photo-fullscreen-card" role="dialog" aria-modal="true" aria-label="사진 크게보기">
-            <button class="modal-close photo-fullscreen-close" data-close-photo-fullscreen type="button" aria-label="닫기">×</button>
+            <button class="modal-back photo-fullscreen-back" data-photo-fullscreen-back type="button" aria-label="사진 정보로 돌아가기">
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                뒤로
+            </button>
             <img src="images/main_bg2.jpg" alt="여행 사진 크게보기" data-photo-fullscreen-image>
         </div>
     </div>

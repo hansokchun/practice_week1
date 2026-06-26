@@ -436,6 +436,23 @@ function closePhotoFullscreenModal() {
     modal.setAttribute('aria-hidden', 'true');
 }
 
+function goBackFromPhotoDetail() {
+    setPhotoDetailMoreMenuOpen(false);
+    closePhotoFullscreenModal();
+    const modal = $('#photo-detail-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function returnToPhotoDetailFromFullscreen() {
+    closePhotoFullscreenModal();
+    const detailModal = $('#photo-detail-modal');
+    if (!detailModal) return;
+    detailModal.classList.add('is-open');
+    detailModal.setAttribute('aria-hidden', 'false');
+}
+
 function getAllDisplayPhotos() {
     return [
         ...state.savedPhotos,
@@ -1248,17 +1265,13 @@ function openPhotoFullscreenFromDetail() {
     const detailModal = $('#photo-detail-modal');
     const sourceImage = detailModal?.querySelector('[data-photo-detail-image]');
     const fullscreenImage = $('[data-photo-fullscreen-image]');
-    const source = sourceImage?.currentSrc || sourceImage?.src || detailModal?.dataset.photoDetailImageSrc || 'images/main_bg2.jpg';
+    const source = detailModal?.dataset.photoDetailImageSrc || sourceImage?.currentSrc || sourceImage?.src || 'images/main_bg2.jpg';
     const alt = sourceImage?.alt || detailModal?.dataset.photoDetailImageAlt || '여행 사진 크게보기';
     if (fullscreenImage) {
         fullscreenImage.src = source;
         fullscreenImage.alt = alt;
     }
     setPhotoDetailMoreMenuOpen(false);
-    if (detailModal) {
-        detailModal.classList.remove('is-open');
-        detailModal.setAttribute('aria-hidden', 'true');
-    }
     openModal('#photo-fullscreen-modal');
 }
 
@@ -4168,6 +4181,13 @@ function bindEvents() {
             return;
         }
 
+        const photoDetailBackButton = event.target.closest('[data-photo-detail-back]');
+        if (photoDetailBackButton) {
+            event.preventDefault();
+            goBackFromPhotoDetail();
+            return;
+        }
+
         const photoFullscreenButton = event.target.closest('[data-open-photo-fullscreen]');
         if (photoFullscreenButton) {
             event.preventDefault();
@@ -4175,10 +4195,10 @@ function bindEvents() {
             return;
         }
 
-        const closePhotoFullscreenButton = event.target.closest('[data-close-photo-fullscreen]');
-        if (closePhotoFullscreenButton) {
+        const photoFullscreenBackButton = event.target.closest('[data-photo-fullscreen-back]');
+        if (photoFullscreenBackButton) {
             event.preventDefault();
-            closePhotoFullscreenModal();
+            returnToPhotoDetailFromFullscreen();
             return;
         }
 

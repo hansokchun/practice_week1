@@ -29,7 +29,7 @@ test('photo detail surface leads with description and compact info before the ma
     assert.doesNotMatch(detail, /id="photo-detail-title"/);
 });
 
-test('photo detail modal exposes fullscreen, more, report, and nearby photo actions', () => {
+test('photo detail modal exposes back navigation, fullscreen, more, report, and nearby photo actions', () => {
     const html = readFileSync('index.html', 'utf8');
     const detailStart = html.indexOf('id="photo-detail-modal"');
     const detailEnd = html.indexOf('id="location-editor-modal"', detailStart);
@@ -39,6 +39,7 @@ test('photo detail modal exposes fullscreen, more, report, and nearby photo acti
     const fullscreen = html.slice(fullscreenStart, fullscreenEnd);
 
     assert.match(detail, /data-photo-detail-image/);
+    assert.match(detail, /data-photo-detail-back/);
     assert.match(detail, /data-open-photo-fullscreen/);
     assert.match(detail, /data-photo-detail-more/);
     assert.match(detail, /data-photo-detail-more-menu/);
@@ -47,8 +48,12 @@ test('photo detail modal exposes fullscreen, more, report, and nearby photo acti
     assert.match(detail, /data-photo-detail-nearby-list/);
     assert.match(detail, />주변사진</);
     assert.doesNotMatch(detail, />Nearby</);
+    assert.doesNotMatch(detail, /data-close-modal/);
+    assert.doesNotMatch(detail, />×</);
     assert.match(fullscreen, /data-photo-fullscreen-image/);
-    assert.match(fullscreen, /data-close-photo-fullscreen/);
+    assert.match(fullscreen, /data-photo-fullscreen-back/);
+    assert.doesNotMatch(fullscreen, /data-close-photo-fullscreen/);
+    assert.doesNotMatch(fullscreen, />×</);
 });
 
 test('photo detail renderer writes compact metadata and map handoff controls', () => {
@@ -72,10 +77,12 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /const nearbyPhotos = getNearbyDetailPhotos\(photo\)/);
     assert.match(source, /data-photo-detail-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id\)\}"/);
     assert.match(source, /function openPhotoFullscreenFromDetail\(\)/);
-    assert.match(source, /sourceImage\?\.currentSrc \|\| sourceImage\?\.src \|\| detailModal\?\.dataset\.photoDetailImageSrc/);
+    assert.match(source, /detailModal\?\.dataset\.photoDetailImageSrc \|\| sourceImage\?\.currentSrc \|\| sourceImage\?\.src/);
     assert.match(source, /setPhotoDetailMoreMenuOpen\(false\)/);
-    assert.match(source, /detailModal\.classList\.remove\('is-open'\)/);
-    assert.match(source, /detailModal\.setAttribute\('aria-hidden', 'true'\)/);
+    assert.doesNotMatch(source, /detailModal\.classList\.remove\('is-open'\)/);
+    assert.doesNotMatch(source, /detailModal\.setAttribute\('aria-hidden', 'true'\)/);
+    assert.match(source, /function goBackFromPhotoDetail\(\)/);
+    assert.match(source, /function returnToPhotoDetailFromFullscreen\(\)/);
     assert.match(source, /function setPhotoDetailMoreMenuOpen\(isOpen\)/);
     assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*start;/s);
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*start;/s);
@@ -85,7 +92,9 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(css, /\.photo-fullscreen-modal\s*\{[^}]*z-index:\s*140;[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(css, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;/s);
-    assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*width:\s*auto;[^}]*height:\s*auto;[^}]*max-width:\s*100%;[^}]*max-height:\s*100%;[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*max-width:\s*100%;[^}]*max-height:\s*100%;[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.modal-back\s*\{[^}]*position:\s*absolute;[^}]*left:\s*12px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.photo-fullscreen-back\s*\{[^}]*left:\s*max\(12px,\s*env\(safe-area-inset-left\)\);/s);
     assert.match(css, /\.photo-detail-map\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /\.photo-detail-map,\s*\.location-editor-map\s*\{/s);
     assert.match(css, /\.photo-detail-map\[hidden\]\s*\{[^}]*display:\s*none !important;/s);
@@ -103,10 +112,12 @@ test('photo detail click handling separates album photos from individual photos'
 test('photo detail click handling opens fullscreen, reports, and switches nearby photos', () => {
     const source = readFileSync('js/app.js', 'utf8');
 
+    assert.match(source, /event\.target\.closest\('\[data-photo-detail-back\]'\)/);
+    assert.match(source, /goBackFromPhotoDetail\(\)/);
     assert.match(source, /event\.target\.closest\('\[data-open-photo-fullscreen\]'\)/);
     assert.match(source, /openPhotoFullscreenFromDetail\(\)/);
-    assert.match(source, /event\.target\.closest\('\[data-close-photo-fullscreen\]'\)/);
-    assert.match(source, /closePhotoFullscreenModal\(\)/);
+    assert.match(source, /event\.target\.closest\('\[data-photo-fullscreen-back\]'\)/);
+    assert.match(source, /returnToPhotoDetailFromFullscreen\(\)/);
     assert.match(source, /event\.target\.closest\('\[data-photo-detail-more\]'\)/);
     assert.match(source, /setPhotoDetailMoreMenuOpen\(!isOpen\)/);
     assert.match(source, /event\.target\.closest\('\[data-report-photo\]'\)/);
