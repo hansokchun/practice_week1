@@ -154,19 +154,31 @@ img {
 .account-profile-trigger {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     min-height: 42px;
-    border: 1px solid rgba(5, 5, 5, 0.08);
+    border: 1px solid var(--line);
     border-radius: 999px;
-    background: rgba(249, 247, 242, 0.88);
-    color: #050505;
-    padding: 4px 14px 4px 4px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--ink);
+    padding: 4px 13px 4px 4px;
+    box-shadow: 0 12px 28px rgba(26, 77, 78, 0.1);
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.account-profile-trigger:hover {
+    border-color: rgba(26, 77, 78, 0.28);
+    background: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(26, 77, 78, 0.14);
 }
 
 .account-avatar {
     width: 34px;
     height: 34px;
     overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.16);
+    border-radius: 999px;
+    background: var(--surface);
 }
 
 .account-avatar img,
@@ -177,7 +189,8 @@ img {
 }
 
 .account-profile-name {
-    font-size: 14px;
+    color: var(--teal-dark);
+    font-size: 13px;
     font-weight: 800;
     line-height: 1;
 }
@@ -2708,16 +2721,35 @@ body[data-page="explore"] .site-footer {
 }
 
 .attention-banner {
+    position: relative;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
+    width: fit-content;
+    max-width: min(100%, 560px);
+    gap: 8px;
+    margin: 0 0 16px auto;
     border: 1px solid rgba(153, 69, 47, 0.18);
+    border-left: 4px solid #99452f;
     border-radius: 10px;
     background: #ffdbd2;
     color: #7b2e1a;
-    padding: 12px 14px;
+    padding: 10px 12px;
+    box-shadow: 0 14px 32px rgba(153, 69, 47, 0.16);
+}
+
+.attention-banner::before {
+    content: "처리필요";
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    border-radius: 6px;
+    background: #99452f;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0 8px;
 }
 
 .attention-banner[hidden] {
@@ -2758,7 +2790,7 @@ body[data-page="explore"] .site-footer {
 }
 
 .missing-location-list {
-    grid-column: 2 / -1;
+    grid-column: 3 / -1;
     display: grid;
     grid-template-columns: repeat(auto-fill, 64px);
     gap: 10px;
@@ -7533,7 +7565,8 @@ body.photo-fullscreen-open {
     .attention-banner {
         grid-template-columns: 1fr;
         justify-items: start;
-        padding: 18px;
+        margin-left: auto;
+        padding: 12px;
     }
 
     .missing-location-list {

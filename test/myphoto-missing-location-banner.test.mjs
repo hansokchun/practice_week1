@@ -39,7 +39,8 @@ test('missing location banner uses a compact alert treatment without helper copy
     const banner = html.slice(bannerStart, bannerEnd);
 
     assert.doesNotMatch(banner, /<p>/);
-    assert.match(css, /\.attention-banner\s*\{[^}]*gap:\s*10px;[^}]*margin-bottom:\s*16px;[^}]*border-radius:\s*10px;[^}]*padding:\s*12px 14px;/s);
+    assert.match(css, /\.attention-banner\s*\{[^}]*width:\s*fit-content;[^}]*max-width:\s*min\(100%,\s*560px\);[^}]*margin:\s*0 0 16px auto;[^}]*border-left:\s*4px solid #99452f;[^}]*border-radius:\s*10px;[^}]*padding:\s*10px 12px;/s);
+    assert.match(css, /\.attention-banner::before\s*\{[^}]*content:\s*"처리필요";[^}]*background:\s*#99452f;/s);
     assert.match(css, /\.attention-banner > span\s*\{[^}]*width:\s*32px;[^}]*height:\s*32px;/s);
     assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*14px;/s);
 });
