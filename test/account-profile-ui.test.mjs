@@ -7,21 +7,23 @@ const css = readFileSync('style.css', 'utf8');
 const app = readFileSync('js/app.js', 'utf8');
 const auth = readFileSync('auth.js', 'utf8');
 
-test('logged-in header exposes a profile trigger with avatar and account name', () => {
+test('logged-in header exposes an image-only profile trigger', () => {
     assert.match(html, /id="btn-open-profile"/);
     assert.match(html, /id="account-avatar"/);
     assert.match(html, /id="account-avatar-image"/);
     assert.match(html, /id="account-avatar-fallback"/);
-    assert.match(html, /id="account-label"/);
+    assert.doesNotMatch(html, /id="account-label"/);
     assert.match(html, /id="account-guest-label"/);
     assert.match(css, /\.account-profile-trigger\s*\{/);
-    assert.match(css, /\.account-profile-trigger\s*\{[^}]*border:\s*1px solid var\(--line\);[^}]*border-radius:\s*999px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.78\);[^}]*box-shadow:\s*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.1\);/s);
+    assert.match(css, /\.account-profile-trigger\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
     assert.match(css, /\.account-avatar\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.16\);[^}]*border-radius:\s*999px;[^}]*background:\s*var\(--surface\);/s);
-    assert.match(css, /\.account-profile-name\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*13px;/s);
-    assert.match(css, /\.account-profile-trigger:hover\s*\{[^}]*border-color:\s*rgba\(26,\s*77,\s*78,\s*0\.28\);[^}]*background:\s*#ffffff;[^}]*transform:\s*translateY\(-1px\);/s);
+    assert.doesNotMatch(css, /\.account-profile-name\s*\{/);
+    assert.match(css, /\.account-profile-trigger:hover\s*\{[^}]*transform:\s*translateY\(-1px\);/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-profile\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /body\.is-logged-in\s+#account-guest-label\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /body\.is-logged-in\s+#btn-open-auth\s*\{[^}]*display:\s*none;/s);
+    assert.doesNotMatch(app, /const label = \$\('#account-label'\)/);
+    assert.doesNotMatch(app, /label\.textContent = profile\.nickname/);
     assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = 'Login';\s*\}/s);
     assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
 });

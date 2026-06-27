@@ -921,22 +921,14 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
         const storyLabel = description || label;
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
-        const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
-        const likeLabel = isLiked ? '좋아요 취소' : '좋아요';
         return `
-            <article class="explore-discovery-item${selected}">
-                <button class="explore-discovery-open" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
-                    <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
-                    <span class="explore-discovery-copy">
+            <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
+                <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
+                <span>
                     <strong>${escapeHtml(storyLabel)}</strong>
                     <small>${escapeHtml(uploadTimeLabel)}</small>
-                    </span>
-                </button>
-                <button class="photo-like-button explore-discovery-like${isLiked ? ' is-liked' : ''}" data-toggle-photo-like data-like-surface="explore-discovery" data-photo-id="${escapeHtml(photo.id || '')}" type="button" aria-label="${likeLabel}" aria-pressed="${isLiked ? 'true' : 'false'}"${photo.id ? '' : ' disabled'}>
-                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
-                    <span class="explore-discovery-like-count">${Number(photo.liked || 0)}</span>
-                </button>
-            </article>
+                </span>
+            </button>
         `;
     }).join('');
 }
@@ -1625,13 +1617,11 @@ async function saveAccountProfile(event) {
 
 function updateAccountUI() {
     const profile = getCurrentAccountProfile();
-    const label = $('#account-label');
     const guestLabel = $('#account-guest-label');
     const button = $('#btn-open-auth');
     const profileButton = $('#btn-open-profile');
     document.body.classList.toggle('is-logged-in', Boolean(state.currentUser));
     document.body.classList.toggle('is-logged-out', !state.currentUser);
-    if (label) label.textContent = profile.nickname;
     if (guestLabel) guestLabel.hidden = Boolean(state.currentUser);
     if (profileButton) profileButton.hidden = !state.currentUser;
     if (button) {
