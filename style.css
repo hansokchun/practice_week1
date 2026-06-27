@@ -4900,21 +4900,6 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
         0 8px 18px rgba(70, 40, 32, 0.06);
 }
 
-.explore-discovery-time {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    z-index: 2;
-    border-radius: 999px;
-    background: rgba(249, 247, 242, 0.92);
-    color: var(--coral);
-    box-shadow: 0 8px 18px rgba(26, 77, 78, 0.12);
-    padding: 6px 9px;
-    font-size: 12px;
-    font-weight: 900;
-    line-height: 1.2;
-}
-
 .explore-discovery-item.is-selected,
 .explore-discovery-item:focus-visible {
     border-color: var(--coral);
@@ -4923,19 +4908,31 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     background: #ffffff;
 }
 
+.explore-discovery-image {
+    display: block;
+    aspect-ratio: 1 / 1;
+    border-radius: 0;
+    overflow: hidden;
+    background: var(--bg);
+}
+
 .explore-discovery-item img {
     width: 100%;
-    height: auto;
+    height: 100%;
     border-radius: 0;
-    object-fit: contain;
-    background: var(--bg);
+    object-fit: cover;
 }
 
 .explore-discovery-copy {
     display: grid;
-    gap: 6px;
+    gap: 4px;
     align-content: start;
     min-width: 0;
+    padding: 10px 14px 12px;
+}
+
+.explore-discovery-copy.has-description {
+    gap: 8px;
     padding: 12px 14px 14px;
 }
 
@@ -4950,7 +4947,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     -webkit-line-clamp: 2;
 }
 
-.explore-discovery-item small {
+.explore-discovery-time {
+    position: static;
     color: var(--coral);
     font-size: 12px;
     font-weight: 900;

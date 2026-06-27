@@ -27,15 +27,18 @@ test('Explore preview and discovery panels use landing-style archive cards', () 
     assert.match(css, /\.explore-discovery-header h2\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*28px;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*border-radius:\s*8px;/s);
     assert.match(css, /\.explore-discovery-item strong\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*-webkit-line-clamp:\s*2;/s);
-    assert.match(css, /\.explore-discovery-time\s*\{[^}]*background:\s*rgba\(249,\s*247,\s*242,\s*0\.92\);[^}]*color:\s*var\(--coral\);/s);
+    assert.match(css, /\.explore-discovery-copy\s*\{[^}]*padding:\s*10px\s+14px\s+12px;/s);
+    assert.match(css, /\.explore-discovery-copy\.has-description\s*\{[^}]*padding:\s*12px\s+14px\s+14px;/s);
+    assert.match(css, /\.explore-discovery-time\s*\{[^}]*position:\s*static;[^}]*color:\s*var\(--coral\);/s);
 });
 
 test('Explore photo thumbnails keep square image corners', () => {
     assert.match(css, /\.explore-photo-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.map-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.pin-preview-photo-button\s*\{[^}]*border-radius:\s*0;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s);
 });
 
 test('Explore discovery cards render a concise story label before time metadata', () => {
@@ -44,12 +47,12 @@ test('Explore discovery cards render a concise story label before time metadata'
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(body, /const description = getPhotoDescriptionText\(photo\)/);
-    assert.match(body, /<span class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/span>/);
-    assert.match(body, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
+    assert.match(body, /<small class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
+    assert.match(body, /\$\{description \? `<strong>\$\{escapeHtml\(description\)\}<\/strong>` : ''\}/);
 });
 
 test('DESIGN documents the Explore map shell visual language', () => {
     assert.match(design, /Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces/);
     assert.match(design, /Large map panels use squared archive corners around 8-10px/);
-    assert.match(design, /Explore photo thumbnails use square image corners/);
+    assert.match(design, /Explore photo thumbnails use square cropped image wells/);
 });

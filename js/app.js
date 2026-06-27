@@ -912,13 +912,13 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
             <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
-                <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
-                <span class="explore-discovery-time">${escapeHtml(uploadTimeLabel)}</span>
-                ${description ? `
-                <span class="explore-discovery-copy">
-                    <strong>${escapeHtml(description)}</strong>
+                <span class="explore-discovery-image">
+                    <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
                 </span>
-                ` : ''}
+                <span class="explore-discovery-copy${description ? ' has-description' : ''}">
+                    ${description ? `<strong>${escapeHtml(description)}</strong>` : ''}
+                    <small class="explore-discovery-time">${escapeHtml(uploadTimeLabel)}</small>
+                </span>
             </article>
         `;
     }).join('');

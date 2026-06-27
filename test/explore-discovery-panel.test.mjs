@@ -93,11 +93,14 @@ test('Explore discovery items are thumbnail-first and show story context before 
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*auto\s+auto;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*168px;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
-    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*168px;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*contain;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
-    assert.match(source, /class="explore-discovery-time">[\s\S]*\$\{escapeHtml\(uploadTimeLabel\)\}/);
-    assert.match(source, /description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
+    assert.match(source, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);
+    assert.match(source, /class="explore-discovery-copy\$\{description \? ' has-description' : ''\}">/);
+    assert.match(source, /\$\{description \? `<strong>\$\{escapeHtml\(description\)\}<\/strong>` : ''\}/);
+    assert.match(source, /<small class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
     assert.doesNotMatch(source, /const storyLabel = description \|\| label;/);
     assert.doesNotMatch(source, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
 });
@@ -109,8 +112,9 @@ test('Explore discovery items omit the text block when photos have no written de
     const renderer = source.slice(rendererStart, rendererEnd);
 
     assert.match(renderer, /const description = getPhotoDescriptionText\(photo\)/);
-    assert.match(renderer, /\$\{description \? `[\s\S]*class="explore-discovery-copy"[\s\S]*` : ''\}/);
-    assert.match(renderer, /class="explore-discovery-time">/);
+    assert.match(renderer, /class="explore-discovery-copy\$\{description \? ' has-description' : ''\}"/);
+    assert.match(renderer, /\$\{description \? `<strong>\$\{escapeHtml\(description\)\}<\/strong>` : ''\}/);
+    assert.match(renderer, /<small class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
 });
