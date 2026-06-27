@@ -13,19 +13,39 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.match(html, /id="account-avatar-image"/);
     assert.match(html, /id="account-avatar-fallback"/);
     assert.doesNotMatch(html, /id="account-label"/);
-    assert.match(html, /id="account-guest-label"/);
+    assert.doesNotMatch(html, /id="account-guest-label"/);
     assert.match(css, /\.account-profile-trigger\s*\{/);
     assert.match(css, /\.account-profile-trigger\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
     assert.match(css, /\.account-avatar\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.16\);[^}]*border-radius:\s*999px;[^}]*background:\s*var\(--surface\);/s);
+    assert.doesNotMatch(css, /\.account-label\s*\{/);
     assert.doesNotMatch(css, /\.account-profile-name\s*\{/);
     assert.match(css, /\.account-profile-trigger:hover\s*\{[^}]*transform:\s*translateY\(-1px\);/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-profile\s*\{[^}]*display:\s*none;/s);
-    assert.match(css, /body\.is-logged-in\s+#account-guest-label\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /body\.is-logged-in\s+#btn-open-auth\s*\{[^}]*display:\s*none;/s);
     assert.doesNotMatch(app, /const label = \$\('#account-label'\)/);
+    assert.doesNotMatch(app, /account-guest-label/);
     assert.doesNotMatch(app, /label\.textContent = profile\.nickname/);
     assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = 'Login';\s*\}/s);
     assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
+});
+
+test('logged-in header exposes compact recommended notifications beside profile', () => {
+    const notificationIndex = html.indexOf('id="btn-open-notifications"');
+    const profileIndex = html.indexOf('id="btn-open-profile"');
+
+    assert.ok(notificationIndex > -1);
+    assert.ok(profileIndex > notificationIndex);
+    assert.match(html, /id="account-notification-popover"/);
+    assert.match(html, /id="account-notification-list"/);
+    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
+    assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
+    assert.match(app, /isNotificationPopoverOpen:\s*false/);
+    assert.match(app, /function getAccountNotificationItems\(\)/);
+    assert.match(app, /getMissingLocationPhotos\(state\.savedPhotos\)/);
+    assert.match(app, /getLikedPhotos\(\)/);
+    assert.match(app, /data-route="\$\{escapeHtml\(item\.route\)\}"/);
+    assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
 });
 
 test('public profile page includes shared nickname, bio, and avatar editing fields for the current user', () => {

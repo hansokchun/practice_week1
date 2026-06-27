@@ -12,7 +12,9 @@ test('Explore map controls follow the landing surface and accent language', () =
     assert.match(css, /\.map-search\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.map-search button\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
     assert.match(css, /\.explore-photo-scope\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(249,\s*247,\s*242,\s*0\.82\);/s);
-    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border-radius:\s*10px;/s);
+    assert.match(css, /\.explore-photo-scope\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*fit-content;/s);
+    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border-radius:\s*8px;/s);
+    assert.match(css, /\.explore-photo-scope button\s*\{[^}]*min-height:\s*28px;[^}]*font-size:\s*11px;[^}]*padding:\s*0 9px;/s);
     assert.match(css, /\.explore-photo-scope button\.active\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
 });
 

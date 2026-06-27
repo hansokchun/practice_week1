@@ -163,6 +163,7 @@ const state = {
     explorePreserveViewportOnce: false,
     isExploreDiscoveryCollapsed: false,
     explorePreviewEditMode: false,
+    isNotificationPopoverOpen: false,
     accountProfileEditMode: false,
     profileMap: null,
     profileMarkers: [],
@@ -1617,18 +1618,116 @@ async function saveAccountProfile(event) {
 
 function updateAccountUI() {
     const profile = getCurrentAccountProfile();
-    const guestLabel = $('#account-guest-label');
     const button = $('#btn-open-auth');
     const profileButton = $('#btn-open-profile');
     document.body.classList.toggle('is-logged-in', Boolean(state.currentUser));
     document.body.classList.toggle('is-logged-out', !state.currentUser);
-    if (guestLabel) guestLabel.hidden = Boolean(state.currentUser);
     if (profileButton) profileButton.hidden = !state.currentUser;
     if (button) {
         button.hidden = Boolean(state.currentUser);
         button.textContent = 'Login';
     }
     setAvatarDisplay($('#account-avatar-image'), $('#account-avatar-fallback'), profile.avatarUrl, profile.nickname);
+    renderAccountNotifications();
+}
+
+function getAccountNotificationItems() {
+    if (!state.currentUser) return [];
+
+    const myMissingLocationPhotos = getMissingLocationPhotos(state.savedPhotos)
+        .filter((photo) => photo.owner_id === state.currentUser.id);
+    const likedPhotos = getLikedPhotos();
+    const publicPhotos = state.savedPhotos.filter((photo) => (
+        photo.owner_id === state.currentUser.id
+        && (photo.shared || ['public', 'link'].includes(photo.visibility))
+    ));
+    const items = [];
+
+    if (myMissingLocationPhotos.length) {
+        items.push({
+            icon: 'wrong_location',
+            title: `처리 필요: 위치 정보 없는 사진 ${myMissingLocationPhotos.length}장`,
+            body: '지도에 표시하려면 위치를 지정하세요.',
+            route: 'photos'
+        });
+    }
+    if (likedPhotos.length) {
+        items.push({
+            icon: 'favorite',
+            title: `좋아요한 사진 ${likedPhotos.length}장`,
+            body: '모아둔 공개 사진을 다시 확인하세요.',
+            route: 'liked'
+        });
+    }
+    if (publicPhotos.length) {
+        items.push({
+            icon: 'public',
+            title: `공개 중인 사진 ${publicPhotos.length}장`,
+            body: 'Explore에 보이는 내 사진을 확인하세요.',
+            route: 'explore'
+        });
+    }
+
+    if (!items.length) {
+        items.push({
+            icon: 'notifications',
+            title: '새 알림 없음',
+            body: '사진을 올리면 필요한 알림을 알려드릴게요.',
+            route: ''
+        });
+    }
+
+    return items;
+}
+
+function setAccountNotificationsOpen(isOpen) {
+    state.isNotificationPopoverOpen = Boolean(isOpen && state.currentUser);
+    const trigger = $('#btn-open-notifications');
+    const popover = $('#account-notification-popover');
+    if (trigger) trigger.setAttribute('aria-expanded', state.isNotificationPopoverOpen ? 'true' : 'false');
+    if (popover) popover.hidden = !state.isNotificationPopoverOpen;
+}
+
+function toggleAccountNotifications(event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    setAccountNotificationsOpen(!state.isNotificationPopoverOpen);
+}
+
+function renderAccountNotifications() {
+    const trigger = $('#btn-open-notifications');
+    const badge = $('#account-notification-badge');
+    const popover = $('#account-notification-popover');
+    const list = $('#account-notification-list');
+    const isLoggedIn = Boolean(state.currentUser);
+    const items = getAccountNotificationItems();
+    const actionableCount = items.filter((item) => item.route).length;
+
+    if (!isLoggedIn) state.isNotificationPopoverOpen = false;
+    if (trigger) {
+        trigger.hidden = !isLoggedIn;
+        trigger.setAttribute('aria-expanded', state.isNotificationPopoverOpen ? 'true' : 'false');
+    }
+    if (badge) {
+        badge.hidden = !isLoggedIn || actionableCount === 0;
+        badge.textContent = actionableCount > 9 ? '9+' : String(actionableCount);
+    }
+    if (popover) popover.hidden = !isLoggedIn || !state.isNotificationPopoverOpen;
+    if (!list) return;
+
+    list.innerHTML = items.map((item) => {
+        const content = `
+            <span class="material-symbols-outlined" aria-hidden="true">${escapeHtml(item.icon)}</span>
+            <span class="account-notification-copy">
+                <strong>${escapeHtml(item.title)}</strong>
+                <span>${escapeHtml(item.body)}</span>
+            </span>
+        `;
+        if (!item.route) {
+            return `<article class="account-notification-item is-empty">${content}</article>`;
+        }
+        return `<button class="account-notification-item" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`;
+    }).join('');
 }
 
 async function handleLogout() {
@@ -2653,7 +2752,10 @@ function renderLikedPhotoSurfaces() {
             : emptyMarkup;
     }
 
-    if (!fullGrid) return;
+    if (!fullGrid) {
+        renderAccountNotifications();
+        return;
+    }
     if (!likedPhotos.length) {
         fullGrid.innerHTML = `
             <article class="empty-state">
@@ -2662,6 +2764,7 @@ function renderLikedPhotoSurfaces() {
                 <button class="btn-secondary" data-route="explore" type="button">Explore 열기</button>
             </article>
         `;
+        renderAccountNotifications();
         return;
     }
 
@@ -2683,6 +2786,7 @@ function renderLikedPhotoSurfaces() {
             </article>
         `;
     }).join('');
+    renderAccountNotifications();
 }
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
@@ -4150,6 +4254,7 @@ function bindEvents() {
     }));
     document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
+        if (!event.target.closest('.account-notification-shell')) setAccountNotificationsOpen(false);
 
         const homePhotoDetailButton = event.target.closest('[data-home-photo-detail]');
         if (homePhotoDetailButton) {
@@ -4197,6 +4302,7 @@ function bindEvents() {
         const routeButton = event.target.closest('[data-route]');
         if (routeButton) {
             event.preventDefault();
+            setAccountNotificationsOpen(false);
             routeTo(routeButton.dataset.route);
             return;
         }
@@ -4604,6 +4710,7 @@ function bindEvents() {
         });
     }
     $('#btn-open-profile')?.addEventListener('click', openAccountProfilePage);
+    $('#btn-open-notifications')?.addEventListener('click', toggleAccountNotifications);
     $('#btn-open-auth')?.addEventListener('click', () => {
         openModal('#auth-modal');
     });

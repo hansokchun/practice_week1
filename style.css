@@ -146,11 +146,6 @@ img {
     gap: 12px;
 }
 
-.account-label {
-    color: rgba(5, 5, 5, 0.64);
-    font-size: 13px;
-}
-
 .account-profile-trigger {
     display: grid;
     place-items: center;
@@ -179,6 +174,133 @@ img {
     background: var(--surface);
 }
 
+.account-notification-shell {
+    position: relative;
+    display: grid;
+    place-items: center;
+}
+
+.account-notification-trigger {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(26, 77, 78, 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--teal-dark);
+    padding: 0;
+    box-shadow: none;
+    transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+}
+
+.account-notification-trigger:hover {
+    transform: translateY(-1px);
+    background: var(--surface);
+    opacity: 0.9;
+}
+
+.account-notification-trigger .material-symbols-outlined {
+    font-size: 21px;
+    line-height: 1;
+}
+
+.account-notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: grid;
+    place-items: center;
+    min-width: 16px;
+    height: 16px;
+    border: 2px solid var(--bg);
+    border-radius: 999px;
+    background: var(--coral);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.account-notification-popover {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    z-index: 65;
+    width: min(292px, calc(100vw - 32px));
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.98);
+    color: var(--text);
+    padding: 12px;
+    box-shadow: 0 24px 60px rgba(26, 77, 78, 0.16);
+}
+
+.account-notification-popover > strong {
+    display: block;
+    color: var(--teal-dark);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.3;
+}
+
+.account-notification-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.account-notification-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 8px;
+    width: 100%;
+    border: 1px solid rgba(26, 77, 78, 0.1);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    text-align: left;
+    padding: 10px;
+}
+
+.account-notification-item .material-symbols-outlined {
+    color: var(--coral);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.account-notification-copy strong,
+.account-notification-copy > span {
+    display: block;
+}
+
+.account-notification-copy strong {
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.account-notification-copy > span {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.account-notification-item:hover {
+    border-color: rgba(26, 77, 78, 0.2);
+    background: #ffffff;
+}
+
+.account-notification-item.is-empty {
+    pointer-events: none;
+}
+
 .account-avatar img,
 .account-profile-avatar img {
     width: 100%;
@@ -190,7 +312,7 @@ body.is-logged-out #btn-open-profile {
     display: none;
 }
 
-body.is-logged-in #account-guest-label {
+body.is-logged-out #btn-open-notifications {
     display: none;
 }
 
@@ -4325,29 +4447,33 @@ body.is-logged-in .home-workspace .album-row {
 .explore-photo-scope {
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-self: end;
+    width: fit-content;
+    max-width: 100%;
+    gap: 2px;
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 10px;
+    border-radius: 8px;
     background: rgba(249, 247, 242, 0.82);
-    padding: 5px;
+    padding: 3px;
 }
 
 .explore-photo-scope button {
-    min-height: 34px;
+    min-height: 28px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
     line-height: 1;
-    padding: 0 13px;
+    padding: 0 9px;
+    white-space: nowrap;
 }
 
 .explore-photo-scope button.active {
     background: var(--teal-dark);
     color: #ffffff;
-    box-shadow: 0 8px 18px rgba(0, 54, 55, 0.2);
+    box-shadow: 0 6px 14px rgba(0, 54, 55, 0.16);
 }
 
 .explore-photo-scope button:disabled {

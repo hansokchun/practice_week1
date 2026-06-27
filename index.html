@@ -24,8 +24,17 @@
                 <a href="#/explore" data-route="explore">Explore</a>
             </nav>
             <div class="account-area">
-                <span id="account-guest-label" class="account-label">Guest</span>
                 <button id="btn-open-auth" class="nav-action" type="button">Login</button>
+                <div class="account-notification-shell">
+                    <button id="btn-open-notifications" class="account-notification-trigger" type="button" aria-label="알림" aria-expanded="false" aria-controls="account-notification-popover" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                        <span id="account-notification-badge" class="account-notification-badge" hidden>0</span>
+                    </button>
+                    <div id="account-notification-popover" class="account-notification-popover" aria-live="polite" hidden>
+                        <strong>알림</strong>
+                        <div id="account-notification-list" class="account-notification-list"></div>
+                    </div>
+                </div>
                 <button id="btn-open-profile" class="account-profile-trigger" type="button" hidden>
                     <span id="account-avatar" class="avatar account-avatar">
                         <img id="account-avatar-image" alt="" hidden>
