@@ -474,13 +474,13 @@
             <div class="profile-cover">
                 <img src="images/main_bg4.jpg" alt="">
                 <div class="profile-card">
-                    <div id="profile-avatar" class="avatar large-avatar account-profile-avatar">
-                        <img id="profile-avatar-image" alt="" hidden>
-                        <span id="profile-avatar-fallback">IK</span>
-                    </div>
                     <div class="profile-card-copy">
                         <div class="profile-card-topline">
-                            <div>
+                            <div class="profile-title-row">
+                                <label id="profile-avatar" class="avatar large-avatar account-profile-avatar profile-avatar-pick" for="profile-avatar-input" aria-label="프로필 이미지 변경">
+                                    <img id="profile-avatar-image" alt="" hidden>
+                                    <span id="profile-avatar-fallback">IK</span>
+                                </label>
                                 <h1 id="profile-title">Ikkyee</h1>
                             </div>
                             <div class="profile-owner-actions">
@@ -694,19 +694,11 @@
                 <p id="account-profile-bio" class="account-profile-bio" hidden></p>
             </div>
             <form class="account-profile-form profile-edit-form" hidden>
-                <div class="profile-edit-identity">
-                    <label class="profile-edit-avatar-pick" for="profile-avatar-input-static" aria-label="프로필 이미지 변경">
-                        <span class="avatar account-profile-avatar profile-edit-avatar">
-                            <img alt="" hidden>
-                            <span>IK</span>
-                        </span>
-                        <input id="profile-avatar-input-static" type="file" accept="image/*">
-                    </label>
-                    <div class="account-profile-fields">
-                        <div class="account-profile-field profile-edit-name-field">
-                            <label for="profile-nickname-input-static">닉네임</label>
-                            <input id="profile-nickname-input-static" type="text" maxlength="40" placeholder="Ikkyee">
-                        </div>
+                <input id="profile-avatar-input-static" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
+                <div class="account-profile-fields">
+                    <div class="account-profile-field profile-edit-name-field">
+                        <label for="profile-nickname-input-static">닉네임</label>
+                        <input id="profile-nickname-input-static" type="text" maxlength="40" placeholder="Ikkyee">
                     </div>
                 </div>
                 <div class="auth-actions">

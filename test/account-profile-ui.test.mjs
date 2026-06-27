@@ -75,7 +75,9 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(css, /\.account-profile-field\s*\{/);
     assert.match(css, /\.account-profile-field input,\s*\.account-profile-field textarea\s*\{/s);
     assert.match(css, /\.account-profile-upload\s*\{/);
-    assert.match(app, /class="profile-edit-identity"/);
+    assert.match(app, /class="profile-title-row"/);
+    assert.doesNotMatch(app, /profile-edit-avatar/);
+    assert.match(app, /class="profile-avatar-file-input"/);
     assert.match(css, /\.profile-edit-name-field\s*\{/);
     assert.doesNotMatch(app, /profile-display-name-input/);
     assert.doesNotMatch(app, /profile-username-input/);

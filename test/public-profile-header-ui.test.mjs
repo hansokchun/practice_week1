@@ -16,7 +16,7 @@ test('public profile card stays inside the cover without negative overlap', () =
     const cardEnd = css.indexOf('.large-avatar', cardStart);
     const cardCss = css.slice(cardStart, cardEnd);
 
-    assert.match(cardCss, /grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+    assert.match(cardCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
     assert.match(cardCss, /margin:\s*0 auto;/);
     assert.doesNotMatch(cardCss, /-\d+px/);
 });
@@ -54,19 +54,21 @@ test('profile edit form has breathing room above the editing fields', () => {
     assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(280px,\s*100%\);/s);
 });
 
-test('profile edit mode keeps avatar beside account name and removes bio editing', () => {
+test('profile edit mode keeps the profile avatar beside the account name and removes the extra edit circle', () => {
     const shellStart = app.indexOf('function ensureProfileHeaderShell');
     const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
     const shell = app.slice(shellStart, shellEnd);
 
-    assert.match(shell, /class="profile-edit-identity"/);
-    assert.match(shell, /id="profile-edit-avatar-image"/);
+    assert.match(shell, /class="profile-title-row"/);
+    assert.match(shell, /id="profile-avatar" class="avatar large-avatar account-profile-avatar profile-avatar-pick"/);
     assert.match(shell, /id="profile-nickname-input"/);
-    assert.ok(shell.indexOf('id="profile-edit-avatar-image"') < shell.indexOf('id="profile-nickname-input"'));
+    assert.ok(shell.indexOf('id="profile-avatar"') < shell.indexOf('id="profile-title"'));
+    assert.doesNotMatch(shell, /profile-edit-avatar/);
+    assert.doesNotMatch(shell, /profile-edit-avatar-pick/);
     assert.doesNotMatch(shell, /id="profile-bio-input"/);
     assert.doesNotMatch(shell, /<textarea/);
-    assert.match(css, /\.profile-edit-identity\s*\{[^}]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);[^}]*padding:\s*12px;/s);
-    assert.match(css, /\.profile-edit-avatar\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;/s);
+    assert.match(css, /\.profile-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*14px;/s);
+    assert.match(css, /\.profile-avatar-file-input\s*\{[^}]*display:\s*none;/s);
 });
 
 test('profile avatar renderers preserve the image and fallback structure', () => {
@@ -78,6 +80,6 @@ test('profile avatar renderers preserve the image and fallback structure', () =>
     const ownerRenderer = app.slice(ownerStart, ownerEnd);
 
     assert.doesNotMatch(emptyRenderer, /\.profile-card \.avatar/);
-    assert.match(emptyRenderer, /\$\('#profile-edit-avatar-image'\)/);
-    assert.match(ownerRenderer, /\$\('#profile-edit-avatar-image'\)/);
+    assert.match(emptyRenderer, /\$\('#profile-avatar-image'\)/);
+    assert.match(ownerRenderer, /\$\('#profile-avatar-image'\)/);
 });

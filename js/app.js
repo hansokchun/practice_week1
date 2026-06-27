@@ -1400,13 +1400,13 @@ function ensureProfileHeaderShell() {
     const profileCard = $('.profile-card');
     if (!profileCard || profileCard.querySelector('#profile-bio')) return;
     profileCard.innerHTML = `
-        <div id="profile-avatar" class="avatar large-avatar account-profile-avatar">
-            <img id="profile-avatar-image" alt="" hidden>
-            <span id="profile-avatar-fallback">IK</span>
-        </div>
         <div class="profile-card-copy">
             <div class="profile-card-topline">
-                <div>
+                <div class="profile-title-row">
+                    <label id="profile-avatar" class="avatar large-avatar account-profile-avatar profile-avatar-pick" for="profile-avatar-input" aria-label="프로필 이미지 변경">
+                        <img id="profile-avatar-image" alt="" hidden>
+                        <span id="profile-avatar-fallback">IK</span>
+                    </label>
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
                 <div class="profile-owner-actions">
@@ -1423,19 +1423,11 @@ function ensureProfileHeaderShell() {
                 </div>
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
-                <div class="profile-edit-identity">
-                    <label class="profile-edit-avatar-pick" for="profile-avatar-input" aria-label="프로필 이미지 변경">
-                        <span id="profile-edit-avatar" class="avatar account-profile-avatar profile-edit-avatar">
-                            <img id="profile-edit-avatar-image" alt="" hidden>
-                            <span id="profile-edit-avatar-fallback">IK</span>
-                        </span>
-                        <input id="profile-avatar-input" type="file" accept="image/*">
-                    </label>
-                    <div class="account-profile-fields">
-                        <div class="account-profile-field profile-edit-name-field">
-                            <label for="profile-nickname-input">닉네임</label>
-                            <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
-                        </div>
+                <input id="profile-avatar-input" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
+                <div class="account-profile-fields">
+                    <div class="account-profile-field profile-edit-name-field">
+                        <label for="profile-nickname-input">닉네임</label>
+                        <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
                     </div>
                 </div>
                 <div class="auth-actions">
@@ -1486,7 +1478,6 @@ function renderAccountProfilePanel() {
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
-    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), profile.avatarUrl, profile.nickname);
 
     const displayNameInput = $('#profile-nickname-input');
     if (displayNameInput) displayNameInput.value = profile.nickname;
@@ -1502,12 +1493,16 @@ function setAccountProfileEditMode(isEditing) {
     const editButton = $('#account-profile-edit');
     const logoutButton = $('#account-profile-logout');
     const message = $('#account-profile-message');
+    const profileCard = $('.profile-card');
+    const avatarInput = $('#profile-avatar-input');
 
     if (view) view.hidden = state.accountProfileEditMode;
     if (form) form.hidden = !state.accountProfileEditMode;
     if (editButton) editButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
     if (logoutButton) logoutButton.hidden = state.selectedPublicOwnerId !== state.currentUser?.id;
     if (message) message.textContent = '';
+    if (profileCard) profileCard.classList.toggle('is-editing', state.accountProfileEditMode);
+    if (avatarInput) avatarInput.disabled = !state.accountProfileEditMode;
 }
 
 function openAccountProfilePage() {
@@ -1536,7 +1531,6 @@ function handleAccountProfileAvatarChange(event) {
     const nickname = $('#profile-nickname-input')?.value || getCurrentAccountProfile().nickname;
     const previewUrl = URL.createObjectURL(avatarFile);
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), previewUrl, nickname);
-    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), previewUrl, nickname);
     if (message) message.textContent = '저장하면 프로필 이미지가 반영됩니다.';
 }
 
@@ -1983,7 +1977,6 @@ function renderEmptyPublicSurfaces() {
         avatar.textContent = 'IK';
     });
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), '', 'Ikkyee');
-    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), '', 'Ikkyee');
     $$('[data-explore-pin]').forEach((target) => {
         delete target.dataset.publicAlbumId;
         target.classList.remove('is-selected');
@@ -2015,7 +2008,6 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         avatar.textContent = authorInitials;
     });
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), avatarUrl, authorName);
-    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), avatarUrl, authorName);
     if ($('#profile-bio')) {
         $('#profile-bio').textContent = profileBio;
         $('#profile-bio').hidden = !profileBio;
