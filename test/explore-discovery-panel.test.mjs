@@ -74,6 +74,9 @@ test('Explore discovery panel can be collapsed and reopened from its header', ()
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
+    const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
+    const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
+    const renderer = source.slice(rendererStart, rendererEnd);
 
     assert.match(html, /id="btn-toggle-explore-discovery"/);
     assert.match(html, /aria-controls="explore-discovery-body"/);
@@ -85,37 +88,38 @@ test('Explore discovery panel can be collapsed and reopened from its header', ()
     assert.match(source, /setAttribute\('aria-expanded', String\(!nextCollapsed\)\)/);
 });
 
-test('Explore discovery items are thumbnail-first and show story context before relative upload time', () => {
+test('Explore discovery items preserve original photo ratios without inline metadata', () => {
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
+    const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
+    const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
+    const renderer = source.slice(rendererStart, rendererEnd);
 
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*position:\s*relative;[^}]*container-type:\s*inline-size;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*auto\s+auto;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*height:\s*100cqw;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*object-fit:\s*cover;/s);
-    assert.match(css, /\.explore-discovery-copy\s*\{[^}]*min-height:\s*46px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*background:\s*#ffffff;/s);
-    assert.match(css, /\.explore-discovery-copy\.has-description\s*\{[^}]*min-height:\s*76px;/s);
-    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*contain;/s);
-    assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
-    assert.match(source, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);
-    assert.match(source, /class="explore-discovery-copy\$\{description \? ' has-description' : ''\}">/);
-    assert.match(source, /\$\{description \? `<strong>\$\{escapeHtml\(description\)\}<\/strong>` : ''\}/);
-    assert.match(source, /<small class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
-    assert.doesNotMatch(source, /const storyLabel = description \|\| label;/);
-    assert.doesNotMatch(source, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
+    assert.match(css, /\.explore-discovery-list\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*8px;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*flex:\s*0 0 auto;[^}]*display:\s*block;[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*border-radius:\s*0;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-image\s*\{[^}]*height:\s*100cqw;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*cover;/s);
+    assert.match(renderer, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);
+    assert.doesNotMatch(renderer, /const uploadTimeLabel = formatRelativeTime/);
+    assert.doesNotMatch(renderer, /explore-discovery-copy/);
+    assert.doesNotMatch(renderer, /explore-discovery-time/);
+    assert.doesNotMatch(renderer, /const storyLabel = description \|\| label;/);
+    assert.doesNotMatch(renderer, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
 });
 
-test('Explore discovery items omit the text block when photos have no written description', () => {
+test('Explore discovery items keep descriptions only as accessibility labels', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
     const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
     const renderer = source.slice(rendererStart, rendererEnd);
 
     assert.match(renderer, /const description = getPhotoDescriptionText\(photo\)/);
-    assert.match(renderer, /class="explore-discovery-copy\$\{description \? ' has-description' : ''\}"/);
-    assert.match(renderer, /\$\{description \? `<strong>\$\{escapeHtml\(description\)\}<\/strong>` : ''\}/);
-    assert.match(renderer, /<small class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
+    assert.match(renderer, /aria-label="\$\{escapeHtml\(description \|\| label\)\} 사진 보기"/);
+    assert.match(renderer, /alt="\$\{escapeHtml\(description \|\| label\)\}"/);
+    assert.doesNotMatch(renderer, /explore-discovery-copy/);
+    assert.doesNotMatch(renderer, /explore-discovery-time/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
 });
@@ -147,7 +151,7 @@ test('Explore discovery panel scrolls long photo lists inside the panel', () => 
     assert.match(css, /\.explore-discovery-body\s*\{[^}]*display:\s*grid;[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\);[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*max-height:\s*100%;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overflow-y:\s*auto;/s);
-    assert.match(css, /\.explore-discovery-list\s*\{[^}]*align-content:\s*start;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-list\s*\{[^}]*align-content:\s*start;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overscroll-behavior:\s*contain;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*scrollbar-gutter:\s*stable;/s);
 });

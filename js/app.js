@@ -908,16 +908,11 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
     list.innerHTML = visiblePhotos.map((photo) => {
         const description = getPhotoDescriptionText(photo);
         const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
-        const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
             <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
                 <span class="explore-discovery-image">
                     <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
-                </span>
-                <span class="explore-discovery-copy${description ? ' has-description' : ''}">
-                    ${description ? `<strong>${escapeHtml(description)}</strong>` : ''}
-                    <small class="explore-discovery-time">${escapeHtml(uploadTimeLabel)}</small>
                 </span>
             </article>
         `;

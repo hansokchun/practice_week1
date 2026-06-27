@@ -25,34 +25,35 @@ test('Explore preview and discovery panels use landing-style archive cards', () 
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*width:\s*min\(390px,\s*calc\(100% - 56px\)\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);[^}]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.16\)/s);
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*border-radius:\s*10px;/s);
     assert.match(css, /\.explore-discovery-header h2\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*28px;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*border-radius:\s*8px;/s);
-    assert.match(css, /\.explore-discovery-item strong\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*-webkit-line-clamp:\s*2;/s);
-    assert.match(css, /\.explore-discovery-copy\s*\{[^}]*min-height:\s*46px;[^}]*background:\s*#ffffff;[^}]*padding:\s*10px\s+14px\s+12px;/s);
-    assert.match(css, /\.explore-discovery-copy\.has-description\s*\{[^}]*min-height:\s*76px;[^}]*padding:\s*12px\s+14px\s+14px;/s);
-    assert.match(css, /\.explore-discovery-time\s*\{[^}]*position:\s*static;[^}]*color:\s*var\(--coral\);/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-copy\s*\{/);
+    assert.doesNotMatch(css, /\.explore-discovery-time\s*\{/);
 });
 
-test('Explore photo thumbnails keep square image corners', () => {
+test('Explore photo thumbnails keep straight corners and original ratios', () => {
     assert.match(css, /\.explore-photo-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.map-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.pin-preview-photo-button\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*height:\s*100cqw;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*aspect-ratio:\s*1 \/ 1;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*cover;/s);
 });
 
-test('Explore discovery cards render a concise story label before time metadata', () => {
+test('Explore discovery cards render image-only entries without inline metadata', () => {
     const fnStart = source.indexOf('function renderExploreDiscoveryPanel');
     const fnEnd = source.indexOf('async function ensureExploreMap', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(body, /const description = getPhotoDescriptionText\(photo\)/);
-    assert.match(body, /<small class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
-    assert.match(body, /\$\{description \? `<strong>\$\{escapeHtml\(description\)\}<\/strong>` : ''\}/);
+    assert.match(body, /<span class="explore-discovery-image">/);
+    assert.doesNotMatch(body, /explore-discovery-copy/);
+    assert.doesNotMatch(body, /explore-discovery-time/);
 });
 
 test('DESIGN documents the Explore map shell visual language', () => {
     assert.match(design, /Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces/);
-    assert.match(design, /Large map panels use squared archive corners around 8-10px/);
-    assert.match(design, /Explore photo thumbnails use square cropped image wells/);
+    assert.match(design, /Each thumbnail fills the panel width and preserves the original photo ratio/);
+    assert.match(design, /description or relative-time metadata appears only after opening the photo preview/);
 });
