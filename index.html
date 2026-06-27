@@ -326,10 +326,6 @@
                     <input id="explore-map-search-input" type="search" placeholder="장소 검색">
                     <button type="submit">검색</button>
                 </form>
-                <div class="explore-photo-scope" aria-label="공개 사진 필터">
-                    <button type="button" data-explore-scope="others">다른 사람 사진</button>
-                    <button type="button" data-explore-scope="mine" class="active">내 사진</button>
-                </div>
                 <aside id="explore-pin-preview" class="explore-pin-preview" hidden>
                     <button id="btn-close-pin-preview" class="panel-close" type="button" aria-label="미리보기 닫기">
                         <span class="material-symbols-outlined">close</span>
@@ -390,6 +386,10 @@
                         <button id="btn-toggle-explore-discovery" class="explore-discovery-toggle" type="button" aria-controls="explore-discovery-body" aria-expanded="true" aria-label="탐색 패널 접기">
                             <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
                         </button>
+                    </div>
+                    <div class="explore-photo-scope" aria-label="공개 사진 필터">
+                        <button type="button" data-explore-scope="others">다른 사람 사진</button>
+                        <button type="button" data-explore-scope="mine" class="active">내 사진</button>
                     </div>
                     <div id="explore-discovery-body" class="explore-discovery-body">
                         <div class="explore-discovery-list" data-explore-discovery-list>

@@ -921,14 +921,22 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
         const storyLabel = description || label;
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
+        const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
+        const likeLabel = isLiked ? '좋아요 취소' : '좋아요';
         return `
-            <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
-                <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
-                <span>
+            <article class="explore-discovery-item${selected}">
+                <button class="explore-discovery-open" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
+                    <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
+                    <span class="explore-discovery-copy">
                     <strong>${escapeHtml(storyLabel)}</strong>
                     <small>${escapeHtml(uploadTimeLabel)}</small>
-                </span>
-            </button>
+                    </span>
+                </button>
+                <button class="photo-like-button explore-discovery-like${isLiked ? ' is-liked' : ''}" data-toggle-photo-like data-like-surface="explore-discovery" data-photo-id="${escapeHtml(photo.id || '')}" type="button" aria-label="${likeLabel}" aria-pressed="${isLiked ? 'true' : 'false'}"${photo.id ? '' : ' disabled'}>
+                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                    <span class="explore-discovery-like-count">${Number(photo.liked || 0)}</span>
+                </button>
+            </article>
         `;
     }).join('');
 }

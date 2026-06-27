@@ -11,8 +11,8 @@ test('Explore map controls follow the landing surface and accent language', () =
     assert.match(css, /\.map-search\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.96\);[^}]*0 24px 60px rgba\(26,\s*77,\s*78,\s*0\.16\)/s);
     assert.match(css, /\.map-search\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.map-search button\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
-    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.96\);/s);
-    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border-radius:\s*12px;/s);
+    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(249,\s*247,\s*242,\s*0\.82\);/s);
+    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border-radius:\s*10px;/s);
     assert.match(css, /\.explore-photo-scope button\.active\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
 });
 

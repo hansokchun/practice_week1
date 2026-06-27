@@ -8,6 +8,13 @@ const source = readFileSync('js/app.js', 'utf8');
 test('Explore exposes mutually exclusive photo owner scope controls', () => {
     assert.match(html, /data-explore-scope="others"/);
     assert.match(html, /data-explore-scope="mine"/);
+    const panelStart = html.indexOf('id="explore-list"');
+    const scopeStart = html.indexOf('class="explore-photo-scope"', panelStart);
+    const bodyStart = html.indexOf('id="explore-discovery-body"', panelStart);
+
+    assert.ok(panelStart > -1);
+    assert.ok(scopeStart > panelStart);
+    assert.ok(scopeStart < bodyStart);
     assert.match(source, /explorePhotoScope:\s*'mine'/);
     assert.match(source, /function setExplorePhotoScope\(scope\)/);
     assert.match(source, /event\.target\.closest\('\[data-explore-scope\]'\)/);

@@ -17,7 +17,7 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
 
     assert.match(mobile, /\.explore-map-canvas\s*\{[^}]*height:\s*calc\(100svh - 64px - 92px\);/s);
     assert.match(mobile, /\.map-search\s*\{[^}]*top:\s*12px;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*width:\s*auto;/s);
-    assert.match(mobile, /\.explore-photo-scope\s*\{[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*auto;/s);
+    assert.doesNotMatch(mobile, /\.explore-photo-scope\s*\{[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*92px;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
