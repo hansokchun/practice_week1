@@ -7,10 +7,18 @@ const source = readFileSync('js/app.js', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 
 test('missing location banner has direct assign and dismiss actions only', () => {
-    const bannerStart = html.indexOf('class="attention-banner"');
-    const bannerEnd = html.indexOf('class="recent-photo-section"', bannerStart);
-    const banner = html.slice(bannerStart, bannerEnd);
+    const photosPageStart = html.indexOf('id="page-photos"');
+    const photosPageEnd = html.indexOf('id="page-liked"', photosPageStart);
+    const photosPage = html.slice(photosPageStart, photosPageEnd);
+    const homeStart = html.indexOf('class="home-workspace');
+    const homeEnd = html.indexOf('id="page-photos"', homeStart);
+    const home = html.slice(homeStart, homeEnd);
+    const bannerStart = photosPage.indexOf('class="attention-banner"');
+    const bannerEnd = photosPage.indexOf('class="dashboard-panel full-panel"', bannerStart);
+    const banner = photosPage.slice(bannerStart, bannerEnd);
 
+    assert.doesNotMatch(home, /class="attention-banner"/);
+    assert.ok(bannerStart > -1);
     assert.match(html, /<section class="attention-banner" hidden>/);
     assert.match(css, /\.attention-banner\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
     assert.match(banner, /id="btn-direct-missing-location"/);
@@ -33,16 +41,19 @@ test('missing location banner only appears when there are unresolved missing-loc
     assert.doesNotMatch(body, /else \{[\s\S]*attentionTitle\.textContent/);
 });
 
-test('missing location banner uses a compact alert treatment without helper copy', () => {
-    const bannerStart = html.indexOf('class="attention-banner"');
-    const bannerEnd = html.indexOf('class="recent-photo-section"', bannerStart);
-    const banner = html.slice(bannerStart, bannerEnd);
+test('missing location banner uses a full-size alert treatment without helper copy', () => {
+    const photosPageStart = html.indexOf('id="page-photos"');
+    const photosPageEnd = html.indexOf('id="page-liked"', photosPageStart);
+    const photosPage = html.slice(photosPageStart, photosPageEnd);
+    const bannerStart = photosPage.indexOf('class="attention-banner"');
+    const bannerEnd = photosPage.indexOf('class="dashboard-panel full-panel"', bannerStart);
+    const banner = photosPage.slice(bannerStart, bannerEnd);
 
     assert.doesNotMatch(banner, /<p>/);
-    assert.match(css, /\.attention-banner\s*\{[^}]*width:\s*fit-content;[^}]*max-width:\s*min\(100%,\s*560px\);[^}]*margin:\s*0 0 16px auto;[^}]*border-left:\s*4px solid #99452f;[^}]*border-radius:\s*10px;[^}]*padding:\s*10px 12px;/s);
+    assert.match(css, /\.attention-banner\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin:\s*0 0 24px;[^}]*border-left:\s*6px solid #99452f;[^}]*border-radius:\s*16px;[^}]*padding:\s*16px 18px;/s);
     assert.match(css, /\.attention-banner::before\s*\{[^}]*content:\s*"처리필요";[^}]*background:\s*#99452f;/s);
-    assert.match(css, /\.attention-banner > span\s*\{[^}]*width:\s*32px;[^}]*height:\s*32px;/s);
-    assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*14px;/s);
+    assert.match(css, /\.attention-banner > span\s*\{[^}]*width:\s*40px;[^}]*height:\s*40px;/s);
+    assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*16px;/s);
 });
 
 test('missing location task list renders thumbnails without photo names', () => {

@@ -126,16 +126,6 @@
             </section>
 
             <section class="home-workspace page-container" aria-label="사진과 앨범 보관함">
-                <section class="attention-banner" hidden>
-                    <span class="material-symbols-outlined">wrong_location</span>
-                    <div>
-                        <strong></strong>
-                    </div>
-                    <button id="btn-dismiss-missing-location" type="button">나중에 하기</button>
-                    <button id="btn-direct-missing-location" type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
-                    <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
-                </section>
-
                 <section class="recent-photo-section" aria-labelledby="recent-photo-title">
                     <div class="panel-topline">
                         <h2 id="recent-photo-title">최근 사진</h2>
@@ -194,6 +184,15 @@
                 <div class="page-intro">
                     <h1 id="photos-title">최근사진</h1>
                 </div>
+                <section class="attention-banner" hidden>
+                    <span class="material-symbols-outlined">wrong_location</span>
+                    <div>
+                        <strong></strong>
+                    </div>
+                    <button id="btn-dismiss-missing-location" type="button">나중에 하기</button>
+                    <button id="btn-direct-missing-location" type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
+                    <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
+                </section>
                 <section class="dashboard-panel full-panel">
                     <div class="panel-topline">
                         <div>
@@ -486,8 +485,8 @@
                                 <h1 id="profile-title">Ikkyee</h1>
                             </div>
                             <div class="profile-owner-actions">
-                                <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
                                 <button id="account-profile-logout" class="btn-secondary danger" type="button" hidden>로그아웃</button>
+                                <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
                             </div>
                         </div>
                         <p>지도에 공개한 여행만 모아둔 공개 프로필입니다.</p>

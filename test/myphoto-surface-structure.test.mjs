@@ -198,10 +198,10 @@ test('logged-in home panels and thumbnails follow the explore visual language', 
     const styles = css();
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-panel\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{[^}]*border-color:\s*rgba\(153,\s*69,\s*47,\s*0\.18\);[^}]*background:\s*#ffdbd2;[^}]*box-shadow:\s*none;/s);
+    assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{/s);
     assert.match(styles, /\.compact-action-button\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*999px;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.missing-location-list img\s*\{[^}]*border-radius:\s*0;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*8px;[^}]*box-shadow:/s);
 });
 

@@ -2838,17 +2838,17 @@ body[data-page="explore"] .site-footer {
     display: grid;
     grid-template-columns: auto auto minmax(0, 1fr) auto auto;
     align-items: center;
-    width: fit-content;
-    max-width: min(100%, 560px);
-    gap: 8px;
-    margin: 0 0 16px auto;
+    width: 100%;
+    max-width: none;
+    gap: 12px;
+    margin: 0 0 24px;
     border: 1px solid rgba(153, 69, 47, 0.18);
-    border-left: 4px solid #99452f;
-    border-radius: 10px;
+    border-left: 6px solid #99452f;
+    border-radius: 16px;
     background: #ffdbd2;
     color: #7b2e1a;
-    padding: 10px 12px;
-    box-shadow: 0 14px 32px rgba(153, 69, 47, 0.16);
+    padding: 16px 18px;
+    box-shadow: 0 18px 42px rgba(153, 69, 47, 0.16);
 }
 
 .attention-banner::before {
@@ -2872,18 +2872,18 @@ body[data-page="explore"] .site-footer {
 .attention-banner > span {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.48);
     color: #99452f;
-    font-size: 20px;
+    font-size: 22px;
 }
 
 .attention-banner strong {
     color: #3c0800;
     font-family: var(--headline);
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.35;
 }
 
@@ -3301,12 +3301,6 @@ body.is-logged-in .home-workspace .album-panel {
     backdrop-filter: none;
 }
 
-body.is-logged-in .home-workspace .attention-banner {
-    border-color: rgba(153, 69, 47, 0.18);
-    background: #ffdbd2;
-    box-shadow: none;
-}
-
 body.is-logged-in .home-workspace .recent-photo-section {
     margin: 24px 0 0;
     padding: 22px;
@@ -3324,8 +3318,7 @@ body.is-logged-in .home-workspace .personal-photo-card {
 
 body.is-logged-in .home-workspace .recent-photo-grid img,
 body.is-logged-in .home-workspace .personal-photo-card img,
-body.is-logged-in .home-workspace .album-row img,
-body.is-logged-in .home-workspace .missing-location-list img {
+body.is-logged-in .home-workspace .album-row img {
     border-radius: 0;
 }
 
@@ -5838,11 +5831,26 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 8px;
+    align-self: start;
+    flex-wrap: wrap;
 }
 
-.profile-header-view,
+.profile-owner-actions .btn-secondary {
+    min-height: 38px;
+    border-radius: 999px;
+    padding: 0 14px;
+}
+
+.profile-header-view {
+    max-width: 680px;
+}
+
 .profile-edit-form {
     max-width: 680px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(26, 77, 78, 0.12);
 }
 
 .large-avatar {
@@ -6762,6 +6770,11 @@ body.photo-fullscreen-open {
 
 #account-profile-form .auth-actions {
     grid-template-columns: 1fr 1fr;
+}
+
+.profile-edit-form .auth-actions {
+    justify-self: end;
+    width: min(360px, 100%);
 }
 
 .auth-mode-switch {

@@ -31,3 +31,22 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.profile-card-copy\s*\{/);
 });
+
+test('own profile actions sit together at the top right with logout first', () => {
+    const staticActionsStart = html.indexOf('class="profile-owner-actions"');
+    const staticActionsEnd = html.indexOf('</div>', staticActionsStart);
+    const staticActions = html.slice(staticActionsStart, staticActionsEnd);
+    const shellStart = app.indexOf('function ensureProfileHeaderShell');
+    const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
+    const shell = app.slice(shellStart, shellEnd);
+
+    assert.ok(staticActions.indexOf('id="account-profile-logout"') < staticActions.indexOf('id="account-profile-edit"'));
+    assert.ok(shell.indexOf('id="account-profile-logout"') < shell.indexOf('id="account-profile-edit"'));
+    assert.match(css, /\.profile-owner-actions\s*\{[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
+    assert.match(css, /\.profile-owner-actions \.btn-secondary\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*999px;/s);
+});
+
+test('profile edit form has breathing room above the editing fields', () => {
+    assert.match(css, /\.profile-edit-form\s*\{[^}]*max-width:\s*680px;[^}]*margin-top:\s*18px;[^}]*padding-top:\s*18px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
+    assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(360px,\s*100%\);/s);
+});
