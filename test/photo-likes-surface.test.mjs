@@ -26,14 +26,15 @@ test('Explore photo preview exposes a heart-only like control', () => {
     assert.doesNotMatch(preview, /data-like-label/);
 });
 
-test('Explore discovery photo cards do not expose a direct like control', () => {
+test('Explore discovery photo cards expose a direct like control', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
-    const rendererEnd = source.indexOf('function ensureExploreMap', rendererStart);
+    const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
     const renderer = source.slice(rendererStart, rendererEnd);
 
-    assert.doesNotMatch(renderer, /class="explore-discovery-like/);
-    assert.doesNotMatch(renderer, /data-like-surface="explore-discovery"/);
+    assert.match(renderer, /class="photo-like-button explore-discovery-like-button/);
+    assert.match(renderer, /data-like-surface="explore-discovery"/);
+    assert.match(renderer, /isLiked = Boolean\(photo\.id && state\.likedPhotoIds\.includes\(String\(photo\.id\)\)\)/);
 });
 
 test('home has a liked photos section with an all-liked route action', () => {

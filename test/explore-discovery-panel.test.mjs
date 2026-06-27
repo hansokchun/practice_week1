@@ -89,12 +89,13 @@ test('Explore discovery items are thumbnail-first and show story context before 
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
 
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*minmax\(168px,\s*auto\)\s+auto;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*position:\s*relative;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*168px;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*168px;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
-    assert.match(source, /description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*<small>\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
+    assert.match(source, /class="explore-discovery-time">[\s\S]*\$\{escapeHtml\(uploadTimeLabel\)\}/);
+    assert.match(source, /description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(source, /const storyLabel = description \|\| label;/);
     assert.doesNotMatch(source, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
 });
@@ -107,8 +108,28 @@ test('Explore discovery items omit the text block when photos have no written de
 
     assert.match(renderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.match(renderer, /\$\{description \? `[\s\S]*class="explore-discovery-copy"[\s\S]*` : ''\}/);
+    assert.match(renderer, /class="explore-discovery-time">/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
+});
+
+test('Explore discovery cards expose direct like controls without nesting buttons', () => {
+    const css = readFileSync('style.css', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+    const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
+    const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
+    const renderer = source.slice(rendererStart, rendererEnd);
+    const clickStart = source.indexOf("const photoLikeButton = event.target.closest('[data-toggle-photo-like]');");
+    const discoveryStart = source.indexOf("const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');");
+
+    assert.match(renderer, /<article class="explore-discovery-item/);
+    assert.doesNotMatch(renderer, /<button class="explore-discovery-item/);
+    assert.match(renderer, /class="photo-like-button explore-discovery-like-button/);
+    assert.match(renderer, /data-like-surface="explore-discovery"/);
+    assert.match(renderer, /data-photo-id="\$\{escapeHtml\(photo\.id \|\| ''\)\}"/);
+    assert.match(renderer, /aria-pressed="\$\{isLiked \? 'true' : 'false'\}"/);
+    assert.match(css, /\.explore-discovery-like-button\s*\{[^}]*position:\s*absolute;[^}]*top:\s*10px;[^}]*right:\s*10px;/s);
+    assert.ok(clickStart > -1 && discoveryStart > clickStart);
 });
 
 test('Explore discovery panel scrolls long photo lists inside the panel', () => {

@@ -64,6 +64,7 @@ import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
+import { formatRelativeTime } from './relative-time.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
 import { buildAlbumRouteHash, buildOwnerProfileHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
@@ -229,22 +230,6 @@ function setImageSourceWithFallback(image, primarySrc, fallbackSrc = 'images/mai
         image.src = fallback;
     };
     image.src = source;
-}
-
-function formatRelativeTime(value, now = new Date()) {
-    const date = value ? new Date(value) : null;
-    if (!date || Number.isNaN(date.getTime())) return '방금 전';
-    const diffMs = Math.max(0, now.getTime() - date.getTime());
-    const minutes = Math.floor(diffMs / 60000);
-    if (minutes < 1) return '방금 전';
-    if (minutes < 60) return `${minutes}분 전`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}시간 전`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}일 전`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months}개월 전`;
-    return `${Math.floor(months / 12)}년 전`;
 }
 
 function showToast(message) {
@@ -924,17 +909,21 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         const description = getPhotoDescriptionText(photo);
         const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
         const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
+        const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
-            <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
+            <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
                 <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
+                <span class="explore-discovery-time">${escapeHtml(uploadTimeLabel)}</span>
+                <button class="photo-like-button explore-discovery-like-button${isLiked ? ' is-liked' : ''}" data-toggle-photo-like data-like-surface="explore-discovery" data-photo-id="${escapeHtml(photo.id || '')}" type="button" aria-label="${isLiked ? '좋아요 취소' : '좋아요'}" aria-pressed="${isLiked ? 'true' : 'false'}">
+                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                </button>
                 ${description ? `
                 <span class="explore-discovery-copy">
                     <strong>${escapeHtml(description)}</strong>
-                    <small>${escapeHtml(uploadTimeLabel)}</small>
                 </span>
                 ` : ''}
-            </button>
+            </article>
         `;
     }).join('');
 }
@@ -4662,6 +4651,16 @@ function bindEvents() {
         if (homePhotoDetailButton) {
             event.preventDefault();
             openHomeReferencePhotoDetail(homePhotoDetailButton);
+            return;
+        }
+        if (event.target.closest('[data-toggle-photo-like]')) return;
+        const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');
+        if (discoveryPhotoButton) {
+            const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto)
+                || getPublicPhotoMapItems().find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto);
+            if (!photo) return;
+            event.preventDefault();
+            openExplorePhotoPreview(photo, { focusMap: true });
             return;
         }
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');

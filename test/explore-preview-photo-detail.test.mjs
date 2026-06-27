@@ -34,7 +34,7 @@ test('Explore pin preview stores the selected photo id on the preview image acti
 
 test('Explore photo preview image falls back when the public image URL fails', () => {
     const helperStart = source.indexOf('function getPhotoImageSrc');
-    const helperEnd = source.indexOf('function formatRelativeTime', helperStart);
+    const helperEnd = source.indexOf('function showToast', helperStart);
     const helpers = source.slice(helperStart, helperEnd);
     const fnStart = source.indexOf('function updateExplorePhotoPreview');
     const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);

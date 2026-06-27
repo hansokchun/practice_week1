@@ -27,7 +27,7 @@ test('Explore preview and discovery panels use landing-style archive cards', () 
     assert.match(css, /\.explore-discovery-header h2\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*28px;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*border-radius:\s*8px;/s);
     assert.match(css, /\.explore-discovery-item strong\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*-webkit-line-clamp:\s*2;/s);
-    assert.match(css, /\.explore-discovery-item small\s*\{[^}]*color:\s*var\(--coral\);/s);
+    assert.match(css, /\.explore-discovery-time\s*\{[^}]*background:\s*rgba\(249,\s*247,\s*242,\s*0\.92\);[^}]*color:\s*var\(--coral\);/s);
 });
 
 test('Explore photo thumbnails keep square image corners', () => {
@@ -43,8 +43,8 @@ test('Explore discovery cards render a concise story label before time metadata'
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(body, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(body, /<span class="explore-discovery-time">\$\{escapeHtml\(uploadTimeLabel\)\}<\/span>/);
     assert.match(body, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
-    assert.ok(body.indexOf('<strong>${escapeHtml(description)}</strong>') < body.indexOf('<small>${escapeHtml(uploadTimeLabel)}</small>'));
 });
 
 test('DESIGN documents the Explore map shell visual language', () => {
