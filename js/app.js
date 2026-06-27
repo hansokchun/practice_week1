@@ -1407,7 +1407,6 @@ function ensureProfileHeaderShell() {
         <div class="profile-card-copy">
             <div class="profile-card-topline">
                 <div>
-                    <p id="profile-eyebrow" class="eyebrow">Public Profile</p>
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
                 <div class="profile-owner-actions">
@@ -1424,20 +1423,18 @@ function ensureProfileHeaderShell() {
                 </div>
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
-                <div class="account-profile-fields">
-                    <div class="account-profile-field">
-                        <label for="profile-nickname-input">닉네임</label>
-                        <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
-                    </div>
-                    <div class="account-profile-field">
-                        <label for="profile-bio-input">소개</label>
-                        <textarea id="profile-bio-input" rows="4" maxlength="160" placeholder="여행 기록과 장소 아카이브"></textarea>
-                    </div>
-                    <div class="account-profile-field">
-                        <label for="profile-avatar-input">프로필 이미지</label>
-                        <div class="account-profile-upload">
-                            <input id="profile-avatar-input" type="file" accept="image/*">
-                            <p>정사각형 사진이 가장 자연스럽게 보여요.</p>
+                <div class="profile-edit-identity">
+                    <label class="profile-edit-avatar-pick" for="profile-avatar-input" aria-label="프로필 이미지 변경">
+                        <span id="profile-edit-avatar" class="avatar account-profile-avatar profile-edit-avatar">
+                            <img id="profile-edit-avatar-image" alt="" hidden>
+                            <span id="profile-edit-avatar-fallback">IK</span>
+                        </span>
+                        <input id="profile-avatar-input" type="file" accept="image/*">
+                    </label>
+                    <div class="account-profile-fields">
+                        <div class="account-profile-field profile-edit-name-field">
+                            <label for="profile-nickname-input">닉네임</label>
+                            <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
                         </div>
                     </div>
                 </div>
@@ -1489,11 +1486,10 @@ function renderAccountProfilePanel() {
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
+    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), profile.avatarUrl, profile.nickname);
 
     const displayNameInput = $('#profile-nickname-input');
-    const bioInput = $('#profile-bio-input');
     if (displayNameInput) displayNameInput.value = profile.nickname;
-    if (bioInput) bioInput.value = profile.bio;
     const avatarInput = $('#profile-avatar-input');
     if (avatarInput) avatarInput.value = '';
 }
@@ -1537,12 +1533,10 @@ function handleAccountProfileAvatarChange(event) {
         if (message) message.textContent = validation.reason || '이미지 파일만 등록할 수 있어요.';
         return;
     }
-    setAvatarDisplay(
-        $('#profile-avatar-image'),
-        $('#profile-avatar-fallback'),
-        URL.createObjectURL(avatarFile),
-        $('#profile-nickname-input')?.value || getCurrentAccountProfile().nickname
-    );
+    const nickname = $('#profile-nickname-input')?.value || getCurrentAccountProfile().nickname;
+    const previewUrl = URL.createObjectURL(avatarFile);
+    setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), previewUrl, nickname);
+    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), previewUrl, nickname);
     if (message) message.textContent = '저장하면 프로필 이미지가 반영됩니다.';
 }
 
@@ -1562,7 +1556,8 @@ async function saveAccountProfile(event) {
         return;
     }
 
-    const bio = String($('#profile-bio-input')?.value || '').trim();
+    const bioInput = $('#profile-bio-input');
+    const bio = bioInput ? String(bioInput.value || '').trim() : getCurrentAccountProfile().bio;
     const avatarFile = $('#profile-avatar-input')?.files?.[0] || null;
     let avatarUrl = getCurrentAccountProfile().avatarUrl;
 
@@ -1984,9 +1979,11 @@ function renderEmptyPublicSurfaces() {
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = 'Ikkyee';
     });
-    $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
+    $$('.public-author-card .avatar, .pin-author .avatar').forEach((avatar) => {
         avatar.textContent = 'IK';
     });
+    setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), '', 'Ikkyee');
+    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), '', 'Ikkyee');
     $$('[data-explore-pin]').forEach((target) => {
         delete target.dataset.publicAlbumId;
         target.classList.remove('is-selected');
@@ -2018,6 +2015,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         avatar.textContent = authorInitials;
     });
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), avatarUrl, authorName);
+    setAvatarDisplay($('#profile-edit-avatar-image'), $('#profile-edit-avatar-fallback'), avatarUrl, authorName);
     if ($('#profile-bio')) {
         $('#profile-bio').textContent = profileBio;
         $('#profile-bio').hidden = !profileBio;

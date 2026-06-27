@@ -5847,10 +5847,54 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .profile-edit-form {
-    max-width: 680px;
-    margin-top: 18px;
-    padding-top: 18px;
+    max-width: 520px;
+    margin-top: 24px;
+    padding-top: 24px;
     border-top: 1px solid rgba(26, 77, 78, 0.12);
+}
+
+.profile-edit-identity {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.profile-edit-avatar-pick {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    cursor: pointer;
+}
+
+.profile-edit-avatar {
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.16);
+    border-radius: 999px;
+    background: var(--surface);
+}
+
+.profile-edit-avatar-pick input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.profile-edit-name-field {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .large-avatar {
@@ -6774,7 +6818,7 @@ body.photo-fullscreen-open {
 
 .profile-edit-form .auth-actions {
     justify-self: end;
-    width: min(360px, 100%);
+    width: min(280px, 100%);
 }
 
 .auth-mode-switch {

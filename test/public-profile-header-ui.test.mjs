@@ -23,6 +23,9 @@ test('public profile card stays inside the cover without negative overlap', () =
 
 test('public profile header supports inline owner metadata and editing actions', () => {
     assert.match(app, /function ensureProfileHeaderShell\(\)/);
+    assert.doesNotMatch(html, /Public Profile/);
+    assert.doesNotMatch(app, /profile-eyebrow/);
+    assert.doesNotMatch(app, /Public Profile/);
     assert.match(app, /id="profile-bio"/);
     assert.match(app, /id="profile-photo-count"/);
     assert.match(app, /id="profile-album-count"/);
@@ -47,6 +50,34 @@ test('own profile actions sit together at the top right with logout first', () =
 });
 
 test('profile edit form has breathing room above the editing fields', () => {
-    assert.match(css, /\.profile-edit-form\s*\{[^}]*max-width:\s*680px;[^}]*margin-top:\s*18px;[^}]*padding-top:\s*18px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
-    assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(360px,\s*100%\);/s);
+    assert.match(css, /\.profile-edit-form\s*\{[^}]*max-width:\s*520px;[^}]*margin-top:\s*24px;[^}]*padding-top:\s*24px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
+    assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(280px,\s*100%\);/s);
+});
+
+test('profile edit mode keeps avatar beside account name and removes bio editing', () => {
+    const shellStart = app.indexOf('function ensureProfileHeaderShell');
+    const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
+    const shell = app.slice(shellStart, shellEnd);
+
+    assert.match(shell, /class="profile-edit-identity"/);
+    assert.match(shell, /id="profile-edit-avatar-image"/);
+    assert.match(shell, /id="profile-nickname-input"/);
+    assert.ok(shell.indexOf('id="profile-edit-avatar-image"') < shell.indexOf('id="profile-nickname-input"'));
+    assert.doesNotMatch(shell, /id="profile-bio-input"/);
+    assert.doesNotMatch(shell, /<textarea/);
+    assert.match(css, /\.profile-edit-identity\s*\{[^}]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);[^}]*padding:\s*12px;/s);
+    assert.match(css, /\.profile-edit-avatar\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;/s);
+});
+
+test('profile avatar renderers preserve the image and fallback structure', () => {
+    const emptyStart = app.indexOf('function renderEmptyPublicSurfaces');
+    const emptyEnd = app.indexOf('function renderPublicOwnerProfile', emptyStart);
+    const emptyRenderer = app.slice(emptyStart, emptyEnd);
+    const ownerStart = app.indexOf('function renderPublicOwnerProfile');
+    const ownerEnd = app.indexOf('function renderProfileMap', ownerStart);
+    const ownerRenderer = app.slice(ownerStart, ownerEnd);
+
+    assert.doesNotMatch(emptyRenderer, /\.profile-card \.avatar/);
+    assert.match(emptyRenderer, /\$\('#profile-edit-avatar-image'\)/);
+    assert.match(ownerRenderer, /\$\('#profile-edit-avatar-image'\)/);
 });

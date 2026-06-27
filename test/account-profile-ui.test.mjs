@@ -61,7 +61,7 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-public-count"/);
     assert.match(app, /id="profile-nickname-input"/);
-    assert.match(app, /id="profile-bio-input"/);
+    assert.doesNotMatch(app, /id="profile-bio-input"/);
     assert.match(app, /id="profile-avatar-input"/);
     assert.match(app, /type="file"/);
     assert.match(app, /accept="image\/\*"/);
@@ -70,11 +70,13 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.account-profile-metrics\s*\{/);
     assert.match(app, /class="account-profile-fields"/);
-    assert.match(app, /class="account-profile-field"/);
+    assert.match(app, /class="account-profile-field profile-edit-name-field"/);
     assert.match(css, /\.account-profile-fields\s*\{/);
     assert.match(css, /\.account-profile-field\s*\{/);
     assert.match(css, /\.account-profile-field input,\s*\.account-profile-field textarea\s*\{/s);
     assert.match(css, /\.account-profile-upload\s*\{/);
+    assert.match(app, /class="profile-edit-identity"/);
+    assert.match(css, /\.profile-edit-name-field\s*\{/);
     assert.doesNotMatch(app, /profile-display-name-input/);
     assert.doesNotMatch(app, /profile-username-input/);
     assert.doesNotMatch(app, /profile-website-input/);
@@ -88,6 +90,7 @@ test('profile updates use nickname, bio, and uploaded avatar metadata only', () 
     assert.match(app, /uploadImage,/);
     assert.match(app, /async function saveAccountProfile\(event\)/);
     assert.match(app, /const avatarFile = .*#profile-avatar-input/s);
+    assert.match(app, /const bio = bioInput\s*\?\s*String\(bioInput\.value \|\| ''\)\.trim\(\)\s*:\s*getCurrentAccountProfile\(\)\.bio;/s);
     assert.match(app, /await uploadImage\(avatarFile,\s*fileName\)/);
     assert.match(app, /await updateUserMetadata\(\{\s*nickname,\s*bio,\s*avatar_url: avatarUrl\s*\}\)/s);
     assert.match(app, /await updateNicknameInDB\(state\.currentUser\.id,\s*nickname\)/);
