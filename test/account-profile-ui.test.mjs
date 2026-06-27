@@ -71,10 +71,14 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(css, /\.account-profile-metrics\s*\{/);
     assert.match(app, /class="account-profile-fields"/);
     assert.match(app, /class="account-profile-field profile-edit-name-field"/);
+    assert.match(app, /class="account-profile-field profile-edit-photo-field"/);
+    assert.match(app, /class="profile-avatar-upload-control"/);
+    assert.match(app, />사진 추가</);
     assert.match(css, /\.account-profile-fields\s*\{/);
     assert.match(css, /\.account-profile-field\s*\{/);
     assert.match(css, /\.account-profile-field input,\s*\.account-profile-field textarea\s*\{/s);
-    assert.match(css, /\.account-profile-upload\s*\{/);
+    assert.match(css, /\.profile-edit-photo-field\s*\{/);
+    assert.match(css, /\.profile-avatar-upload-control\s*\{/);
     assert.match(app, /class="profile-title-row"/);
     assert.doesNotMatch(app, /profile-edit-avatar/);
     assert.match(app, /class="profile-avatar-file-input"/);

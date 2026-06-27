@@ -91,12 +91,24 @@ test('Explore discovery items are thumbnail-first and show story context before 
 
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*minmax\(168px,\s*auto\)\s+auto;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*236px;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*168px;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*168px;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
-    assert.match(source, /const storyLabel = description \|\| label;/);
-    assert.match(source, /<strong>\$\{escapeHtml\(storyLabel\)\}<\/strong>/);
+    assert.match(source, /description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*<small>\$\{escapeHtml\(uploadTimeLabel\)\}<\/small>/);
+    assert.doesNotMatch(source, /const storyLabel = description \|\| label;/);
     assert.doesNotMatch(source, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
+});
+
+test('Explore discovery items omit the text block when photos have no written description', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
+    const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
+    const renderer = source.slice(rendererStart, rendererEnd);
+
+    assert.match(renderer, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(renderer, /\$\{description \? `[\s\S]*class="explore-discovery-copy"[\s\S]*` : ''\}/);
+    assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
+    assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
 });
 
 test('Explore discovery panel scrolls long photo lists inside the panel', () => {

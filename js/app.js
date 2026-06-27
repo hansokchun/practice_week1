@@ -205,6 +205,10 @@ function getPhotoFallbackLabel(photo, fallback = '사진') {
     return String(photo?.description || '').trim() || fallback;
 }
 
+function getPhotoDescriptionText(photo) {
+    return String(photo?.description || '').trim();
+}
+
 function getPhotoImageSrc(photo = {}) {
     return photo?.url || photo?.albumCoverUrl || 'images/main_bg2.jpg';
 }
@@ -917,18 +921,19 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
     }
 
     list.innerHTML = visiblePhotos.map((photo) => {
-        const description = String(photo.description || '').trim();
+        const description = getPhotoDescriptionText(photo);
         const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
         const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
-        const storyLabel = description || label;
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
             <button class="explore-discovery-item${selected}" type="button" data-explore-discovery-photo="${escapeHtml(photo.id || '')}">
                 <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
-                <span>
-                    <strong>${escapeHtml(storyLabel)}</strong>
+                ${description ? `
+                <span class="explore-discovery-copy">
+                    <strong>${escapeHtml(description)}</strong>
                     <small>${escapeHtml(uploadTimeLabel)}</small>
                 </span>
+                ` : ''}
             </button>
         `;
     }).join('');
@@ -1428,6 +1433,13 @@ function ensureProfileHeaderShell() {
                     <div class="account-profile-field profile-edit-name-field">
                         <label for="profile-nickname-input">닉네임</label>
                         <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
+                    </div>
+                    <div class="account-profile-field profile-edit-photo-field">
+                        <span class="account-profile-field-label">프로필 사진</span>
+                        <label class="profile-avatar-upload-control" for="profile-avatar-input">
+                            <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+                            <span>사진 추가</span>
+                        </label>
                     </div>
                 </div>
                 <div class="auth-actions">
@@ -2030,13 +2042,20 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
         profilePhotoGrid.innerHTML = ownerPhotos.length
-            ? ownerPhotos.slice(0, 12).map((photo) => `
+            ? ownerPhotos.slice(0, 12).map((photo) => {
+                const description = getPhotoDescriptionText(photo);
+                return `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                     <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
-                    <strong>${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}</strong>
-                    <span>${photo.date ? new Date(photo.date).toISOString().slice(0, 10) : '날짜 없음'}</span>
+                    ${description ? `
+                    <div class="photo-visible-copy">
+                        <strong>${escapeHtml(description)}</strong>
+                        <span>${photo.date ? new Date(photo.date).toISOString().slice(0, 10) : '날짜 없음'}</span>
+                    </div>
+                    ` : ''}
                 </article>
-            `).join('')
+            `;
+            }).join('')
             : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개된 사진이 없습니다.</span></article>';
     }
     const profileAlbumGrid = $('.profile-album-grid');
@@ -2545,13 +2564,20 @@ function renderPublicSurfaces() {
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
         profilePhotoGrid.innerHTML = profilePhotos.length
-            ? profilePhotos.slice(0, 12).map((photo) => `
+            ? profilePhotos.slice(0, 12).map((photo) => {
+                const description = getPhotoDescriptionText(photo);
+                return `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                     <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
-                    <strong>${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}</strong>
-                    <span>${photo.date ? new Date(photo.date).toISOString().slice(0, 10) : '날짜 없음'}</span>
+                    ${description ? `
+                    <div class="photo-visible-copy">
+                        <strong>${escapeHtml(description)}</strong>
+                        <span>${photo.date ? new Date(photo.date).toISOString().slice(0, 10) : '날짜 없음'}</span>
+                    </div>
+                    ` : ''}
                 </article>
-            `).join('')
+            `;
+            }).join('')
             : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개한 사진이 없습니다.</span></article>';
     }
 
@@ -2759,6 +2785,7 @@ function renderLikedPhotoSurfaces() {
     }
 
     fullGrid.innerHTML = likedPhotos.map((photo) => {
+        const description = getPhotoDescriptionText(photo);
         const ownerName = getPublicAuthorName(photo, {
             currentUser: state.currentUser,
             profileNames: state.profileNames
@@ -2769,10 +2796,12 @@ function renderLikedPhotoSurfaces() {
                 <button class="photo-like-button liked-photo-like-button is-liked" data-toggle-photo-like data-like-surface="home" data-photo-id="${escapeHtml(photo.id)}" type="button" aria-label="좋아요 취소" aria-pressed="true">
                     <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
                 </button>
+                ${description ? `
                 <div>
-                    <strong>${escapeHtml(getPhotoFallbackLabel(photo))}</strong>
+                    <strong>${escapeHtml(description)}</strong>
                     <span>${escapeHtml(ownerName)} · 좋아요 ${Number(photo.liked || 0)}개</span>
                 </div>
+                ` : ''}
             </article>
         `;
     }).join('');
@@ -2802,16 +2831,19 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     }
 
     grid.innerHTML = photos.map((photo) => {
+        const description = getPhotoDescriptionText(photo);
         const hasLocation = hasPhotoLocation(photo);
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${description ? `
                 <div>
-                    <strong>${escapeHtml(getPhotoFallbackLabel(photo))}</strong>
+                    <strong>${escapeHtml(description)}</strong>
                     <span>${hasLocation ? '위치 확인됨' : '위치 확인 필요'} · ${photo.visibility === 'public' ? '공개' : '비공개'}</span>
                 </div>
+                ` : ''}
             </article>
         `;
     }).join('');

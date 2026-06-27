@@ -42,9 +42,9 @@ test('Explore discovery cards render a concise story label before time metadata'
     const fnEnd = source.indexOf('async function ensureExploreMap', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.match(body, /const storyLabel = description \|\| label;/);
-    assert.match(body, /<strong>\$\{escapeHtml\(storyLabel\)\}<\/strong>/);
-    assert.ok(body.indexOf('<strong>${escapeHtml(storyLabel)}</strong>') < body.indexOf('<small>${escapeHtml(uploadTimeLabel)}</small>'));
+    assert.match(body, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(body, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
+    assert.ok(body.indexOf('<strong>${escapeHtml(description)}</strong>') < body.indexOf('<small>${escapeHtml(uploadTimeLabel)}</small>'));
 });
 
 test('DESIGN documents the Explore map shell visual language', () => {

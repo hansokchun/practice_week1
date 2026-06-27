@@ -333,3 +333,20 @@ test('empty recent photo notice uses the same empty card style as the album noti
     assert.match(styles, /\.recent-photo-grid article\.recent-photo-empty\s*\{[^}]*aspect-ratio:\s*auto;[^}]*min-height:\s*112px;/s);
     assert.doesNotMatch(styles, /\.recent-photo-empty button\s*\{/);
 });
+
+test('home photo cards omit caption wrappers when photos have no description', () => {
+    const app = source();
+    const personalStart = app.indexOf('function renderPersonalPhotosPage');
+    const personalEnd = app.indexOf('async function deleteSelectedPersonalPhotos', personalStart);
+    const personalRenderer = app.slice(personalStart, personalEnd);
+    const likedStart = app.indexOf('function renderLikedPhotoSurfaces');
+    const likedEnd = app.indexOf('function renderPersonalPhotosPage', likedStart);
+    const likedRenderer = app.slice(likedStart, likedEnd);
+
+    assert.match(personalRenderer, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(personalRenderer, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
+    assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
+    assert.match(likedRenderer, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(likedRenderer, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
+    assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
+});

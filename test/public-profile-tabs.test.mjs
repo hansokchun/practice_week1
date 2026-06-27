@@ -33,6 +33,22 @@ test('public owner profile renders separate map, photo, and album panels', () =>
     assert.match(body, /const profileAlbumGrid = \$\('\.profile-album-grid'\)/);
 });
 
+test('public profile photo grids omit visible fallback titles without descriptions', () => {
+    const ownerStart = app.indexOf('function renderPublicOwnerProfile');
+    const ownerEnd = app.indexOf('function renderTripReviewShell', ownerStart);
+    const ownerBody = app.slice(ownerStart, ownerEnd);
+    const selectedStart = app.indexOf('function renderPublicSurfaces');
+    const selectedEnd = app.indexOf('async function loadSavedPhotos', selectedStart);
+    const selectedBody = app.slice(selectedStart, selectedEnd);
+
+    assert.match(ownerBody, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(ownerBody, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
+    assert.doesNotMatch(ownerBody, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
+    assert.match(selectedBody, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.match(selectedBody, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
+    assert.doesNotMatch(selectedBody, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
+});
+
 test('public profile map uses Google Maps JS with greedy wheel gestures and inert markers', () => {
     assert.match(app, /async function ensureProfileMap/);
     assert.match(app, /getExploreMapOptions\(\{/);

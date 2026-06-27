@@ -62,13 +62,17 @@ test('profile edit mode keeps the profile avatar beside the account name and rem
     assert.match(shell, /class="profile-title-row"/);
     assert.match(shell, /id="profile-avatar" class="avatar large-avatar account-profile-avatar profile-avatar-pick"/);
     assert.match(shell, /id="profile-nickname-input"/);
+    assert.match(shell, /class="account-profile-field profile-edit-photo-field"/);
+    assert.match(shell, /class="profile-avatar-upload-control"/);
     assert.ok(shell.indexOf('id="profile-avatar"') < shell.indexOf('id="profile-title"'));
+    assert.ok(shell.indexOf('id="profile-nickname-input"') < shell.indexOf('profile-avatar-upload-control'));
     assert.doesNotMatch(shell, /profile-edit-avatar/);
     assert.doesNotMatch(shell, /profile-edit-avatar-pick/);
     assert.doesNotMatch(shell, /id="profile-bio-input"/);
     assert.doesNotMatch(shell, /<textarea/);
     assert.match(css, /\.profile-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*14px;/s);
     assert.match(css, /\.profile-avatar-file-input\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /\.profile-edit-photo-field\s*\{[^}]*grid-template-columns:\s*1fr auto;/s);
 });
 
 test('profile avatar renderers preserve the image and fallback structure', () => {

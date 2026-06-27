@@ -4886,7 +4886,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(168px, auto) auto;
     gap: 0;
-    min-height: 236px;
+    min-height: 168px;
     overflow: hidden;
     border: 1px solid rgba(26, 77, 78, 0.12);
     border-radius: 8px;
@@ -4914,7 +4914,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     object-fit: cover;
 }
 
-.explore-discovery-item span {
+.explore-discovery-copy {
     display: grid;
     gap: 6px;
     align-content: start;
@@ -5885,6 +5885,41 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-size: 22px;
 }
 
+.profile-edit-photo-field {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.profile-avatar-upload-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    border: 1px solid rgba(26, 77, 78, 0.16);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--teal-dark);
+    padding: 0 14px;
+    cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.profile-card.is-editing .profile-avatar-upload-control:hover,
+.profile-card.is-editing .profile-avatar-upload-control:focus-visible {
+    border-color: rgba(26, 77, 78, 0.32);
+    background: var(--bg);
+    transform: translateY(-1px);
+}
+
+.profile-avatar-upload-control .material-symbols-outlined {
+    font-size: 18px;
+}
+
 .profile-card p:not(.eyebrow) {
     margin: 6px 0 0;
     color: var(--muted);
@@ -6601,7 +6636,8 @@ body.photo-fullscreen-open {
     box-shadow: 0 14px 28px rgba(26, 77, 78, 0.08);
 }
 
-.account-profile-field label {
+.account-profile-field label,
+.account-profile-field-label {
     color: var(--teal);
     font-size: 12px;
     font-weight: 800;
