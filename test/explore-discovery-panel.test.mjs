@@ -93,8 +93,8 @@ test('Explore discovery items are thumbnail-first and show story context before 
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*auto\s+auto;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*168px;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*object-fit:\s*cover;/s);
     assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*contain;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
     assert.match(source, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);

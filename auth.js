@@ -282,13 +282,33 @@ export async function updatePhotoInfo(photoId, updates = {}) {
  * 사진 좋아요 증감 (RPC 호출)
  * RLS(본인만 수정 가능)를 우회하여 다른 사람의 사진 좋아요 수를 안전하게 처리합니다.
  */
+function isDuplicateLikeError(error) {
+    const message = String(error?.message || '');
+    const details = String(error?.details || '');
+    return error?.code === '23505'
+        || message.includes('user_likes_pkey')
+        || details.includes('user_likes_pkey')
+        || message.includes('duplicate key value violates unique constraint');
+}
+
+function isLikeCounterPermissionError(error) {
+    const message = String(error?.message || '');
+    return /permission denied for function (increment_like|decrement_like)/i.test(message)
+        || (error?.code === '42501' && /(increment_like|decrement_like)/i.test(message));
+}
+
 export async function toggleLikePhoto(photoId, isLiking) {
     try {
         const sb = getSupabase();
         const rpcName = isLiking ? 'increment_like' : 'decrement_like';
         const { error } = await sb.rpc(rpcName, { target_photo_id: photoId.toString() });
-        if (error) throw error;
-        return { error: null };
+        if (error) {
+            if (isLikeCounterPermissionError(error)) {
+                return { error: null, counterSkipped: true };
+            }
+            throw error;
+        }
+        return { error: null, counterSkipped: false };
     } catch (error) {
         return { error };
     }
@@ -322,8 +342,13 @@ export async function insertLike(userId, photoId) {
         const { error } = await sb
             .from('user_likes')
             .insert({ user_id: userId, photo_id: photoId.toString() });
-        if (error) throw error;
-        return { error: null };
+        if (error) {
+            if (isDuplicateLikeError(error)) {
+                return { error: null, alreadyLiked: true };
+            }
+            throw error;
+        }
+        return { error: null, alreadyLiked: false };
     } catch (error) {
         return { error };
     }

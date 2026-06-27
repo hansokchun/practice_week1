@@ -36,9 +36,9 @@ test('Explore photo thumbnails keep square image corners', () => {
     assert.match(css, /\.explore-photo-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.map-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.pin-preview-photo-button\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*object-fit:\s*cover;/s);
 });
 
 test('Explore discovery cards render a concise story label before time metadata', () => {

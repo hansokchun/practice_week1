@@ -66,3 +66,20 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     assert.match(source, /data-like-surface="home"/);
     assert.doesNotMatch(source, /dataset\.photoDetailContext !== 'explore'/);
 });
+
+test('photo like writes tolerate duplicate rows and counter permission gaps', () => {
+    const auth = readFileSync('auth.js', 'utf8');
+    const app = readFileSync('js/app.js', 'utf8');
+
+    assert.match(auth, /function isDuplicateLikeError/);
+    assert.match(auth, /error\?\.code === '23505'/);
+    assert.match(auth, /user_likes_pkey/);
+    assert.match(auth, /return \{ error: null, alreadyLiked: true \}/);
+    assert.match(auth, /function isLikeCounterPermissionError/);
+    assert.match(auth, /permission denied for function \(increment_like\|decrement_like\)/);
+    assert.match(auth, /return \{ error: null, counterSkipped: true \}/);
+    assert.match(app, /const countResult = likeRowResult\.alreadyLiked/);
+    assert.match(app, /const delta = nextLiked && likeRowResult\.alreadyLiked \? 0 : \(nextLiked \? 1 : -1\)/);
+    assert.doesNotMatch(app, /showToast\(likeRowResult\.error\.message/);
+    assert.doesNotMatch(app, /showToast\(countResult\.error\.message/);
+});

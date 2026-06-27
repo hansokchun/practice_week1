@@ -1320,21 +1320,23 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
         : await deleteLike(state.currentUser.id, photo.id);
     if (likeRowResult.error) {
         if (likeButton) likeButton.disabled = false;
-        showToast(likeRowResult.error.message || '좋아요 상태를 저장하지 못했습니다.');
+        showToast('좋아요 상태를 저장하지 못했습니다.');
         return;
     }
 
-    const countResult = await toggleLikePhoto(photo.id, nextLiked);
+    const countResult = likeRowResult.alreadyLiked
+        ? { error: null, counterSkipped: true }
+        : await toggleLikePhoto(photo.id, nextLiked);
     if (countResult.error) {
         if (likeButton) likeButton.disabled = false;
-        showToast(countResult.error.message || '좋아요 수를 반영하지 못했습니다.');
+        showToast('좋아요 수를 반영하지 못했습니다.');
         return;
     }
 
     state.likedPhotoIds = nextLiked
         ? [...likedIds, String(photo.id)]
         : [...likedIds].filter((id) => id !== String(photo.id));
-    const delta = nextLiked ? 1 : -1;
+    const delta = nextLiked && likeRowResult.alreadyLiked ? 0 : (nextLiked ? 1 : -1);
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => (
         String(savedPhoto.id) === String(photo.id)
             ? { ...savedPhoto, liked: Math.max(0, Number(savedPhoto.liked || 0) + delta) }
