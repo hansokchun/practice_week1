@@ -4885,7 +4885,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     position: relative;
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(168px, auto) auto;
+    grid-template-rows: auto auto;
     gap: 0;
     min-height: 168px;
     overflow: hidden;
@@ -4915,27 +4915,6 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     line-height: 1.2;
 }
 
-.explore-discovery-like-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-    width: 34px;
-    height: 34px;
-    min-height: 34px;
-    border-color: rgba(249, 247, 242, 0.88);
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 8px 18px rgba(26, 77, 78, 0.14);
-}
-
-.explore-discovery-like-button .material-symbols-outlined {
-    font-size: 19px;
-}
-
-.explore-discovery-like-button.is-liked {
-    color: var(--coral);
-}
-
 .explore-discovery-item.is-selected,
 .explore-discovery-item:focus-visible {
     border-color: var(--coral);
@@ -4946,9 +4925,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .explore-discovery-item img {
     width: 100%;
-    height: 168px;
+    height: auto;
     border-radius: 0;
-    object-fit: cover;
+    object-fit: contain;
+    background: var(--bg);
 }
 
 .explore-discovery-copy {

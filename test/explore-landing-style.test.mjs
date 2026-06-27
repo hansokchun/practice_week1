@@ -35,6 +35,7 @@ test('Explore photo thumbnails keep square image corners', () => {
     assert.match(css, /\.map-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.pin-preview-photo-button\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*border-radius:\s*0;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
 });
 
 test('Explore discovery cards render a concise story label before time metadata', () => {

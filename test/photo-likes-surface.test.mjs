@@ -26,15 +26,20 @@ test('Explore photo preview exposes a heart-only like control', () => {
     assert.doesNotMatch(preview, /data-like-label/);
 });
 
-test('Explore discovery photo cards expose a direct like control', () => {
+test('Explore discovery photo cards rely on the preview panel like control', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
     const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
     const renderer = source.slice(rendererStart, rendererEnd);
+    const previewStart = source.indexOf('function updateExplorePhotoPreview');
+    const previewEnd = source.indexOf('function setExploreDiscoverySelection', previewStart);
+    const preview = source.slice(previewStart, previewEnd);
 
-    assert.match(renderer, /class="photo-like-button explore-discovery-like-button/);
-    assert.match(renderer, /data-like-surface="explore-discovery"/);
-    assert.match(renderer, /isLiked = Boolean\(photo\.id && state\.likedPhotoIds\.includes\(String\(photo\.id\)\)\)/);
+    assert.doesNotMatch(renderer, /class="photo-like-button explore-discovery-like-button/);
+    assert.doesNotMatch(renderer, /data-like-surface="explore-discovery"/);
+    assert.match(preview, /const likeButton = \$\('#pin-preview-like'\)/);
+    assert.match(preview, /likeButton\.dataset\.photoId = photo\.id \|\| ''/);
+    assert.match(preview, /likeButton\.classList\.toggle\('is-liked', isLiked\)/);
 });
 
 test('home has a liked photos section with an all-liked route action', () => {

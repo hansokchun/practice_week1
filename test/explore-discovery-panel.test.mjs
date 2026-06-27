@@ -91,8 +91,10 @@ test('Explore discovery items are thumbnail-first and show story context before 
 
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*position:\s*relative;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*auto\s+auto;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*168px;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*168px;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*height:\s*168px;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
     assert.match(source, /class="explore-discovery-time">[\s\S]*\$\{escapeHtml\(uploadTimeLabel\)\}/);
     assert.match(source, /description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
@@ -113,7 +115,7 @@ test('Explore discovery items omit the text block when photos have no written de
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(label\)\}<\/strong>/);
 });
 
-test('Explore discovery cards expose direct like controls without nesting buttons', () => {
+test('Explore discovery cards open the photo panel without direct like controls', () => {
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
@@ -124,11 +126,11 @@ test('Explore discovery cards expose direct like controls without nesting button
 
     assert.match(renderer, /<article class="explore-discovery-item/);
     assert.doesNotMatch(renderer, /<button class="explore-discovery-item/);
-    assert.match(renderer, /class="photo-like-button explore-discovery-like-button/);
-    assert.match(renderer, /data-like-surface="explore-discovery"/);
-    assert.match(renderer, /data-photo-id="\$\{escapeHtml\(photo\.id \|\| ''\)\}"/);
-    assert.match(renderer, /aria-pressed="\$\{isLiked \? 'true' : 'false'\}"/);
-    assert.match(css, /\.explore-discovery-like-button\s*\{[^}]*position:\s*absolute;[^}]*top:\s*10px;[^}]*right:\s*10px;/s);
+    assert.doesNotMatch(renderer, /class="photo-like-button explore-discovery-like-button/);
+    assert.doesNotMatch(renderer, /data-like-surface="explore-discovery"/);
+    assert.doesNotMatch(renderer, /const isLiked = Boolean\(photo\.id && state\.likedPhotoIds\.includes\(String\(photo\.id\)\)\)/);
+    assert.doesNotMatch(css, /\.explore-discovery-like-button/);
+    assert.match(source.slice(discoveryStart, source.indexOf("const goMyphotoButton", discoveryStart)), /openExplorePhotoPreview\(photo, \{ focusMap: true \}\)/);
     assert.ok(clickStart > -1 && discoveryStart > clickStart);
 });
 

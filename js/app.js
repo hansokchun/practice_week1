@@ -909,15 +909,11 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         const description = getPhotoDescriptionText(photo);
         const label = getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진');
         const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
-        const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
         const selected = photo.id && photo.id === state.selectedPhotoId ? ' is-selected' : '';
         return `
             <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
                 <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
                 <span class="explore-discovery-time">${escapeHtml(uploadTimeLabel)}</span>
-                <button class="photo-like-button explore-discovery-like-button${isLiked ? ' is-liked' : ''}" data-toggle-photo-like data-like-surface="explore-discovery" data-photo-id="${escapeHtml(photo.id || '')}" type="button" aria-label="${isLiked ? '좋아요 취소' : '좋아요'}" aria-pressed="${isLiked ? 'true' : 'false'}">
-                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
-                </button>
                 ${description ? `
                 <span class="explore-discovery-copy">
                     <strong>${escapeHtml(description)}</strong>
