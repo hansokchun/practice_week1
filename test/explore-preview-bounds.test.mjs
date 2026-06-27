@@ -10,10 +10,10 @@ test('expanded Explore photo panel is capped within the visible viewport', () =>
     assert.match(css, /\.explore-pin-preview\.is-expanded \.pin-preview-photo-button img\s*\{[^}]*max-height:\s*min\(52svh,\s*460px\);/s);
 });
 
-test('photo like controls are limited to Explore and liked-photo detail contexts', () => {
+test('photo like controls are available in home, Explore, and liked-photo detail contexts', () => {
     const source = readFileSync('js/app.js', 'utf8');
 
-    assert.match(source, /const canLike = \['explore', 'liked'\]\.includes\(context\)/);
+    assert.match(source, /const canLike = \['photo', 'explore', 'liked'\]\.includes\(context\)/);
     assert.match(source, /likePanel\.hidden = !canLike/);
     assert.match(source, /updatePhotoDetailModal\(photo,\s*\{ context: 'explore' \}\)/);
 });

@@ -450,15 +450,6 @@ function closePhotoFullscreenModal() {
     document.body.classList.remove('photo-fullscreen-open');
 }
 
-function goBackFromPhotoDetail() {
-    setPhotoDetailMoreMenuOpen(false);
-    closePhotoFullscreenModal();
-    const modal = $('#photo-detail-modal');
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-}
-
 function returnToPhotoDetailFromFullscreen() {
     closePhotoFullscreenModal();
     const detailModal = $('#photo-detail-modal');
@@ -513,40 +504,6 @@ function openHomeReferencePhotoDetail(trigger) {
     const photo = getHomeReferencePhotoDetail(trigger);
     updatePhotoDetailModal(photo, { context: 'photo' });
     openModal('#photo-detail-modal');
-}
-
-function getExplorePhotoDistanceScore(origin, candidate) {
-    if (!hasPhotoLocation(origin) || !hasPhotoLocation(candidate)) return Number.MAX_SAFE_INTEGER;
-    const latDelta = Number(origin.lat) - Number(candidate.lat);
-    const lngDelta = Number(origin.lng) - Number(candidate.lng);
-    return (latDelta * latDelta) + (lngDelta * lngDelta);
-}
-
-function getNearbyExplorePhotos(photo) {
-    const selectedId = String(photo?.id || '');
-    const source = state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getPublicPhotoMapItems();
-    return source
-        .filter((candidate) => candidate?.id && String(candidate.id) !== selectedId && (candidate.url || candidate.albumCoverUrl))
-        .map((candidate) => ({
-            photo: candidate,
-            distance: getExplorePhotoDistanceScore(photo, candidate)
-        }))
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, 6)
-        .map((item) => item.photo);
-}
-
-function getNearbyDetailPhotos(photo) {
-    const selectedId = String(photo?.id || '');
-    return getAllDisplayPhotos()
-        .filter((candidate) => candidate?.id && String(candidate.id) !== selectedId && (candidate.url || candidate.albumCoverUrl))
-        .map((candidate) => ({
-            photo: candidate,
-            distance: getExplorePhotoDistanceScore(photo, candidate)
-        }))
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, 6)
-        .map((item) => item.photo);
 }
 
 function hasPhotoLocation(photo) {
@@ -655,12 +612,7 @@ function updateExplorePhotoPreview(photo) {
     const authorNameNode = preview.querySelector('.pin-author strong');
     const authorTimeNode = preview.querySelector('.pin-author-time');
     const ownerActions = preview.querySelector('.pin-preview-owner-actions');
-    const likePanel = preview.querySelector('.pin-preview-like-panel');
-    const likeButton = $('#pin-preview-like');
-    const likeCount = $('#pin-preview-like-count');
     const descriptionInput = $('#pin-preview-description-input');
-    const nearbyPanel = preview.querySelector('[data-pin-preview-nearby]');
-    const nearbyList = preview.querySelector('[data-pin-preview-nearby-list]');
     const description = String(photo.description || '').trim();
     const ownerId = photo.owner_id || photo.albumOwnerId || '';
     const isOwnPhoto = Boolean(state.currentUser?.id && ownerId === state.currentUser.id);
@@ -683,7 +635,6 @@ function updateExplorePhotoPreview(photo) {
     const visibilityMeta = isOwnPhoto
         ? `<span data-pin-meta="visibility"><span class="material-symbols-outlined">${visibilityIcon}</span> ${visibilityLabel}</span>`
         : '';
-    const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
         const photoImageSrc = getPhotoImageSrc(photo);
@@ -712,27 +663,6 @@ function updateExplorePhotoPreview(photo) {
     if (authorAvatar) authorAvatar.textContent = getAuthorInitials(authorName);
     if (authorNameNode) authorNameNode.textContent = authorName;
     if (authorTimeNode) authorTimeNode.textContent = uploadTimeLabel;
-    if (likePanel) likePanel.hidden = false;
-    if (likeButton) {
-        likeButton.disabled = !photo.id || !state.currentUser;
-        likeButton.classList.toggle('is-liked', isLiked);
-        likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
-        likeButton.dataset.photoId = photo.id || '';
-        likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
-    }
-    if (likeCount) likeCount.textContent = `좋아요 ${Number(photo.liked || 0)}개`;
-    const nearbyPhotos = getNearbyExplorePhotos(photo);
-    if (nearbyPanel && nearbyList) {
-        nearbyPanel.hidden = !nearbyPhotos.length;
-        nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
-            const label = getPhotoFallbackLabel(nearbyPhoto, '주변 사진');
-            return `
-                <button class="pin-preview-nearby__item" data-explore-nearby-photo="${escapeHtml(nearbyPhoto.id)}" type="button" aria-label="${escapeHtml(label)} 사진 보기">
-                    <img src="${escapeHtml(nearbyPhoto.url || nearbyPhoto.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(label)}">
-                </button>
-            `;
-        }).join('');
-    }
     updatePhotoDetailModal(photo, { context: 'explore' });
 }
 
@@ -838,7 +768,6 @@ function updateExploreAlbumPreview(album) {
     const meta = preview.querySelector('.pin-preview-meta');
     const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
-    const likePanel = preview.querySelector('.pin-preview-like-panel');
     if (image) {
         image.src = album.cover_url || 'images/main_bg2.jpg';
         image.alt = album.title || 'Public album';
@@ -859,7 +788,6 @@ function updateExploreAlbumPreview(album) {
         profileButton.dataset.publicAlbumId = album.id || '';
         profileButton.dataset.publicOwnerId = album.owner_id || '';
     }
-    if (likePanel) likePanel.hidden = true;
 }
 
 function getExploreCurrentBounds() {
@@ -1189,12 +1117,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const editButton = modal?.querySelector('[data-open-photo-editor]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
     const reportButton = modal?.querySelector('[data-report-photo]');
-    const nearbyPanel = modal?.querySelector('[data-photo-detail-nearby]');
-    const nearbyList = modal?.querySelector('[data-photo-detail-nearby-list]');
     const description = String(photo.description || '').trim();
     const date = photo.date ? new Date(photo.date) : null;
     const canEdit = Boolean(state.currentUser?.id && photo.owner_id === state.currentUser.id);
-    const canLike = ['explore', 'liked'].includes(context);
+    const canLike = ['photo', 'explore', 'liked'].includes(context);
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
@@ -1252,18 +1178,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         showOnMapButton.dataset.photoId = canShowOnTripMap ? String(photo.id || photo.localId) : '';
     }
     if (reportButton) reportButton.dataset.photoId = photo.id || '';
-    const nearbyPhotos = getNearbyDetailPhotos(photo);
-    if (nearbyPanel && nearbyList) {
-        nearbyPanel.hidden = !nearbyPhotos.length;
-        nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
-            const label = getPhotoFallbackLabel(nearbyPhoto, '주변사진');
-            return `
-                <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id)}" type="button" aria-label="${escapeHtml(label)} 사진 보기">
-                    <img src="${escapeHtml(nearbyPhoto.url || nearbyPhoto.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(label)}">
-                </button>
-            `;
-        }).join('');
-    }
     setPhotoDetailMoreMenuOpen(false);
 }
 
@@ -2742,9 +2656,6 @@ function renderLikedPhotoSurfaces() {
             ? likedPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
-                <button class="photo-like-button liked-photo-like-button is-liked" data-toggle-photo-like data-like-surface="home" data-photo-id="${escapeHtml(photo.id)}" type="button" aria-label="좋아요 취소" aria-pressed="true">
-                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
-                </button>
             </article>
         `).join('')
             : emptyMarkup;
@@ -2775,9 +2686,6 @@ function renderLikedPhotoSurfaces() {
         return `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
-                <button class="photo-like-button liked-photo-like-button is-liked" data-toggle-photo-like data-like-surface="home" data-photo-id="${escapeHtml(photo.id)}" type="button" aria-label="좋아요 취소" aria-pressed="true">
-                    <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
-                </button>
                 ${description ? `
                 <div>
                     <strong>${escapeHtml(description)}</strong>
@@ -4319,13 +4227,6 @@ function bindEvents() {
             return;
         }
 
-        const photoDetailBackButton = event.target.closest('[data-photo-detail-back]');
-        if (photoDetailBackButton) {
-            event.preventDefault();
-            goBackFromPhotoDetail();
-            return;
-        }
-
         const photoFullscreenButton = event.target.closest('[data-open-photo-fullscreen]');
         if (photoFullscreenButton) {
             event.preventDefault();
@@ -4358,14 +4259,6 @@ function bindEvents() {
 
         if (!event.target.closest('.photo-detail-more')) setPhotoDetailMoreMenuOpen(false);
 
-        const detailNearbyPhotoButton = event.target.closest('[data-photo-detail-nearby-photo]');
-        if (detailNearbyPhotoButton) {
-            const detailContext = $('#photo-detail-modal')?.dataset.photoDetailContext || 'photo';
-            const photo = getAllDisplayPhotos().find((candidate) => String(candidate.id) === detailNearbyPhotoButton.dataset.photoDetailNearbyPhoto);
-            updatePhotoDetailModal(photo || getDefaultDetailPhoto(), { context: detailContext });
-            return;
-        }
-
         const exploreScopeButton = event.target.closest('[data-explore-scope]');
         if (exploreScopeButton) {
             setExplorePhotoScope(exploreScopeButton.dataset.exploreScope);
@@ -4381,14 +4274,6 @@ function bindEvents() {
         const discoveryToggleButton = event.target.closest('#btn-toggle-explore-discovery');
         if (discoveryToggleButton) {
             toggleExploreDiscoveryPanel();
-            return;
-        }
-
-        const nearbyPhotoButton = event.target.closest('[data-explore-nearby-photo]');
-        if (nearbyPhotoButton) {
-            const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === nearbyPhotoButton.dataset.exploreNearbyPhoto)
-                || getPublicPhotoMapItems().find((candidate) => candidate.id === nearbyPhotoButton.dataset.exploreNearbyPhoto);
-            openExplorePhotoPreview(photo, { focusMap: true });
             return;
         }
 

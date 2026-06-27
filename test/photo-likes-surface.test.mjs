@@ -14,19 +14,19 @@ test('photo detail exposes like action and total like count', () => {
     assert.doesNotMatch(detail, /data-like-label/);
 });
 
-test('Explore photo preview exposes a heart-only like control', () => {
+test('Explore photo preview does not expose an inline like control', () => {
     const html = readFileSync('index.html', 'utf8');
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
 
-    assert.match(preview, /id="pin-preview-like"/);
-    assert.match(preview, /data-toggle-photo-like/);
-    assert.match(preview, /aria-label="좋아요"/);
+    assert.doesNotMatch(preview, /id="pin-preview-like"/);
+    assert.doesNotMatch(preview, /data-toggle-photo-like/);
+    assert.doesNotMatch(preview, /pin-preview-like-panel/);
     assert.doesNotMatch(preview, /data-like-label/);
 });
 
-test('Explore discovery photo cards rely on the preview panel like control', () => {
+test('Explore discovery and preview surfaces rely on the shared photo detail like control', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
     const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
@@ -37,9 +37,9 @@ test('Explore discovery photo cards rely on the preview panel like control', () 
 
     assert.doesNotMatch(renderer, /class="photo-like-button explore-discovery-like-button/);
     assert.doesNotMatch(renderer, /data-like-surface="explore-discovery"/);
-    assert.match(preview, /const likeButton = \$\('#pin-preview-like'\)/);
-    assert.match(preview, /likeButton\.dataset\.photoId = photo\.id \|\| ''/);
-    assert.match(preview, /likeButton\.classList\.toggle\('is-liked', isLiked\)/);
+    assert.doesNotMatch(preview, /pin-preview-like/);
+    assert.doesNotMatch(preview, /likeButton\.dataset\.photoId = photo\.id \|\| ''/);
+    assert.match(preview, /updatePhotoDetailModal\(photo, \{ context: 'explore' \}\)/);
 });
 
 test('home has a liked photos section with an all-liked route action', () => {
@@ -63,7 +63,9 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     assert.match(source, /likedPhotoIds:\s*\[\]/);
     assert.match(source, /function renderLikedPhotoSurfaces/);
     assert.match(source, /async function toggleSelectedPhotoLike/);
-    assert.match(source, /data-like-surface="home"/);
+    assert.doesNotMatch(source, /data-like-surface="home"/);
+    assert.doesNotMatch(source, /liked-photo-like-button/);
+    assert.match(source, /const canLike = \['photo', 'explore', 'liked'\]\.includes\(context\)/);
     assert.doesNotMatch(source, /dataset\.photoDetailContext !== 'explore'/);
 });
 
