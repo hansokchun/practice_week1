@@ -89,12 +89,13 @@ test('Explore discovery items are thumbnail-first and show story context before 
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
 
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*position:\s*relative;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*position:\s*relative;[^}]*container-type:\s*inline-size;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*grid-template-rows:\s*auto\s+auto;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*min-height:\s*168px;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*height:\s*100cqw;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*aspect-ratio:\s*1 \/ 1;[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.explore-discovery-copy\s*\{[^}]*min-height:\s*46px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*background:\s*#ffffff;/s);
+    assert.match(css, /\.explore-discovery-copy\.has-description\s*\{[^}]*min-height:\s*76px;/s);
     assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*contain;/s);
     assert.match(source, /const uploadTimeLabel = formatRelativeTime\(photo\.created_at \|\| photo\.uploaded_at \|\| photo\.createdAt \|\| photo\.date\)/);
     assert.match(source, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);
