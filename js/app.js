@@ -3064,7 +3064,7 @@ function renderSavedAlbumRows(albums) {
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="${escapeHtml(album.title)}">
                 <div>
-                    <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${visibilityLabel} · Supabase</span>
+                    <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${visibilityLabel}</span>
                     <strong>${escapeHtml(album.title)}</strong>
                     <p>${escapeHtml(getAlbumVisibleNote(album) || '저장된 여행 앨범입니다.')}</p>
                     <small>${formatPhotoCount(album.photo_count)} · 앨범 기록</small>
@@ -3096,7 +3096,7 @@ function renderSavedPhotoAlbums(photos) {
                     <span class="status-line"><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span> ${shared ? '공개' : '비공개'} · 저장됨</span>
                     <strong>${escapeHtml(name)}</strong>
                     <p>저장된 사진을 기준으로 구성한 여행 앨범입니다.</p>
-                    <small>${formatPhotoCount(albumPhotos.length)} · Supabase</small>
+                    <small>${formatPhotoCount(albumPhotos.length)}</small>
                 </div>
             </article>
         `;
@@ -4450,6 +4450,11 @@ async function runPendingAuthAction() {
 }
 
 function bindEvents() {
+    $('#btn-open-liked-photos')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        routeTo('liked');
+    }, true);
     $$('[data-route]').forEach((link) => {
         link.addEventListener('click', (event) => {
             event.preventDefault();

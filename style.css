@@ -3026,6 +3026,10 @@ body[data-page="explore"] .site-footer {
     padding-top: 32px;
 }
 
+.photo-page-container .back-link {
+    margin-bottom: 24px;
+}
+
 .personal-photo-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

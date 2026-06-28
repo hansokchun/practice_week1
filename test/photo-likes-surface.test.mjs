@@ -66,6 +66,7 @@ test('liked photos page uses the Korean title without extra intro or section cop
     assert.doesNotMatch(likedPage, /Liked Photos/);
     assert.doesNotMatch(likedPage, /Explore와 사진 상세에서 좋아요를 누른 사진을 한곳에 모아 봅니다\./);
     assert.doesNotMatch(likedPage, /좋아요 모음/);
+    assert.match(source, /#btn-open-liked-photos'\)\?\.addEventListener\('click', \(event\) => \{[\s\S]*event\.stopImmediatePropagation\(\);[\s\S]*routeTo\('liked'\);[\s\S]*\}, true\);/);
     assert.doesNotMatch(source, /#btn-open-liked-photos'\)\?\.addEventListener\('click', \(\) => routeTo\('liked'\)\)/);
 });
 

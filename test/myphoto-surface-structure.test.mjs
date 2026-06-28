@@ -236,6 +236,18 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
 });
 
+test('home album thumbnails do not expose Supabase storage copy', () => {
+    const app = source();
+    const savedAlbumsStart = app.indexOf('function renderSavedAlbumRows');
+    const savedAlbumsEnd = app.indexOf('function renderSavedPhotoAlbums', savedAlbumsStart);
+    const groupedAlbumsEnd = app.indexOf('function renderStagedPhotos', savedAlbumsEnd);
+    const albumRenderers = app.slice(savedAlbumsStart, groupedAlbumsEnd);
+
+    assert.doesNotMatch(albumRenderers, /Supabase/);
+    assert.doesNotMatch(albumRenderers, /status-line[\s\S]*Supabase/);
+    assert.doesNotMatch(albumRenderers, /<small>\$\{formatPhotoCount\(albumPhotos\.length\)\} · Supabase<\/small>/);
+});
+
 test('recent photos full view uses recent-photo naming without intro copy', () => {
     const markup = html();
     const styles = css();
@@ -250,6 +262,7 @@ test('recent photos full view uses recent-photo naming without intro copy', () =
     assert.match(photosPage, /class="page-container photo-page-container"/);
     assert.doesNotMatch(photosPage, /<h2>내가 올린 사진<\/h2>/);
     assert.match(styles, /\.photo-page-container\s*\{[^}]*padding-top:\s*32px;/s);
+    assert.match(styles, /\.photo-page-container \.back-link\s*\{[^}]*margin-bottom:\s*24px;/s);
 });
 
 test('home no longer renders the removed easol intro sections', () => {
