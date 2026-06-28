@@ -184,8 +184,8 @@ img {
     position: relative;
     display: grid;
     place-items: center;
-    width: 30px;
-    height: 38px;
+    width: 36px;
+    height: 40px;
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -202,26 +202,27 @@ img {
 }
 
 .account-notification-trigger .material-symbols-outlined {
-    font-size: 21px;
+    font-size: 25px;
     line-height: 1;
 }
 
 .account-notification-badge {
     position: absolute;
-    top: 2px;
-    right: 2px;
+    top: -3px;
+    right: -14px;
     display: grid;
     place-items: center;
-    min-width: 16px;
-    height: 16px;
-    border: 2px solid var(--bg);
+    min-width: 25px;
+    height: 18px;
+    border: 1px solid var(--bg);
     border-radius: 999px;
     background: var(--coral);
     color: #ffffff;
     font-size: 10px;
     font-weight: 900;
     line-height: 1;
-    padding: 0 4px;
+    padding: 0 6px;
+    box-shadow: 0 8px 18px rgba(244, 140, 113, 0.26);
 }
 
 .account-notification-popover {
@@ -618,6 +619,20 @@ body.is-logged-in .home-story-band,
 body.is-logged-in .home-houses-reference,
 body.is-logged-in .white-band {
     display: none;
+}
+
+body.is-logged-in[data-page="landing"] .home-workspace {
+    display: none;
+}
+
+body.is-logged-in[data-page="landing"] .home-houses-reference,
+body.is-logged-in[data-page="landing"] .home-section-divider,
+body.is-logged-in[data-page="landing"] .white-band {
+    display: block;
+}
+
+body.is-logged-in[data-page="landing"] .home-feature-stories {
+    display: grid;
 }
 
 .hero-visual {
@@ -4730,15 +4745,15 @@ body.is-logged-in .home-workspace .album-row {
 
 .explore-discovery-panel {
     position: absolute;
-    top: 92px;
-    right: 28px;
+    top: 16px;
+    right: 16px;
     z-index: 4;
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
     gap: 14px;
     width: min(390px, calc(100% - 56px));
-    height: clamp(560px, calc(100svh - 108px), 900px);
-    max-height: calc(100svh - 108px);
+    height: clamp(560px, calc(100svh - 32px), 900px);
+    max-height: calc(100svh - 32px);
     border: 1px solid rgba(26, 77, 78, 0.14);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.97);

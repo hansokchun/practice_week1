@@ -194,6 +194,17 @@ test('logged-in home hides the houses reference with the other public intro band
     assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-houses-reference\s*\{[^}]*display:\s*block;/s);
 });
 
+test('logo landing route keeps the public introduction visible for signed-in users', () => {
+    const styles = css();
+    const app = source();
+
+    assert.match(app, /const LANDING_ROUTE = 'landing';/);
+    assert.match(app, /document\.body\.dataset\.page = normalized === LANDING_ROUTE \? LANDING_ROUTE : renderedRoute;/);
+    assert.match(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.home-workspace\s*\{[^}]*display:\s*none;/s);
+    assert.match(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.home-houses-reference,[\s\S]*body\.is-logged-in\[data-page="landing"\]\s+\.white-band\s*\{[^}]*display:\s*block;/s);
+    assert.match(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.home-feature-stories\s*\{[^}]*display:\s*grid;/s);
+});
+
 test('logged-in home panels and thumbnails follow the explore visual language', () => {
     const styles = css();
 

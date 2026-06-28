@@ -186,7 +186,8 @@ const state = {
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
-const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'profile']);
+const LANDING_ROUTE = 'landing';
+const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'profile']);
 const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
 const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
@@ -375,7 +376,7 @@ function parseRouteHash(hash) {
 }
 
 function getRenderedRoute(route) {
-    return route === APP_SECTIONS.MYPHOTO ? APP_SECTIONS.HOME : route;
+    return [APP_SECTIONS.MYPHOTO, LANDING_ROUTE].includes(route) ? APP_SECTIONS.HOME : route;
 }
 
 function routeTo(section, { replace = false } = {}) {
@@ -388,7 +389,7 @@ function routeTo(section, { replace = false } = {}) {
         showToast('사진을 업로드하려면 먼저 로그인해주세요.');
         return;
     }
-    const hash = renderedRoute === 'home' ? '#/' : `#/${renderedRoute}`;
+    const hash = normalized === LANDING_ROUTE ? '#/landing' : renderedRoute === 'home' ? '#/' : `#/${renderedRoute}`;
     if (replace) window.history.replaceState(null, '', hash);
     else if (window.location.hash !== hash) window.location.hash = hash;
     renderRoute(normalized);
@@ -430,7 +431,7 @@ function renderRoute(section) {
             ? APP_SECTIONS.EXPLORE
             : renderedRoute;
 
-    document.body.dataset.page = renderedRoute;
+    document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : renderedRoute;
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
@@ -1747,7 +1748,8 @@ function renderAccountNotifications() {
     }
     if (badge) {
         badge.hidden = !isLoggedIn || actionableCount === 0;
-        badge.textContent = actionableCount > 9 ? '9+' : String(actionableCount);
+        badge.textContent = actionableCount > 9 ? '9+' : `${actionableCount}개`;
+        badge.setAttribute('aria-label', `새 알림 ${actionableCount}개`);
     }
     if (popover) popover.hidden = !isLoggedIn || !state.isNotificationPopoverOpen;
     if (!list) return;

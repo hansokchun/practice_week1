@@ -57,7 +57,7 @@ test('Explore shell exposes a desktop discovery panel instead of a hidden-only l
 
     assert.doesNotMatch(panel, /<p class="eyebrow">Explore<\/p>/);
     assert.doesNotMatch(panel, /현재 지도 화면 안의 공개 사진/);
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*right:\s*28px;/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*none;/s);
 });
 
@@ -146,8 +146,8 @@ test('Explore discovery cards open the photo panel without direct like controls'
 test('Explore discovery panel scrolls long photo lists inside the panel', () => {
     const css = readFileSync('style.css', 'utf8');
 
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*clamp\(560px,\s*calc\(100svh - 108px\),\s*900px\);/s);
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 108px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*clamp\(560px,\s*calc\(100svh - 32px\),\s*900px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 32px\);/s);
     assert.match(css, /\.explore-discovery-body\s*\{[^}]*display:\s*grid;[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\);[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*max-height:\s*100%;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overflow-y:\s*auto;/s);

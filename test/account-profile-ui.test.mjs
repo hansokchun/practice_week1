@@ -8,7 +8,10 @@ const app = readFileSync('js/app.js', 'utf8');
 const auth = readFileSync('auth.js', 'utf8');
 
 test('brand logo routes to the landing home page', () => {
-    assert.match(html, /<a class="brand" href="#\/" data-route="home" aria-label="Ikkyee home">/);
+    assert.match(html, /<a class="brand" href="#\/landing" data-route="landing" aria-label="Ikkyee landing">/);
+    assert.match(app, /const LANDING_ROUTE = 'landing';/);
+    assert.match(app, /ROUTES = new Set\(\[LANDING_ROUTE,/);
+    assert.match(app, /normalized === LANDING_ROUTE \? '#\/landing'/);
     assert.match(app, /\$\$\(\'\[data-route\]\'\)\.forEach\(\(link\) => \{/);
     assert.match(app, /routeTo\(link\.dataset\.route\)/);
 });
@@ -43,13 +46,17 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.ok(profileIndex > notificationIndex);
     assert.match(html, /id="account-notification-popover"/);
     assert.match(html, /id="account-notification-list"/);
-    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*30px;[^}]*height:\s*38px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*36px;[^}]*height:\s*40px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.account-notification-trigger \.material-symbols-outlined\s*\{[^}]*font-size:\s*25px;/s);
+    assert.match(css, /\.account-notification-badge\s*\{[^}]*right:\s*-14px;[^}]*min-width:\s*25px;[^}]*height:\s*18px;[^}]*padding:\s*0 6px;/s);
     assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /isNotificationPopoverOpen:\s*false/);
     assert.match(app, /function getAccountNotificationItems\(\)/);
     assert.match(app, /getMissingLocationPhotos\(state\.savedPhotos\)/);
     assert.match(app, /getLikedPhotos\(\)/);
+    assert.match(app, /badge\.textContent = actionableCount > 9 \? '9\+' : `\$\{actionableCount\}개`;/);
+    assert.match(app, /badge\.setAttribute\('aria-label', `새 알림 \$\{actionableCount\}개`\)/);
     assert.match(app, /data-route="\$\{escapeHtml\(item\.route\)\}"/);
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
 });
