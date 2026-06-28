@@ -5423,9 +5423,21 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .trip-review-header .trip-actions {
     position: relative;
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
     justify-content: flex-end;
     gap: 10px;
     margin-top: 0;
+}
+
+.trip-review-header.is-editing .back-link {
+    display: none;
+}
+
+.trip-review-header.is-editing .trip-actions {
+    grid-column: 1;
+    justify-self: start;
 }
 
 .album-icon-button {
@@ -5563,6 +5575,81 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     color: var(--ink);
     font: inherit;
     padding: 10px 12px;
+}
+
+.trip-review-story-block {
+    position: relative;
+    width: min(720px, 100%);
+    margin: 26px auto;
+    color: rgba(5, 5, 5, 0.72);
+    text-align: center;
+}
+
+.trip-review-story-block p {
+    margin: 0;
+    font-size: clamp(20px, 3vw, 34px);
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.trip-review-story-block.is-editing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+    width: min(620px, 100%);
+}
+
+.trip-review-story-text {
+    min-height: 74px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.45;
+    padding: 14px 16px;
+    resize: vertical;
+}
+
+.trip-review-story-remove,
+.trip-review-add-text {
+    display: inline-grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: rgba(5, 5, 5, 0.78);
+    cursor: pointer;
+}
+
+.trip-review-story-remove {
+    width: 34px;
+    height: 34px;
+}
+
+.trip-review-add-text {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    z-index: 3;
+    width: 36px;
+    height: 36px;
+    opacity: 0.92;
+    box-shadow: 0 8px 22px rgba(5, 5, 5, 0.12);
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.trip-review-photo-card.is-editing:hover .trip-review-add-text,
+.trip-review-add-text:focus-visible {
+    opacity: 1;
+}
+
+.trip-review-add-text:active,
+.trip-review-story-remove:active {
+    transform: scale(0.96);
 }
 
 .trip-review-meta {

@@ -187,6 +187,8 @@ const state = {
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const ROUTES = new Set(['home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'profile']);
+const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
+const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const TURNSTILE_SITE_KEY = window.TRAVELGRAM_TURNSTILE_SITE_KEY || '';
@@ -201,6 +203,45 @@ function escapeHtml(value) {
         '"': '&quot;',
         "'": '&#39;'
     })[char]);
+}
+
+function parseAlbumStoryEntries(note = '') {
+    const match = String(note || '').match(ALBUM_STORY_MARKER_PATTERN);
+    if (!match) return [];
+    try {
+        const parsed = JSON.parse(decodeURIComponent(match[1]));
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .map((entry) => ({
+                after: String(entry?.after || '').trim(),
+                text: String(entry?.text || '').trim()
+            }))
+            .filter((entry) => entry.after && entry.text);
+    } catch {
+        return [];
+    }
+}
+
+function getAlbumVisibleNote(albumOrNote = '') {
+    const note = typeof albumOrNote === 'string' ? albumOrNote : albumOrNote?.note;
+    return String(note || '').replace(ALBUM_STORY_MARKER_PATTERN, '').trim();
+}
+
+function serializeAlbumNoteWithStory(note = '', entries = []) {
+    const visibleNote = getAlbumVisibleNote(note);
+    const cleanEntries = entries
+        .map((entry) => ({
+            after: String(entry?.after || '').trim(),
+            text: String(entry?.text || '').trim()
+        }))
+        .filter((entry) => entry.after && entry.text);
+    if (!cleanEntries.length) return visibleNote;
+    const story = `${ALBUM_STORY_MARKER}${encodeURIComponent(JSON.stringify(cleanEntries))}]]`;
+    return `${visibleNote}${visibleNote ? '\n\n' : ''}${story}`;
+}
+
+function getAlbumStoryMap(album = {}) {
+    return new Map(parseAlbumStoryEntries(album.note).map((entry) => [entry.after, entry.text]));
 }
 
 function getPhotoFallbackLabel(photo, fallback = '사진') {
@@ -774,8 +815,9 @@ function updateExploreAlbumPreview(album) {
         image.alt = album.title || 'Public album';
     }
     if (story) {
-        story.textContent = album.note || '앨범에 대한 글이 아직 없습니다.';
-        story.classList.toggle('is-empty', !album.note);
+        const albumNote = getAlbumVisibleNote(album);
+        story.textContent = albumNote || '앨범에 대한 글이 아직 없습니다.';
+        story.classList.toggle('is-empty', !albumNote);
     }
     if (meta) {
         meta.innerHTML = `
@@ -2016,7 +2058,7 @@ function renderTripReviewShell() {
     if (!page) return;
     page.innerHTML = `
         <div class="trip-review-shell">
-            <header class="trip-review-header">
+            <header class="trip-review-header ${state.albumDetailEditMode ? 'is-editing' : ''}">
                 <button class="back-link" data-route="explore" type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
                     <span id="trip-review-back-label">Explore</span>
@@ -2051,7 +2093,38 @@ function renderTripReviewShell() {
     `;
 }
 
-function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing = false } = {}) {
+function renderTripReviewStoryBlock(afterId, text, isEditing) {
+    if (!text && !isEditing) return '';
+    return `
+        <article class="trip-review-story-block ${isEditing ? 'is-editing' : ''}" data-trip-story-after="${escapeHtml(afterId)}">
+            ${isEditing ? `
+                <textarea class="trip-review-story-text" data-trip-story-text="${escapeHtml(afterId)}" rows="2" aria-label="사진 사이 글귀">${escapeHtml(text)}</textarea>
+                <button class="trip-review-story-remove" data-remove-trip-story="${escapeHtml(afterId)}" type="button" aria-label="글귀 삭제">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            ` : `<p>${escapeHtml(text)}</p>`}
+        </article>
+    `;
+}
+
+function renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing) {
+    const photoId = getTripReviewPhotoId(photo);
+    return `
+        <article
+            class="trip-review-photo-card ${isEditing ? 'is-editing' : ''}"
+            style="--photo-width: ${Math.round(Number(photo.aspectRatio || 1) * 220)}px;"
+            data-photo-aspect="${Number(photo.aspectRatio || 1)}"
+            ${isEditing ? '' : 'data-open-photo-detail'}
+            data-photo-id="${escapeHtml(photoId)}"
+        >
+            ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photoId)}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제"><span class="material-symbols-outlined">close</span></button>` : ''}
+            ${isEditing ? `<button class="trip-review-add-text" data-add-trip-story-after="${escapeHtml(photoId)}" type="button" aria-label="이 사진 뒤에 글귀 추가" data-tooltip="글귀 추가"><span class="material-symbols-outlined">notes</span></button>` : ''}
+            <img src="${photo.url || cover}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}">
+        </article>
+    `;
+}
+
+function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing = false, storyMap = new Map() } = {}) {
     const grid = $('#public-trip-photo-grid');
     if (!grid) return;
     const sections = getAlbumReviewDaySections(albumPhotos);
@@ -2072,22 +2145,13 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
                 ${section.dateKey ? `<button class="trip-review-date-filter ${state.tripReviewDateFilter === section.dateKey ? 'active' : ''}" data-trip-review-date="${escapeHtml(section.dateKey)}" type="button">${state.tripReviewDateFilter === section.dateKey ? '선택됨' : '지도에서 보기'}</button>` : ''}
             </div>
             <div class="trip-review-day-rows">
-                ${section.rows.map((row) => `
-                    <div class="trip-review-photo-row">
-                        ${row.map((photo) => `
-                            <article
-                                class="trip-review-photo-card ${isEditing ? 'is-editing' : ''}"
-                                style="--photo-width: ${Math.round(Number(photo.aspectRatio || 1) * 220)}px;"
-                                data-photo-aspect="${Number(photo.aspectRatio || 1)}"
-                                ${isEditing ? '' : 'data-open-photo-detail'}
-                                data-photo-id="${escapeHtml(photo.id || photo.localId || '')}"
-                            >
-                                ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photo.id || photo.localId || '')}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제">×</button>` : ''}
-                                <img src="${photo.url || cover}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}">
-                            </article>
-                        `).join('')}
-                    </div>
-                `).join('')}
+                ${section.rows.map((row) => row.map((photo) => {
+                    const photoId = getTripReviewPhotoId(photo);
+                    return `
+                        ${renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing)}
+                        ${renderTripReviewStoryBlock(photoId, storyMap.get(photoId) || '', isEditing && storyMap.has(photoId))}
+                    `;
+                }).join('')).join('')}
             </div>
         </section>
     `).join('');
@@ -2165,22 +2229,47 @@ function updateTripReviewDateFilterUI() {
 
 function layoutTripReviewPhotoRows() {
     $$('.trip-review-day-rows').forEach((dayRows) => {
-        const cards = [...dayRows.querySelectorAll('.trip-review-photo-card')];
+        const children = [...dayRows.children];
+        const sequence = children.flatMap((child) => {
+            if (child.classList.contains('trip-review-photo-row')) {
+                return [...child.querySelectorAll('.trip-review-photo-card')];
+            }
+            return [child];
+        });
+        const cards = sequence.filter((child) => child.classList?.contains('trip-review-photo-card'));
         if (!cards.length) return;
         const dayWidth = dayRows.clientWidth || dayRows.parentElement?.clientWidth || 0;
         if (!dayWidth) return;
         const styles = window.getComputedStyle(dayRows);
         const gap = Number.parseFloat(styles.columnGap || styles.gap) || 6;
-        const packedRows = packAlbumReviewRowsForWidth(cards.map((card) => ({
-            card,
-            aspectRatio: getTripReviewCardAspect(card)
-        })), dayWidth, { gap, targetHeight: 220 });
-        dayRows.replaceChildren(...packedRows.map((rowCards) => {
-            const row = document.createElement('div');
-            row.className = 'trip-review-photo-row';
-            row.append(...rowCards.map((item) => item.card));
-            return row;
-        }));
+        const nextChildren = [];
+        let segment = [];
+        const flushSegment = () => {
+            if (!segment.length) return;
+            const packedRows = packAlbumReviewRowsForWidth(segment.map((card) => ({
+                card,
+                aspectRatio: getTripReviewCardAspect(card)
+            })), dayWidth, { gap, targetHeight: 220 });
+            nextChildren.push(...packedRows.map((rowCards) => {
+                const row = document.createElement('div');
+                row.className = 'trip-review-photo-row';
+                row.append(...rowCards.map((item) => item.card));
+                return row;
+            }));
+            segment = [];
+        };
+        sequence.forEach((child) => {
+            if (child.classList?.contains('trip-review-photo-card')) {
+                segment.push(child);
+                return;
+            }
+            if (child.classList?.contains('trip-review-story-block')) {
+                flushSegment();
+                nextChildren.push(child);
+            }
+        });
+        flushSegment();
+        dayRows.replaceChildren(...nextChildren);
     });
 
     $$('.trip-review-photo-row').forEach((row) => {
@@ -2348,7 +2437,7 @@ function renderPublicSurfaces() {
     state.tripReviewMap = null;
     renderTripReviewShell();
     const cover = selected.cover_url || 'images/main_bg2.jpg';
-    const note = selected.note || '공개할 사진만 골라 만든 여행 기록입니다.';
+    const note = getAlbumVisibleNote(selected) || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
     const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
     const tripPhotos = (selected.photos?.length ? selected.photos : getDraftPhotos())
@@ -2407,7 +2496,7 @@ function renderPublicSurfaces() {
             <label for="trip-edit-title">앨범 이름</label>
             <input id="trip-edit-title" type="text" value="${escapeHtml(selected.title || '')}">
             <label for="trip-edit-note">설명</label>
-            <textarea id="trip-edit-note" rows="2">${escapeHtml(selected.note || '')}</textarea>
+            <textarea id="trip-edit-note" rows="2">${escapeHtml(getAlbumVisibleNote(selected))}</textarea>
         `;
         titleBlock.appendChild(form);
     }
@@ -2425,23 +2514,28 @@ function renderPublicSurfaces() {
     if (tripReviewMapMeta) updateTripReviewDateFilterUI();
     if (tripReviewActions) {
         tripReviewActions.innerHTML = `
-            ${isOwnAlbum ? `
+            ${isOwnAlbum && !state.albumDetailEditMode ? `
                 <button id="btn-add-trip-photos" class="album-icon-button" type="button" aria-label="사진 추가" data-tooltip="사진 추가">
                     <span class="material-symbols-outlined">add_photo_alternate</span>
                 </button>
             ` : ''}
-            <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="공유하기" data-tooltip="공유하기">
-                <span class="material-symbols-outlined">ios_share</span>
-            </button>
+            ${!state.albumDetailEditMode ? `
+                <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="공유하기" data-tooltip="공유하기">
+                    <span class="material-symbols-outlined">ios_share</span>
+                </button>
+            ` : ''}
             ${isOwnAlbum && state.albumDetailEditMode ? `
                 <button id="btn-edit-album" class="album-icon-button is-active" type="button" aria-label="수정 완료" data-tooltip="수정 완료">
                     <span class="material-symbols-outlined">done</span>
+                </button>
+                <button id="btn-add-trip-photos" class="album-icon-button" type="button" aria-label="사진 추가" data-tooltip="사진 추가">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
                 </button>
                 <button id="btn-toggle-album-visibility" class="album-icon-button" type="button" aria-label="${selected.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}" data-tooltip="${selected.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}">
                     <span class="material-symbols-outlined">${selected.visibility === 'public' ? 'lock' : 'public'}</span>
                 </button>
             ` : ''}
-            ${isOwnAlbum ? `
+            ${isOwnAlbum && !state.albumDetailEditMode ? `
                 <details class="album-more-menu">
                     <summary class="album-icon-button" aria-label="앨범 메뉴" data-tooltip="더보기">
                         <span class="material-symbols-outlined">more_vert</span>
@@ -2507,7 +2601,8 @@ function renderPublicSurfaces() {
     const tripPhotoGrid = $('#public-trip-photo-grid');
     if (tripPhotoGrid) {
         renderTripReviewPhotoFlow(tripPhotos, selected.title, cover, {
-            isEditing: isOwnAlbum && state.albumDetailEditMode
+            isEditing: isOwnAlbum && state.albumDetailEditMode,
+            storyMap: getAlbumStoryMap(selected)
         });
     }
 
@@ -2870,7 +2965,7 @@ function renderSavedAlbumRows(albums) {
                 <div>
                     <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${visibilityLabel} · Supabase</span>
                     <strong>${escapeHtml(album.title)}</strong>
-                    <p>${escapeHtml(album.note || '저장된 여행 앨범입니다.')}</p>
+                    <p>${escapeHtml(getAlbumVisibleNote(album) || '저장된 여행 앨범입니다.')}</p>
                     <small>${formatPhotoCount(album.photo_count)} · 앨범 기록</small>
                 </div>
             </article>
@@ -2985,7 +3080,7 @@ function renderAlbumComposePage() {
             <label for="album-name-input">앨범 이름</label>
             <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행" value="${escapeHtml(editingAlbum?.title || '')}">
             <label for="album-note-input">설명</label>
-            <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요.">${escapeHtml(editingAlbum?.note || '')}</textarea>
+            <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요.">${escapeHtml(getAlbumVisibleNote(editingAlbum))}</textarea>
             <div class="album-visibility-toggle" aria-label="공개 여부">
                 <button class="${state.visibility === 'private' ? 'active' : ''}" data-visibility="private" type="button">비공개</button>
                 <button class="${state.visibility === 'public' ? 'active' : ''}" data-visibility="public" type="button">공개</button>
@@ -3304,11 +3399,52 @@ function startEditSelectedAlbum() {
     }
 }
 
+function collectAlbumStoryEntriesFromDOM(album = {}) {
+    const fields = $$('.trip-review-story-text');
+    if (!fields.length) return parseAlbumStoryEntries(album.note);
+    return fields
+        .map((field) => ({
+            after: String(field.dataset.tripStoryText || '').trim(),
+            text: field.value.trim()
+        }))
+        .filter((entry) => entry.after && entry.text);
+}
+
+function updateSelectedAlbumStoryEntries(entries) {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const nextNote = serializeAlbumNoteWithStory(getAlbumVisibleNote(album), entries);
+    updateSavedAlbumLocally(album.id, { note: nextNote });
+}
+
+function addStoryAfterTripPhoto(photoId) {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const text = window.prompt('사진 사이에 넣을 글귀를 적어주세요.');
+    const trimmed = text?.trim();
+    if (!trimmed) return;
+    const entries = parseAlbumStoryEntries(album.note).filter((entry) => entry.after !== String(photoId));
+    entries.push({ after: String(photoId), text: trimmed });
+    updateSelectedAlbumStoryEntries(entries);
+    renderPublicSurfaces();
+}
+
+function removeStoryAfterTripPhoto(photoId) {
+    const album = getSelectedPublicAlbum();
+    if (!album || album.owner_id !== state.currentUser?.id) return;
+    const entries = collectAlbumStoryEntriesFromDOM(album).filter((entry) => entry.after !== String(photoId));
+    updateSelectedAlbumStoryEntries(entries);
+    renderPublicSurfaces();
+}
+
 async function saveSelectedAlbumTextEdits() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
     const title = $('#trip-edit-title')?.value.trim();
-    const note = $('#trip-edit-note')?.value.trim() || '';
+    const note = serializeAlbumNoteWithStory(
+        $('#trip-edit-note')?.value.trim() || '',
+        collectAlbumStoryEntriesFromDOM(album)
+    );
     if (!title) {
         showToast('앨범 이름을 입력해주세요.');
         return;
@@ -3566,7 +3702,7 @@ function renderAlbumDrafts() {
             <div>
                 <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 방금 생성</span>
                 <strong>${escapeHtml(album.name)}</strong>
-                <p>${escapeHtml(album.note || '비공개 앨범 초안입니다.')}</p>
+                <p>${escapeHtml(getAlbumVisibleNote(album) || '비공개 앨범 초안입니다.')}</p>
                 <small>${formatPhotoCount(state.stagedPhotos.length)} · 초안</small>
             </div>
         </article>
@@ -3794,7 +3930,13 @@ async function saveAlbumAndOpenDetail() {
         return;
     }
 
-    const note = noteInput?.value.trim() || '';
+    const editingAlbum = state.editingAlbumId
+        ? state.savedAlbums.find((album) => album.id === state.editingAlbumId)
+        : null;
+    const note = serializeAlbumNoteWithStory(
+        noteInput?.value.trim() || '',
+        parseAlbumStoryEntries(editingAlbum?.note)
+    );
     const draftPhotos = getAlbumCandidatePhotos();
     const draftPhotoIds = [...state.albumBuilderPhotoIds];
     const editingAlbumId = state.editingAlbumId;
@@ -4409,6 +4551,22 @@ function bindEvents() {
         const toggleAlbumVisibilityButton = event.target.closest('#btn-toggle-album-visibility');
         if (toggleAlbumVisibilityButton) {
             toggleSelectedAlbumVisibility();
+            return;
+        }
+
+        const addTripStoryButton = event.target.closest('[data-add-trip-story-after]');
+        if (addTripStoryButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            addStoryAfterTripPhoto(addTripStoryButton.dataset.addTripStoryAfter);
+            return;
+        }
+
+        const removeTripStoryButton = event.target.closest('[data-remove-trip-story]');
+        if (removeTripStoryButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            removeStoryAfterTripPhoto(removeTripStoryButton.dataset.removeTripStory);
             return;
         }
 

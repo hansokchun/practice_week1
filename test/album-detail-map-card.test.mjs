@@ -41,10 +41,28 @@ test('album detail exposes icon actions and a three-dot album menu', () => {
     assert.match(cssSource, /\.album-more-menu-list\s*\{[\s\S]*position: absolute;/);
 });
 
-test('album edit mode keeps completion add-photo and visibility actions as icon buttons', () => {
+test('album header keeps owner actions on the right and simplifies edit mode actions', () => {
+    assert.match(cssSource, /\.trip-review-header \.trip-actions\s*\{[\s\S]*grid-column: 3;[\s\S]*grid-row: 1;/);
+    assert.match(cssSource, /\.trip-review-header\.is-editing \.back-link\s*\{[\s\S]*display: none;/);
+    assert.match(appSource, /<header class="trip-review-header \$\{state\.albumDetailEditMode \? 'is-editing' : ''\}">/);
     assert.match(appSource, /id="btn-edit-album" class="album-icon-button is-active"[^>]*data-tooltip="수정 완료"/);
     assert.match(appSource, /id="btn-toggle-album-visibility" class="album-icon-button"[^>]*data-tooltip="\$\{selected\.visibility === 'public' \? '비공개로 전환' : '공개로 전환'\}"/);
     assert.match(appSource, /<span class="material-symbols-outlined">\$\{selected\.visibility === 'public' \? 'lock' : 'public'\}<\/span>/);
+    assert.match(appSource, /isOwnAlbum && state\.albumDetailEditMode \? `[\s\S]*id="btn-edit-album"/);
+    assert.match(appSource, /isOwnAlbum && !state\.albumDetailEditMode \? `[\s\S]*class="album-more-menu"/);
+});
+
+test('album edit mode can add text blocks between photos and persist them in album note metadata', () => {
+    assert.match(appSource, /ALBUM_STORY_MARKER/);
+    assert.match(appSource, /function getAlbumVisibleNote/);
+    assert.match(appSource, /function serializeAlbumNoteWithStory/);
+    assert.match(appSource, /data-add-trip-story-after/);
+    assert.match(appSource, /data-remove-trip-story/);
+    assert.match(appSource, /class="trip-review-story-block/);
+    assert.match(appSource, /collectAlbumStoryEntriesFromDOM/);
+    assert.match(appSource, /const addTripStoryButton = event\.target\.closest\('\[data-add-trip-story-after\]'\)/);
+    assert.match(cssSource, /\.trip-review-story-block\s*\{/);
+    assert.match(cssSource, /\.trip-review-add-text\s*\{/);
 });
 
 test('album detail exposes date map filters and a clear state', () => {
