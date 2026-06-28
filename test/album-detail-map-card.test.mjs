@@ -54,11 +54,16 @@ test('album header keeps owner actions on the right and simplifies edit mode act
 });
 
 test('album edit fields use a lightweight Google Photos style', () => {
+    assert.match(appSource, /<div class="trip-review-title-block">\s*<p class="eyebrow">Album Review Map<\/p>\s*<h1 id="trip-title">Album<\/h1>\s*<div class="trip-edit-fields">[\s\S]*<input id="trip-edit-title"/);
+    assert.match(appSource, /<p id="trip-review-description">사진이 날짜별로 정리된 앨범 지도입니다\.<\/p>\s*<textarea id="trip-edit-note"/);
+    assert.doesNotMatch(appSource, /titleBlock\.appendChild\(form\)/);
     assert.match(cssSource, /\.trip-edit-fields\s*\{[\s\S]*grid-template-columns: 1fr;[\s\S]*justify-items: center;[\s\S]*background: transparent;/);
+    assert.match(cssSource, /\.trip-review-header\.is-editing #trip-title,[\s\S]*\.trip-review-header\.is-editing #trip-review-description\s*\{[\s\S]*display: none;/);
+    assert.match(cssSource, /\.trip-review-header\.is-editing \.trip-edit-fields\s*\{[\s\S]*display: grid;/);
     assert.match(cssSource, /\.trip-edit-fields label\s*\{[\s\S]*display: none;/);
-    assert.match(cssSource, /\.trip-edit-fields input,[\s\S]*\.trip-edit-fields textarea\s*\{[\s\S]*border: 0;[\s\S]*border-bottom: 1px solid var\(--line\);[\s\S]*background: transparent;/);
+    assert.match(cssSource, /\.trip-edit-fields input,[\s\S]*#trip-edit-note\s*\{[\s\S]*border: 0;[\s\S]*border-bottom: 1px solid var\(--line\);[\s\S]*background: transparent;/);
     assert.match(cssSource, /#trip-edit-title\s*\{[\s\S]*font-size: clamp\(40px, 7vw, 92px\);[\s\S]*text-align: center;/);
-    assert.match(cssSource, /#trip-edit-note\s*\{[\s\S]*max-width: 520px;[\s\S]*text-align: center;/);
+    assert.match(cssSource, /#trip-edit-note\s*\{[\s\S]*max-width: 520px;[\s\S]*line-height: 1\.45;[\s\S]*padding: 0 0 4px;[\s\S]*text-align: center;/);
 });
 
 test('album edit mode can add text blocks between photos and persist them in album note metadata', () => {

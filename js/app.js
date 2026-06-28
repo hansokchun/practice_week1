@@ -2066,7 +2066,12 @@ function renderTripReviewShell() {
                 <div class="trip-review-title-block">
                     <p class="eyebrow">Album Review Map</p>
                     <h1 id="trip-title">Album</h1>
+                    <div class="trip-edit-fields">
+                        <label for="trip-edit-title">앨범 이름</label>
+                        <input id="trip-edit-title" type="text" aria-label="앨범 이름">
+                    </div>
                     <p id="trip-review-description">사진이 날짜별로 정리된 앨범 지도입니다.</p>
+                    <textarea id="trip-edit-note" rows="1" aria-label="설명"></textarea>
                     <div id="trip-review-meta" class="trip-review-meta"></div>
                 </div>
                 <div class="trip-actions">
@@ -2491,18 +2496,10 @@ function renderPublicSurfaces() {
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
     if (tripReviewDescription) tripReviewDescription.textContent = note;
-    const titleBlock = $('.trip-review-title-block');
-    if (titleBlock && isOwnAlbum && state.albumDetailEditMode) {
-        const form = document.createElement('div');
-        form.className = 'trip-edit-fields';
-        form.innerHTML = `
-            <label for="trip-edit-title">앨범 이름</label>
-            <input id="trip-edit-title" type="text" value="${escapeHtml(selected.title || '')}">
-            <label for="trip-edit-note">설명</label>
-            <textarea id="trip-edit-note" rows="2">${escapeHtml(getAlbumVisibleNote(selected))}</textarea>
-        `;
-        titleBlock.appendChild(form);
-    }
+    const tripEditTitle = $('#trip-edit-title');
+    const tripEditNote = $('#trip-edit-note');
+    if (tripEditTitle) tripEditTitle.value = selected.title || '';
+    if (tripEditNote) tripEditNote.value = getAlbumVisibleNote(selected);
     const reviewBackButton = $('.trip-review-header .back-link');
     const reviewBackLabel = $('#trip-review-back-label');
     if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'home' : 'explore';
