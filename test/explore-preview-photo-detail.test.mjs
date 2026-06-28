@@ -23,14 +23,15 @@ test('Explore pin preview image expands the inline preview instead of opening th
     assert.doesNotMatch(clickBody, /openModal\('#photo-detail-modal'\)/);
 });
 
-test('Explore expanded pin preview image opens the photo detail modal', () => {
+test('Explore expanded pin preview image stays in the Explore panel instead of opening the Home detail modal', () => {
     const clickStart = source.indexOf("const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');");
     const clickEnd = source.indexOf("const previewAction = getExplorePreviewExpansionAction({", clickStart);
     const clickBody = source.slice(clickStart, clickEnd);
 
     assert.match(clickBody, /preview\?\.classList\.contains\('is-expanded'\)/);
-    assert.match(clickBody, /updatePhotoDetailModal\(photo, \{ context: 'explore' \}\)/);
-    assert.match(clickBody, /openModal\('#photo-detail-modal'\)/);
+    assert.match(clickBody, /setExplorePreviewExpanded\(false\)/);
+    assert.doesNotMatch(clickBody, /openModal\('#photo-detail-modal'\)/);
+    assert.doesNotMatch(clickBody, /updatePhotoDetailModal\(photo, \{ context: 'explore' \}\)/);
 });
 
 test('Explore pin preview stores the selected photo id on the preview image action', () => {
@@ -142,7 +143,7 @@ test('Explore photo preview hides the story block when no description exists', (
     assert.doesNotMatch(body, /사진에 대한 글이 아직 없습니다/);
 });
 
-test('Explore photo preview does not render nearby photo thumbnails', () => {
+test('Explore photo preview renders nearby photo thumbnails inside the Explore panel', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
@@ -150,14 +151,27 @@ test('Explore photo preview does not render nearby photo thumbnails', () => {
     const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.doesNotMatch(preview, /data-pin-preview-nearby/);
-    assert.doesNotMatch(preview, /data-pin-preview-nearby-list/);
-    assert.doesNotMatch(preview, />주변사진</);
+    assert.match(preview, /data-pin-preview-nearby/);
+    assert.match(preview, /data-pin-preview-nearby-list/);
+    assert.match(preview, />주변사진</);
     assert.doesNotMatch(preview, />Nearby</);
-    assert.doesNotMatch(body, /const nearbyPhotos = getNearbyExplorePhotos\(photo\);/);
-    assert.doesNotMatch(body, /data-explore-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id\)\}"/);
-    assert.doesNotMatch(css, /\.pin-preview-nearby__grid\s*\{/s);
-    assert.doesNotMatch(source, /data-explore-nearby-photo/);
+    assert.match(body, /renderExplorePreviewNearby\(photo\)/);
+    assert.match(source, /function renderExplorePreviewNearby\(photo\)/);
+    assert.match(source, /const nearbyPhotos = getNearbyDetailPhotos\(photo, 'explore'\)/);
+    assert.match(source, /data-pin-preview-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id \|\| nearbyPhoto\.localId \|\| ''\)\}"/);
+    assert.match(css, /\.pin-preview-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
+});
+
+test('Explore preview nearby thumbnails switch the Explore panel photo', () => {
+    const clickStart = source.indexOf("const pinPreviewNearbyButton = event.target.closest('[data-pin-preview-nearby-photo]');");
+    const clickEnd = source.indexOf("const routeButton = event.target.closest('[data-route]');", clickStart);
+    const clickBody = source.slice(clickStart, clickEnd);
+
+    assert.match(clickBody, /getPhotoDetailSourcePhotos\('explore'\)/);
+    assert.match(clickBody, /pinPreviewNearbyButton\.dataset\.pinPreviewNearbyPhoto/);
+    assert.match(clickBody, /openExplorePhotoPreview\(nearbyPhoto, \{ focusMap: true \}\)/);
+    assert.match(clickBody, /setExplorePreviewExpanded\(wasExpanded\)/);
+    assert.doesNotMatch(clickBody, /updatePhotoDetailModal\(nearbyPhoto/);
 });
 
 test('Explore photo preview keeps capture info as compact chips below the story', () => {

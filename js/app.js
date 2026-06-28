@@ -695,6 +695,7 @@ function updateExplorePhotoPreview(photo) {
             ${visibilityMeta}
         `;
     }
+    renderExplorePreviewNearby(photo);
     if (ownerActions) ownerActions.hidden = !isOwnPhoto;
     if (descriptionInput) descriptionInput.value = description;
     setExplorePreviewVisibility(visibilityValue);
@@ -1184,6 +1185,11 @@ function renderPhotoDetailNearby(photo, context) {
     const nearbySection = $('[data-photo-detail-nearby]');
     const nearbyList = $('[data-photo-detail-nearby-list]');
     if (!nearbySection || !nearbyList) return;
+    if (context !== 'explore') {
+        nearbySection.hidden = true;
+        nearbyList.innerHTML = '';
+        return;
+    }
     const nearbyPhotos = getNearbyDetailPhotos(photo, context);
     nearbySection.hidden = nearbyPhotos.length === 0;
     nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
@@ -1191,6 +1197,23 @@ function renderPhotoDetailNearby(photo, context) {
         const imageSrc = getPhotoImageSrc(nearbyPhoto);
         return `
             <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
+                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
+            </button>
+        `;
+    }).join('');
+}
+
+function renderExplorePreviewNearby(photo) {
+    const nearbySection = $('[data-pin-preview-nearby]');
+    const nearbyList = $('[data-pin-preview-nearby-list]');
+    if (!nearbySection || !nearbyList) return;
+    const nearbyPhotos = getNearbyDetailPhotos(photo, 'explore');
+    nearbySection.hidden = nearbyPhotos.length === 0;
+    nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
+        const label = getPhotoDescriptionText(nearbyPhoto) || getPhotoFallbackLabel(nearbyPhoto, '주변사진');
+        const imageSrc = getPhotoImageSrc(nearbyPhoto);
+        return `
+            <button class="pin-preview-nearby__item" data-pin-preview-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
                 <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
             </button>
         `;
@@ -4490,11 +4513,7 @@ function bindEvents() {
         const preview = $('#explore-pin-preview');
         const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');
         if (explorePreviewPhoto && preview?.classList.contains('is-expanded')) {
-            const photo = getPublicPhotoMapItems().find((candidate) => candidate.id === state.selectedPhotoId)
-                || state.exploreMarkerPhotos.find((candidate) => candidate.id === state.selectedPhotoId)
-                || getDefaultDetailPhoto();
-            updatePhotoDetailModal(photo, { context: 'explore' });
-            openModal('#photo-detail-modal');
+            setExplorePreviewExpanded(false);
             return;
         }
         const previewAction = getExplorePreviewExpansionAction({
@@ -4523,6 +4542,18 @@ function bindEvents() {
         const previewVisibilityButton = event.target.closest('[data-preview-visibility]');
         if (previewVisibilityButton) {
             setExplorePreviewVisibility(previewVisibilityButton.dataset.previewVisibility);
+            return;
+        }
+
+        const pinPreviewNearbyButton = event.target.closest('[data-pin-preview-nearby-photo]');
+        if (pinPreviewNearbyButton) {
+            event.preventDefault();
+            const wasExpanded = Boolean($('#explore-pin-preview')?.classList.contains('is-expanded'));
+            const nearbyPhoto = getPhotoDetailSourcePhotos('explore')
+                .find((candidate) => String(candidate.id || candidate.localId) === String(pinPreviewNearbyButton.dataset.pinPreviewNearbyPhoto));
+            if (!nearbyPhoto) return;
+            openExplorePhotoPreview(nearbyPhoto, { focusMap: true });
+            setExplorePreviewExpanded(wasExpanded);
             return;
         }
 

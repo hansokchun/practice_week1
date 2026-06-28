@@ -80,6 +80,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /setImageSourceWithFallback\(image, photoImageSrc, getPhotoImageFallbackSrc\(photo, photoImageSrc\)\)/);
     assert.match(source, /function getPhotoDetailSourcePhotos\(context\)/);
     assert.match(source, /function getNearbyDetailPhotos\(photo, context\)/);
+    assert.match(source, /if \(context !== 'explore'\) \{[\s\S]*nearbySection\.hidden = true;[\s\S]*nearbyList\.innerHTML = '';[\s\S]*return;[\s\S]*\}/);
     assert.match(source, /const nearbyPhotos = getNearbyDetailPhotos\(photo, context\)/);
     assert.match(source, /data-photo-detail-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id \|\| nearbyPhoto\.localId \|\| ''\)\}"/);
     assert.match(source, /renderPhotoDetailNearby\(photo, context\)/);
@@ -138,5 +139,5 @@ test('photo detail click handling opens fullscreen, reports, and switches nearby
     assert.match(source, /신고가 접수되었습니다/);
     assert.match(source, /event\.target\.closest\('\[data-photo-detail-nearby-photo\]'\)/);
     assert.match(source, /const detailContext = \$\('#photo-detail-modal'\)\?\.dataset\.photoDetailContext \|\| 'photo'/);
-    assert.match(source, /updatePhotoDetailModal\(nearbyPhoto, \{ context: detailContext \}\)/);
+    assert.match(source, /if \(detailContext === 'explore'\) \{[\s\S]*updateExplorePhotoPreview\(nearbyPhoto\);[\s\S]*\} else \{[\s\S]*updatePhotoDetailModal\(nearbyPhoto, \{ context: detailContext \}\)/);
 });

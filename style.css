@@ -5086,6 +5086,46 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-size: 17px;
 }
 
+.pin-preview-nearby {
+    display: grid;
+    gap: 10px;
+}
+
+.pin-preview-nearby[hidden] {
+    display: none;
+}
+
+.pin-preview-nearby h3 {
+    margin: 0;
+    color: var(--teal-dark);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.pin-preview-nearby__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.pin-preview-nearby__item {
+    display: block;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    padding: 0;
+    cursor: pointer;
+}
+
+.pin-preview-nearby__item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .pin-preview-owner-actions {
     display: flex;
     justify-content: flex-end;
