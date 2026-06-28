@@ -1275,7 +1275,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
             map.setAttribute('hidden', '');
         }
     }
-    if (visibilityValue) visibilityValue.textContent = photo.shared || photo.visibility === 'public' ? '공개' : '비공개';
+    if (visibilityValue) {
+        const isPublicPhoto = photo.shared || photo.visibility === 'public';
+        visibilityValue.innerHTML = `<span class="material-symbols-outlined">${isPublicPhoto ? 'public' : 'lock'}</span> ${isPublicPhoto ? '공개' : '비공개'}`;
+    }
     if (likePanel) likePanel.hidden = !canLike;
     if (likeButton) {
         likeButton.disabled = !canLike || !photo.id || !state.currentUser;
@@ -2962,24 +2965,11 @@ function renderLikedPhotoSurfaces() {
         return;
     }
 
-    fullGrid.innerHTML = likedPhotos.map((photo) => {
-        const description = getPhotoDescriptionText(photo);
-        const ownerName = getPublicAuthorName(photo, {
-            currentUser: state.currentUser,
-            profileNames: state.profileNames
-        });
-        return `
+    fullGrid.innerHTML = likedPhotos.map((photo) => `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
-                ${description ? `
-                <div>
-                    <strong>${escapeHtml(description)}</strong>
-                    <span>${escapeHtml(ownerName)} · 좋아요 ${Number(photo.liked || 0)}개</span>
-                </div>
-                ` : ''}
             </article>
-        `;
-    }).join('');
+        `).join('');
     renderAccountNotifications();
 }
 
@@ -3007,19 +2997,11 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     }
 
     grid.innerHTML = photos.map((photo) => {
-        const description = getPhotoDescriptionText(photo);
-        const hasLocation = hasPhotoLocation(photo);
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
-                ${description ? `
-                <div>
-                    <strong>${escapeHtml(description)}</strong>
-                    <span>${hasLocation ? '위치 확인됨' : '위치 확인 필요'} · ${photo.visibility === 'public' ? '공개' : '비공개'}</span>
-                </div>
-                ` : ''}
             </article>
         `;
     }).join('');

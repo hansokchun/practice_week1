@@ -77,6 +77,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /if \(map && mapFrame\)/);
     assert.match(source, /context === 'photo' \? getPhotoMapUrl\(photo\) : ''/);
     assert.match(source, /photo-detail-visibility/);
+    assert.match(source, /visibilityValue\.innerHTML = `<span class="material-symbols-outlined">\$\{isPublicPhoto \? 'public' : 'lock'\}<\/span> \$\{isPublicPhoto \? '공개' : '비공개'\}`/);
     assert.match(source, /showOnMapButton\.hidden = !canShowOnTripMap/);
     assert.match(source, /const photoImageSrc = getPhotoImageSrc\(photo\)/);
     assert.match(source, /modal\.dataset\.photoDetailImageSrc = photoImageSrc/);
@@ -100,13 +101,16 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.doesNotMatch(source, /function goBackFromPhotoDetail\(\)/);
     assert.match(source, /function returnToPhotoDetailFromFullscreen\(\)/);
     assert.match(source, /function setPhotoDetailMoreMenuOpen\(isOpen\)/);
-    assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*stretch;[^}]*height:\s*calc\(100vh - 48px\);/s);
-    assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*stretch;[^}]*height:\s*100%;/s);
-    assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*100%;[^}]*padding:\s*clamp\(18px,\s*4vh,\s*48px\)\s*clamp\(12px,\s*2vw,\s*24px\);/s);
+    assert.match(css, /\.photo-detail-card\s*\{[^}]*align-items:\s*stretch;[^}]*max-height:\s*calc\(100vh - 48px\);/s);
+    const detailCardBlock = css.match(/\.photo-detail-card\s*\{(?<block>[^}]*)\}/s)?.groups?.block ?? '';
+    assert.doesNotMatch(detailCardBlock, /^\s*height:\s*calc\(100vh - 48px\);/m);
+    assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*stretch;[^}]*max-height:\s*calc\(100vh - 48px\);/s);
+    assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);[^}]*padding:\s*clamp\(18px,\s*4vh,\s*48px\)\s*clamp\(12px,\s*2vw,\s*24px\);/s);
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*background:\s*var\(--surface-muted\);/s);
     assert.doesNotMatch(css, /\.photo-detail-zoom-button\s*\{/);
     assert.match(css, /\.photo-detail-meta span\s*\{[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--bg\);/s);
-    assert.match(css, /\.photo-detail-visibility\s*\{[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--bg\);/s);
+    assert.match(css, /\.photo-detail-visibility\s*\{[^}]*display:\s*inline-flex;[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--bg\);/s);
+    assert.match(css, /\.photo-detail-visibility \.material-symbols-outlined\s*\{[^}]*color:\s*var\(--teal-dark\);/s);
     assert.match(css, /\.photo-detail-more-menu\s*\{[^}]*position:\s*absolute;[^}]*min-width:\s*132px;/s);
     assert.match(css, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(css, /\.photo-detail-nearby__item\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;/s);

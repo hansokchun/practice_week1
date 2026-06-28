@@ -326,7 +326,7 @@ test('photo detail modal keeps the right information panel inside the viewport',
     assert.match(styles, /\.photo-detail-card\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(260px,\s*320px\);/s);
     assert.match(styles, /\.photo-detail-card\s*\{[^}]*align-items:\s*stretch;/s);
     assert.match(styles, /\.photo-detail-card section\s*\{[^}]*align-self:\s*stretch;/s);
-    assert.match(styles, /\.photo-detail-card > img\s*\{[^}]*height:\s*100%;/s);
+    assert.match(styles, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);/s);
     assert.match(styles, /\.photo-detail-card > img\s*\{[^}]*max-height:\s*calc\(100vh - 48px\);/s);
     assert.doesNotMatch(styles, /\.photo-detail-card > img\s*\{[^}]*min-height:/s);
 });
@@ -345,7 +345,7 @@ test('empty recent photo notice uses the same empty card style as the album noti
     assert.doesNotMatch(styles, /\.recent-photo-empty button\s*\{/);
 });
 
-test('home photo cards omit caption wrappers when photos have no description', () => {
+test('home and personal photo cards omit visible caption wrappers', () => {
     const app = source();
     const personalStart = app.indexOf('function renderPersonalPhotosPage');
     const personalEnd = app.indexOf('async function deleteSelectedPersonalPhotos', personalStart);
@@ -354,10 +354,12 @@ test('home photo cards omit caption wrappers when photos have no description', (
     const likedEnd = app.indexOf('function renderPersonalPhotosPage', likedStart);
     const likedRenderer = app.slice(likedStart, likedEnd);
 
-    assert.match(personalRenderer, /const description = getPhotoDescriptionText\(photo\)/);
-    assert.match(personalRenderer, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
+    assert.doesNotMatch(personalRenderer, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
-    assert.match(likedRenderer, /const description = getPhotoDescriptionText\(photo\)/);
-    assert.match(likedRenderer, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
+    assert.match(personalRenderer, /<article class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\}"[^>]*>\s*<button class="photo-select-button"[^>]*><\/button>\s*<img src="\$\{photo\.url\}" alt="\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}">\s*<\/article>/s);
+    assert.doesNotMatch(likedRenderer, /const description = getPhotoDescriptionText\(photo\)/);
+    assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
+    assert.match(likedRenderer, /<article class="personal-photo-card liked-photo-card"[^>]*>\s*<img src="\$\{photo\.url\}" alt="\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}">\s*<\/article>/s);
 });

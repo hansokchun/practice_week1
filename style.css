@@ -6434,7 +6434,6 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
     gap: 0;
     width: min(1180px, calc(100vw - 32px));
-    height: calc(100vh - 48px);
     max-height: calc(100vh - 48px);
     overflow: hidden;
     border-radius: 0;
@@ -6444,7 +6443,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-card > img {
     width: 100%;
-    height: 100%;
+    height: min(76vh, 760px);
     max-height: calc(100vh - 48px);
     object-fit: contain;
     background: #ffffff;
@@ -6485,8 +6484,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     align-content: start;
     gap: 14px;
     min-width: 0;
-    height: 100%;
-    max-height: none;
+    max-height: calc(100vh - 48px);
     overflow-y: auto;
     background: var(--surface-muted);
     padding: 72px 28px 28px;
@@ -6602,7 +6600,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .photo-detail-meta .material-symbols-outlined {
-    color: var(--teal);
+    color: var(--teal-dark);
     font-size: 17px;
 }
 
@@ -6715,6 +6713,9 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .photo-detail-visibility {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     width: fit-content;
     min-height: 34px;
     border: 1px solid rgba(26, 77, 78, 0.12);
@@ -6725,6 +6726,11 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-weight: 800;
     line-height: 1;
     padding: 10px;
+}
+
+.photo-detail-visibility .material-symbols-outlined {
+    color: var(--teal-dark);
+    font-size: 17px;
 }
 
 .photo-detail-like-panel {
