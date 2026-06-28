@@ -1144,6 +1144,58 @@ async function renderProfileMap(photos = []) {
     map.fitBounds(bounds, 96);
 }
 
+function getPhotoDetailSourcePhotos(context) {
+    if (context === 'album') return state.albumDetailPhotos;
+    if (context === 'explore') return state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getPublicPhotoMapItems();
+    if (context === 'liked') {
+        const likedIds = new Set(state.likedPhotoIds.map(String));
+        return getAllDisplayPhotos().filter((photo) => likedIds.has(String(photo.id)));
+    }
+    return getAllDisplayPhotos();
+}
+
+function getPhotoDetailDistanceScore(photo, candidate) {
+    if (!hasPhotoLocation(photo) || !hasPhotoLocation(candidate)) return Number.MAX_SAFE_INTEGER;
+    const latDelta = Number(photo.lat) - Number(candidate.lat);
+    const lngDelta = Number(photo.lng) - Number(candidate.lng);
+    return (latDelta * latDelta) + (lngDelta * lngDelta);
+}
+
+function getNearbyDetailPhotos(photo, context) {
+    const currentId = String(photo?.id || photo?.localId || '');
+    const seen = new Set([currentId]);
+    return getPhotoDetailSourcePhotos(context)
+        .filter((candidate) => {
+            const candidateId = String(candidate?.id || candidate?.localId || '');
+            if (!candidateId || seen.has(candidateId)) return false;
+            seen.add(candidateId);
+            return Boolean(getPhotoImageSrc(candidate));
+        })
+        .sort((left, right) => {
+            const distanceDelta = getPhotoDetailDistanceScore(photo, left) - getPhotoDetailDistanceScore(photo, right);
+            if (distanceDelta !== 0) return distanceDelta;
+            return new Date(right.created_at || right.uploaded_at || right.date || 0) - new Date(left.created_at || left.uploaded_at || left.date || 0);
+        })
+        .slice(0, 6);
+}
+
+function renderPhotoDetailNearby(photo, context) {
+    const nearbySection = $('[data-photo-detail-nearby]');
+    const nearbyList = $('[data-photo-detail-nearby-list]');
+    if (!nearbySection || !nearbyList) return;
+    const nearbyPhotos = getNearbyDetailPhotos(photo, context);
+    nearbySection.hidden = nearbyPhotos.length === 0;
+    nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
+        const label = getPhotoDescriptionText(nearbyPhoto) || getPhotoFallbackLabel(nearbyPhoto, '주변사진');
+        const imageSrc = getPhotoImageSrc(nearbyPhoto);
+        return `
+            <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
+                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
+            </button>
+        `;
+    }).join('');
+}
+
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'photo' } = {}) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
@@ -1221,6 +1273,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         showOnMapButton.dataset.photoId = canShowOnTripMap ? String(photo.id || photo.localId) : '';
     }
     if (reportButton) reportButton.dataset.photoId = photo.id || '';
+    renderPhotoDetailNearby(photo, context);
     setPhotoDetailMoreMenuOpen(false);
 }
 
@@ -2090,6 +2143,13 @@ function renderTripReviewShell() {
                     <div class="trip-review-map-summary" aria-label="앨범 지도 요약">
                         <div id="trip-review-map-meta" class="trip-review-map-meta"></div>
                     </div>
+                    <button class="trip-review-map-author" data-go-profile type="button" hidden>
+                        <span class="avatar">IK</span>
+                        <span>
+                            <strong>작성자</strong>
+                            <small>공개 프로필 보기</small>
+                        </span>
+                    </button>
                 </aside>
             </div>
         </div>
@@ -2506,6 +2566,7 @@ function renderPublicSurfaces() {
     const tripReviewDescription = $('#trip-review-description');
     const tripReviewMeta = $('#trip-review-meta');
     const tripReviewMapMeta = $('#trip-review-map-meta');
+    const tripReviewMapAuthor = $('.trip-review-map-author');
     const tripReviewActions = $('.trip-review-header .trip-actions');
     const routeMeta = $('.trip-route-card .compact-heading p');
     if (tripHeroImage) {
@@ -2529,6 +2590,15 @@ function renderPublicSurfaces() {
         `;
     }
     if (tripReviewMapMeta) updateTripReviewDateFilterUI();
+    if (tripReviewMapAuthor) {
+        const authorAvatar = tripReviewMapAuthor.querySelector('.avatar');
+        const authorNameNode = tripReviewMapAuthor.querySelector('strong');
+        tripReviewMapAuthor.hidden = !selected.owner_id;
+        tripReviewMapAuthor.dataset.publicAlbumId = selected.id || '';
+        tripReviewMapAuthor.dataset.publicOwnerId = selected.owner_id || '';
+        if (authorAvatar) authorAvatar.textContent = authorInitials;
+        if (authorNameNode) authorNameNode.textContent = authorName;
+    }
     if (tripReviewActions) {
         tripReviewActions.innerHTML = `
             ${isOwnAlbum && !state.albumDetailEditMode ? `
@@ -4416,6 +4486,14 @@ function bindEvents() {
 
         const preview = $('#explore-pin-preview');
         const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');
+        if (explorePreviewPhoto && preview?.classList.contains('is-expanded')) {
+            const photo = getPublicPhotoMapItems().find((candidate) => candidate.id === state.selectedPhotoId)
+                || state.exploreMarkerPhotos.find((candidate) => candidate.id === state.selectedPhotoId)
+                || getDefaultDetailPhoto();
+            updatePhotoDetailModal(photo, { context: 'explore' });
+            openModal('#photo-detail-modal');
+            return;
+        }
         const previewAction = getExplorePreviewExpansionAction({
             clickedPreviewPhoto: Boolean(explorePreviewPhoto),
             clickedInsidePreview: Boolean(preview?.contains(event.target)),
@@ -4488,6 +4566,21 @@ function bindEvents() {
             event.preventDefault();
             setPhotoDetailMoreMenuOpen(false);
             showToast('신고가 접수되었습니다. 검토 후 조치하겠습니다.');
+            return;
+        }
+
+        const nearbyPhotoButton = event.target.closest('[data-photo-detail-nearby-photo]');
+        if (nearbyPhotoButton) {
+            event.preventDefault();
+            const detailContext = $('#photo-detail-modal')?.dataset.photoDetailContext || 'photo';
+            const nearbyPhoto = getPhotoDetailSourcePhotos(detailContext)
+                .find((candidate) => String(candidate.id || candidate.localId) === String(nearbyPhotoButton.dataset.photoDetailNearbyPhoto));
+            if (!nearbyPhoto) return;
+            if (detailContext === 'explore') {
+                updateExplorePhotoPreview(nearbyPhoto);
+            } else {
+                updatePhotoDetailModal(nearbyPhoto, { context: detailContext });
+            }
             return;
         }
 

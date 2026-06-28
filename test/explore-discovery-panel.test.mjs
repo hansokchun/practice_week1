@@ -165,7 +165,7 @@ test('Explore discovery collapsed state uses a compact Explore control', () => {
     assert.match(html, /aria-label="탐색 패널 접기"/);
     assert.match(source, /nextCollapsed \? '탐색 패널 열기' : '탐색 패널 접기'/);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*border-radius:\s*999px;/s);
-    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*top:\s*76px;[^}]*right:\s*16px;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*height:\s*auto;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*max-height:\s*none;/s);

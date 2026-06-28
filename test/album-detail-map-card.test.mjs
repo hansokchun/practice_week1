@@ -11,8 +11,10 @@ test('album detail date dividers do not show per-day photo counts', () => {
 
 test('album detail uses a compact map card beside the photo timeline', () => {
     assert.match(appSource, /trip-review-map-summary/);
+    assert.match(appSource, /class="trip-review-map-author" data-go-profile/);
     assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*border-radius: 20px/);
     assert.match(cssSource, /\.trip-review-map\s*\{[\s\S]*height: 390px/);
+    assert.match(cssSource, /\.trip-review-map-author\s*\{[\s\S]*width: calc\(100% - 36px\);[\s\S]*margin: 0 18px 18px;/);
     assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*margin-top: 30px/);
     assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*gap: 36px/);
 });
@@ -32,6 +34,7 @@ test('album detail exposes icon actions and a three-dot album menu', () => {
     assert.match(appSource, /class="album-icon-button"[^>]*aria-label="사진 추가"[^>]*data-tooltip="사진 추가"/);
     assert.match(appSource, /class="album-icon-button"[^>]*aria-label="공유하기"[^>]*data-tooltip="공유하기"/);
     assert.doesNotMatch(appSource, /data-go-profile type="button" aria-label="작성자 프로필"/);
+    assert.match(appSource, /tripReviewMapAuthor\.dataset\.publicOwnerId = selected\.owner_id \|\| ''/);
     assert.match(appSource, /class="album-more-menu"/);
     assert.match(appSource, /data-album-action="edit"/);
     assert.match(appSource, /data-album-action="cover"/);

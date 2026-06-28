@@ -23,6 +23,16 @@ test('Explore pin preview image expands the inline preview instead of opening th
     assert.doesNotMatch(clickBody, /openModal\('#photo-detail-modal'\)/);
 });
 
+test('Explore expanded pin preview image opens the photo detail modal', () => {
+    const clickStart = source.indexOf("const explorePreviewPhoto = event.target.closest('[data-pin-preview-photo]');");
+    const clickEnd = source.indexOf("const previewAction = getExplorePreviewExpansionAction({", clickStart);
+    const clickBody = source.slice(clickStart, clickEnd);
+
+    assert.match(clickBody, /preview\?\.classList\.contains\('is-expanded'\)/);
+    assert.match(clickBody, /updatePhotoDetailModal\(photo, \{ context: 'explore' \}\)/);
+    assert.match(clickBody, /openModal\('#photo-detail-modal'\)/);
+});
+
 test('Explore pin preview stores the selected photo id on the preview image action', () => {
     const fnStart = source.indexOf('function updateExplorePhotoPreview');
     const fnEnd = source.indexOf('function updateExploreAlbumPreview', fnStart);

@@ -29,7 +29,7 @@ test('photo detail surface leads with description and compact info before the ma
     assert.doesNotMatch(detail, /id="photo-detail-title"/);
 });
 
-test('photo detail modal exposes close navigation, fullscreen, more, report, and no nearby photo actions', () => {
+test('photo detail modal exposes close navigation, fullscreen, more, report, and nearby photo actions', () => {
     const html = readFileSync('index.html', 'utf8');
     const detailStart = html.indexOf('id="photo-detail-modal"');
     const detailEnd = html.indexOf('id="location-editor-modal"', detailStart);
@@ -46,9 +46,9 @@ test('photo detail modal exposes close navigation, fullscreen, more, report, and
     assert.match(detail, /data-photo-detail-more/);
     assert.match(detail, /data-photo-detail-more-menu/);
     assert.match(detail, /data-report-photo/);
-    assert.doesNotMatch(detail, /data-photo-detail-nearby/);
-    assert.doesNotMatch(detail, /data-photo-detail-nearby-list/);
-    assert.doesNotMatch(detail, />주변사진</);
+    assert.match(detail, /data-photo-detail-nearby/);
+    assert.match(detail, /data-photo-detail-nearby-list/);
+    assert.match(detail, />주변사진</);
     assert.doesNotMatch(detail, />Nearby</);
     assert.doesNotMatch(detail, />×</);
     assert.match(fullscreen, /data-photo-fullscreen-image/);
@@ -78,8 +78,11 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /modal\.dataset\.photoDetailImageSrc = photoImageSrc/);
     assert.match(source, /modal\.dataset\.photoDetailImageFallbackSrc = getPhotoImageFallbackSrc\(photo, photoImageSrc\)/);
     assert.match(source, /setImageSourceWithFallback\(image, photoImageSrc, getPhotoImageFallbackSrc\(photo, photoImageSrc\)\)/);
-    assert.doesNotMatch(source, /const nearbyPhotos = getNearbyDetailPhotos\(photo\)/);
-    assert.doesNotMatch(source, /data-photo-detail-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id\)\}"/);
+    assert.match(source, /function getPhotoDetailSourcePhotos\(context\)/);
+    assert.match(source, /function getNearbyDetailPhotos\(photo, context\)/);
+    assert.match(source, /const nearbyPhotos = getNearbyDetailPhotos\(photo, context\)/);
+    assert.match(source, /data-photo-detail-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id \|\| nearbyPhoto\.localId \|\| ''\)\}"/);
+    assert.match(source, /renderPhotoDetailNearby\(photo, context\)/);
     assert.match(source, /function openPhotoFullscreenFromDetail\(\)/);
     assert.match(source, /sourceImage\?\.dataset\.fallbackApplied === 'true'/);
     assert.match(source, /const fallbackSource = detailModal\?\.dataset\.photoDetailImageFallbackSrc \|\| renderedSource \|\| 'images\/main_bg2\.jpg'/);
@@ -97,7 +100,8 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);[^}]*padding:\s*clamp\(18px,\s*4vh,\s*48px\)\s*clamp\(12px,\s*2vw,\s*24px\);/s);
     assert.match(css, /\.photo-detail-zoom-button\s*\{[^}]*position:\s*absolute;[^}]*border-radius:\s*999px;/s);
     assert.match(css, /\.photo-detail-more-menu\s*\{[^}]*position:\s*absolute;[^}]*min-width:\s*132px;/s);
-    assert.doesNotMatch(css, /\.photo-detail-nearby__grid\s*\{/s);
+    assert.match(css, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(css, /\.photo-detail-nearby__item\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.photo-fullscreen-modal\s*\{[^}]*z-index:\s*140;[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(css, /body\.photo-fullscreen-open\s*\{[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/s);
@@ -119,7 +123,7 @@ test('photo detail click handling separates album photos from individual photos'
     assert.match(source, /document\.body\.dataset\.page === 'trip' \? 'album' : 'photo'/);
 });
 
-test('photo detail click handling opens fullscreen and reports without nearby photos', () => {
+test('photo detail click handling opens fullscreen, reports, and switches nearby photos', () => {
     const source = readFileSync('js/app.js', 'utf8');
 
     assert.doesNotMatch(source, /event\.target\.closest\('\[data-photo-detail-back\]'\)/);
@@ -132,5 +136,7 @@ test('photo detail click handling opens fullscreen and reports without nearby ph
     assert.match(source, /setPhotoDetailMoreMenuOpen\(!isOpen\)/);
     assert.match(source, /event\.target\.closest\('\[data-report-photo\]'\)/);
     assert.match(source, /신고가 접수되었습니다/);
-    assert.doesNotMatch(source, /event\.target\.closest\('\[data-photo-detail-nearby-photo\]'\)/);
+    assert.match(source, /event\.target\.closest\('\[data-photo-detail-nearby-photo\]'\)/);
+    assert.match(source, /const detailContext = \$\('#photo-detail-modal'\)\?\.dataset\.photoDetailContext \|\| 'photo'/);
+    assert.match(source, /updatePhotoDetailModal\(nearbyPhoto, \{ context: detailContext \}\)/);
 });
