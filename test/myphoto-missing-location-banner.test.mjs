@@ -66,8 +66,22 @@ test('missing location task list renders thumbnails without photo names', () => 
     assert.doesNotMatch(body, /<small>/);
 });
 
-test('missing location dismiss button only hides the alert', () => {
+test('missing location dismiss button hides the page alert', () => {
     assert.match(source, /#btn-dismiss-missing-location/);
     assert.match(source, /state\.isMissingLocationBannerDismissed = true/);
     assert.match(source, /renderSavedPhotoSurfaces\(\)/);
+});
+
+test('missing location dismiss also removes the account notification item', () => {
+    const fnStart = source.indexOf('function getAccountNotificationItems');
+    const fnEnd = source.indexOf('function setAccountNotificationsOpen', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+    const dismissStart = source.indexOf("#btn-dismiss-missing-location");
+    const dismissEnd = source.indexOf("$('#btn-open-album')", dismissStart);
+    const dismissHandler = source.slice(dismissStart, dismissEnd);
+
+    assert.match(body, /if \(myMissingLocationPhotos\.length && !state\.isMissingLocationBannerDismissed\) \{/);
+    assert.match(dismissHandler, /state\.isMissingLocationBannerDismissed = true/);
+    assert.match(dismissHandler, /renderSavedPhotoSurfaces\(\)/);
+    assert.match(dismissHandler, /renderAccountNotifications\(\)/);
 });

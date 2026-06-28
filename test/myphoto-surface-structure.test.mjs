@@ -228,6 +228,7 @@ test('home archive creation actions sit in their matching section headers', () =
     const albumHeader = home.slice(albumStart, home.indexOf('id="album-list"', albumStart));
 
     assert.doesNotMatch(home, /Home Archive/);
+    assert.doesNotMatch(home, /여행 단위로 정리된 나의 앨범/);
     assert.doesNotMatch(home, /내 사진과 앨범을 정리하는 공간/);
     assert.doesNotMatch(home, /선택한 사진만 업로드됩니다/);
     assert.doesNotMatch(home, /class="myphoto-actions"/);

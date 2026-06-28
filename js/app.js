@@ -1711,7 +1711,7 @@ function getAccountNotificationItems() {
     ));
     const items = [];
 
-    if (myMissingLocationPhotos.length) {
+    if (myMissingLocationPhotos.length && !state.isMissingLocationBannerDismissed) {
         items.push({
             icon: 'wrong_location',
             title: `처리 필요: 위치 정보 없는 사진 ${myMissingLocationPhotos.length}장`,
@@ -4470,6 +4470,7 @@ function bindEvents() {
     $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
         state.isMissingLocationBannerDismissed = true;
         renderSavedPhotoSurfaces();
+        renderAccountNotifications();
     });
     $('#btn-open-album')?.addEventListener('click', startNewAlbum);
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
