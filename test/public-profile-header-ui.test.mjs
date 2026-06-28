@@ -26,6 +26,7 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.doesNotMatch(html, /Public Profile/);
     assert.doesNotMatch(app, /profile-eyebrow/);
     assert.doesNotMatch(app, /Public Profile/);
+    assert.doesNotMatch(app, /공개한 사진을 모아 볼 수 있는 프로필입니다/);
     assert.match(app, /id="profile-bio"/);
     assert.match(app, /id="profile-photo-count"/);
     assert.match(app, /id="profile-album-count"/);
@@ -72,6 +73,7 @@ test('profile edit mode keeps the profile avatar beside the account name and rem
     assert.doesNotMatch(shell, /<textarea/);
     assert.match(css, /\.profile-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*14px;/s);
     assert.match(css, /\.profile-avatar-file-input\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /\.profile-card\.is-editing \.profile-avatar-pick\s*\{[^}]*box-shadow:\s*0 0 0 3px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(css, /\.profile-edit-photo-field\s*\{[^}]*grid-template-columns:\s*1fr auto;/s);
 });
 
@@ -86,4 +88,5 @@ test('profile avatar renderers preserve the image and fallback structure', () =>
     assert.doesNotMatch(emptyRenderer, /\.profile-card \.avatar/);
     assert.match(emptyRenderer, /\$\('#profile-avatar-image'\)/);
     assert.match(ownerRenderer, /\$\('#profile-avatar-image'\)/);
+    assert.doesNotMatch(app, /\$\$\(\'\.public-author-card \.avatar, \.profile-card \.avatar, \.pin-author \.avatar\'\)/);
 });

@@ -5726,6 +5726,13 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .profile-card.is-editing .profile-avatar-pick {
     cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(26, 77, 78, 0.12);
+    transition: box-shadow 0.16s ease;
+}
+
+.profile-card.is-editing .profile-avatar-pick:hover,
+.profile-card.is-editing .profile-avatar-pick:focus-visible {
+    box-shadow: 0 0 0 4px rgba(26, 77, 78, 0.18);
 }
 
 .profile-avatar-file-input {

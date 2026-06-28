@@ -166,6 +166,7 @@ const state = {
     explorePreviewEditMode: false,
     isNotificationPopoverOpen: false,
     accountProfileEditMode: false,
+    accountProfileAvatarPreviewUrl: null,
     profileMap: null,
     profileMarkers: [],
     profileMapRenderToken: 0,
@@ -1334,7 +1335,7 @@ function ensureProfileHeaderShell() {
                         <span class="account-profile-field-label">프로필 사진</span>
                         <label class="profile-avatar-upload-control" for="profile-avatar-input">
                             <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
-                            <span>사진 추가</span>
+                            <span data-profile-avatar-upload-label>사진 추가</span>
                         </label>
                     </div>
                 </div>
@@ -1364,8 +1365,15 @@ function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
     fallbackNode.textContent = initials;
 }
 
+function clearAccountProfileAvatarPreview() {
+    if (!state.accountProfileAvatarPreviewUrl) return;
+    URL.revokeObjectURL(state.accountProfileAvatarPreviewUrl);
+    state.accountProfileAvatarPreviewUrl = null;
+}
+
 function renderAccountProfilePanel() {
     ensureProfileHeaderShell();
+    clearAccountProfileAvatarPreview();
     const profile = getCurrentAccountProfile();
     const photoCount = getMySavedPhotos().length;
     const albumCount = state.savedAlbums.filter((album) => album.owner_id === state.currentUser?.id).length;
@@ -1391,6 +1399,8 @@ function renderAccountProfilePanel() {
     if (displayNameInput) displayNameInput.value = profile.nickname;
     const avatarInput = $('#profile-avatar-input');
     if (avatarInput) avatarInput.value = '';
+    const avatarUploadLabel = $('[data-profile-avatar-upload-label]');
+    if (avatarUploadLabel) avatarUploadLabel.textContent = profile.avatarUrl ? '사진 변경' : '사진 추가';
 }
 
 function setAccountProfileEditMode(isEditing) {
@@ -1404,6 +1414,9 @@ function setAccountProfileEditMode(isEditing) {
     const profileCard = $('.profile-card');
     const avatarInput = $('#profile-avatar-input');
 
+    if (!state.accountProfileEditMode && state.selectedPublicOwnerId === state.currentUser?.id) {
+        renderAccountProfilePanel();
+    }
     if (view) view.hidden = state.accountProfileEditMode;
     if (form) form.hidden = !state.accountProfileEditMode;
     if (editButton) editButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
@@ -1433,12 +1446,21 @@ function handleAccountProfileAvatarChange(event) {
     const validation = validatePhotoFile(avatarFile);
     if (!validation.accepted) {
         if (event.target) event.target.value = '';
+        clearAccountProfileAvatarPreview();
+        const profile = getCurrentAccountProfile();
+        setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
+        const avatarUploadLabel = $('[data-profile-avatar-upload-label]');
+        if (avatarUploadLabel) avatarUploadLabel.textContent = profile.avatarUrl ? '사진 변경' : '사진 추가';
         if (message) message.textContent = validation.reason || '이미지 파일만 등록할 수 있어요.';
         return;
     }
     const nickname = $('#profile-nickname-input')?.value || getCurrentAccountProfile().nickname;
+    clearAccountProfileAvatarPreview();
     const previewUrl = URL.createObjectURL(avatarFile);
+    state.accountProfileAvatarPreviewUrl = previewUrl;
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), previewUrl, nickname);
+    const avatarUploadLabel = $('[data-profile-avatar-upload-label]');
+    if (avatarUploadLabel) avatarUploadLabel.textContent = '사진 변경';
     if (message) message.textContent = '저장하면 프로필 이미지가 반영됩니다.';
 }
 
@@ -1510,6 +1532,7 @@ async function saveAccountProfile(event) {
     setAccountProfileEditMode(false);
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
+    clearAccountProfileAvatarPreview();
     showToast('프로필을 저장했어요.');
 }
 
@@ -1927,8 +1950,6 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
-    const profileCopy = $('.profile-card p:not(.eyebrow)');
-    if (profileCopy) profileCopy.textContent = '공개한 사진을 모아 볼 수 있는 프로필입니다.';
     const profileHeroImage = $('.profile-cover > img');
     if (profileHeroImage) {
         profileHeroImage.src = cover;
@@ -2397,7 +2418,7 @@ function renderPublicSurfaces() {
     }
     if (routeMeta) routeMeta.textContent = getPublicTripRouteMeta(tripSummary);
 
-    $$('.public-author-card .avatar, .profile-card .avatar, .pin-author .avatar').forEach((avatar) => {
+    $$('.public-author-card .avatar, .pin-author .avatar').forEach((avatar) => {
         avatar.textContent = authorInitials;
     });
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((nameNode) => {
