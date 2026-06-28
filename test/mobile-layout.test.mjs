@@ -80,7 +80,8 @@ test('mobile upload, album, trip, and personal photo surfaces keep thumb grids u
     assert.match(mobile, /\.upload-thumbnail-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(mobile, /\.recent-photo-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(mobile, /\.personal-photo-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
-    assert.match(mobile, /\.album-photo-picker-grid,\s*\.public-trip-photo-grid,\s*\.profile-photo-grid,\s*\.profile-album-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(mobile, /\.album-photo-picker-grid,\s*\.public-trip-photo-grid,\s*\.profile-album-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(mobile, /\.profile-photo-grid\s*\{[^}]*column-count:\s*2;[^}]*column-gap:\s*12px;/s);
     assert.match(mobile, /\.album-compose-map\s*\{[^}]*order:\s*-1;/s);
     assert.match(mobile, /\.public-trip-hero\s*\{[^}]*min-height:\s*420px;/s);
     assert.match(mobile, /\.profile-tabs\s*\{[^}]*overflow-x:\s*auto;/s);

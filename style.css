@@ -5672,7 +5672,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: grid;
     align-items: end;
     overflow: hidden;
-    padding: 0 0 42px;
+    padding: 24px 0 42px;
 }
 
 .profile-cover > img {
@@ -5760,7 +5760,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .profile-edit-form {
     max-width: 520px;
-    margin-top: 24px;
+    margin-top: 32px;
     padding-top: 24px;
     border-top: 1px solid rgba(26, 77, 78, 0.12);
 }
@@ -5792,13 +5792,13 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-height: 38px;
+    gap: 8px;
+    min-height: 48px;
     border: 1px solid rgba(26, 77, 78, 0.16);
     border-radius: 999px;
     background: var(--surface);
     color: var(--teal-dark);
-    padding: 0 14px;
+    padding: 4px 14px 4px 6px;
     cursor: pointer;
     transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
 }
@@ -5812,6 +5812,26 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .profile-avatar-upload-control .material-symbols-outlined {
     font-size: 18px;
+}
+
+.profile-avatar-upload-preview {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--teal);
+    color: #ffffff;
+    font-family: var(--headline);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.profile-avatar-upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .profile-card p:not(.eyebrow) {
@@ -5862,9 +5882,12 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: block;
 }
 
-.profile-photo-grid.is-active,
 .profile-album-grid.is-active {
     display: grid;
+}
+
+.profile-photo-grid.is-active {
+    display: block;
 }
 
 .profile-map-preview {
@@ -5883,19 +5906,36 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     height: 100%;
 }
 
-.profile-photo-grid,
 .profile-album-grid {
     grid-template-columns: repeat(3, 1fr);
 }
 
-.profile-photo-grid article,
 .profile-album-grid article {
     cursor: pointer;
     padding: 0;
     overflow: hidden;
 }
 
-.profile-photo-grid img,
+.profile-photo-grid {
+    column-count: 3;
+    column-gap: 18px;
+}
+
+.profile-photo-grid article {
+    display: block;
+    break-inside: avoid;
+    overflow: hidden;
+    margin: 0 0 18px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.profile-photo-grid img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
 .profile-album-grid img {
     width: 100%;
     height: 180px;
@@ -7576,7 +7616,6 @@ body.photo-fullscreen-open {
     .trip-day-grid,
     .public-trip-photo-grid,
     .related-album-grid,
-    .profile-photo-grid,
     .profile-card,
     .profile-layout,
     .photo-detail-card {
@@ -7677,7 +7716,6 @@ body.photo-fullscreen-open {
 
     .album-photo-picker-grid,
     .public-trip-photo-grid,
-    .profile-photo-grid,
     .profile-album-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
@@ -7930,7 +7968,7 @@ body.photo-fullscreen-open {
 
     .profile-cover {
         min-height: 280px;
-        padding-bottom: 28px;
+        padding: 16px 0 28px;
     }
 
     .profile-map-preview,
@@ -7938,9 +7976,17 @@ body.photo-fullscreen-open {
         min-height: 420px;
     }
 
-    .profile-photo-grid img,
     .profile-album-grid img {
         height: 140px;
+    }
+
+    .profile-photo-grid {
+        column-count: 2;
+        column-gap: 12px;
+    }
+
+    .profile-photo-grid article {
+        margin-bottom: 12px;
     }
 }
 

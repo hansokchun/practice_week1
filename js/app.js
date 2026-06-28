@@ -1334,6 +1334,10 @@ function ensureProfileHeaderShell() {
                     <div class="account-profile-field profile-edit-photo-field">
                         <span class="account-profile-field-label">프로필 사진</span>
                         <label class="profile-avatar-upload-control" for="profile-avatar-input">
+                            <span class="profile-avatar-upload-preview" aria-hidden="true">
+                                <img id="profile-avatar-upload-preview-image" alt="" hidden>
+                                <span id="profile-avatar-upload-preview-fallback">IK</span>
+                            </span>
                             <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
                             <span data-profile-avatar-upload-label>사진 추가</span>
                         </label>
@@ -1394,6 +1398,12 @@ function renderAccountProfilePanel() {
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
+    setAvatarDisplay(
+        $('#profile-avatar-upload-preview-image'),
+        $('#profile-avatar-upload-preview-fallback'),
+        profile.avatarUrl,
+        profile.nickname
+    );
 
     const displayNameInput = $('#profile-nickname-input');
     if (displayNameInput) displayNameInput.value = profile.nickname;
@@ -1449,6 +1459,12 @@ function handleAccountProfileAvatarChange(event) {
         clearAccountProfileAvatarPreview();
         const profile = getCurrentAccountProfile();
         setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
+        setAvatarDisplay(
+            $('#profile-avatar-upload-preview-image'),
+            $('#profile-avatar-upload-preview-fallback'),
+            profile.avatarUrl,
+            profile.nickname
+        );
         const avatarUploadLabel = $('[data-profile-avatar-upload-label]');
         if (avatarUploadLabel) avatarUploadLabel.textContent = profile.avatarUrl ? '사진 변경' : '사진 추가';
         if (message) message.textContent = validation.reason || '이미지 파일만 등록할 수 있어요.';
@@ -1459,6 +1475,12 @@ function handleAccountProfileAvatarChange(event) {
     const previewUrl = URL.createObjectURL(avatarFile);
     state.accountProfileAvatarPreviewUrl = previewUrl;
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), previewUrl, nickname);
+    setAvatarDisplay(
+        $('#profile-avatar-upload-preview-image'),
+        $('#profile-avatar-upload-preview-fallback'),
+        previewUrl,
+        nickname
+    );
     const avatarUploadLabel = $('[data-profile-avatar-upload-label]');
     if (avatarUploadLabel) avatarUploadLabel.textContent = '사진 변경';
     if (message) message.textContent = '저장하면 프로필 이미지가 반영됩니다.';

@@ -73,6 +73,9 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(app, /class="account-profile-field profile-edit-name-field"/);
     assert.match(app, /class="account-profile-field profile-edit-photo-field"/);
     assert.match(app, /class="profile-avatar-upload-control"/);
+    assert.match(app, /class="profile-avatar-upload-preview"/);
+    assert.match(app, /id="profile-avatar-upload-preview-image"/);
+    assert.match(app, /id="profile-avatar-upload-preview-fallback"/);
     assert.match(app, /data-profile-avatar-upload-label/);
     assert.match(app, />사진 추가</);
     assert.match(css, /\.account-profile-fields\s*\{/);
@@ -100,6 +103,8 @@ test('profile updates use nickname, bio, and uploaded avatar metadata only', () 
     assert.match(app, /function clearAccountProfileAvatarPreview\(\)/);
     assert.match(app, /URL\.revokeObjectURL\(state\.accountProfileAvatarPreviewUrl\)/);
     assert.match(app, /state\.accountProfileAvatarPreviewUrl = previewUrl;/);
+    assert.match(app, /\$\('#profile-avatar-upload-preview-image'\)/);
+    assert.match(app, /\$\('#profile-avatar-upload-preview-fallback'\)/);
     assert.match(app, /const bio = bioInput\s*\?\s*String\(bioInput\.value \|\| ''\)\.trim\(\)\s*:\s*getCurrentAccountProfile\(\)\.bio;/s);
     assert.match(app, /await uploadImage\(avatarFile,\s*fileName\)/);
     assert.match(app, /await updateUserMetadata\(\{\s*nickname,\s*bio,\s*avatar_url: avatarUrl\s*\}\)/s);

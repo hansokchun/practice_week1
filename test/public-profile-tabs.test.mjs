@@ -4,6 +4,7 @@ import { test } from 'node:test';
 
 const html = readFileSync('index.html', 'utf8');
 const app = readFileSync('js/app.js', 'utf8');
+const css = readFileSync('style.css', 'utf8');
 
 test('public profile exposes Map View, photos, and albums tabs', () => {
     assert.match(html, /data-profile-tab="map"[^>]*>Map View/);
@@ -47,6 +48,14 @@ test('public profile photo grids omit visible fallback titles without descriptio
     assert.match(selectedBody, /const description = getPhotoDescriptionText\(photo\)/);
     assert.match(selectedBody, /\$\{description \? `[\s\S]*<strong>\$\{escapeHtml\(description\)\}<\/strong>[\s\S]*` : ''\}/);
     assert.doesNotMatch(selectedBody, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
+});
+
+test('public profile photo thumbnails preserve original photo ratios', () => {
+    assert.match(css, /\.profile-photo-grid\.is-active\s*\{[^}]*display:\s*block;/s);
+    assert.match(css, /\.profile-photo-grid\s*\{[^}]*column-count:\s*3;[^}]*column-gap:\s*18px;/s);
+    assert.match(css, /\.profile-photo-grid article\s*\{[^}]*break-inside:\s*avoid;[^}]*margin:\s*0 0 18px;/s);
+    assert.match(css, /\.profile-photo-grid img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
+    assert.doesNotMatch(css, /\.profile-photo-grid img,\s*\.profile-album-grid img\s*\{[^}]*height:\s*180px;/s);
 });
 
 test('public profile map uses Google Maps JS with greedy wheel gestures and inert markers', () => {

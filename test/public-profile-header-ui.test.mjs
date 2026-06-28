@@ -51,7 +51,8 @@ test('own profile actions sit together at the top right with logout first', () =
 });
 
 test('profile edit form has breathing room above the editing fields', () => {
-    assert.match(css, /\.profile-edit-form\s*\{[^}]*max-width:\s*520px;[^}]*margin-top:\s*24px;[^}]*padding-top:\s*24px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
+    assert.match(css, /\.profile-cover\s*\{[^}]*padding:\s*24px 0 42px;/s);
+    assert.match(css, /\.profile-edit-form\s*\{[^}]*max-width:\s*520px;[^}]*margin-top:\s*32px;[^}]*padding-top:\s*24px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(280px,\s*100%\);/s);
 });
 
@@ -65,6 +66,7 @@ test('profile edit mode keeps the profile avatar beside the account name and rem
     assert.match(shell, /id="profile-nickname-input"/);
     assert.match(shell, /class="account-profile-field profile-edit-photo-field"/);
     assert.match(shell, /class="profile-avatar-upload-control"/);
+    assert.match(shell, /class="profile-avatar-upload-preview"/);
     assert.ok(shell.indexOf('id="profile-avatar"') < shell.indexOf('id="profile-title"'));
     assert.ok(shell.indexOf('id="profile-nickname-input"') < shell.indexOf('profile-avatar-upload-control'));
     assert.doesNotMatch(shell, /profile-edit-avatar/);
