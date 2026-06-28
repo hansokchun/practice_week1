@@ -184,20 +184,20 @@ img {
     position: relative;
     display: grid;
     place-items: center;
-    width: 38px;
+    width: 30px;
     height: 38px;
-    border: 1px solid rgba(26, 77, 78, 0.16);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.74);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: var(--teal-dark);
     padding: 0;
     box-shadow: none;
-    transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+    transition: transform 180ms ease, color 180ms ease, opacity 180ms ease;
 }
 
 .account-notification-trigger:hover {
     transform: translateY(-1px);
-    background: var(--surface);
+    color: var(--teal);
     opacity: 0.9;
 }
 
@@ -4809,6 +4809,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .explore-discovery-panel.is-collapsed {
+    top: 76px;
+    right: 16px;
     width: auto;
     min-width: 84px;
     height: auto;

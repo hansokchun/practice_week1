@@ -7,6 +7,12 @@ const css = readFileSync('style.css', 'utf8');
 const app = readFileSync('js/app.js', 'utf8');
 const auth = readFileSync('auth.js', 'utf8');
 
+test('brand logo routes to the landing home page', () => {
+    assert.match(html, /<a class="brand" href="#\/" data-route="home" aria-label="Ikkyee home">/);
+    assert.match(app, /\$\$\(\'\[data-route\]\'\)\.forEach\(\(link\) => \{/);
+    assert.match(app, /routeTo\(link\.dataset\.route\)/);
+});
+
 test('logged-in header exposes an image-only profile trigger', () => {
     assert.match(html, /id="btn-open-profile"/);
     assert.match(html, /id="account-avatar"/);
@@ -37,7 +43,7 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.ok(profileIndex > notificationIndex);
     assert.match(html, /id="account-notification-popover"/);
     assert.match(html, /id="account-notification-list"/);
-    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*30px;[^}]*height:\s*38px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
     assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /isNotificationPopoverOpen:\s*false/);
