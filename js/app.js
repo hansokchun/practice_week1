@@ -2071,7 +2071,6 @@ function renderTripReviewShell() {
                         <input id="trip-edit-title" type="text" aria-label="앨범 이름">
                     </div>
                     <p id="trip-review-description">사진이 날짜별로 정리된 앨범 지도입니다.</p>
-                    <textarea id="trip-edit-note" rows="1" aria-label="설명"></textarea>
                     <div id="trip-review-meta" class="trip-review-meta"></div>
                 </div>
                 <div class="trip-actions">
@@ -2089,7 +2088,6 @@ function renderTripReviewShell() {
                     <div id="trip-review-map" class="trip-review-map"></div>
                     <div class="trip-review-map-loading" aria-live="polite">지도 이동 중</div>
                     <div class="trip-review-map-summary" aria-label="앨범 지도 요약">
-                        <strong>앨범 지도</strong>
                         <div id="trip-review-map-meta" class="trip-review-map-meta"></div>
                     </div>
                 </aside>
@@ -2112,6 +2110,18 @@ function renderTripReviewStoryBlock(afterId, text, isEditing) {
     `;
 }
 
+function renderTripReviewStoryInsert(afterId, isEditing, hasStory) {
+    if (!isEditing || hasStory) return '';
+    return `
+        <div class="trip-review-story-insert">
+            <button class="trip-review-add-text" data-add-trip-story-after="${escapeHtml(afterId)}" type="button" aria-label="이 사진 뒤에 글귀 추가">
+                <span class="material-symbols-outlined">notes</span>
+                <span>텍스트 추가</span>
+            </button>
+        </div>
+    `;
+}
+
 function renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing) {
     const photoId = getTripReviewPhotoId(photo);
     return `
@@ -2123,7 +2133,6 @@ function renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing) {
             data-photo-id="${escapeHtml(photoId)}"
         >
             ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photoId)}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제"><span class="material-symbols-outlined">close</span></button>` : ''}
-            ${isEditing ? `<button class="trip-review-add-text" data-add-trip-story-after="${escapeHtml(photoId)}" type="button" aria-label="이 사진 뒤에 글귀 추가" data-tooltip="글귀 추가"><span class="material-symbols-outlined">notes</span></button>` : ''}
             <img src="${photo.url || cover}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}">
         </article>
     `;
@@ -2150,13 +2159,19 @@ function renderTripReviewPhotoFlow(albumPhotos, albumTitle, cover, { isEditing =
                 ${section.dateKey ? `<button class="trip-review-date-filter ${state.tripReviewDateFilter === section.dateKey ? 'active' : ''}" data-trip-review-date="${escapeHtml(section.dateKey)}" type="button">${state.tripReviewDateFilter === section.dateKey ? '선택됨' : '지도에서 보기'}</button>` : ''}
             </div>
             <div class="trip-review-day-rows">
-                ${section.rows.map((row) => row.map((photo) => {
-                    const photoId = getTripReviewPhotoId(photo);
-                    return `
-                        ${renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing)}
-                        ${renderTripReviewStoryBlock(photoId, storyMap.get(photoId) || '', isEditing && storyMap.has(photoId))}
-                    `;
-                }).join('')).join('')}
+                ${section.rows.map((row) => {
+                    const photoCards = row.map((photo) => renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing)).join('');
+                    const storyControls = row.map((photo) => {
+                        const photoId = getTripReviewPhotoId(photo);
+                        const storyText = storyMap.get(photoId) || '';
+                        const hasStory = storyMap.has(photoId);
+                        return `
+                            ${renderTripReviewStoryInsert(photoId, isEditing, hasStory)}
+                            ${renderTripReviewStoryBlock(photoId, storyText, isEditing && hasStory)}
+                        `;
+                    }).join('');
+                    return `${photoCards}${storyControls}`;
+                }).join('')}
             </div>
         </section>
     `).join('');
@@ -2268,7 +2283,7 @@ function layoutTripReviewPhotoRows() {
                 segment.push(child);
                 return;
             }
-            if (child.classList?.contains('trip-review-story-block')) {
+            if (child.classList?.contains('trip-review-story-insert') || child.classList?.contains('trip-review-story-block')) {
                 flushSegment();
                 nextChildren.push(child);
             }
@@ -2501,9 +2516,7 @@ function renderPublicSurfaces() {
     if (tripCopy) tripCopy.textContent = note;
     if (tripReviewDescription) tripReviewDescription.textContent = note;
     const tripEditTitle = $('#trip-edit-title');
-    const tripEditNote = $('#trip-edit-note');
     if (tripEditTitle) tripEditTitle.value = selected.title || '';
-    if (tripEditNote) tripEditNote.value = getAlbumVisibleNote(selected);
     const reviewBackButton = $('.trip-review-header .back-link');
     const reviewBackLabel = $('#trip-review-back-label');
     if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'home' : 'explore';
@@ -2559,13 +2572,13 @@ function renderPublicSurfaces() {
                         </button>
                     </div>
                 </details>
-            ` : '<button class="album-icon-button" data-go-profile type="button" aria-label="작성자 프로필" data-tooltip="작성자 프로필"><span class="material-symbols-outlined">account_circle</span></button>'}
+            ` : ''}
         `;
     }
     if (tripActions) {
         const isOwnAlbum = selected.owner_id && selected.owner_id === state.currentUser?.id;
         tripActions.innerHTML = `
-            ${isOwnAlbum ? '<button id="btn-edit-album" class="btn-secondary" type="button">수정하기</button>' : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
+            ${isOwnAlbum ? '<button id="btn-edit-album" class="btn-secondary" type="button">수정하기</button>' : ''}
         `;
     }
     if (routeMeta) routeMeta.textContent = getPublicTripRouteMeta(tripSummary);
@@ -3446,7 +3459,7 @@ async function saveSelectedAlbumTextEdits() {
     if (!album || album.owner_id !== state.currentUser?.id) return;
     const title = $('#trip-edit-title')?.value.trim();
     const note = serializeAlbumNoteWithStory(
-        $('#trip-edit-note')?.value.trim() || '',
+        '',
         collectAlbumStoryEntriesFromDOM(album)
     );
     if (!title) {
@@ -4590,10 +4603,15 @@ function bindEvents() {
         if (removeTripPhotoButton) {
             event.preventDefault();
             event.stopPropagation();
-            removePhotoFromSelectedAlbum(
-                removeTripPhotoButton.dataset.removeTripPhoto,
-                removeTripPhotoButton.dataset.removeTripPhotoIndex
-            );
+            const photoCard = removeTripPhotoButton.closest('.trip-review-photo-card');
+            if (photoCard?.classList.contains('is-removing')) return;
+            photoCard?.classList.add('is-removing');
+            window.setTimeout(() => {
+                removePhotoFromSelectedAlbum(
+                    removeTripPhotoButton.dataset.removeTripPhoto,
+                    removeTripPhotoButton.dataset.removeTripPhotoIndex
+                );
+            }, 180);
             return;
         }
 

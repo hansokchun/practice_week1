@@ -31,6 +31,7 @@ test('album detail uses a Google Photos style title header without a cover backg
 test('album detail exposes icon actions and a three-dot album menu', () => {
     assert.match(appSource, /class="album-icon-button"[^>]*aria-label="사진 추가"[^>]*data-tooltip="사진 추가"/);
     assert.match(appSource, /class="album-icon-button"[^>]*aria-label="공유하기"[^>]*data-tooltip="공유하기"/);
+    assert.doesNotMatch(appSource, /data-go-profile type="button" aria-label="작성자 프로필"/);
     assert.match(appSource, /class="album-more-menu"/);
     assert.match(appSource, /data-album-action="edit"/);
     assert.match(appSource, /data-album-action="cover"/);
@@ -55,15 +56,14 @@ test('album header keeps owner actions on the right and simplifies edit mode act
 
 test('album edit fields use a lightweight Google Photos style', () => {
     assert.match(appSource, /<div class="trip-review-title-block">\s*<p class="eyebrow">Album Review Map<\/p>\s*<h1 id="trip-title">Album<\/h1>\s*<div class="trip-edit-fields">[\s\S]*<input id="trip-edit-title"/);
-    assert.match(appSource, /<p id="trip-review-description">사진이 날짜별로 정리된 앨범 지도입니다\.<\/p>\s*<textarea id="trip-edit-note"/);
+    assert.doesNotMatch(appSource, /trip-edit-note/);
     assert.doesNotMatch(appSource, /titleBlock\.appendChild\(form\)/);
     assert.match(cssSource, /\.trip-edit-fields\s*\{[\s\S]*grid-template-columns: 1fr;[\s\S]*justify-items: center;[\s\S]*background: transparent;/);
     assert.match(cssSource, /\.trip-review-header\.is-editing #trip-title,[\s\S]*\.trip-review-header\.is-editing #trip-review-description\s*\{[\s\S]*display: none;/);
     assert.match(cssSource, /\.trip-review-header\.is-editing \.trip-edit-fields\s*\{[\s\S]*display: grid;/);
     assert.match(cssSource, /\.trip-edit-fields label\s*\{[\s\S]*display: none;/);
-    assert.match(cssSource, /\.trip-edit-fields input,[\s\S]*#trip-edit-note\s*\{[\s\S]*border: 0;[\s\S]*border-bottom: 1px solid var\(--line\);[\s\S]*background: transparent;/);
+    assert.match(cssSource, /\.trip-edit-fields input\s*\{[\s\S]*border: 0;[\s\S]*border-bottom: 1px solid var\(--line\);[\s\S]*background: transparent;/);
     assert.match(cssSource, /#trip-edit-title\s*\{[\s\S]*font-size: clamp\(40px, 7vw, 92px\);[\s\S]*text-align: center;/);
-    assert.match(cssSource, /#trip-edit-note\s*\{[\s\S]*max-width: 520px;[\s\S]*line-height: 1\.45;[\s\S]*padding: 0 0 4px;[\s\S]*text-align: center;/);
 });
 
 test('album edit mode can add text blocks between photos and persist them in album note metadata', () => {
@@ -72,11 +72,16 @@ test('album edit mode can add text blocks between photos and persist them in alb
     assert.match(appSource, /function serializeAlbumNoteWithStory/);
     assert.match(appSource, /data-add-trip-story-after/);
     assert.match(appSource, /data-remove-trip-story/);
+    assert.doesNotMatch(appSource, /trip-review-photo-card[\s\S]*trip-review-add-text/);
+    assert.match(appSource, /class="trip-review-story-insert"[\s\S]*data-add-trip-story-after/);
+    assert.match(appSource, /child\.classList\?\.contains\('trip-review-story-insert'\) \|\| child\.classList\?\.contains\('trip-review-story-block'\)/);
     assert.match(appSource, /class="trip-review-story-block/);
     assert.match(appSource, /collectAlbumStoryEntriesFromDOM/);
     assert.match(appSource, /const addTripStoryButton = event\.target\.closest\('\[data-add-trip-story-after\]'\)/);
     assert.match(cssSource, /\.trip-review-story-block\s*\{/);
-    assert.match(cssSource, /\.trip-review-add-text\s*\{/);
+    assert.match(cssSource, /\.trip-review-story-insert\s*\{/);
+    assert.match(cssSource, /\.trip-review-photo-card\.is-removing\s*\{[\s\S]*transform: scale\(0\.94\);[\s\S]*opacity: 0;/);
+    assert.match(cssSource, /\.trip-review-photo-card\.is-editing:hover \.trip-review-photo-remove/);
 });
 
 test('album detail exposes date map filters and a clear state', () => {
@@ -124,4 +129,5 @@ test('album detail map shows lightweight loading feedback while the viewport cha
 
 test('album detail map hides Google default corner controls', () => {
     assert.match(appSource, /state\.tripReviewMap = new maps\.Map\(container, \{[\s\S]*disableDefaultUI: true,[\s\S]*fullscreenControl: false,[\s\S]*streetViewControl: false,[\s\S]*rotateControl: false,[\s\S]*scaleControl: false,[\s\S]*zoomControl: false,[\s\S]*cameraControl: false,[\s\S]*panControl: false,[\s\S]*keyboardShortcuts: false,/);
+    assert.doesNotMatch(appSource, /<strong>앨범 지도<\/strong>/);
 });
