@@ -39,7 +39,7 @@ export function parseSharedOwnerId(hash) {
 
 export function getSharedRouteState(hash) {
     const path = String(hash || '').replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
-    const route = ['home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'album-photos', 'trip', 'profile'].includes(path)
+    const route = ['landing', 'home', 'myphoto', 'explore', 'upload', 'photos', 'album', 'album-photos', 'trip', 'profile'].includes(path)
         ? path || 'home'
         : 'home';
     return {

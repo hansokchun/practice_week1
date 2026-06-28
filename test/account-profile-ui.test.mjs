@@ -48,14 +48,14 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(html, /id="account-notification-list"/);
     assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*36px;[^}]*height:\s*40px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
     assert.match(css, /\.account-notification-trigger \.material-symbols-outlined\s*\{[^}]*font-size:\s*25px;/s);
-    assert.match(css, /\.account-notification-badge\s*\{[^}]*right:\s*-14px;[^}]*min-width:\s*25px;[^}]*height:\s*18px;[^}]*padding:\s*0 6px;/s);
+    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*4px;[^}]*right:\s*4px;[^}]*width:\s*8px;[^}]*height:\s*8px;[^}]*border-radius:\s*999px;/s);
     assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /isNotificationPopoverOpen:\s*false/);
     assert.match(app, /function getAccountNotificationItems\(\)/);
     assert.match(app, /getMissingLocationPhotos\(state\.savedPhotos\)/);
     assert.match(app, /getLikedPhotos\(\)/);
-    assert.match(app, /badge\.textContent = actionableCount > 9 \? '9\+' : `\$\{actionableCount\}개`;/);
+    assert.match(app, /badge\.textContent = '';/);
     assert.match(app, /badge\.setAttribute\('aria-label', `새 알림 \$\{actionableCount\}개`\)/);
     assert.match(app, /data-route="\$\{escapeHtml\(item\.route\)\}"/);
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);

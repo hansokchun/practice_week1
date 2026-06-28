@@ -1748,7 +1748,7 @@ function renderAccountNotifications() {
     }
     if (badge) {
         badge.hidden = !isLoggedIn || actionableCount === 0;
-        badge.textContent = actionableCount > 9 ? '9+' : `${actionableCount}개`;
+        badge.textContent = '';
         badge.setAttribute('aria-label', `새 알림 ${actionableCount}개`);
     }
     if (popover) popover.hidden = !isLoggedIn || !state.isNotificationPopoverOpen;
