@@ -19,7 +19,7 @@ test('album detail uses a compact map card beside the photo timeline', () => {
 
 test('album detail uses a Google Photos style title header without a cover background', () => {
     assert.doesNotMatch(appSource, /trip-review-cover-image/);
-    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: clamp\(300px, 39vh, 420px\);[\s\S]*background: var\(--surface\);/);
+    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: clamp\(300px, 39vh, 420px\);[\s\S]*background: var\(--bg\);/);
     assert.doesNotMatch(cssSource, /\.trip-review-header::before/);
     assert.doesNotMatch(cssSource, /\.trip-review-header::after/);
     assert.match(cssSource, /\.trip-review-title-block h1\s*\{[\s\S]*font-size: clamp\(58px, 9\.2vw, 118px\);[\s\S]*font-weight: 800;/);
@@ -44,12 +44,21 @@ test('album detail exposes icon actions and a three-dot album menu', () => {
 test('album header keeps owner actions on the right and simplifies edit mode actions', () => {
     assert.match(cssSource, /\.trip-review-header \.trip-actions\s*\{[\s\S]*grid-column: 3;[\s\S]*grid-row: 1;/);
     assert.match(cssSource, /\.trip-review-header\.is-editing \.back-link\s*\{[\s\S]*display: none;/);
+    assert.match(cssSource, /\.trip-review-header\.is-editing \.trip-actions\s*\{[\s\S]*grid-column: 3;[\s\S]*justify-self: end;/);
     assert.match(appSource, /<header class="trip-review-header \$\{state\.albumDetailEditMode \? 'is-editing' : ''\}">/);
     assert.match(appSource, /id="btn-edit-album" class="album-icon-button is-active"[^>]*data-tooltip="수정 완료"/);
     assert.match(appSource, /id="btn-toggle-album-visibility" class="album-icon-button"[^>]*data-tooltip="\$\{selected\.visibility === 'public' \? '비공개로 전환' : '공개로 전환'\}"/);
     assert.match(appSource, /<span class="material-symbols-outlined">\$\{selected\.visibility === 'public' \? 'lock' : 'public'\}<\/span>/);
     assert.match(appSource, /isOwnAlbum && state\.albumDetailEditMode \? `[\s\S]*id="btn-edit-album"/);
     assert.match(appSource, /isOwnAlbum && !state\.albumDetailEditMode \? `[\s\S]*class="album-more-menu"/);
+});
+
+test('album edit fields use a lightweight Google Photos style', () => {
+    assert.match(cssSource, /\.trip-edit-fields\s*\{[\s\S]*grid-template-columns: 1fr;[\s\S]*justify-items: center;[\s\S]*background: transparent;/);
+    assert.match(cssSource, /\.trip-edit-fields label\s*\{[\s\S]*display: none;/);
+    assert.match(cssSource, /\.trip-edit-fields input,[\s\S]*\.trip-edit-fields textarea\s*\{[\s\S]*border: 0;[\s\S]*border-bottom: 1px solid var\(--line\);[\s\S]*background: transparent;/);
+    assert.match(cssSource, /#trip-edit-title\s*\{[\s\S]*font-size: clamp\(40px, 7vw, 92px\);[\s\S]*text-align: center;/);
+    assert.match(cssSource, /#trip-edit-note\s*\{[\s\S]*max-width: 520px;[\s\S]*text-align: center;/);
 });
 
 test('album edit mode can add text blocks between photos and persist them in album note metadata', () => {
