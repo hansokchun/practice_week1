@@ -6430,10 +6430,11 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .photo-detail-card {
     position: relative;
     display: grid;
-    align-items: start;
+    align-items: stretch;
     grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
     gap: 0;
     width: min(1180px, calc(100vw - 32px));
+    height: calc(100vh - 48px);
     max-height: calc(100vh - 48px);
     overflow: hidden;
     border-radius: 0;
@@ -6443,7 +6444,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-card > img {
     width: 100%;
-    height: min(76vh, 760px);
+    height: 100%;
     max-height: calc(100vh - 48px);
     object-fit: contain;
     background: #ffffff;
@@ -6454,7 +6455,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .photo-detail-close {
     position: absolute;
     top: 14px;
-    left: 14px;
+    right: 14px;
     z-index: 4;
     display: grid;
     place-items: center;
@@ -6480,14 +6481,15 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-card section {
     display: grid;
-    align-self: start;
+    align-self: stretch;
     align-content: start;
     gap: 14px;
     min-width: 0;
-    max-height: calc(100vh - 48px);
+    height: 100%;
+    max-height: none;
     overflow-y: auto;
-    background: var(--surface-soft);
-    padding: 28px;
+    background: var(--surface-muted);
+    padding: 72px 28px 28px;
 }
 
 .photo-detail-section-head {
@@ -6579,8 +6581,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .photo-detail-meta {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    justify-items: start;
     gap: 8px;
 }
 
@@ -6589,10 +6591,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     align-items: center;
     gap: 6px;
     min-height: 34px;
-    border: 1px solid rgba(15, 88, 86, 0.1);
-    border-radius: 999px;
-    background: #f7faf9;
-    color: #627373;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--muted);
     font-size: 12px;
     font-weight: 800;
     line-height: 1;
@@ -6714,13 +6716,15 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-visibility {
     width: fit-content;
-    border: 1px solid var(--line);
-    border-radius: 999px;
+    min-height: 34px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 8px;
     background: var(--bg);
-    color: var(--teal);
-    font-size: 14px;
-    font-weight: 900;
-    padding: 10px 14px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 10px;
 }
 
 .photo-detail-like-panel {
