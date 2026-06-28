@@ -137,6 +137,7 @@ const state = {
     selectedPublicOwnerId: null,
     selectedPhotoId: null,
     selectedPersonalPhotoIds: [],
+    lastToggledPersonalPhotoId: null,
     albumBuilderPhotoIds: [],
     albumPhotoPickerIds: [],
     albumPhotoPickerReturnRoute: null,
@@ -2998,13 +2999,15 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
 
     grid.innerHTML = photos.map((photo) => {
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
+        const shouldAnimateSelection = isSelected && state.lastToggledPersonalPhotoId === photo.id;
         return `
-            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${shouldAnimateSelection ? 'is-selection-animated' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
             </article>
         `;
     }).join('');
+    state.lastToggledPersonalPhotoId = null;
 }
 
 async function deleteSelectedPersonalPhotos() {
@@ -4849,6 +4852,7 @@ function bindEvents() {
                 state.selectedPersonalPhotoIds,
                 personalPhotoToggle.dataset.togglePersonalPhoto
             );
+            state.lastToggledPersonalPhotoId = personalPhotoToggle.dataset.togglePersonalPhoto || null;
             renderPersonalPhotosPage();
             return;
         }

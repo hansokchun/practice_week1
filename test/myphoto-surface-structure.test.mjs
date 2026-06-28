@@ -357,7 +357,7 @@ test('home and personal photo cards omit visible caption wrappers', () => {
     assert.doesNotMatch(personalRenderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
-    assert.match(personalRenderer, /<article class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\}"[^>]*>\s*<button class="photo-select-button"[^>]*><\/button>\s*<img src="\$\{photo\.url\}" alt="\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}">\s*<\/article>/s);
+    assert.match(personalRenderer, /<article class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{shouldAnimateSelection \? 'is-selection-animated' : ''\}"[^>]*>\s*<button class="photo-select-button"[^>]*><\/button>\s*<img src="\$\{photo\.url\}" alt="\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}">\s*<\/article>/s);
     assert.doesNotMatch(likedRenderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);

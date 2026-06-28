@@ -581,9 +581,7 @@
     <div id="location-editor-modal" class="modal" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="location-editor-title">
             <button class="modal-close" data-close-modal type="button" aria-label="닫기">×</button>
-            <p class="eyebrow">Photo Edit</p>
             <h2 id="location-editor-title">사진 정보 수정</h2>
-            <p>사진 설명, 촬영 날짜와 지도에 표시될 위치를 수정합니다.</p>
             <div id="location-editor-map" class="location-editor-map">
                 <div id="location-editor-map-canvas" class="location-editor-map-canvas" role="img" aria-label="수정할 사진 위치 지도"></div>
                 <button id="btn-pick-photo-location" class="map-pick-button" type="button">지도에서 위치수정</button>
@@ -596,8 +594,14 @@
                 <div class="photo-visibility-editor" aria-label="사진 공개 여부">
                     <span>공개 여부</span>
                     <div>
-                        <button class="active" data-photo-visibility="private" type="button">비공개</button>
-                        <button data-photo-visibility="public" type="button">공개</button>
+                        <button class="active" data-photo-visibility="private" type="button">
+                            <span class="material-symbols-outlined">lock</span>
+                            비공개
+                        </button>
+                        <button data-photo-visibility="public" type="button">
+                            <span class="material-symbols-outlined">public</span>
+                            공개
+                        </button>
                     </div>
                 </div>
                 <label for="location-lat-input">Latitude</label>
