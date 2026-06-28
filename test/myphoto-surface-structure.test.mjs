@@ -238,6 +238,7 @@ test('home archive creation actions sit in their matching section headers', () =
 
 test('recent photos full view uses recent-photo naming without intro copy', () => {
     const markup = html();
+    const styles = css();
     const photosStart = markup.indexOf('id="page-photos"');
     const likedStart = markup.indexOf('id="page-liked"', photosStart);
     const photosPage = markup.slice(photosStart, likedStart);
@@ -246,6 +247,9 @@ test('recent photos full view uses recent-photo naming without intro copy', () =
     assert.doesNotMatch(photosPage, /Personal Photos/);
     assert.doesNotMatch(photosPage, /개별사진/);
     assert.doesNotMatch(photosPage, /앨범으로 묶지 않은 개인 사진을 확인하고/);
+    assert.match(photosPage, /class="page-container photo-page-container"/);
+    assert.doesNotMatch(photosPage, /<h2>내가 올린 사진<\/h2>/);
+    assert.match(styles, /\.photo-page-container\s*\{[^}]*padding-top:\s*32px;/s);
 });
 
 test('home no longer renders the removed easol intro sections', () => {

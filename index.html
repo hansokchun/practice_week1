@@ -145,7 +145,7 @@
                 <section class="recent-photo-section liked-photo-section" aria-labelledby="liked-photo-title">
                     <div class="panel-topline">
                         <h2 id="liked-photo-title">좋아요한 사진</h2>
-                        <button id="btn-open-liked-photos" class="text-button" type="button">전체 보기</button>
+                        <button id="btn-open-liked-photos" class="text-button" data-route="liked" type="button">전체 보기</button>
                     </div>
                     <div id="liked-photo-grid" class="recent-photo-grid liked-photo-grid">
                         <article class="empty-state album-empty-state recent-photo-empty">
@@ -176,7 +176,7 @@
         </section>
 
         <section id="page-photos" class="page page-photos" aria-labelledby="photos-title">
-            <div class="page-container">
+            <div class="page-container photo-page-container">
                 <button class="back-link" data-go-myphoto type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
                     Home
@@ -196,7 +196,6 @@
                 <section class="dashboard-panel full-panel">
                     <div class="panel-topline">
                         <div>
-                            <h2>내가 올린 사진</h2>
                             <p id="personal-photo-summary">0장</p>
                         </div>
                         <div class="panel-actions">
@@ -216,14 +215,11 @@
                     Home
                 </button>
                 <div class="page-intro">
-                    <p class="eyebrow">Liked Photos</p>
-                    <h1 id="liked-photos-title">내가 좋아요한 사진</h1>
-                    <p>Explore와 사진 상세에서 좋아요를 누른 사진을 한곳에 모아 봅니다.</p>
+                    <h1 id="liked-photos-title">좋아요한 사진</h1>
                 </div>
                 <section class="dashboard-panel full-panel">
                     <div class="panel-topline">
                         <div>
-                            <h2>좋아요 모음</h2>
                             <p id="liked-photo-summary">0장</p>
                         </div>
                     </div>

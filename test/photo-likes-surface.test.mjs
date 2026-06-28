@@ -51,8 +51,22 @@ test('home has a liked photos section with an all-liked route action', () => {
     const home = html.slice(homeStart, homeEnd);
 
     assert.match(home, /id="liked-photo-grid"/);
-    assert.match(home, /id="btn-open-liked-photos"/);
+    assert.match(home, /id="btn-open-liked-photos"[^>]*data-route="liked"/);
     assert.match(home, /id="liked-photo-title"/);
+});
+
+test('liked photos page uses the Korean title without extra intro or section copy', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+    const likedStart = html.indexOf('id="page-liked"');
+    const likedEnd = html.indexOf('id="page-upload"', likedStart);
+    const likedPage = html.slice(likedStart, likedEnd);
+
+    assert.match(likedPage, /<h1 id="liked-photos-title">좋아요한 사진<\/h1>/);
+    assert.doesNotMatch(likedPage, /Liked Photos/);
+    assert.doesNotMatch(likedPage, /Explore와 사진 상세에서 좋아요를 누른 사진을 한곳에 모아 봅니다\./);
+    assert.doesNotMatch(likedPage, /좋아요 모음/);
+    assert.doesNotMatch(source, /#btn-open-liked-photos'\)\?\.addEventListener\('click', \(\) => routeTo\('liked'\)\)/);
 });
 
 test('app tracks liked photo ids and renders liked photo surfaces', () => {

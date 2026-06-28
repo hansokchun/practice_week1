@@ -4460,7 +4460,6 @@ function bindEvents() {
     $$('[data-mobile-route]').forEach((button) => button.addEventListener('click', () => routeTo(button.dataset.mobileRoute)));
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
-    $('#btn-open-liked-photos')?.addEventListener('click', () => routeTo('liked'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
