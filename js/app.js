@@ -2017,6 +2017,7 @@ function renderTripReviewShell() {
     page.innerHTML = `
         <div class="trip-review-shell">
             <header class="trip-review-header">
+                <img id="trip-review-cover-image" class="trip-review-cover-image" src="" alt="">
                 <button class="back-link" data-route="explore" type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
                     <span id="trip-review-back-label">Explore</span>
@@ -2384,6 +2385,7 @@ function renderPublicSurfaces() {
     if (shareOutput) shareOutput.value = getCurrentShareUrl();
 
     const tripHeroImage = $('.public-trip-hero > img');
+    const tripReviewCoverImage = $('#trip-review-cover-image');
     const tripTitle = $('#trip-title');
     const tripCopy = $('.public-trip-copy > p:not(.eyebrow)');
     const tripActions = $('.public-trip-copy .trip-actions');
@@ -2395,6 +2397,9 @@ function renderPublicSurfaces() {
     if (tripHeroImage) {
         tripHeroImage.src = cover;
         tripHeroImage.alt = selected.title;
+    }
+    if (tripReviewCoverImage) {
+        tripReviewCoverImage.src = cover;
     }
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;

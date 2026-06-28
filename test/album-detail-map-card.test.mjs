@@ -17,6 +17,16 @@ test('album detail uses a compact map card beside the photo timeline', () => {
     assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*gap: 36px/);
 });
 
+test('album detail renders a large fading photo cover above the timeline', () => {
+    assert.match(appSource, /id="trip-review-cover-image" class="trip-review-cover-image"/);
+    assert.match(appSource, /const tripReviewCoverImage = \$\('#trip-review-cover-image'\)/);
+    assert.match(appSource, /tripReviewCoverImage\.src = cover/);
+    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: clamp\(460px, 58vh, 640px\);[\s\S]*align-items: end;[\s\S]*border-bottom: 0;/);
+    assert.match(cssSource, /\.trip-review-cover-image\s*\{[\s\S]*object-fit: cover;[\s\S]*filter: blur\(5px\) saturate\(0\.9\) brightness\(0\.88\);/);
+    assert.match(cssSource, /\.trip-review-header::after\s*\{[\s\S]*linear-gradient\(180deg, rgba\(249, 247, 242, 0\), rgba\(249, 247, 242, 0\.86\) 58%, var\(--warm\)\)/);
+    assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*margin-top: calc\(-1 \* 66px\);/);
+});
+
 test('album detail exposes date map filters and a clear state', () => {
     assert.match(appSource, /data-trip-review-date/);
     assert.match(appSource, /data-clear-trip-review-date/);
