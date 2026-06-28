@@ -11,6 +11,17 @@ test('Explore map has a minimum zoom so wheel zoom-out stops at the limit', () =
     assert.equal(options.gestureHandling, 'greedy');
 });
 
+test('Explore map hides Google default corner controls', () => {
+    const options = getExploreMapOptions();
+
+    assert.equal(options.fullscreenControl, false);
+    assert.equal(options.streetViewControl, false);
+    assert.equal(options.mapTypeControl, false);
+    assert.equal(options.rotateControl, false);
+    assert.equal(options.scaleControl, false);
+    assert.equal(options.zoomControl, false);
+});
+
 test('Explore map hides non-essential labels and transit route geometry', () => {
     const options = getExploreMapOptions();
 

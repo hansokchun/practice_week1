@@ -17,6 +17,9 @@ export function getExploreMapOptions({ center = { lat: 36.45, lng: 127.85 }, zoo
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
+        rotateControl: false,
+        scaleControl: false,
+        zoomControl: false,
         gestureHandling: 'greedy'
     };
 }

@@ -2374,6 +2374,9 @@ async function renderTripReviewMap(albumPhotos) {
             mapTypeControl: false,
             fullscreenControl: false,
             streetViewControl: false,
+            rotateControl: false,
+            scaleControl: false,
+            zoomControl: false,
             gestureHandling: 'greedy'
         });
     }
