@@ -5373,81 +5373,170 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .trip-review-header {
     position: relative;
-    isolation: isolate;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 28px;
-    min-height: clamp(460px, 58vh, 640px);
-    overflow: hidden;
-    padding: 44px 40px 120px;
+    align-items: start;
+    gap: 24px;
+    min-height: clamp(300px, 39vh, 420px);
+    padding: 20px 28px 68px;
     border-bottom: 0;
-    background: var(--warm);
+    background: var(--surface);
 }
 
-.trip-review-header::before,
-.trip-review-header::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
+.trip-review-header .back-link {
+    min-width: 42px;
+    min-height: 42px;
+    border: 0;
+    background: transparent;
+    color: rgba(5, 5, 5, 0.76);
+    padding: 0;
 }
 
-.trip-review-header::before {
-    background:
-        linear-gradient(90deg, rgba(5, 5, 5, 0.58), rgba(5, 5, 5, 0.28) 48%, rgba(5, 5, 5, 0.5)),
-        linear-gradient(180deg, rgba(5, 5, 5, 0.2), rgba(5, 5, 5, 0.42) 62%, rgba(249, 247, 242, 0.18));
+.trip-review-header .back-link:hover {
+    background: rgba(5, 5, 5, 0.06);
 }
 
-.trip-review-header::after {
-    top: auto;
-    height: 210px;
-    background: linear-gradient(180deg, rgba(249, 247, 242, 0), rgba(249, 247, 242, 0.86) 58%, var(--warm));
+.trip-review-title-block {
+    grid-column: 1 / -1;
+    justify-self: center;
+    display: grid;
+    justify-items: center;
+    width: min(980px, 100%);
+    margin-top: 58px;
+    text-align: center;
 }
 
-.trip-review-cover-image {
-    position: absolute;
-    inset: calc(-1 * 18px);
-    z-index: -2;
-    width: calc(100% + 36px);
-    height: calc(100% + 36px);
-    object-fit: cover;
-    filter: blur(5px) saturate(0.9) brightness(0.88);
-    transform: scale(1.03);
-}
-
-.trip-review-header > :not(.trip-review-cover-image) {
-    position: relative;
-    z-index: 1;
-}
-
-.trip-review-header .back-link,
-.trip-review-header .btn-secondary {
-    border-color: rgba(255, 255, 255, 0.44);
-    background: rgba(255, 255, 255, 0.82);
-    box-shadow: 0 14px 36px rgba(5, 5, 5, 0.12);
+.trip-review-title-block .eyebrow,
+.trip-review-title-block > p:not(.eyebrow) {
+    display: none;
 }
 
 .trip-review-title-block h1 {
-    margin: 8px 0 0;
+    margin: 0;
+    color: rgba(5, 5, 5, 0.76);
+    font-family: var(--font);
+    font-size: clamp(58px, 9.2vw, 118px);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.02;
+}
+
+.trip-review-header .trip-actions {
+    position: relative;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 0;
+}
+
+.album-icon-button {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(5, 5, 5, 0.78);
+    padding: 0;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.album-icon-button:hover,
+.album-icon-button:focus-visible,
+.album-more-menu[open] > .album-icon-button {
+    background: rgba(5, 5, 5, 0.07);
+    color: var(--ink);
+}
+
+.album-icon-button:active {
+    transform: scale(0.96);
+}
+
+.album-icon-button .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.album-icon-button[data-tooltip]::after,
+.album-more-menu > .album-icon-button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(calc(-1 * 2px));
+    white-space: nowrap;
+    border-radius: 4px;
+    background: rgba(5, 5, 5, 0.84);
     color: #ffffff;
-    font-family: var(--headline);
-    font-size: clamp(42px, 6vw, 74px);
-    line-height: 1;
-    text-shadow: 0 18px 46px rgba(5, 5, 5, 0.34);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 8px;
+    transition: opacity 140ms ease, transform 140ms ease;
 }
 
-.trip-review-title-block .eyebrow {
-    color: rgba(255, 255, 255, 0.78);
+.album-icon-button[data-tooltip]:hover::after,
+.album-icon-button[data-tooltip]:focus-visible::after,
+.album-more-menu > .album-icon-button[data-tooltip]:hover::after,
+.album-more-menu > .album-icon-button[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
-.trip-review-title-block > p:not(.eyebrow) {
-    max-width: 780px;
-    margin: 10px 0 0;
-    color: rgba(255, 255, 255, 0.82);
-    line-height: 1.55;
-    text-shadow: 0 10px 28px rgba(5, 5, 5, 0.28);
+.album-more-menu {
+    position: relative;
+}
+
+.album-more-menu summary {
+    list-style: none;
+}
+
+.album-more-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.album-more-menu-list {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 30;
+    display: grid;
+    min-width: 184px;
+    border: 1px solid rgba(5, 5, 5, 0.08);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 14px 38px rgba(5, 5, 5, 0.12);
+    padding: 6px;
+}
+
+.album-more-menu-list button {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    padding: 8px 10px;
+}
+
+.album-more-menu-list button:hover,
+.album-more-menu-list button:focus-visible {
+    background: rgba(5, 5, 5, 0.06);
+}
+
+.album-more-menu-list .danger {
+    color: #b04432;
 }
 
 .trip-edit-fields {
@@ -5479,18 +5568,16 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .trip-review-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
+    justify-content: center;
+    gap: 8px 14px;
+    margin-top: 20px;
 }
 
 .trip-review-meta span {
-    border: 1px solid rgba(255, 255, 255, 0.34);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.82);
-    color: var(--teal-dark);
-    padding: 7px 12px;
-    font-size: 12px;
-    font-weight: 800;
+    color: rgba(5, 5, 5, 0.68);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0;
 }
 
 .trip-review-layout {
@@ -5500,12 +5587,12 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     grid-template-columns: minmax(0, 1fr) minmax(300px, 320px);
     gap: 36px;
     align-items: start;
-    margin-top: calc(-1 * 66px);
+    margin-top: 0;
     padding-right: 28px;
 }
 
 .trip-review-timeline {
-    padding: 0 0 56px 40px;
+    padding: 26px 0 56px 40px;
     min-width: 0;
 }
 
@@ -7919,20 +8006,24 @@ body.photo-fullscreen-open {
     }
 
     .trip-review-header {
-        min-height: 460px;
-        padding: 28px 16px 96px;
+        min-height: 260px;
+        padding: 18px 16px 48px;
+    }
+
+    .trip-review-title-block {
+        margin-top: 34px;
     }
 
     .trip-review-title-block h1 {
-        font-size: 38px;
+        font-size: clamp(44px, 16vw, 72px);
     }
 
     .trip-review-layout {
-        margin-top: calc(-1 * 46px);
+        margin-top: 0;
     }
 
     .trip-review-timeline {
-        padding: 0 16px;
+        padding: 18px 16px 0;
     }
 
     .trip-review-photo-row {

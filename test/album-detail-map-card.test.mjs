@@ -17,14 +17,34 @@ test('album detail uses a compact map card beside the photo timeline', () => {
     assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*gap: 36px/);
 });
 
-test('album detail renders a large fading photo cover above the timeline', () => {
-    assert.match(appSource, /id="trip-review-cover-image" class="trip-review-cover-image"/);
-    assert.match(appSource, /const tripReviewCoverImage = \$\('#trip-review-cover-image'\)/);
-    assert.match(appSource, /tripReviewCoverImage\.src = cover/);
-    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: clamp\(460px, 58vh, 640px\);[\s\S]*align-items: end;[\s\S]*border-bottom: 0;/);
-    assert.match(cssSource, /\.trip-review-cover-image\s*\{[\s\S]*object-fit: cover;[\s\S]*filter: blur\(5px\) saturate\(0\.9\) brightness\(0\.88\);/);
-    assert.match(cssSource, /\.trip-review-header::after\s*\{[\s\S]*linear-gradient\(180deg, rgba\(249, 247, 242, 0\), rgba\(249, 247, 242, 0\.86\) 58%, var\(--warm\)\)/);
-    assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*margin-top: calc\(-1 \* 66px\);/);
+test('album detail uses a Google Photos style title header without a cover background', () => {
+    assert.doesNotMatch(appSource, /trip-review-cover-image/);
+    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: clamp\(300px, 39vh, 420px\);[\s\S]*background: var\(--surface\);/);
+    assert.doesNotMatch(cssSource, /\.trip-review-header::before/);
+    assert.doesNotMatch(cssSource, /\.trip-review-header::after/);
+    assert.match(cssSource, /\.trip-review-title-block h1\s*\{[\s\S]*font-size: clamp\(58px, 9\.2vw, 118px\);[\s\S]*font-weight: 800;/);
+    assert.match(cssSource, /\.trip-review-meta\s*\{[\s\S]*justify-content: center;/);
+    assert.match(cssSource, /\.trip-review-meta span\s*\{[\s\S]*font-size: 14px;[\s\S]*font-weight: 700;/);
+    assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*margin-top: 0;/);
+});
+
+test('album detail exposes icon actions and a three-dot album menu', () => {
+    assert.match(appSource, /class="album-icon-button"[^>]*aria-label="사진 추가"[^>]*data-tooltip="사진 추가"/);
+    assert.match(appSource, /class="album-icon-button"[^>]*aria-label="공유하기"[^>]*data-tooltip="공유하기"/);
+    assert.match(appSource, /class="album-more-menu"/);
+    assert.match(appSource, /data-album-action="edit"/);
+    assert.match(appSource, /data-album-action="cover"/);
+    assert.match(appSource, /data-album-action="delete"/);
+    assert.match(appSource, /const albumMenuAction = event\.target\.closest\('\[data-album-action\]'\)/);
+    assert.match(cssSource, /\.album-icon-button\s*\{[\s\S]*width: 42px;[\s\S]*border-radius: 50%;/);
+    assert.match(cssSource, /\.album-icon-button\[data-tooltip\]::after/);
+    assert.match(cssSource, /\.album-more-menu-list\s*\{[\s\S]*position: absolute;/);
+});
+
+test('album edit mode keeps completion add-photo and visibility actions as icon buttons', () => {
+    assert.match(appSource, /id="btn-edit-album" class="album-icon-button is-active"[^>]*data-tooltip="수정 완료"/);
+    assert.match(appSource, /id="btn-toggle-album-visibility" class="album-icon-button"[^>]*data-tooltip="\$\{selected\.visibility === 'public' \? '비공개로 전환' : '공개로 전환'\}"/);
+    assert.match(appSource, /<span class="material-symbols-outlined">\$\{selected\.visibility === 'public' \? 'lock' : 'public'\}<\/span>/);
 });
 
 test('album detail exposes date map filters and a clear state', () => {

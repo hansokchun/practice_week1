@@ -2017,7 +2017,6 @@ function renderTripReviewShell() {
     page.innerHTML = `
         <div class="trip-review-shell">
             <header class="trip-review-header">
-                <img id="trip-review-cover-image" class="trip-review-cover-image" src="" alt="">
                 <button class="back-link" data-route="explore" type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
                     <span id="trip-review-back-label">Explore</span>
@@ -2029,9 +2028,9 @@ function renderTripReviewShell() {
                     <div id="trip-review-meta" class="trip-review-meta"></div>
                 </div>
                 <div class="trip-actions">
-                    <button class="btn-primary" data-open-photo-detail type="button">대표 사진 보기</button>
-                    <button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>
-                    <button id="btn-copy-trip-link" class="btn-secondary" type="button">링크 복사</button>
+                    <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="공유하기" data-tooltip="공유하기">
+                        <span class="material-symbols-outlined">ios_share</span>
+                    </button>
                 </div>
             </header>
             <div class="trip-review-layout">
@@ -2385,7 +2384,6 @@ function renderPublicSurfaces() {
     if (shareOutput) shareOutput.value = getCurrentShareUrl();
 
     const tripHeroImage = $('.public-trip-hero > img');
-    const tripReviewCoverImage = $('#trip-review-cover-image');
     const tripTitle = $('#trip-title');
     const tripCopy = $('.public-trip-copy > p:not(.eyebrow)');
     const tripActions = $('.public-trip-copy .trip-actions');
@@ -2397,9 +2395,6 @@ function renderPublicSurfaces() {
     if (tripHeroImage) {
         tripHeroImage.src = cover;
         tripHeroImage.alt = selected.title;
-    }
-    if (tripReviewCoverImage) {
-        tripReviewCoverImage.src = cover;
     }
     if (tripTitle) tripTitle.textContent = selected.title;
     if (tripCopy) tripCopy.textContent = note;
@@ -2430,11 +2425,43 @@ function renderPublicSurfaces() {
     if (tripReviewMapMeta) updateTripReviewDateFilterUI();
     if (tripReviewActions) {
         tripReviewActions.innerHTML = `
-            ${isOwnAlbum ? `<button id="btn-edit-album" class="btn-secondary ${state.albumDetailEditMode ? 'active' : ''}" type="button">${state.albumDetailEditMode ? '수정 완료' : '수정하기'}</button>` : '<button class="btn-secondary" data-go-profile type="button">작성자 프로필</button>'}
-            ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-add-trip-photos" class="btn-secondary" type="button">사진 추가하기</button>' : ''}
-            ${isOwnAlbum && state.albumDetailEditMode ? `<button id="btn-toggle-album-visibility" class="btn-secondary" type="button">${selected.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}</button>` : ''}
-            ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-set-album-cover" class="btn-secondary" type="button">대표사진 설정</button>' : ''}
-            ${isOwnAlbum && state.albumDetailEditMode ? '<button id="btn-delete-album" class="btn-secondary danger" type="button">앨범 삭제</button>' : ''}
+            ${isOwnAlbum ? `
+                <button id="btn-add-trip-photos" class="album-icon-button" type="button" aria-label="사진 추가" data-tooltip="사진 추가">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                </button>
+            ` : ''}
+            <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="공유하기" data-tooltip="공유하기">
+                <span class="material-symbols-outlined">ios_share</span>
+            </button>
+            ${isOwnAlbum && state.albumDetailEditMode ? `
+                <button id="btn-edit-album" class="album-icon-button is-active" type="button" aria-label="수정 완료" data-tooltip="수정 완료">
+                    <span class="material-symbols-outlined">done</span>
+                </button>
+                <button id="btn-toggle-album-visibility" class="album-icon-button" type="button" aria-label="${selected.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}" data-tooltip="${selected.visibility === 'public' ? '비공개로 전환' : '공개로 전환'}">
+                    <span class="material-symbols-outlined">${selected.visibility === 'public' ? 'lock' : 'public'}</span>
+                </button>
+            ` : ''}
+            ${isOwnAlbum ? `
+                <details class="album-more-menu">
+                    <summary class="album-icon-button" aria-label="앨범 메뉴" data-tooltip="더보기">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </summary>
+                    <div class="album-more-menu-list">
+                        <button data-album-action="edit" type="button">
+                            <span class="material-symbols-outlined">${state.albumDetailEditMode ? 'done' : 'edit'}</span>
+                            ${state.albumDetailEditMode ? '수정 완료' : '수정하기'}
+                        </button>
+                        <button data-album-action="cover" type="button">
+                            <span class="material-symbols-outlined">image</span>
+                            대표사진 설정
+                        </button>
+                        <button data-album-action="delete" class="danger" type="button">
+                            <span class="material-symbols-outlined">delete</span>
+                            앨범 삭제
+                        </button>
+                    </div>
+                </details>
+            ` : '<button class="album-icon-button" data-go-profile type="button" aria-label="작성자 프로필" data-tooltip="작성자 프로필"><span class="material-symbols-outlined">account_circle</span></button>'}
         `;
     }
     if (tripActions) {
@@ -4363,6 +4390,16 @@ function bindEvents() {
             return;
         }
 
+        const albumMenuAction = event.target.closest('[data-album-action]');
+        if (albumMenuAction) {
+            const action = albumMenuAction.dataset.albumAction;
+            albumMenuAction.closest('.album-more-menu')?.removeAttribute('open');
+            if (action === 'edit') startEditSelectedAlbum();
+            if (action === 'cover') setSelectedAlbumCoverFromFirstPhoto();
+            if (action === 'delete') deleteSelectedAlbum();
+            return;
+        }
+
         const addTripPhotosButton = event.target.closest('#btn-add-trip-photos');
         if (addTripPhotosButton) {
             openTripPhotoPicker();
@@ -4606,7 +4643,6 @@ function bindEvents() {
     $('#btn-save-share-settings')?.addEventListener('click', saveShareSettings);
     $$('[data-profile-tab]').forEach((button) => button.addEventListener('click', () => setProfileTab(button.dataset.profileTab)));
     $('#btn-copy-share-link')?.addEventListener('click', copyCurrentShareLink);
-    $('#btn-copy-trip-link')?.addEventListener('click', copyCurrentShareLink);
     $('#btn-review-upload')?.addEventListener('click', persistStagedPhotos);
     $('#btn-clear-staged')?.addEventListener('click', () => {
         state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
