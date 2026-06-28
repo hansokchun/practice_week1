@@ -14,12 +14,16 @@ export function getExploreMapOptions({ center = { lat: 36.45, lng: 127.85 }, zoo
         zoom,
         minZoom: EXPLORE_MAP_MIN_ZOOM,
         styles: QUIET_EXPLORE_MAP_STYLES,
+        disableDefaultUI: true,
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
         rotateControl: false,
         scaleControl: false,
         zoomControl: false,
+        cameraControl: false,
+        panControl: false,
+        keyboardShortcuts: false,
         gestureHandling: 'greedy'
     };
 }

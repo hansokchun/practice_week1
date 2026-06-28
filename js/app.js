@@ -2376,12 +2376,16 @@ async function renderTripReviewMap(albumPhotos) {
         state.tripReviewMap = new maps.Map(container, {
             center,
             zoom: located.length > 1 ? 11 : 13,
+            disableDefaultUI: true,
             mapTypeControl: false,
             fullscreenControl: false,
             streetViewControl: false,
             rotateControl: false,
             scaleControl: false,
             zoomControl: false,
+            cameraControl: false,
+            panControl: false,
+            keyboardShortcuts: false,
             gestureHandling: 'greedy'
         });
     }

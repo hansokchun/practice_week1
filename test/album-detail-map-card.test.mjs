@@ -123,5 +123,5 @@ test('album detail map shows lightweight loading feedback while the viewport cha
 });
 
 test('album detail map hides Google default corner controls', () => {
-    assert.match(appSource, /state\.tripReviewMap = new maps\.Map\(container, \{[\s\S]*fullscreenControl: false,[\s\S]*streetViewControl: false,[\s\S]*rotateControl: false,[\s\S]*scaleControl: false,[\s\S]*zoomControl: false,/);
+    assert.match(appSource, /state\.tripReviewMap = new maps\.Map\(container, \{[\s\S]*disableDefaultUI: true,[\s\S]*fullscreenControl: false,[\s\S]*streetViewControl: false,[\s\S]*rotateControl: false,[\s\S]*scaleControl: false,[\s\S]*zoomControl: false,[\s\S]*cameraControl: false,[\s\S]*panControl: false,[\s\S]*keyboardShortcuts: false,/);
 });
