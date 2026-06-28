@@ -20,16 +20,21 @@ test('togglePersonalPhotoSelection adds and removes one photo id', () => {
 });
 
 test('recent photo selection controls use Google Photos style hover and selected states', () => {
+    const markup = readFileSync('index.html', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
     const styles = readFileSync('style.css', 'utf8');
 
+    assert.match(markup, /id="btn-delete-selected-photos"[^>]*disabled hidden/);
+    assert.match(source, /deleteButton\.hidden = selectedCount === 0;/);
     assert.match(source, /class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\}"/);
     assert.match(source, /data-toggle-personal-photo="\$\{escapeHtml\(photo\.id\)\}"/);
-    assert.match(styles, /\.personal-photo-card::before\s*\{[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*0\.22\);[^}]*opacity:\s*0;/s);
+    assert.match(styles, /\.personal-photo-card::before\s*\{[^}]*height:\s*46%;[^}]*linear-gradient\(180deg,\s*rgba\(0,\s*0,\s*0,\s*0\.42\)/s);
     assert.match(styles, /\.personal-photo-card:hover::before,[\s\S]*\.personal-photo-card\.is-selected::before\s*\{[^}]*opacity:\s*1;/s);
-    assert.match(styles, /\.photo-select-button\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*scale\(0\.82\);/s);
+    assert.match(styles, /\.photo-select-button\s*\{[^}]*left:\s*10px;[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*opacity:\s*0;[^}]*transform:\s*scale\(0\.78\);/s);
+    assert.match(styles, /\.photo-select-button\s*\{[^}]*cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\)/s);
     assert.match(styles, /\.personal-photo-card:hover\s+\.photo-select-button,[\s\S]*\.personal-photo-card\.is-selected\s+\.photo-select-button\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scale\(1\);/s);
-    assert.match(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:\s*scale\(0\.94\);/s);
+    assert.match(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:\s*scale\(0\.88\);[^}]*animation:\s*selectedPhotoSettle 180ms cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\);/s);
+    assert.match(styles, /@keyframes selectedPhotoSettle\s*\{[\s\S]*58%\s*\{[\s\S]*transform:\s*scale\(0\.84\);[\s\S]*100%\s*\{[\s\S]*transform:\s*scale\(0\.88\);/s);
     assert.match(styles, /\.personal-photo-card\.is-selected\s*\{[^}]*background:\s*rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
 });
 

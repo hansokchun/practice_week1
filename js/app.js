@@ -2965,6 +2965,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const selectedCount = state.selectedPersonalPhotoIds.length;
     if (summary) summary.textContent = formatPhotoCount(photos.length);
     if (deleteButton) {
+        deleteButton.hidden = selectedCount === 0;
         deleteButton.disabled = selectedCount === 0;
         deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
     }
