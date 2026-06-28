@@ -6448,44 +6448,34 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     object-fit: contain;
     background: #ffffff;
     padding: clamp(18px, 4vh, 48px) clamp(12px, 2vw, 24px);
+    cursor: zoom-in;
 }
 
 .photo-detail-close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 14px;
+    left: 14px;
     z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
     border-radius: 999px;
-}
-
-.photo-detail-zoom-button {
-    position: absolute;
-    left: 18px;
-    bottom: 18px;
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 40px;
-    border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.88);
     color: var(--teal-dark);
-    box-shadow: 0 16px 34px rgba(26, 77, 78, 0.14);
-    font-size: 13px;
-    font-weight: 900;
-    padding: 0 14px;
-    transition: transform 150ms ease, background 150ms ease;
+    box-shadow: 0 12px 30px rgba(12, 22, 22, 0.14);
+    backdrop-filter: blur(10px);
 }
 
-.photo-detail-zoom-button:hover,
-.photo-detail-zoom-button:focus-visible {
+.photo-detail-close .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.photo-detail-close:hover,
+.photo-detail-close:focus-visible {
+    background: #ffffff;
     transform: translateY(-1px);
-    background: var(--surface);
-}
-
-.photo-detail-zoom-button .material-symbols-outlined {
-    font-size: 18px;
 }
 
 .photo-detail-card section {
@@ -6496,13 +6486,14 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     min-width: 0;
     max-height: calc(100vh - 48px);
     overflow-y: auto;
+    background: var(--surface-soft);
     padding: 28px;
 }
 
 .photo-detail-section-head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 12px;
 }
 
@@ -6735,20 +6726,24 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .photo-detail-like-panel {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 4px;
+    width: fit-content;
+    border: 1px solid rgba(26, 77, 78, 0.1);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 4px 10px 4px 4px;
 }
 
 .photo-like-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
-    border: 1px solid var(--line);
+    width: 34px;
+    height: 34px;
+    border: 0;
     border-radius: 999px;
-    background: #ffffff;
-    color: var(--teal);
+    background: transparent;
+    color: var(--teal-dark);
     font-size: 14px;
     font-weight: 900;
     padding: 0;
@@ -6761,19 +6756,26 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: block;
     margin: 0;
     color: inherit;
-    font-size: 21px;
+    font-size: 23px;
     filter: none;
+    font-variation-settings: 'FILL' 0, 'wght' 420, 'GRAD' 0, 'opsz' 24;
+    transition: transform 0.16s ease, font-variation-settings 0.16s ease;
 }
 
 .photo-like-button:hover:not(:disabled) {
-    transform: translateY(-1px);
-    border-color: rgba(255, 90, 122, 0.42);
+    background: rgba(255, 90, 122, 0.1);
+    color: #c72f56;
+    transform: scale(1.04);
 }
 
 .photo-like-button.is-liked {
-    border-color: rgba(255, 90, 122, 0.34);
-    background: rgba(255, 90, 122, 0.1);
+    background: transparent;
     color: #c72f56;
+}
+
+.photo-like-button.is-liked .material-symbols-outlined {
+    transform: scale(1.08);
+    font-variation-settings: 'FILL' 1, 'wght' 520, 'GRAD' 0, 'opsz' 24;
 }
 
 .photo-like-button:disabled {
@@ -6782,9 +6784,12 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 #photo-detail-like-count {
-    color: var(--muted);
+    min-width: 1ch;
+    color: var(--teal-dark);
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 900;
+    line-height: 1;
+    text-align: left;
 }
 
 .detail-actions {
@@ -8434,13 +8439,6 @@ body.photo-fullscreen-open {
         background: #ffffff;
         object-fit: contain;
         padding: 12px;
-    }
-
-    .photo-detail-zoom-button {
-        left: 14px;
-        bottom: calc(48svh + 14px);
-        min-height: 36px;
-        padding: 0 12px;
     }
 
     .photo-detail-card section {

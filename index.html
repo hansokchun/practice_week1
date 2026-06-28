@@ -529,19 +529,15 @@
             <button class="modal-close photo-detail-close" data-close-modal type="button" aria-label="닫기">
                 <span class="material-symbols-outlined" aria-hidden="true">close</span>
             </button>
-            <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image>
-            <button class="photo-detail-zoom-button" data-open-photo-fullscreen type="button">
-                <span class="material-symbols-outlined" aria-hidden="true">open_in_full</span>
-                크게보기
-            </button>
+            <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image data-open-photo-fullscreen role="button" tabindex="0">
             <section>
                 <div class="photo-detail-section-head">
-                    <p class="eyebrow">Archival Photo</p>
                     <div class="photo-detail-more">
                         <button class="photo-detail-more-button" data-photo-detail-more type="button" aria-label="더보기" aria-expanded="false">
                             <span class="material-symbols-outlined" aria-hidden="true">more_horiz</span>
                         </button>
                         <div class="photo-detail-more-menu" data-photo-detail-more-menu hidden>
+                            <button data-open-photo-editor type="button">수정</button>
                             <button data-report-photo type="button">신고하기</button>
                         </div>
                     </div>
@@ -556,11 +552,10 @@
                     <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
                         <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
                     </button>
-                    <span id="photo-detail-like-count">좋아요 0개</span>
+                    <span id="photo-detail-like-count">0</span>
                 </div>
                 <div class="detail-actions">
                     <button class="btn-primary" data-show-photo-on-map type="button" hidden>지도에서 보기</button>
-                    <button class="btn-secondary" data-open-photo-editor type="button">수정</button>
                 </div>
                 <div id="photo-detail-map" class="photo-detail-map" hidden>
                     <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>

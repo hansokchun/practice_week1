@@ -1284,7 +1284,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         likeButton.dataset.photoId = photo.id || '';
         likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
     }
-    if (likeCount) likeCount.textContent = `좋아요 ${likeTotal}개`;
+    if (likeCount) likeCount.textContent = String(likeTotal);
     if (editButton) editButton.hidden = !canEdit;
     if (showOnMapButton) {
         const canShowOnTripMap = Boolean(
@@ -1376,8 +1376,11 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
     renderLikedPhotoSurfaces();
     renderPublicSurfaces();
     if (state.selectedPhotoId && String(state.selectedPhotoId) === String(photo.id)) {
-        updateExplorePhotoPreview(updatedPhoto || photo);
-        updatePhotoDetailModal(updatedPhoto || photo, { context: detailContext });
+        if (detailContext === 'explore') {
+            updateExplorePhotoPreview(updatedPhoto || photo);
+        } else {
+            updatePhotoDetailModal(updatedPhoto || photo, { context: detailContext });
+        }
     }
     showToast(nextLiked ? '좋아요에 추가했습니다.' : '좋아요를 취소했습니다.');
 }
@@ -4924,6 +4927,12 @@ function bindEvents() {
             return;
         }
         if (event.target.closest('[data-toggle-photo-like]')) return;
+        const photoFullscreenButton = event.target.closest('[data-open-photo-fullscreen]');
+        if (photoFullscreenButton) {
+            event.preventDefault();
+            openPhotoFullscreenFromDetail();
+            return;
+        }
         const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');
         if (discoveryPhotoButton) {
             const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto)

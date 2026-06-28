@@ -11,6 +11,8 @@ test('photo detail exposes like action and total like count', () => {
     assert.match(detail, /id="photo-detail-like"/);
     assert.match(detail, /data-toggle-photo-like/);
     assert.match(detail, /id="photo-detail-like-count"/);
+    assert.match(detail, /id="photo-detail-like-count">0<\/span>/);
+    assert.doesNotMatch(detail, /좋아요 0개/);
     assert.doesNotMatch(detail, /data-like-label/);
 });
 
@@ -84,4 +86,15 @@ test('photo like writes tolerate duplicate rows and counter permission gaps', ()
     assert.match(app, /const delta = nextLiked && likeRowResult\.alreadyLiked \? 0 : \(nextLiked \? 1 : -1\)/);
     assert.doesNotMatch(app, /showToast\(likeRowResult\.error\.message/);
     assert.doesNotMatch(app, /showToast\(countResult\.error\.message/);
+});
+
+test('home photo detail like updates do not refresh the Explore preview photo', () => {
+    const app = readFileSync('js/app.js', 'utf8');
+    const fnStart = app.indexOf('async function toggleSelectedPhotoLike');
+    const fnEnd = app.indexOf('function getCurrentAccountProfile', fnStart);
+    const body = app.slice(fnStart, fnEnd);
+
+    assert.match(body, /const detailContext = \$\('#photo-detail-modal'\)\?\.dataset\.photoDetailContext \|\| 'photo'/);
+    assert.match(body, /if \(state\.selectedPhotoId && String\(state\.selectedPhotoId\) === String\(photo\.id\)\) \{/);
+    assert.match(body, /if \(detailContext === 'explore'\) \{[\s\S]*updateExplorePhotoPreview\(updatedPhoto \|\| photo\);[\s\S]*\} else \{[\s\S]*updatePhotoDetailModal\(updatedPhoto \|\| photo, \{ context: detailContext \}\);[\s\S]*\}/);
 });
