@@ -80,6 +80,10 @@ import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import {
+    getAccountUploadLimitMessage,
+    getAccountUploadLimitStatus
+} from './upload-account-limit.mjs';
+import {
     appendUploadPhotos,
     countSelectedUploadPhotos,
     getSelectedUploadPhotos,
@@ -3108,11 +3112,24 @@ function renderStagedPhotos() {
     const uploadDropzone = $('#upload-dropzone');
     const reviewButton = $('#btn-review-upload');
     const selectedUploadCount = countSelectedUploadPhotos(state.stagedPhotos);
+    const uploadLimitStatus = getAccountUploadLimitStatus({
+        user: state.currentUser,
+        photos: state.savedPhotos,
+        incomingUploadCount: selectedUploadCount
+    });
+    const isUploadLimitBlocked = state.currentUser && !uploadLimitStatus.canUpload;
+    const uploadStorageStatus = $('#upload-storage-status');
     $('#album-count-label') && ($('#album-count-label').textContent = formatPhotoCount(state.stagedPhotos.length));
     $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${formatPhotoCount(state.stagedPhotos.length)} · ${formatAlbumCount(state.albumDrafts.length)}`);
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${selectedUploadCount}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
+    if (reviewButton) reviewButton.disabled = !selectedUploadCount || isUploadLimitBlocked;
+    if (uploadStorageStatus) {
+        uploadStorageStatus.textContent = isUploadLimitBlocked
+            ? getAccountUploadLimitMessage(uploadLimitStatus)
+            : `남은 업로드 가능 수 ${uploadLimitStatus.remainingUploads}장 · 모든 사진은 기본 비공개로 저장됩니다.`;
+    }
     renderTravelDraftSurfaces();
 
     if (!state.stagedPhotos.length) {
@@ -3866,6 +3883,7 @@ async function persistStagedPhotos() {
     if (!enforceNewAccountLimit('upload', {
         incomingUploadCount: selectedPhotos.length
     })) return;
+    if (!enforceAccountUploadLimit(selectedPhotos.length)) return;
     if (state.isPersistingUpload) return;
     state.isPersistingUpload = true;
     const status = $('#upload-storage-status');
@@ -3916,7 +3934,7 @@ async function persistStagedPhotos() {
         showToast('사진 저장에 실패했습니다. 로컬 초안은 유지됩니다.');
     } finally {
         state.isPersistingUpload = false;
-        if (reviewButton) reviewButton.disabled = false;
+        renderStagedPhotos();
     }
 }
 
@@ -3995,6 +4013,18 @@ function enforceNewAccountLimit(action, options = {}) {
     if (!isBlocked) return true;
     const message = getNewAccountLimitMessage(status, action);
     if (message) showToast(message);
+    return false;
+}
+
+function enforceAccountUploadLimit(incomingUploadCount = 0) {
+    const status = getAccountUploadLimitStatus({
+        user: state.currentUser,
+        photos: state.savedPhotos,
+        incomingUploadCount
+    });
+    if (status.canUpload) return true;
+    showToast(getAccountUploadLimitMessage(status));
+    renderStagedPhotos();
     return false;
 }
 

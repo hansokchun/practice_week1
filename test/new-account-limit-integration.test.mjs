@@ -10,6 +10,19 @@ test('upload flow checks new account upload limits before persisting files', () 
     const body = source.slice(start, end);
 
     assert.match(body, /enforceNewAccountLimit\('upload', \{\s*incomingUploadCount: selectedPhotos\.length\s*\}\)/s);
+    assert.match(body, /enforceAccountUploadLimit\(selectedPhotos\.length\)/);
+    assert.ok(body.indexOf("enforceNewAccountLimit('upload'") < body.indexOf('enforceAccountUploadLimit(selectedPhotos.length)'));
+});
+
+test('upload page surfaces the account-wide one hundred photo limit', () => {
+    const renderStart = source.indexOf('function renderStagedPhotos()');
+    const renderEnd = source.indexOf('function renderAlbumComposePage()', renderStart);
+    const renderBody = source.slice(renderStart, renderEnd);
+
+    assert.match(source, /from '\.\/upload-account-limit\.mjs'/);
+    assert.match(renderBody, /getAccountUploadLimitStatus\(\{\s*user: state\.currentUser,\s*photos: state\.savedPhotos,\s*incomingUploadCount: selectedUploadCount\s*\}\)/s);
+    assert.match(renderBody, /reviewButton\.disabled = !selectedUploadCount \|\| isUploadLimitBlocked/);
+    assert.match(renderBody, /남은 업로드 가능 수/);
 });
 
 test('share and edit flows check new account public limits before publishing photos', () => {
