@@ -6,9 +6,11 @@ const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
 
 test('Explore exposes mutually exclusive photo owner scope controls', () => {
-    assert.match(html, /id="explore-photo-scope-title">사진 출처 선택/);
-    assert.match(html, /지도에 표시할 사진의 출처를 선택하세요\./);
-    assert.match(html, /class="explore-photo-scope-control" role="tablist"/);
+    assert.doesNotMatch(html, /id="explore-photo-scope-title"/);
+    assert.doesNotMatch(html, /사진 출처 선택/);
+    assert.doesNotMatch(html, /지도에 표시할 사진의 출처를 선택하세요\./);
+    assert.doesNotMatch(html, /explore-photo-scope-control/);
+    assert.match(html, /class="explore-photo-scope" role="tablist"/);
     assert.match(html, /data-explore-scope="others"/);
     assert.match(html, /data-explore-scope="mine"/);
     assert.match(html, /data-explore-scope="others"[^>]*aria-selected="false"[\s\S]*<span class="material-symbols-outlined" aria-hidden="true">public<\/span>[\s\S]*다른 사람 사진/);
