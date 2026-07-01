@@ -77,7 +77,7 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.ok(workspaceIndex > featureStoriesIndex);
     assert.ok(workspaceIndex > -1);
     assert.equal(markup.match(/<article class="home-feature-story(?:\s|")/g)?.length, 3);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*사진이 찍힌 장소를 지도 위에서 바로 확인합니다/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*지도에 핀을 찍듯이 사진을 지도에 직접 올려보세요/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
     assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
     assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*장소를 검색하고,[\s\S]*Explore 흐름을 홈에서 먼저 보여줍니다\.[\s\S]*Explore 열기[\s\S]*내 사진 올리기/);
@@ -118,8 +118,8 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.ok(featureStoriesIndex > dividerIndex);
     assert.ok(workspaceIndex > featureStoriesIndex);
     assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
-    assert.match(markup, /이 사진은 어디서 찍은 걸까\?/);
-    assert.match(markup, /Ikkyee에서 장소와 여행자의 기록을 확인하세요\./);
+    assert.match(markup, /이 사진은 어디서 찍은 거지\?/);
+    assert.match(markup, /Ikkyee에서 취향에 맞는 사진과 장소를 알아가세요\./);
     assert.doesNotMatch(markup, /class="home-houses-reference__action"/);
     assert.doesNotMatch(markup, /공개 장소 둘러보기/);
     assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
