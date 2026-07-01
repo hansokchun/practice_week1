@@ -6,8 +6,13 @@ const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
 
 test('Explore exposes mutually exclusive photo owner scope controls', () => {
+    assert.match(html, /id="explore-photo-scope-title">사진 출처 선택/);
+    assert.match(html, /지도에 표시할 사진의 출처를 선택하세요\./);
+    assert.match(html, /class="explore-photo-scope-control" role="tablist"/);
     assert.match(html, /data-explore-scope="others"/);
     assert.match(html, /data-explore-scope="mine"/);
+    assert.match(html, /data-explore-scope="others"[^>]*aria-selected="false"[\s\S]*<span class="material-symbols-outlined" aria-hidden="true">public<\/span>[\s\S]*다른 사람 사진/);
+    assert.match(html, /data-explore-scope="mine"[^>]*class="active"[^>]*aria-selected="true"[\s\S]*<span class="material-symbols-outlined" aria-hidden="true">person<\/span>[\s\S]*내 사진/);
     const panelStart = html.indexOf('id="explore-list"');
     const scopeStart = html.indexOf('class="explore-photo-scope"', panelStart);
     const bodyStart = html.indexOf('id="explore-discovery-body"', panelStart);
@@ -17,6 +22,8 @@ test('Explore exposes mutually exclusive photo owner scope controls', () => {
     assert.ok(scopeStart < bodyStart);
     assert.match(source, /explorePhotoScope:\s*'mine'/);
     assert.match(source, /function setExplorePhotoScope\(scope\)/);
+    assert.match(source, /button\.setAttribute\('aria-selected', isActive \? 'true' : 'false'\)/);
+    assert.match(source, /button\.setAttribute\('aria-pressed', isActive \? 'true' : 'false'\)/);
     assert.match(source, /event\.target\.closest\('\[data-explore-scope\]'\)/);
 });
 

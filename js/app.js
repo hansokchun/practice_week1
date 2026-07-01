@@ -600,7 +600,10 @@ function renderExplorePhotoScopeControls() {
         state.explorePhotoScope = 'others';
     }
     $$('[data-explore-scope]').forEach((button) => {
-        button.classList.toggle('active', button.dataset.exploreScope === state.explorePhotoScope);
+        const isActive = button.dataset.exploreScope === state.explorePhotoScope;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         if (button.dataset.exploreScope === 'mine') button.disabled = !state.currentUser;
     });
 }
