@@ -101,6 +101,14 @@ All spacing derives from a base of 4px.
 - **Accessibility**: Use visible text, not icon-only labels, unless a tooltip or accessible name exists.
 - **Motion**: Keep button motion to transform and opacity.
 
+### Home Dashboard Sections
+
+- **Structure**: Logged-in Home uses `.home-dashboard-section` blocks with an icon-led `.dashboard-section-title`, right-aligned `.home-action-button` controls, and direct content grids.
+- **Buttons**: Primary actions use `.home-action-button--primary` in deep teal; secondary navigation uses `.home-action-button--outline` with a right-arrow icon.
+- **Cards**: Recent photo cards and album cards use consistent soft borders, restrained shadows, and small lift on hover. Album visibility appears as a compact badge above the title.
+- **Explore CTA**: The dashboard ends with `.home-explore-dashboard-banner`, pairing concise copy and a map/photo decoration that points users toward Explore without becoming a second landing page.
+- **Mobile**: Section headers stack cleanly above full-width actions, and the Explore banner collapses to one column with the map decoration first.
+
 ### White Landing Band
 
 - **Structure**: Full-width section with `.white-band`.

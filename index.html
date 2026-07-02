@@ -126,12 +126,17 @@
             </section>
 
             <section class="home-workspace page-container" aria-label="사진과 앨범 보관함">
-                <section class="recent-photo-section" aria-labelledby="recent-photo-title">
-                    <div class="panel-topline">
-                        <h2 id="recent-photo-title">최근 사진</h2>
-                        <div class="panel-actions">
-                            <button id="btn-open-upload" class="btn-primary compact-action-button" type="button">사진올리기</button>
-                            <button id="btn-open-photos" class="text-button" type="button">전체 보기</button>
+                <section class="recent-photo-section home-dashboard-section" aria-labelledby="recent-photo-title">
+                    <div class="panel-topline home-dashboard-topline">
+                        <h2 id="recent-photo-title" class="dashboard-section-title">
+                            <span class="home-title-icon home-title-icon--recent" aria-hidden="true"></span>
+                            <span>최근 사진</span>
+                        </h2>
+                        <div class="panel-actions home-dashboard-action-row">
+                            <button id="btn-open-upload" class="home-action-button home-action-button--primary compact-action-button" type="button">
+                                <span class="home-button-icon home-button-icon--upload" aria-hidden="true"></span>
+                                <span>사진 올리기</span>
+                            </button>
                         </div>
                     </div>
                     <div id="recent-photo-grid" class="recent-photo-grid">
@@ -142,10 +147,16 @@
                     </div>
                 </section>
 
-                <section class="recent-photo-section liked-photo-section" aria-labelledby="liked-photo-title">
-                    <div class="panel-topline">
-                        <h2 id="liked-photo-title">좋아요한 사진</h2>
-                        <button id="btn-open-liked-photos" class="text-button" data-route="liked" type="button">전체 보기</button>
+                <section class="recent-photo-section liked-photo-section home-dashboard-section" aria-labelledby="liked-photo-title">
+                    <div class="panel-topline home-dashboard-topline">
+                        <h2 id="liked-photo-title" class="dashboard-section-title">
+                            <span class="home-title-icon home-title-icon--heart" aria-hidden="true"></span>
+                            <span>좋아요한 사진</span>
+                        </h2>
+                        <button id="btn-open-liked-photos" class="home-action-button home-action-button--outline" data-route="liked" type="button">
+                            <span>전체 보기</span>
+                            <span class="home-button-icon home-button-icon--arrow" aria-hidden="true"></span>
+                        </button>
                     </div>
                     <div id="liked-photo-grid" class="recent-photo-grid liked-photo-grid">
                         <article class="empty-state album-empty-state recent-photo-empty">
@@ -158,17 +169,47 @@
                     </div>
                 </section>
 
-                <section class="dashboard-panel full-panel album-panel" aria-labelledby="my-albums-title">
-                    <div class="panel-topline">
+                <section class="dashboard-panel full-panel album-panel home-dashboard-section" aria-labelledby="my-albums-title">
+                    <div class="panel-topline home-dashboard-topline">
                         <div>
-                            <h2 id="my-albums-title">여행 앨범</h2>
+                            <h2 id="my-albums-title" class="dashboard-section-title">
+                                <span class="home-title-icon home-title-icon--album" aria-hidden="true"></span>
+                                <span>여행 앨범</span>
+                            </h2>
                         </div>
-                        <div class="panel-actions">
+                        <div class="panel-actions home-dashboard-action-row">
                             <span id="myphoto-summary">0장 · 0개 앨범</span>
-                            <button id="btn-open-album" class="btn-primary compact-action-button" type="button">앨범만들기</button>
+                            <button id="btn-open-album" class="home-action-button home-action-button--primary compact-action-button" type="button">
+                                <span class="home-button-icon home-button-icon--plus" aria-hidden="true"></span>
+                                <span>앨범 만들기</span>
+                            </button>
                         </div>
                     </div>
                     <div id="album-list" class="album-list"></div>
+                </section>
+
+                <section class="home-explore-dashboard-banner" aria-labelledby="home-explore-dashboard-title">
+                    <div class="home-explore-dashboard-copy">
+                        <h2 id="home-explore-dashboard-title">사진과 장소가 이어지는 여행 기록</h2>
+                        <p>공개된 여행 사진을 지도 위에서 둘러보고, 다른 사람의 여행 순간을 발견해보세요.</p>
+                        <button class="home-action-button home-action-button--primary" data-route="explore" type="button">
+                            <span>Explore 지도 보기</span>
+                            <span class="home-button-icon home-button-icon--arrow" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div class="home-explore-dashboard-art" aria-hidden="true">
+                        <span class="map-line map-line-a"></span>
+                        <span class="map-line map-line-b"></span>
+                        <span class="map-pin map-pin-a"></span>
+                        <span class="map-pin map-pin-b"></span>
+                        <span class="map-pin map-pin-c"></span>
+                        <figure class="mini-map-photo mini-map-photo-a">
+                            <img src="images/main_bg1.jpg" alt="">
+                        </figure>
+                        <figure class="mini-map-photo mini-map-photo-b">
+                            <img src="images/main_bg3.jpg" alt="">
+                        </figure>
+                    </div>
                 </section>
             </section>
 

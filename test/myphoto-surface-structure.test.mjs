@@ -210,10 +210,14 @@ test('logged-in home panels and thumbnails follow the explore visual language', 
 
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-section,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.dashboard-panel,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-panel\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
     assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-workspace\s+\.attention-banner\s*\{/s);
-    assert.match(styles, /\.compact-action-button\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*999px;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*8px;[^}]*box-shadow:/s);
+    assert.match(styles, /\.dashboard-section-title\s*\{[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;/s);
+    assert.match(styles, /\.home-action-button\s*\{[^}]*display:\s*inline-flex;[^}]*min-height:\s*42px;[^}]*border-radius:\s*999px;/s);
+    assert.match(styles, /\.home-action-button--primary\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;/s);
+    assert.match(styles, /\.home-action-button--outline\s*\{[^}]*border-color:\s*rgba\(26,\s*77,\s*78,\s*0\.28\);[^}]*color:\s*var\(--teal\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*10px;/s);
+    assert.match(styles, /\.album-status-badge,[\s\S]*\.album-row\s+\.status-line\s*\{[^}]*border-radius:\s*999px;[^}]*background:\s*rgba\(26,\s*77,\s*78,\s*0\.08\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*14px;[^}]*box-shadow:/s);
+    assert.match(styles, /\.home-explore-dashboard-banner\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*0\.88fr\)\s*minmax\(340px,\s*1fr\);/s);
 });
 
 test('home archive creation actions sit in their matching section headers', () => {
@@ -233,8 +237,14 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.doesNotMatch(home, /선택한 사진만 업로드됩니다/);
     assert.doesNotMatch(home, /class="myphoto-actions"/);
     assert.doesNotMatch(home, /class="action-card/);
-    assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
-    assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
+    assert.match(recentHeader, /id="recent-photo-title"[^>]*class="dashboard-section-title"[\s\S]*home-title-icon--recent[\s\S]*최근 사진/);
+    assert.match(recentHeader, /id="btn-open-upload"[^>]*home-action-button--primary[\s\S]*home-button-icon--upload[\s\S]*사진 올리기/);
+    assert.doesNotMatch(recentHeader, /id="btn-open-photos"/);
+    assert.match(home, /id="liked-photo-title"[^>]*class="dashboard-section-title"[\s\S]*home-title-icon--heart[\s\S]*좋아요한 사진/);
+    assert.match(home, /id="btn-open-liked-photos"[^>]*home-action-button--outline[\s\S]*전체 보기[\s\S]*home-button-icon--arrow/);
+    assert.match(albumHeader, /id="my-albums-title"[^>]*class="dashboard-section-title"[\s\S]*home-title-icon--album[\s\S]*여행 앨범/);
+    assert.match(albumHeader, /id="btn-open-album"[^>]*home-action-button--primary[\s\S]*home-button-icon--plus[\s\S]*앨범 만들기/);
+    assert.match(home, /class="home-explore-dashboard-banner"[\s\S]*사진과 장소가 이어지는 여행 기록[\s\S]*공개된 여행 사진을 지도 위에서 둘러보고[\s\S]*Explore 지도 보기/);
 });
 
 test('home album thumbnails do not expose Supabase storage copy', () => {
@@ -304,7 +314,7 @@ test('home private workspace is only visible after login', () => {
 
     assert.match(markup, /<body[^>]*class="is-logged-out"/);
     assert.match(styles, /body\.is-logged-out\s+\.home-workspace\s*\{[^}]*display:\s*none;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*grid;[^}]*gap:\s*36px;/s);
     assert.match(app, /document\.body\.classList\.toggle\('is-logged-in', Boolean\(state\.currentUser\)\)/);
     assert.match(app, /document\.body\.classList\.toggle\('is-logged-out', !state\.currentUser\)/);
 });
@@ -312,7 +322,7 @@ test('home private workspace is only visible after login', () => {
 test('logged-in home hides public intro sections and shows only the private workspace', () => {
     const styles = css();
 
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*grid;[^}]*gap:\s*36px;/s);
     assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-feature-stories,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 
