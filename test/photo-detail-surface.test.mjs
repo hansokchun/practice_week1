@@ -105,12 +105,12 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     const detailCardBlock = css.match(/\.photo-detail-card\s*\{(?<block>[^}]*)\}/s)?.groups?.block ?? '';
     assert.doesNotMatch(detailCardBlock, /^\s*height:\s*calc\(100vh - 48px\);/m);
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*align-self:\s*stretch;[^}]*max-height:\s*calc\(100vh - 48px\);/s);
-    assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);[^}]*padding:\s*clamp\(18px,\s*4vh,\s*48px\)\s*clamp\(12px,\s*2vw,\s*24px\);/s);
-    assert.match(css, /\.photo-detail-card section\s*\{[^}]*background:\s*var\(--surface-muted\);/s);
+    assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);[^}]*padding:\s*clamp\(32px,\s*5vh,\s*60px\)\s*clamp\(28px,\s*4vw,\s*56px\);/s);
+    assert.match(css, /\.photo-detail-card section\s*\{[^}]*background:\s*#ffffff;/s);
     assert.doesNotMatch(css, /\.photo-detail-zoom-button\s*\{/);
-    assert.match(css, /\.photo-detail-meta span\s*\{[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--bg\);/s);
-    assert.match(css, /\.photo-detail-visibility\s*\{[^}]*display:\s*inline-flex;[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--bg\);/s);
-    assert.match(css, /\.photo-detail-visibility \.material-symbols-outlined\s*\{[^}]*color:\s*var\(--teal-dark\);/s);
+    assert.match(css, /\.photo-detail-meta span\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.photo-detail-visibility\s*\{[^}]*display:\s*inline-flex;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.photo-detail-visibility \.material-symbols-outlined\s*\{[^}]*color:\s*#475556;/s);
     assert.match(css, /\.photo-detail-more-menu\s*\{[^}]*position:\s*absolute;[^}]*min-width:\s*132px;/s);
     assert.match(css, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(css, /\.photo-detail-nearby__item\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*border-radius:\s*0;/s);
@@ -119,7 +119,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*max-width:\s*none;[^}]*max-height:\s*none;[^}]*object-fit:\s*contain;/s);
     assert.match(css, /\.photo-fullscreen-card img\s*\{[^}]*padding:\s*max\(16px,\s*env\(safe-area-inset-top\)\)/s);
-    assert.match(css, /\.photo-detail-close\s*\{[^}]*position:\s*absolute;[^}]*right:\s*14px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.photo-detail-close\s*\{[^}]*position:\s*static;[^}]*border-radius:\s*999px;/s);
     assert.match(css, /\.photo-fullscreen-back\s*\{[^}]*left:\s*max\(12px,\s*env\(safe-area-inset-left\)\);/s);
     assert.match(css, /\.photo-detail-map\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /\.photo-detail-map,\s*\.location-editor-map\s*\{/s);

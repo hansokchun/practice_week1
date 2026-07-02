@@ -568,9 +568,6 @@
 
     <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
         <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">
-            <button class="modal-close photo-detail-close" data-close-modal type="button" aria-label="닫기">
-                <span class="material-symbols-outlined" aria-hidden="true">close</span>
-            </button>
             <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image data-open-photo-fullscreen role="button" tabindex="0">
             <section>
                 <div class="photo-detail-section-head">
@@ -583,6 +580,9 @@
                             <button data-report-photo type="button">신고하기</button>
                         </div>
                     </div>
+                    <button class="modal-close photo-detail-close" data-close-modal type="button" aria-label="닫기">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
                 </div>
                 <p id="photo-detail-description" class="photo-detail-description" hidden></p>
                 <div class="photo-detail-meta">
