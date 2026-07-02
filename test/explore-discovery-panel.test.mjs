@@ -58,7 +58,9 @@ test('Explore shell exposes a desktop discovery panel instead of a hidden-only l
     assert.doesNotMatch(panel, /<p class="eyebrow">Explore<\/p>/);
     assert.doesNotMatch(panel, /현재 지도 화면 안의 공개 사진/);
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
-    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*block;[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*12px;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-header,\s*\.explore-discovery-body\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
 });
 
 test('Explore map does not render the old pin instruction hint', () => {

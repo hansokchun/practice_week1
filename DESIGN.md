@@ -128,6 +128,14 @@ All spacing derives from a base of 4px.
 - **Controls**: Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces with teal-dark actions, coral metadata accents, and restrained media shadows so Explore feels connected to the landing feature rows. Large map panels use squared archive corners around 8-10px rather than soft rounded cards.
 - **Discovery Cards**: Public photo cards in the Explore discovery panel render as image-only thumbnail entries. Each thumbnail fills the panel width and preserves the original photo ratio, so wide photos become shorter horizontal entries and tall photos become taller vertical entries. Thumbnail corners stay sharp, and description or relative-time metadata appears only after opening the photo preview.
 
+### Mobile Web Shell
+
+- **Structure**: Mobile keeps the header as a compact brand/account bar and uses a two-item fixed bottom navigation for Home and Explore.
+- **Pages**: Home, photo grids, upload, album creation, album detail, public trip, and profile collapse to one-column page flows with 16px side gutters.
+- **Explore**: Mobile Explore stays map-first. Search and photo-source selection float over the map, while selected photo previews open as a bottom sheet above the bottom navigation.
+- **Modals**: Utility modals become bottom sheets. Photo detail and fullscreen viewers remain full-screen so images can be inspected without rounded card edges.
+- **Rules**: Mobile page content must avoid horizontal overflow, preserve two-column thumbnail grids where useful, and leave room for safe-area bottom navigation.
+
 ### Houses Reference Band
 
 - **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage with shadow depth.

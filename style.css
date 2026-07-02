@@ -7400,8 +7400,9 @@ body.photo-fullscreen-open {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
     border-radius: 18px 18px 0 0;
-    background: rgba(249, 247, 242, 0.96);
-    box-shadow: 0 -10px 28px rgba(26, 77, 78, 0.09);
+    border-top: 1px solid rgba(26, 77, 78, 0.1);
+    background: rgba(249, 247, 242, 0.98);
+    box-shadow: 0 -12px 30px rgba(26, 77, 78, 0.1);
     padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
 }
 
@@ -7419,8 +7420,8 @@ body.photo-fullscreen-open {
 }
 
 .mobile-bottom-nav button.active {
-    background: #ffdbd2;
-    color: #762b17;
+    background: var(--teal-dark);
+    color: #ffffff;
 }
 
 .mobile-bottom-nav .material-symbols-outlined {
@@ -7443,7 +7444,8 @@ body.photo-fullscreen-open {
     .site-header {
         position: sticky;
         height: auto;
-        padding: 14px 16px;
+        min-height: 64px;
+        padding: 12px 16px;
     }
 
     .site-header-inner {
@@ -7463,26 +7465,20 @@ body.photo-fullscreen-open {
     }
 
     .top-nav {
-        grid-column: 1 / -1;
-        width: 100%;
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding-bottom: 2px;
-        scrollbar-width: none;
-    }
-
-    .top-nav::-webkit-scrollbar {
         display: none;
     }
 
     .account-area {
         justify-self: end;
+        min-width: 0;
+        gap: 8px;
     }
 
-    .top-nav a {
-        min-width: 0;
-        flex: 1;
-        padding: 10px 8px;
+    .account-area .btn-primary,
+    .account-area .btn-secondary {
+        min-height: 38px;
+        padding: 0 12px;
+        font-size: 13px;
     }
 
     .hero {
@@ -7725,6 +7721,14 @@ body.photo-fullscreen-open {
     .page-container {
         width: calc(100% - 32px);
         padding: 48px 0;
+    }
+
+    .page-container.photo-page-container,
+    .page-container.flow-page,
+    .public-trip-body,
+    .profile-content {
+        padding-top: 28px;
+        padding-bottom: 44px;
     }
 
     body.is-logged-in .home-workspace {
@@ -8192,15 +8196,18 @@ body.photo-fullscreen-open {
     .panel-topline {
         align-items: flex-start;
         flex-direction: column;
+        gap: 12px;
     }
 
     .panel-actions {
         justify-content: stretch;
         width: 100%;
+        gap: 8px;
     }
 
     .panel-actions button {
         flex: 1;
+        min-height: 42px;
     }
 
     .process-grid,
@@ -8359,10 +8366,45 @@ body.photo-fullscreen-open {
 
     .explore-photo-scope button {
         white-space: nowrap;
+        min-height: 42px;
+        font-size: 13px;
+        padding: 0 8px;
     }
 
     .explore-discovery-panel {
+        display: block;
+        top: 66px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        height: auto;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        padding: 0;
+        pointer-events: none;
+    }
+
+    body.explore-pin-selected #page-explore .explore-discovery-panel {
+        visibility: visible;
+        pointer-events: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    .explore-discovery-header,
+    .explore-discovery-body {
         display: none;
+    }
+
+    .explore-discovery-panel .explore-photo-scope {
+        pointer-events: auto;
+        box-shadow:
+            0 16px 36px rgba(26, 77, 78, 0.14),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.72);
     }
 
     .explore-pin-preview {
@@ -8428,6 +8470,17 @@ body.photo-fullscreen-open {
         padding: 56px 0 40px;
     }
 
+    .trip-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .trip-actions button,
+    .public-author-card button {
+        width: 100%;
+    }
+
     .public-trip-photo-grid article,
     .public-trip-photo-grid img {
         min-height: 150px;
@@ -8437,6 +8490,18 @@ body.photo-fullscreen-open {
         align-items: start;
         gap: 16px;
         padding: 20px;
+    }
+
+    .profile-title-row {
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-title-row h1 {
+        min-width: 0;
+        font-size: 30px;
+        line-height: 1.1;
+        overflow-wrap: anywhere;
     }
 
     .profile-card-topline {
@@ -8506,6 +8571,14 @@ body.photo-fullscreen-open {
 
     .trip-review-map {
         height: 320px;
+    }
+
+    .trip-review-actions,
+    .trip-review-edit-actions,
+    .album-compose-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
     }
 
     .trip-review-map-summary {

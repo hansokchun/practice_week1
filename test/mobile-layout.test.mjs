@@ -17,7 +17,9 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
 
     assert.match(mobile, /\.explore-map-canvas\s*\{[^}]*height:\s*calc\(100svh - 64px - 92px\);/s);
     assert.match(mobile, /\.map-search\s*\{[^}]*top:\s*12px;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*width:\s*auto;/s);
-    assert.doesNotMatch(mobile, /\.explore-photo-scope\s*\{[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*auto;/s);
+    assert.match(mobile, /\.explore-discovery-panel\s*\{[^}]*display:\s*block;[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*background:\s*transparent;/s);
+    assert.match(mobile, /\.explore-discovery-header,\s*\.explore-discovery-body\s*\{[^}]*display:\s*none;/s);
+    assert.match(mobile, /\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*92px;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
@@ -54,9 +56,10 @@ test('mobile app shell uses a compact header and two-item bottom navigation', ()
 
     assert.match(css, /\.mobile-bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(css, /\.mobile-bottom-nav\s*\{[^}]*padding:\s*10px 16px calc\(12px \+ env\(safe-area-inset-bottom\)\);/s);
+    assert.match(css, /\.mobile-bottom-nav button\.active\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;/s);
     assert.match(mobile, /body\s*\{[^}]*padding-bottom:\s*calc\(92px \+ env\(safe-area-inset-bottom\)\);/s);
     assert.match(mobile, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
-    assert.match(mobile, /\.top-nav\s*\{[^}]*grid-column:\s*1 \/ -1;[^}]*overflow-x:\s*auto;/s);
+    assert.match(mobile, /\.top-nav\s*\{[^}]*display:\s*none;/s);
 });
 
 test('mobile album and photo detail views avoid side-by-side desktop layouts', () => {
@@ -86,6 +89,17 @@ test('mobile upload, album, trip, and personal photo surfaces keep thumb grids u
     assert.match(mobile, /\.public-trip-hero\s*\{[^}]*min-height:\s*420px;/s);
     assert.match(mobile, /\.profile-tabs\s*\{[^}]*overflow-x:\s*auto;/s);
     assert.match(mobile, /\.attention-banner\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(mobile, /\.trip-actions\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(mobile, /\.profile-title-row h1\s*\{[^}]*font-size:\s*30px;[^}]*overflow-wrap:\s*anywhere;/s);
+});
+
+test('DESIGN documents the mobile web shell strategy', () => {
+    const design = readFileSync('DESIGN.md', 'utf8');
+
+    assert.match(design, /### Mobile Web Shell/);
+    assert.match(design, /compact brand\/account bar/);
+    assert.match(design, /Mobile Explore stays map-first/);
+    assert.match(design, /Photo detail and fullscreen viewers remain full-screen/);
 });
 
 test('mobile modals become bottom sheets except dedicated photo viewers', () => {
