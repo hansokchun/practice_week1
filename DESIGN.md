@@ -134,6 +134,7 @@ All spacing derives from a base of 4px.
 - **Pages**: Home, photo grids, upload, album creation, album detail, public trip, and profile collapse to one-column page flows with 16px side gutters.
 - **Explore**: Mobile Explore stays map-first. Search and photo-source selection float over the map, while selected photo previews open as a bottom sheet above the bottom navigation.
 - **Modals**: Utility modals become bottom sheets. Photo detail and fullscreen viewers remain full-screen so images can be inspected without rounded card edges.
+- **Controls**: Mobile editing controls stay visible without hover, use full-width action rows where needed, and keep map-pick buttons reachable above safe-area navigation.
 - **Rules**: Mobile page content must avoid horizontal overflow, preserve two-column thumbnail grids where useful, and leave room for safe-area bottom navigation.
 
 ### Houses Reference Band

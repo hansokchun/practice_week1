@@ -21,9 +21,13 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-discovery-header,\s*\.explore-discovery-body\s*\{[^}]*display:\s*none;/s);
     assert.match(mobile, /\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*92px;/s);
+    assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*max-height:\s*min\(58svh,\s*520px\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
-    assert.match(mobile, /\.explore-pin-preview\.is-expanded\s*\{[^}]*max-height:\s*calc\(100svh - 120px\);/s);
+    assert.match(mobile, /\.explore-pin-preview\.is-expanded\s*\{[^}]*bottom:\s*0;[^}]*height:\s*100svh;[^}]*max-height:\s*100svh;[^}]*border-radius:\s*0;/s);
+    assert.match(mobile, /\.explore-pin-preview\.is-expanded \.pin-preview-photo-button img\s*\{[^}]*height:\s*min\(50svh,\s*420px\);[^}]*object-fit:\s*contain;/s);
+    assert.match(mobile, /\.pin-preview-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(mobile, /\.pin-preview-visibility\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
 test('mobile Home keeps the private workspace and bottom reference visible while hiding top logged-in promos', () => {
@@ -70,7 +74,10 @@ test('mobile album and photo detail views avoid side-by-side desktop layouts', (
     assert.match(mobile, /\.trip-review-photo-row\s*\{[^}]*height:\s*156px;/s);
     assert.match(mobile, /\.photo-detail-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;[^}]*max-height:\s*100svh;[^}]*border-radius:\s*0;/s);
     assert.match(mobile, /\.photo-detail-card > img\s*\{[^}]*height:\s*52svh;[^}]*max-height:\s*52svh;[^}]*object-fit:\s*contain;/s);
-    assert.match(mobile, /\.photo-detail-card section\s*\{[^}]*height:\s*48svh;[^}]*overflow-y:\s*auto;/s);
+    assert.match(mobile, /\.photo-detail-card section\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*height:\s*48svh;[^}]*overflow-y:\s*auto;/s);
+    assert.match(mobile, /\.photo-detail-section-head\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*justify-content:\s*flex-end;/s);
+    assert.match(mobile, /\.photo-detail-meta span,\s*\.photo-detail-visibility,\s*\.photo-detail-like-panel\s*\{[^}]*width:\s*100%;/s);
+    assert.match(mobile, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(mobile, /\.photo-fullscreen-modal\s*\{[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(mobile, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;/s);
 });
@@ -81,8 +88,12 @@ test('mobile upload, album, trip, and personal photo surfaces keep thumb grids u
     assert.match(mobile, /body\[data-page="upload"\]\s+\.page-container,[\s\S]*body\[data-page="profile"\]\s+\.page-container\s*\{[^}]*width:\s*100%;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
     assert.match(mobile, /\.upload-dropzone\s*\{[^}]*min-height:\s*260px;/s);
     assert.match(mobile, /\.upload-thumbnail-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(mobile, /\.upload-result-panel\s*\{[^}]*gap:\s*14px;[^}]*margin-top:\s*18px;[^}]*padding:\s*16px;/s);
+    assert.match(mobile, /\.upload-review-list\s*\{[^}]*max-height:\s*42svh;[^}]*overflow-y:\s*auto;/s);
+    assert.match(mobile, /\.upload-result-panel \.result-actions\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0;/s);
     assert.match(mobile, /\.recent-photo-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(mobile, /\.personal-photo-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(mobile, /\.photo-select-button\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*opacity:\s*1;[^}]*transform:\s*scale\(1\);/s);
     assert.match(mobile, /\.album-photo-picker-grid,\s*\.public-trip-photo-grid,\s*\.profile-album-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(mobile, /\.profile-photo-grid\s*\{[^}]*column-count:\s*2;[^}]*column-gap:\s*12px;/s);
     assert.match(mobile, /\.album-compose-map\s*\{[^}]*order:\s*-1;/s);
@@ -91,6 +102,9 @@ test('mobile upload, album, trip, and personal photo surfaces keep thumb grids u
     assert.match(mobile, /\.attention-banner\s*\{[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.trip-actions\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr;/s);
     assert.match(mobile, /\.profile-title-row h1\s*\{[^}]*font-size:\s*30px;[^}]*overflow-wrap:\s*anywhere;/s);
+    assert.match(mobile, /\.profile-edit-photo-field\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(mobile, /\.map-pick-button\s*\{[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*width:\s*auto;/s);
+    assert.match(mobile, /\.photo-visibility-editor > div,\s*\.location-form\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr;/s);
 });
 
 test('DESIGN documents the mobile web shell strategy', () => {
@@ -100,6 +114,7 @@ test('DESIGN documents the mobile web shell strategy', () => {
     assert.match(design, /compact brand\/account bar/);
     assert.match(design, /Mobile Explore stays map-first/);
     assert.match(design, /Photo detail and fullscreen viewers remain full-screen/);
+    assert.match(design, /Mobile editing controls stay visible without hover/);
 });
 
 test('mobile modals become bottom sheets except dedicated photo viewers', () => {
