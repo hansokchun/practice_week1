@@ -128,10 +128,19 @@
             <section class="home-workspace page-container" aria-label="사진과 앨범 보관함">
                 <section class="recent-photo-section" aria-labelledby="recent-photo-title">
                     <div class="panel-topline">
-                        <h2 id="recent-photo-title">최근 사진</h2>
+                        <h2 id="recent-photo-title" class="dashboard-section-title">
+                            <span class="home-title-icon home-title-icon--recent" aria-hidden="true"></span>
+                            <span>최근 사진</span>
+                        </h2>
                         <div class="panel-actions">
-                            <button id="btn-open-upload" class="btn-primary compact-action-button" type="button">사진올리기</button>
-                            <button id="btn-open-photos" class="text-button" type="button">전체 보기</button>
+                            <button id="btn-open-upload" class="home-action-button home-action-button--primary" type="button">
+                                <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+                                <span>사진 올리기</span>
+                            </button>
+                            <button id="btn-open-photos" class="home-action-button home-action-button--outline" type="button">
+                                <span>전체 보기</span>
+                                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                            </button>
                         </div>
                     </div>
                     <div id="recent-photo-grid" class="recent-photo-grid">
@@ -144,8 +153,14 @@
 
                 <section class="recent-photo-section liked-photo-section" aria-labelledby="liked-photo-title">
                     <div class="panel-topline">
-                        <h2 id="liked-photo-title">좋아요한 사진</h2>
-                        <button id="btn-open-liked-photos" class="text-button" data-route="liked" type="button">전체 보기</button>
+                        <h2 id="liked-photo-title" class="dashboard-section-title">
+                            <span class="home-title-icon home-title-icon--heart" aria-hidden="true"></span>
+                            <span>좋아요한 사진</span>
+                        </h2>
+                        <button id="btn-open-liked-photos" class="home-action-button home-action-button--outline" data-route="liked" type="button">
+                            <span>전체 보기</span>
+                            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                        </button>
                     </div>
                     <div id="liked-photo-grid" class="recent-photo-grid liked-photo-grid">
                         <article class="empty-state album-empty-state recent-photo-empty">
@@ -161,11 +176,17 @@
                 <section class="dashboard-panel full-panel album-panel" aria-labelledby="my-albums-title">
                     <div class="panel-topline">
                         <div>
-                            <h2 id="my-albums-title">여행 앨범</h2>
+                            <h2 id="my-albums-title" class="dashboard-section-title">
+                                <span class="home-title-icon home-title-icon--album" aria-hidden="true"></span>
+                                <span>여행 앨범</span>
+                            </h2>
                         </div>
                         <div class="panel-actions">
                             <span id="myphoto-summary">0장 · 0개 앨범</span>
-                            <button id="btn-open-album" class="btn-primary compact-action-button" type="button">앨범만들기</button>
+                            <button id="btn-open-album" class="home-action-button home-action-button--primary" type="button">
+                                <span>앨범 만들기</span>
+                                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            </button>
                         </div>
                     </div>
                     <div id="album-list" class="album-list"></div>
