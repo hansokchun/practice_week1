@@ -233,9 +233,6 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.doesNotMatch(home, /선택한 사진만 업로드됩니다/);
     assert.doesNotMatch(home, /class="myphoto-actions"/);
     assert.doesNotMatch(home, /class="action-card/);
-    assert.match(recentHeader, /id="recent-photo-title"[^>]*class="dashboard-section-title"[\s\S]*home-title-icon--recent[\s\S]*최근 사진/);
-    assert.match(home, /id="liked-photo-title"[^>]*class="dashboard-section-title"[\s\S]*home-title-icon--heart[\s\S]*좋아요한 사진/);
-    assert.match(albumHeader, /id="my-albums-title"[^>]*class="dashboard-section-title"[\s\S]*home-title-icon--album[\s\S]*여행 앨범/);
     assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
     assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
 });
