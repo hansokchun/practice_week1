@@ -66,31 +66,38 @@ img {
     left: 0;
     right: 0;
     z-index: 50;
-    height: 64px;
     width: 100%;
-    padding: 0;
+    padding: 24px 24px 0;
     border-bottom: 0;
-    background: var(--bg);
-    backdrop-filter: none;
+    background: transparent;
+    pointer-events: none;
 }
 
 .site-header-inner {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     gap: 24px;
-    width: min(var(--container), calc(100% - 48px));
-    height: 100%;
+    width: min(var(--container), 100%);
+    min-height: 92px;
     margin: 0 auto;
+    padding: 22px 40px;
+    border: 1px solid rgba(26, 77, 78, 0.08);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(14px);
+    pointer-events: auto;
 }
 
 #site-main {
-    padding-top: 64px;
+    padding-top: 140px;
 }
 
 .brand {
     display: inline-flex;
     align-items: center;
+    justify-self: start;
     gap: 8px;
     width: fit-content;
     color: #050505;
@@ -113,7 +120,8 @@ img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    justify-self: center;
+    gap: 0;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -121,36 +129,56 @@ img {
 }
 
 .top-nav a {
+    position: relative;
     min-width: auto;
     border-radius: 0;
     color: #050505;
     text-align: center;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 700;
-    padding: 21px 0 16px;
-    border-bottom: 2px solid transparent;
+    line-height: 1;
+    padding: 0 36px;
+    border-bottom: 0;
+    transition: color 180ms ease, opacity 180ms ease;
+}
+
+.top-nav a + a::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 1px;
+    height: 28px;
+    transform: translateY(-50%);
+    background: rgba(5, 5, 5, 0.16);
 }
 
 .top-nav a.active {
     background: transparent;
-    color: #050505;
-    border-bottom-color: #050505;
+    color: var(--teal-dark);
+    border-bottom-color: transparent;
     box-shadow: none;
+    font-weight: 900;
+}
+
+.top-nav a:hover {
+    color: var(--teal);
 }
 
 .account-area {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
+    justify-self: end;
+    gap: 18px;
 }
 
 .account-profile-trigger {
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
+    width: 54px;
+    height: 54px;
     border: 0;
     border-radius: 999px;
     background: transparent;
@@ -165,13 +193,15 @@ img {
     opacity: 0.86;
 }
 
-.account-avatar {
-    width: 38px;
-    height: 38px;
+.account-avatar,
+.account-avatar.avatar {
+    width: 54px;
+    height: 54px;
     overflow: hidden;
-    border: 1px solid rgba(26, 77, 78, 0.16);
+    border: 1px solid rgba(26, 77, 78, 0.12);
     border-radius: 999px;
-    background: var(--surface);
+    background: var(--teal-dark);
+    color: #ffffff;
 }
 
 .account-notification-shell {
@@ -184,32 +214,49 @@ img {
     position: relative;
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border: 0;
-    border-radius: 0;
+    border-radius: 999px;
     background: transparent;
     color: var(--teal-dark);
     padding: 0;
     box-shadow: none;
-    transition: transform 180ms ease, color 180ms ease, opacity 180ms ease;
+    overflow: hidden;
+    transition: transform 180ms ease, color 180ms ease, background 180ms ease, opacity 180ms ease;
 }
 
 .account-notification-trigger:hover {
     transform: translateY(-1px);
     color: var(--teal);
     opacity: 0.9;
+    background: rgba(26, 77, 78, 0.06);
+}
+
+.account-notification-trigger::before {
+    content: "";
+    display: block;
+    width: 25px;
+    height: 25px;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.268 21a2 2 0 0 0 3.464 0'/%3E%3Cpath d='M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .738-1.674C19.41 13.956 18 12.499 18 8a6 6 0 0 0-12 0c0 4.499-1.411 5.956-2.738 7.326'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.268 21a2 2 0 0 0 3.464 0'/%3E%3Cpath d='M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .738-1.674C19.41 13.956 18 12.499 18 8a6 6 0 0 0-12 0c0 4.499-1.411 5.956-2.738 7.326'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .account-notification-trigger .material-symbols-outlined {
-    font-size: 25px;
-    line-height: 1;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    color: transparent;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .account-notification-badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 8px;
+    right: 7px;
     display: grid;
     place-items: center;
     width: 8px;
@@ -7487,7 +7534,7 @@ body.photo-fullscreen-open {
         position: sticky;
         height: auto;
         min-height: 64px;
-        padding: 12px 16px;
+        padding: 10px 12px 0;
     }
 
     .site-header-inner {
@@ -7495,6 +7542,10 @@ body.photo-fullscreen-open {
         justify-items: stretch;
         gap: 10px 12px;
         width: 100%;
+        min-height: 64px;
+        padding: 10px 14px;
+        border-radius: 22px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
     }
 
     #site-main {
@@ -7514,6 +7565,27 @@ body.photo-fullscreen-open {
         justify-self: end;
         min-width: 0;
         gap: 8px;
+    }
+
+    .brand {
+        font-size: 24px;
+    }
+
+    .brand img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .account-notification-trigger {
+        width: 40px;
+        height: 40px;
+    }
+
+    .account-profile-trigger,
+    .account-avatar,
+    .account-avatar.avatar {
+        width: 44px;
+        height: 44px;
     }
 
     .account-area .btn-primary,
