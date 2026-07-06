@@ -2986,20 +2986,6 @@ body[data-page="explore"] .site-footer {
     font-size: 26px;
 }
 
-.dashboard-section-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.home-title-icon {
-    display: block;
-    width: 34px;
-    height: 34px;
-    object-fit: contain;
-    flex: 0 0 auto;
-}
-
 .recent-photo-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
