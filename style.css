@@ -2986,6 +2986,92 @@ body[data-page="explore"] .site-footer {
     font-size: 26px;
 }
 
+.dashboard-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.home-title-icon {
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    color: var(--teal);
+}
+
+.home-title-icon--recent::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 6px;
+    width: 24px;
+    height: 18px;
+    border: 2px solid currentColor;
+    border-radius: 5px;
+}
+
+.home-title-icon--recent::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 12px;
+    width: 11px;
+    height: 8px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: skewX(-16deg) rotate(-2deg);
+    box-shadow: 8px -8px 0 -5px currentColor;
+}
+
+.home-title-icon--heart::before,
+.home-title-icon--heart::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    width: 13px;
+    height: 20px;
+    border: 2px solid currentColor;
+    border-bottom: 0;
+    border-radius: 13px 13px 0 0;
+    transform-origin: 50% 100%;
+}
+
+.home-title-icon--heart::before {
+    left: 7px;
+    transform: rotate(-45deg);
+}
+
+.home-title-icon--heart::after {
+    right: 7px;
+    transform: rotate(45deg);
+}
+
+.home-title-icon--album::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 7px;
+    width: 24px;
+    height: 17px;
+    border: 2px solid currentColor;
+    border-radius: 3px;
+    transform: skewY(-16deg);
+}
+
+.home-title-icon--album::after {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 5px;
+    width: 2px;
+    height: 22px;
+    background: currentColor;
+    box-shadow: 8px -2px 0 -1px currentColor;
+    transform: rotate(10deg);
+}
+
 .recent-photo-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
