@@ -19,6 +19,7 @@
     --container: 1280px;
     --headline: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
     --body: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
+    --brand: Georgia, 'Times New Roman', var(--headline);
 }
 
 * {
@@ -96,7 +97,7 @@ img {
     width: fit-content;
     color: #050505;
     text-decoration: none;
-    font-family: Georgia, 'Times New Roman', var(--headline);
+    font-family: var(--brand);
     font-size: 26px;
     font-weight: 600;
     letter-spacing: 0;
@@ -744,7 +745,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     left: 50%;
     transform: translateX(-50%);
     color: var(--houses-word);
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--brand);
     font-size: clamp(300px, 36vw, 660px);
     font-weight: 400;
     line-height: 0.86;
@@ -998,7 +999,7 @@ body[data-page="explore"] .site-footer {
 .site-footer__brand h2 {
     margin: 0;
     color: var(--surface);
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--brand);
     font-size: 34px;
     font-weight: 600;
     line-height: 1;
@@ -1730,7 +1731,7 @@ body[data-page="explore"] .site-footer {
 .experience-hero h2 {
     margin: 0;
     max-width: 920px;
-    font-family: Georgia, 'Times New Roman', var(--headline);
+    font-family: var(--headline);
     font-size: clamp(52px, 8vw, 118px);
     font-weight: 500;
     line-height: 0.94;
@@ -1830,7 +1831,7 @@ body[data-page="explore"] .site-footer {
 
 .experience-proof-grid strong {
     max-width: 320px;
-    font-family: Georgia, 'Times New Roman', var(--headline);
+    font-family: var(--headline);
     font-size: clamp(24px, 3vw, 38px);
     font-weight: 500;
     line-height: 1.05;
@@ -1913,7 +1914,7 @@ body[data-page="explore"] .site-footer {
 .easol-intro-headline {
     margin: 0;
     color: #050505;
-    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    font-family: var(--headline);
     font-size: clamp(88px, 16vw, 228px);
     font-weight: 500;
     line-height: 0.88;
@@ -2140,7 +2141,7 @@ body[data-page="explore"] .site-footer {
     font-size: 188px;
     font-weight: 900;
     line-height: 0.91;
-    letter-spacing: -0.068em;
+    letter-spacing: 0;
     white-space: nowrap;
     transform: scaleX(0.74);
     transform-origin: left center;
@@ -2180,7 +2181,7 @@ body[data-page="explore"] .site-footer {
     font-size: 134px;
     font-weight: 900;
     line-height: 0.88;
-    letter-spacing: -0.07em;
+    letter-spacing: 0;
     white-space: nowrap;
     transform: scaleX(0.68);
     transform-origin: left center;
@@ -2202,7 +2203,7 @@ body[data-page="explore"] .site-footer {
     font-size: 16px;
     font-weight: 500;
     line-height: 1.78;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
 }
 
 .editorial-feature--korean .editorial-feature__proof {
@@ -2233,7 +2234,7 @@ body[data-page="explore"] .site-footer {
     font-size: clamp(98px, 9.6vw, 198px);
     font-weight: 900;
     line-height: 0.9;
-    letter-spacing: -0.08em;
+    letter-spacing: 0;
     word-break: keep-all;
 }
 
@@ -2251,7 +2252,7 @@ body[data-page="explore"] .site-footer {
     overflow: hidden;
     font-size: 17px;
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
     white-space: nowrap;
 }
 
@@ -2293,7 +2294,7 @@ body[data-page="explore"] .site-footer {
     font-size: clamp(82px, 7.6vw, 150px);
     font-weight: 900;
     line-height: 0.9;
-    letter-spacing: -0.08em;
+    letter-spacing: 0;
     word-break: keep-all;
     white-space: nowrap;
 }
@@ -2318,7 +2319,7 @@ body[data-page="explore"] .site-footer {
     font-size: 18px;
     font-weight: 500;
     line-height: 1.62;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
     word-break: keep-all;
 }
 
@@ -2329,7 +2330,7 @@ body[data-page="explore"] .site-footer {
     margin-top: 12px;
     font-size: 17px;
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 
@@ -2355,7 +2356,7 @@ body[data-page="explore"] .site-footer {
     gap: 14px;
     font-size: 28px;
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
 }
 
 .easol-clone-links {
@@ -2363,7 +2364,7 @@ body[data-page="explore"] .site-footer {
     color: #050505;
     font-size: 17px;
     font-weight: 500;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     text-transform: none;
 }
 
@@ -2386,7 +2387,7 @@ body[data-page="explore"] .site-footer {
     font-size: clamp(98px, 9.6vw, 198px);
     font-weight: 900;
     line-height: 0.9;
-    letter-spacing: -0.08em;
+    letter-spacing: 0;
     word-break: keep-all;
     white-space: nowrap;
 }
@@ -2407,7 +2408,7 @@ body[data-page="explore"] .site-footer {
     color: #141414;
     font-size: 17px;
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
     white-space: nowrap;
 }
 
@@ -2451,7 +2452,7 @@ body[data-page="explore"] .site-footer {
     font-size: clamp(82px, 7.6vw, 150px);
     font-weight: 900;
     line-height: 0.9;
-    letter-spacing: -0.08em;
+    letter-spacing: 0;
     word-break: keep-all;
     white-space: nowrap;
 }
@@ -2476,7 +2477,7 @@ body[data-page="explore"] .site-footer {
     font-size: 18px;
     font-weight: 500;
     line-height: 1.62;
-    letter-spacing: -0.04em;
+    letter-spacing: 0;
     word-break: keep-all;
 }
 
@@ -2488,7 +2489,7 @@ body[data-page="explore"] .site-footer {
     color: #111111;
     font-size: 17px;
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 
@@ -5644,7 +5645,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .trip-review-title-block h1 {
     margin: 0;
     color: rgba(5, 5, 5, 0.76);
-    font-family: var(--font);
+    font-family: var(--headline);
     font-size: clamp(58px, 9.2vw, 118px);
     font-weight: 800;
     letter-spacing: 0;

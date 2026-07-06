@@ -49,14 +49,14 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 
 ### Font Stack
 
-- Primary: `SUIT Variable`, `SUIT`, `Inter`, system sans-serif.
-- Serif: Georgia and Times New Roman only for the brand wordmark and editorial feature words.
+- Primary UI, headings, menus, descriptions, metadata: `SUIT Variable`, `SUIT`, `Inter`, system sans-serif.
+- Brand-only serif: Georgia and Times New Roman only for the Ikkyee wordmark and the oversized decorative Ikkyee word.
 - Icon: Material Symbols Outlined.
 
 ### Rules
 
 - Korean copy must keep comfortable line height and avoid compressed letter spacing.
-- Use serif only for deliberate editorial moments or the brand mark.
+- Use serif only for brand identity moments; page titles, section titles, menus, captions, and descriptions stay in the primary stack.
 - Body text stays at 14px or larger.
 
 ## 4. Spacing & Layout
