@@ -135,6 +135,20 @@ img {
     border-bottom: 2px solid transparent;
 }
 
+.top-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 9px;
+    height: 2px;
+    background: #050505;
+    opacity: 0;
+    transform: scaleX(0.72);
+    transform-origin: center;
+    transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
 .top-nav a + a::before {
     content: "";
     position: absolute;
@@ -149,8 +163,13 @@ img {
 .top-nav a.active {
     background: transparent;
     color: #050505;
-    border-bottom-color: #050505;
+    border-bottom-color: transparent;
     box-shadow: none;
+}
+
+.top-nav a.active::after {
+    opacity: 1;
+    transform: scaleX(1);
 }
 
 .account-area {
@@ -3451,6 +3470,67 @@ body.is-logged-in .home-workspace .dashboard-section-title {
 
 body.is-logged-in .home-workspace .panel-actions {
     align-items: center;
+}
+
+body.is-logged-in .home-workspace #btn-open-upload,
+body.is-logged-in .home-workspace #btn-open-album,
+body.is-logged-in .home-workspace #btn-open-photos,
+body.is-logged-in .home-workspace #btn-open-liked-photos {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0;
+    transition: background 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out;
+}
+
+body.is-logged-in .home-workspace #btn-open-upload,
+body.is-logged-in .home-workspace #btn-open-album {
+    border-color: rgba(0, 54, 55, 0.92);
+    background: linear-gradient(180deg, var(--teal), var(--teal-dark));
+    color: #ffffff;
+    padding: 0 18px;
+    box-shadow: 0 12px 24px rgba(26, 77, 78, 0.14);
+}
+
+body.is-logged-in .home-workspace #btn-open-photos,
+body.is-logged-in .home-workspace #btn-open-liked-photos {
+    border-color: rgba(26, 77, 78, 0.22);
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--teal);
+    padding: 0 16px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+}
+
+body.is-logged-in .home-workspace #btn-open-upload:hover,
+body.is-logged-in .home-workspace #btn-open-album:hover,
+body.is-logged-in .home-workspace #btn-open-photos:hover,
+body.is-logged-in .home-workspace #btn-open-liked-photos:hover,
+body.is-logged-in .home-workspace #btn-open-upload:focus-visible,
+body.is-logged-in .home-workspace #btn-open-album:focus-visible,
+body.is-logged-in .home-workspace #btn-open-photos:focus-visible,
+body.is-logged-in .home-workspace #btn-open-liked-photos:focus-visible {
+    transform: translateY(-1px);
+}
+
+body.is-logged-in .home-workspace #btn-open-upload:hover,
+body.is-logged-in .home-workspace #btn-open-album:hover,
+body.is-logged-in .home-workspace #btn-open-upload:focus-visible,
+body.is-logged-in .home-workspace #btn-open-album:focus-visible {
+    box-shadow: 0 16px 30px rgba(26, 77, 78, 0.18);
+}
+
+body.is-logged-in .home-workspace #btn-open-photos:hover,
+body.is-logged-in .home-workspace #btn-open-liked-photos:hover,
+body.is-logged-in .home-workspace #btn-open-photos:focus-visible,
+body.is-logged-in .home-workspace #btn-open-liked-photos:focus-visible {
+    border-color: rgba(26, 77, 78, 0.38);
+    background: #ffffff;
+    color: var(--teal-dark);
 }
 
 body.is-logged-in .home-workspace .recent-photo-grid article:not(.recent-photo-empty),

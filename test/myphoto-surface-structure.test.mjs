@@ -244,6 +244,9 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(styles, /\.section-title-icon\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*transform:\s*translateY\(1px\);/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.panel-topline\s*\{[^}]*min-height:\s*44px;[^}]*margin-bottom:\s*18px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.dashboard-section-title\s*\{[^}]*font-size:\s*24px;[^}]*font-weight:\s*850;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*999px;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album\s*\{[^}]*background:\s*linear-gradient\(180deg,\s*var\(--teal\),\s*var\(--teal-dark\)\);/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\);[^}]*color:\s*var\(--teal\);/s);
 });
 
 test('home album thumbnails do not expose Supabase storage copy', () => {
