@@ -243,6 +243,7 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(styles, /\.dashboard-section-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*line-height:\s*1;/s);
     assert.match(styles, /\.section-title-icon\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*transform:\s*translateY\(1px\);/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.panel-topline\s*\{[^}]*min-height:\s*44px;[^}]*margin-bottom:\s*18px;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace \.dashboard-section-title\s*\{[^}]*font-size:\s*24px;[^}]*font-weight:\s*850;/s);
 });
 
 test('home album thumbnails do not expose Supabase storage copy', () => {

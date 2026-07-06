@@ -5,11 +5,11 @@ import test from 'node:test';
 const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 
-test('site uses Inter and Pretendard as the primary public font stack', () => {
+test('site uses SUIT and Inter as the primary public font stack', () => {
   assert.match(html, /family=Inter:wght@400;500;600;700;800;900/);
-  assert.match(html, /cdn.jsdelivr.net\/gh\/orioncactus\/pretendard/);
-  assert.match(css, /--headline:\s*'Inter',\s*'Pretendard',\s*sans-serif;/);
-  assert.match(css, /--body:\s*'Inter',\s*'Pretendard',\s*sans-serif;/);
+  assert.match(html, /cdn.jsdelivr.net\/gh\/sunn-us\/SUIT\/fonts\/variable\/woff2\/SUIT-Variable\.css/);
+  assert.match(css, /--headline:\s*'SUIT Variable',\s*'SUIT',\s*'Inter',\s*sans-serif;/);
+  assert.match(css, /--body:\s*'SUIT Variable',\s*'SUIT',\s*'Inter',\s*sans-serif;/);
 });
 
 test('brand logo typography keeps its existing serif treatment', () => {

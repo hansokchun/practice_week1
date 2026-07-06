@@ -17,8 +17,8 @@
     --houses-text: var(--text);
     --header-height: 76px;
     --container: 1280px;
-    --headline: 'Inter', 'Pretendard', sans-serif;
-    --body: 'Inter', 'Pretendard', sans-serif;
+    --headline: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
+    --body: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
 }
 
 * {
@@ -2216,7 +2216,7 @@ body[data-page="explore"] .site-footer {
 
 .editorial-feature__headline {
     margin: 0;
-    font-family: Pretendard, Inter, sans-serif;
+    font-family: var(--headline);
     font-size: clamp(98px, 9.6vw, 198px);
     font-weight: 900;
     line-height: 0.9;
@@ -2276,7 +2276,7 @@ body[data-page="explore"] .site-footer {
 
 .editorial-feature__statement {
     margin: 0;
-    font-family: Pretendard, Inter, sans-serif;
+    font-family: var(--headline);
     font-size: clamp(82px, 7.6vw, 150px);
     font-weight: 900;
     line-height: 0.9;
@@ -2369,7 +2369,7 @@ body[data-page="explore"] .site-footer {
 .easol-clone-headline {
     margin: 0;
     color: #050505;
-    font-family: Pretendard, Inter, sans-serif;
+    font-family: var(--headline);
     font-size: clamp(98px, 9.6vw, 198px);
     font-weight: 900;
     line-height: 0.9;
@@ -2434,7 +2434,7 @@ body[data-page="explore"] .site-footer {
 .easol-clone-subheadline {
     margin: 0;
     color: #050505;
-    font-family: Pretendard, Inter, sans-serif;
+    font-family: var(--headline);
     font-size: clamp(82px, 7.6vw, 150px);
     font-weight: 900;
     line-height: 0.9;
@@ -3430,8 +3430,9 @@ body.is-logged-in .home-workspace .panel-topline {
 }
 
 body.is-logged-in .home-workspace .dashboard-section-title {
-    font-size: 28px;
-    font-weight: 900;
+    font-size: 24px;
+    font-weight: 850;
+    line-height: 1.15;
 }
 
 body.is-logged-in .home-workspace .panel-actions {

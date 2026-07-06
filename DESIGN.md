@@ -49,7 +49,7 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 
 ### Font Stack
 
-- Primary: `Inter`, `Pretendard`, system sans-serif.
+- Primary: `SUIT Variable`, `SUIT`, `Inter`, system sans-serif.
 - Serif: Georgia and Times New Roman only for the brand wordmark and editorial feature words.
 - Icon: Material Symbols Outlined.
 
