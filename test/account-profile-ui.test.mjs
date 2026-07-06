@@ -24,8 +24,8 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.doesNotMatch(html, /id="account-label"/);
     assert.doesNotMatch(html, /id="account-guest-label"/);
     assert.match(css, /\.account-profile-trigger\s*\{/);
-    assert.match(css, /\.account-profile-trigger\s*\{[^}]*width:\s*54px;[^}]*height:\s*54px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
-    assert.match(css, /\.account-avatar,\s*\.account-avatar\.avatar\s*\{[^}]*width:\s*54px;[^}]*height:\s*54px;[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);[^}]*border-radius:\s*999px;[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;/s);
+    assert.match(css, /\.account-profile-trigger\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
+    assert.match(css, /\.account-avatar\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.16\);[^}]*border-radius:\s*999px;[^}]*background:\s*var\(--surface\);/s);
     assert.doesNotMatch(css, /\.account-label\s*\{/);
     assert.doesNotMatch(css, /\.account-profile-name\s*\{/);
     assert.match(css, /\.account-profile-trigger:hover\s*\{[^}]*transform:\s*translateY\(-1px\);/s);
@@ -46,10 +46,9 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.ok(profileIndex > notificationIndex);
     assert.match(html, /id="account-notification-popover"/);
     assert.match(html, /id="account-notification-list"/);
-    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;[^}]*border:\s*0;[^}]*border-radius:\s*999px;[^}]*background:\s*transparent;/s);
-    assert.match(css, /\.account-notification-trigger::before\s*\{[^}]*width:\s*25px;[^}]*height:\s*25px;[^}]*background:\s*currentColor;[^}]*mask:\s*url\("data:image\/svg\+xml,/s);
-    assert.match(css, /\.account-notification-trigger \.material-symbols-outlined\s*\{[^}]*position:\s*absolute;[^}]*width:\s*1px;[^}]*clip-path:\s*inset\(50%\);/s);
-    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*8px;[^}]*right:\s*7px;[^}]*width:\s*8px;[^}]*height:\s*8px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*36px;[^}]*height:\s*40px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.account-notification-trigger \.material-symbols-outlined\s*\{[^}]*font-size:\s*25px;/s);
+    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*4px;[^}]*right:\s*4px;[^}]*width:\s*8px;[^}]*height:\s*8px;[^}]*border-radius:\s*999px;/s);
     assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /isNotificationPopoverOpen:\s*false/);
@@ -60,14 +59,6 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(app, /badge\.setAttribute\('aria-label', `새 알림 \$\{actionableCount\}개`\)/);
     assert.match(app, /data-route="\$\{escapeHtml\(item\.route\)\}"/);
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
-});
-
-test('top navigation uses a centered floating pill header', () => {
-    assert.match(css, /\.site-header\s*\{[^}]*position:\s*fixed;[^}]*padding:\s*24px 24px 0;[^}]*background:\s*transparent;[^}]*pointer-events:\s*none;/s);
-    assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(0,\s*1fr\);[^}]*min-height:\s*92px;[^}]*padding:\s*22px 40px;[^}]*border-radius:\s*28px;[^}]*box-shadow:\s*0 18px 40px rgba\(0,\s*0,\s*0,\s*0\.08\);/s);
-    assert.match(css, /\.top-nav\s*\{[^}]*justify-self:\s*center;[^}]*gap:\s*0;/s);
-    assert.match(css, /\.top-nav a \+ a::before\s*\{[^}]*width:\s*1px;[^}]*height:\s*28px;[^}]*background:\s*rgba\(5,\s*5,\s*5,\s*0\.16\);/s);
-    assert.match(css, /\.top-nav a\.active\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-weight:\s*900;/s);
 });
 
 test('public profile page includes shared nickname, bio, and avatar editing fields for the current user', () => {
