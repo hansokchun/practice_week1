@@ -225,6 +225,7 @@ test('home archive creation actions sit in their matching section headers', () =
     const likedStart = home.indexOf('id="liked-photo-title"');
     const albumStart = home.indexOf('id="my-albums-title"');
     const recentHeader = home.slice(recentStart, likedStart);
+    const likedHeader = home.slice(likedStart, albumStart);
     const albumHeader = home.slice(albumStart, home.indexOf('id="album-list"', albumStart));
 
     assert.doesNotMatch(home, /Home Archive/);
@@ -233,6 +234,9 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.doesNotMatch(home, /선택한 사진만 업로드됩니다/);
     assert.doesNotMatch(home, /class="myphoto-actions"/);
     assert.doesNotMatch(home, /class="action-card/);
+    assert.match(recentHeader, /id="recent-photo-title" class="dashboard-section-title"[\s\S]*images\/home-title-icon-recent\.png/);
+    assert.match(likedHeader, /id="liked-photo-title" class="dashboard-section-title"[\s\S]*images\/home-title-icon-liked\.png/);
+    assert.match(albumHeader, /id="my-albums-title" class="dashboard-section-title"[\s\S]*images\/home-title-icon-album\.png/);
     assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
     assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
 });
