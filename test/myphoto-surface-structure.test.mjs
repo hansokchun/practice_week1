@@ -218,6 +218,7 @@ test('logged-in home panels and thumbnails follow the explore visual language', 
 
 test('home archive creation actions sit in their matching section headers', () => {
     const markup = html();
+    const styles = css();
     const homeStart = markup.indexOf('class="home-workspace');
     const homeEnd = markup.indexOf('id="page-photos"', homeStart);
     const home = markup.slice(homeStart, homeEnd);
@@ -239,6 +240,9 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(albumHeader, /id="my-albums-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*여행 앨범/);
     assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
     assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
+    assert.match(styles, /\.dashboard-section-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*line-height:\s*1;/s);
+    assert.match(styles, /\.section-title-icon\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*transform:\s*translateY\(1px\);/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace \.panel-topline\s*\{[^}]*min-height:\s*44px;[^}]*margin-bottom:\s*18px;/s);
 });
 
 test('home album thumbnails do not expose Supabase storage copy', () => {

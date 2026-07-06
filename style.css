@@ -2990,11 +2990,13 @@ body[data-page="explore"] .site-footer {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-height: 36px;
+    line-height: 1;
 }
 
 .section-title-icon {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     flex: 0 0 auto;
     color: currentColor;
     fill: none;
@@ -3002,6 +3004,7 @@ body[data-page="explore"] .site-footer {
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+    transform: translateY(1px);
 }
 
 .recent-photo-grid {
@@ -3418,6 +3421,21 @@ body.is-logged-in .home-workspace .album-panel {
 body.is-logged-in .home-workspace .recent-photo-section {
     margin: 24px 0 0;
     padding: 22px;
+}
+
+body.is-logged-in .home-workspace .panel-topline {
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: 18px;
+}
+
+body.is-logged-in .home-workspace .dashboard-section-title {
+    font-size: 28px;
+    font-weight: 900;
+}
+
+body.is-logged-in .home-workspace .panel-actions {
+    align-items: center;
 }
 
 body.is-logged-in .home-workspace .recent-photo-grid article:not(.recent-photo-empty),
