@@ -69,9 +69,10 @@ img {
     height: 64px;
     width: 100%;
     padding: 0;
-    border-bottom: 0;
+    border-bottom: 1px solid rgba(26, 77, 78, 0.08);
     background: var(--bg);
     backdrop-filter: none;
+    box-shadow: 0 10px 24px rgba(26, 77, 78, 0.035);
 }
 
 .site-header-inner {
@@ -113,7 +114,7 @@ img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 28px;
     border: none;
     border-radius: 0;
     background: transparent;
@@ -121,6 +122,7 @@ img {
 }
 
 .top-nav a {
+    position: relative;
     min-width: auto;
     border-radius: 0;
     color: #050505;
@@ -130,6 +132,17 @@ img {
     font-weight: 700;
     padding: 21px 0 16px;
     border-bottom: 2px solid transparent;
+}
+
+.top-nav a + a::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -14px;
+    width: 1px;
+    height: 22px;
+    transform: translateY(-50%);
+    background: rgba(5, 5, 5, 0.18);
 }
 
 .top-nav a.active {

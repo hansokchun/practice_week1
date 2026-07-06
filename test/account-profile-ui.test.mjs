@@ -61,6 +61,12 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
 });
 
+test('top navigation keeps the existing bar with subtle separators', () => {
+    assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
+    assert.match(css, /\.top-nav\s*\{[^}]*gap:\s*28px;/s);
+    assert.match(css, /\.top-nav a \+ a::before\s*\{[^}]*width:\s*1px;[^}]*height:\s*22px;[^}]*background:\s*rgba\(5,\s*5,\s*5,\s*0\.18\);/s);
+});
+
 test('public profile page includes shared nickname, bio, and avatar editing fields for the current user', () => {
     assert.match(html, /id="page-profile"/);
     assert.match(app, /function ensureProfileHeaderShell\(\)/);
