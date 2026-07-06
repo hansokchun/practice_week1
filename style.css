@@ -2986,6 +2986,19 @@ body[data-page="explore"] .site-footer {
     font-size: 26px;
 }
 
+.dashboard-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.home-title-symbol {
+    color: var(--teal);
+    font-size: 34px;
+    line-height: 1;
+    font-variation-settings: 'FILL' 0, 'wght' 420, 'GRAD' 0, 'opsz' 40;
+}
+
 .recent-photo-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
