@@ -8,6 +8,7 @@ const design = readFileSync('DESIGN.md', 'utf8');
 
 test('Explore map controls follow the landing surface and accent language', () => {
     assert.match(css, /\.explore-map-canvas\s*\{[^}]*linear-gradient\(180deg,\s*var\(--bg\)\s*0%,\s*var\(--surface\)\s*100%\);/s);
+    assert.match(css, /\.explore-map-canvas\s*\{[^}]*width:\s*100vw;/s);
     assert.match(css, /\.map-search\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.96\);[^}]*0 24px 60px rgba\(26,\s*77,\s*78,\s*0\.16\)/s);
     assert.match(css, /\.map-search\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.map-search button\s*\{[^}]*background:\s*var\(--teal-dark\);/s);

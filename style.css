@@ -3648,6 +3648,7 @@ body.is-logged-in .home-workspace .album-row {
 
 .explore-map-canvas {
     position: relative;
+    width: 100vw;
     height: calc(100vh - 64px);
     overflow: hidden;
     background:
