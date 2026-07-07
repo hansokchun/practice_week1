@@ -3484,9 +3484,13 @@ body.is-logged-in .home-workspace #btn-open-upload,
 body.is-logged-in .home-workspace #btn-open-album,
 body.is-logged-in .home-workspace #btn-open-photos,
 body.is-logged-in .home-workspace #btn-open-liked-photos {
-    display: inline-flex;
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
     align-items: center;
+    align-content: center;
     justify-content: center;
+    justify-items: center;
     gap: 8px;
     height: 42px;
     min-height: 42px;
@@ -3533,8 +3537,11 @@ body.is-logged-in .home-workspace #btn-open-liked-photos .material-symbols-outli
 }
 
 body.is-logged-in .home-workspace #btn-open-upload .material-symbols-outlined,
-body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined {
-    display: inline-flex;
+body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-photos .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-liked-photos .material-symbols-outlined {
+    display: inline-grid;
+    place-items: center;
     align-items: center;
     justify-content: center;
     width: 18px;
@@ -3543,15 +3550,31 @@ body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined {
 }
 
 body.is-logged-in .home-workspace #btn-open-upload > span:not(.material-symbols-outlined),
-body.is-logged-in .home-workspace #btn-open-album > span:not(.material-symbols-outlined) {
-    display: inline-flex;
+body.is-logged-in .home-workspace #btn-open-album > span:not(.material-symbols-outlined),
+body.is-logged-in .home-workspace #btn-open-photos > span:not(.material-symbols-outlined),
+body.is-logged-in .home-workspace #btn-open-liked-photos > span:not(.material-symbols-outlined) {
+    display: inline-grid;
+    place-items: center;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
     font-size: 13px;
     font-weight: 850;
     line-height: 1.25;
     transform: translateY(0);
+}
+
+body.is-logged-in .home-workspace #btn-open-upload .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-upload > span:not(.material-symbols-outlined),
+body.is-logged-in .home-workspace #btn-open-album > span:not(.material-symbols-outlined) {
+    color: #ffffff;
+}
+
+body.is-logged-in .home-workspace #btn-open-photos .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-liked-photos .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-photos > span:not(.material-symbols-outlined),
+body.is-logged-in .home-workspace #btn-open-liked-photos > span:not(.material-symbols-outlined) {
+    color: var(--teal);
 }
 
 body.is-logged-in .home-workspace #btn-open-upload:hover,
