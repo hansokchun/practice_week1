@@ -9,5 +9,7 @@ test('myphoto album thumbnails use a compact Google Photos style row', () => {
     assert.match(css, /\.album-row\s*\{[^}]*grid-template-columns:\s*minmax\(200px,\s*248px\)\s*minmax\(260px,\s*360px\);/s);
     assert.match(css, /\.album-row\s*\{[^}]*width:\s*min\(100%,\s*608px\);/s);
     assert.match(css, /\.album-row img\s*\{[^}]*min-height:\s*248px;[^}]*aspect-ratio:\s*1;/s);
+    assert.match(css, /\.album-row small\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*6px;/s);
+    assert.match(css, /\.album-row small \.material-symbols-outlined\s*\{[^}]*color:\s*var\(--teal\);[^}]*font-family:\s*"Material Symbols Outlined";[^}]*font-size:\s*17px;/s);
     assert.match(css, /\.album-row:hover,\s*\.album-row:focus-visible\s*\{[^}]*transform:\s*translateY\(-2px\);/s);
 });

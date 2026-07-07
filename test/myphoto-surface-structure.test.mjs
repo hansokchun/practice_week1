@@ -238,11 +238,14 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(recentHeader, /id="recent-photo-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*최근 사진/);
     assert.match(likedHeader, /id="liked-photo-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*좋아요한 사진/);
     assert.match(albumHeader, /id="my-albums-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*여행 앨범/);
-    assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진올리기<\/button>/);
-    assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범만들기<\/button>/);
+    assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진 올리기<\/button>/);
+    assert.doesNotMatch(albumHeader, /id="myphoto-summary"/);
+    assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범 만들기<\/button>/);
     assert.match(styles, /\.dashboard-section-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*line-height:\s*1;/s);
     assert.match(styles, /\.section-title-icon\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*transform:\s*translateY\(1px\);/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.panel-topline\s*\{[^}]*min-height:\s*44px;[^}]*margin-bottom:\s*18px;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace \.recent-photo-section\s*\{[^}]*margin:\s*34px 0 0;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace \.album-panel\s*\{[^}]*margin-top:\s*34px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.dashboard-section-title\s*\{[^}]*font-size:\s*24px;[^}]*font-weight:\s*850;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*999px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album\s*\{[^}]*background:\s*linear-gradient\(180deg,\s*var\(--teal\),\s*var\(--teal-dark\)\);/s);
@@ -259,6 +262,11 @@ test('home album thumbnails do not expose Supabase storage copy', () => {
     assert.doesNotMatch(albumRenderers, /Supabase/);
     assert.doesNotMatch(albumRenderers, /status-line[\s\S]*Supabase/);
     assert.doesNotMatch(albumRenderers, /<small>\$\{formatPhotoCount\(albumPhotos\.length\)\} · Supabase<\/small>/);
+    assert.doesNotMatch(albumRenderers, /\$\{visibilityLabel\}/);
+    assert.doesNotMatch(albumRenderers, /앨범 기록/);
+    assert.doesNotMatch(albumRenderers, /비공개'} · 저장됨/);
+    assert.match(albumRenderers, /<small><span class="material-symbols-outlined">\$\{visibilityIcon\}<\/span>\$\{formatPhotoCount\(album\.photo_count\)\}<\/small>/);
+    assert.match(albumRenderers, /<small><span class="material-symbols-outlined">\$\{shared \? 'public' : 'lock'\}<\/span>\$\{formatPhotoCount\(albumPhotos\.length\)\}<\/small>/);
 });
 
 test('recent photos full view uses recent-photo naming without intro copy', () => {

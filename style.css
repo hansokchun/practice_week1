@@ -3318,16 +3318,6 @@ body[data-page="explore"] .site-footer {
     padding: 26px 30px;
 }
 
-.album-row .status-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
 .album-row strong {
     color: var(--teal);
     font-family: var(--headline);
@@ -3342,9 +3332,23 @@ body[data-page="explore"] .site-footer {
 }
 
 .album-row small {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     border-top: 1px solid var(--line);
     color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
     padding-top: 14px;
+}
+
+.album-row small .material-symbols-outlined {
+    color: var(--teal);
+    font-family: "Material Symbols Outlined";
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1;
 }
 
 .album-row:hover,
@@ -3452,8 +3456,12 @@ body.is-logged-in .home-workspace .album-panel {
 }
 
 body.is-logged-in .home-workspace .recent-photo-section {
-    margin: 24px 0 0;
+    margin: 34px 0 0;
     padding: 22px;
+}
+
+body.is-logged-in .home-workspace .album-panel {
+    margin-top: 34px;
 }
 
 body.is-logged-in .home-workspace .panel-topline {

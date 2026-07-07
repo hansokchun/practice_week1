@@ -114,7 +114,6 @@ import {
     normalizeExploreBounds
 } from './explore-discovery-panel.mjs';
 import {
-    formatAlbumCount,
     formatDayCount,
     formatPhotoCount,
     formatPhotoPlaceMeta,
@@ -3064,17 +3063,16 @@ function renderSavedAlbumRows(albums) {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
     if (!list) return;
-    if (summary) summary.textContent = `${formatPhotoCount(albums.reduce((sum, album) => sum + album.photo_count, 0))} · ${formatAlbumCount(albums.length)}`;
+    if (summary) summary.textContent = '';
     list.innerHTML = albums.map((album) => {
-        const visibilityLabel = album.visibility === 'public' ? '공개' : album.visibility === 'link' ? '링크 공유' : '비공개';
+        const visibilityIcon = album.visibility === 'public' || album.visibility === 'link' ? 'public' : 'lock';
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
                 <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="${escapeHtml(album.title)}">
                 <div>
-                    <span class="status-line"><span class="material-symbols-outlined">${album.visibility === 'public' ? 'public' : 'lock'}</span> ${visibilityLabel}</span>
                     <strong>${escapeHtml(album.title)}</strong>
                     <p>${escapeHtml(getAlbumVisibleNote(album) || '저장된 여행 앨범입니다.')}</p>
-                    <small>${formatPhotoCount(album.photo_count)} · 앨범 기록</small>
+                    <small><span class="material-symbols-outlined">${visibilityIcon}</span>${formatPhotoCount(album.photo_count)}</small>
                 </div>
             </article>
         `;
@@ -3092,7 +3090,7 @@ function renderSavedPhotoAlbums(photos) {
         return acc;
     }, {});
     const albums = Object.entries(grouped);
-    if (summary) summary.textContent = `${formatPhotoCount(photos.length)} · ${formatAlbumCount(albums.length)}`;
+    if (summary) summary.textContent = '';
     list.innerHTML = albums.map(([name, albumPhotos]) => {
         const cover = albumPhotos[0];
         const shared = albumPhotos.some((photo) => photo.shared);
@@ -3100,10 +3098,9 @@ function renderSavedPhotoAlbums(photos) {
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-name="${escapeHtml(name)}" data-myphoto-album-visibility="${shared ? 'public' : 'private'}">
                 <img src="${cover.url}" alt="${escapeHtml(name)}">
                 <div>
-                    <span class="status-line"><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span> ${shared ? '공개' : '비공개'} · 저장됨</span>
                     <strong>${escapeHtml(name)}</strong>
                     <p>저장된 사진을 기준으로 구성한 여행 앨범입니다.</p>
-                    <small>${formatPhotoCount(albumPhotos.length)}</small>
+                    <small><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span>${formatPhotoCount(albumPhotos.length)}</small>
                 </div>
             </article>
         `;
@@ -3123,7 +3120,7 @@ function renderStagedPhotos() {
     const isUploadLimitBlocked = state.currentUser && !uploadLimitStatus.canUpload;
     const uploadStorageStatus = $('#upload-storage-status');
     $('#album-count-label') && ($('#album-count-label').textContent = formatPhotoCount(state.stagedPhotos.length));
-    $('#myphoto-summary') && ($('#myphoto-summary').textContent = `${formatPhotoCount(state.stagedPhotos.length)} · ${formatAlbumCount(state.albumDrafts.length)}`);
+    $('#myphoto-summary') && ($('#myphoto-summary').textContent = '');
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${selectedUploadCount}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
@@ -3777,7 +3774,7 @@ async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
 function renderAlbumDrafts() {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
-    if (summary) summary.textContent = `${formatPhotoCount(state.stagedPhotos.length)} · ${formatAlbumCount(state.albumDrafts.length)}`;
+    if (summary) summary.textContent = '';
     if (!list) return;
 
     if (!state.albumDrafts.length) {
@@ -3798,19 +3795,17 @@ function renderAlbumDrafts() {
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
                 <img src="images/main_bg2.jpg" alt="">
                 <div>
-                    <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.05.12 - 05.16</span>
                     <strong>제주 4박 5일</strong>
                     <p>사진을 업로드하거나 앨범 초안을 저장하면 이곳에 실제 앨범이 표시됩니다.</p>
-                    <small>128장 · 보관중</small>
+                    <small><span class="material-symbols-outlined">lock</span>128장</small>
                 </div>
             </article>
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
                 <img src="images/main_bg5.jpg" alt="">
                 <div>
-                    <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 2026.04.20 - 04.22</span>
                     <strong>동해 새벽 여행</strong>
                     <p>공개 전까지는 Home에서만 확인할 수 있는 개인 여행 기록입니다.</p>
-                    <small>42장 · 보관중</small>
+                    <small><span class="material-symbols-outlined">lock</span>42장</small>
                 </div>
             </article>
         `;
@@ -3821,10 +3816,9 @@ function renderAlbumDrafts() {
         <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
             <img src="images/main_bg4.jpg" alt="">
             <div>
-                <span class="status-line"><span class="material-symbols-outlined">lock</span> 비공개 · 방금 생성</span>
                 <strong>${escapeHtml(album.name)}</strong>
                 <p>${escapeHtml(getAlbumVisibleNote(album) || '비공개 앨범 초안입니다.')}</p>
-                <small>${formatPhotoCount(state.stagedPhotos.length)} · 초안</small>
+                <small><span class="material-symbols-outlined">lock</span>${formatPhotoCount(state.stagedPhotos.length)}</small>
             </div>
         </article>
     `).join('');
