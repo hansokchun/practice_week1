@@ -184,3 +184,16 @@ test('Explore discovery collapsed state uses a compact Explore control', () => {
     assert.match(source, /const collapsedDiscoveryPanel = event\.target\.closest\('#explore-list\.is-collapsed'\);/);
     assert.match(source, /if \(collapsedDiscoveryPanel\) \{\s*toggleExploreDiscoveryPanel\(\);\s*return;\s*\}/s);
 });
+
+test('Explore discovery title shares the header row with the photo scope control', () => {
+    const css = readFileSync('style.css', 'utf8');
+
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto;[^}]*grid-template-rows:\s*auto minmax\(0,\s*1fr\);/s);
+    assert.match(css, /\.explore-discovery-header\s*\{[^}]*display:\s*contents;/s);
+    assert.match(css, /\.explore-discovery-header > div\s*\{[^}]*grid-column:\s*1;[^}]*grid-row:\s*1;[^}]*align-self:\s*center;/s);
+    assert.match(css, /\.explore-photo-scope\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1;[^}]*align-self:\s*center;[^}]*width:\s*max-content;/s);
+    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*width:\s*max-content;/s);
+    assert.match(css, /\.explore-photo-scope-trigger \.material-symbols-outlined\s*\{[^}]*flex:\s*0 0 18px;[^}]*width:\s*18px;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-toggle\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*1;[^}]*align-self:\s*center;/s);
+    assert.match(css, /\.explore-discovery-body\s*\{[^}]*grid-column:\s*1 \/ -1;[^}]*grid-row:\s*2;/s);
+});
