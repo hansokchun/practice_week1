@@ -165,6 +165,7 @@ const state = {
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
     explorePhotoScope: 'mine',
+    isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
     isExploreDiscoveryCollapsed: false,
     explorePreviewEditMode: false,
@@ -186,6 +187,11 @@ const state = {
     locationEditorPickMode: false,
     isPersistingUpload: false,
     isSavingShare: false
+};
+
+const EXPLORE_PHOTO_SCOPE_META = {
+    mine: { icon: 'person', label: '내 사진' },
+    others: { icon: 'groups', label: '다른 사람 사진' }
 };
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
@@ -598,18 +604,34 @@ function renderExplorePhotoScopeControls() {
     if (!state.currentUser && state.explorePhotoScope === 'mine') {
         state.explorePhotoScope = 'others';
     }
+    const scopeMeta = EXPLORE_PHOTO_SCOPE_META[state.explorePhotoScope] || EXPLORE_PHOTO_SCOPE_META.mine;
+    const scope = $('.explore-photo-scope');
+    const trigger = $('[data-explore-scope-trigger]');
+    const triggerIcon = $('[data-explore-scope-trigger-icon]');
+    const triggerLabel = $('[data-explore-scope-trigger-label]');
+    const menu = $('#explore-photo-scope-menu');
+    scope?.classList.toggle('is-open', state.isExplorePhotoScopeMenuOpen);
+    if (trigger) trigger.setAttribute('aria-expanded', state.isExplorePhotoScopeMenuOpen ? 'true' : 'false');
+    if (triggerIcon) triggerIcon.textContent = scopeMeta.icon;
+    if (triggerLabel) triggerLabel.textContent = scopeMeta.label;
+    if (menu) menu.hidden = !state.isExplorePhotoScopeMenuOpen;
     $$('[data-explore-scope]').forEach((button) => {
         const isActive = button.dataset.exploreScope === state.explorePhotoScope;
         button.classList.toggle('active', isActive);
-        button.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        button.setAttribute('aria-checked', isActive ? 'true' : 'false');
         if (button.dataset.exploreScope === 'mine') button.disabled = !state.currentUser;
     });
+}
+
+function setExplorePhotoScopeMenuOpen(isOpen) {
+    state.isExplorePhotoScopeMenuOpen = Boolean(isOpen);
+    renderExplorePhotoScopeControls();
 }
 
 function setExplorePhotoScope(scope) {
     if (!['mine', 'others'].includes(scope)) return;
     state.explorePhotoScope = scope;
+    state.isExplorePhotoScopeMenuOpen = false;
     state.selectedPublicAlbumId = null;
     state.selectedPhotoId = null;
     state.explorePreserveViewportOnce = true;
@@ -4517,6 +4539,9 @@ function bindEvents() {
     document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
         if (!event.target.closest('.account-notification-shell')) setAccountNotificationsOpen(false);
+        if (state.isExplorePhotoScopeMenuOpen && !event.target.closest('.explore-photo-scope')) {
+            setExplorePhotoScopeMenuOpen(false);
+        }
 
         const homePhotoDetailButton = event.target.closest('[data-home-photo-detail]');
         if (homePhotoDetailButton) {
@@ -4639,6 +4664,12 @@ function bindEvents() {
         }
 
         if (!event.target.closest('.photo-detail-more')) setPhotoDetailMoreMenuOpen(false);
+
+        const exploreScopeTrigger = event.target.closest('[data-explore-scope-trigger]');
+        if (exploreScopeTrigger) {
+            setExplorePhotoScopeMenuOpen(!state.isExplorePhotoScopeMenuOpen);
+            return;
+        }
 
         const exploreScopeButton = event.target.closest('[data-explore-scope]');
         if (exploreScopeButton) {
@@ -4937,6 +4968,10 @@ function bindEvents() {
 
     });
     document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && state.isExplorePhotoScopeMenuOpen) {
+            setExplorePhotoScopeMenuOpen(false);
+            return;
+        }
         if (!['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) return;
         const homePhotoDetailButton = event.target.closest('[data-home-photo-detail]');
         if (homePhotoDetailButton) {

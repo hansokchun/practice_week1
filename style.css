@@ -4673,70 +4673,136 @@ body.is-logged-in .home-workspace .album-row {
 }
 
 .explore-photo-scope {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
+    position: relative;
+    z-index: 6;
+    display: flex;
+    justify-content: flex-end;
+    justify-self: end;
+    width: auto;
     max-width: 100%;
-    overflow: hidden;
-    border: 1px solid rgba(26, 77, 78, 0.16);
-    border-radius: 14px;
-    background: #ffffff;
-    padding: 3px;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
 }
 
-.explore-photo-scope button {
+.explore-photo-scope-trigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     min-width: 0;
-    min-height: 46px;
+    min-height: 38px;
     border: 0;
-    border-radius: 10px;
-    background: transparent;
-    color: rgba(39, 45, 44, 0.78);
+    border-radius: 8px;
+    background: var(--teal-dark);
+    color: #ffffff;
     font-size: 14px;
     font-weight: 900;
     line-height: 1.15;
-    padding: 0 10px;
+    padding: 0 14px;
     white-space: nowrap;
+    box-shadow: 0 8px 18px rgba(0, 54, 55, 0.14);
     transition:
         background 160ms ease,
-        color 160ms ease,
         box-shadow 160ms ease,
         transform 160ms ease;
 }
 
-.explore-photo-scope button .material-symbols-outlined {
-    color: currentColor;
-    font-size: 22px;
-    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+.explore-photo-scope-trigger:hover,
+.explore-photo-scope.is-open .explore-photo-scope-trigger {
+    background: #002b2c;
+    box-shadow: 0 10px 22px rgba(0, 54, 55, 0.18);
 }
 
-.explore-photo-scope button.active {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 55%),
-        var(--teal-dark);
-    color: #ffffff;
-    box-shadow: 0 8px 18px rgba(0, 54, 55, 0.16);
-}
-
-.explore-photo-scope button:not(.active):hover {
-    background: rgba(26, 77, 78, 0.06);
-    color: var(--teal-dark);
-}
-
-.explore-photo-scope button:focus-visible {
+.explore-photo-scope-trigger:focus-visible {
     outline: 3px solid rgba(26, 77, 78, 0.22);
     outline-offset: 2px;
 }
 
-.explore-photo-scope button:active {
+.explore-photo-scope-trigger:active {
     transform: translateY(1px);
 }
 
-.explore-photo-scope button:disabled {
+.explore-photo-scope .material-symbols-outlined {
+    color: currentColor;
+    font-size: 18px;
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.explore-photo-scope-chevron {
+    margin-left: 2px;
+    transition: transform 160ms ease;
+}
+
+.explore-photo-scope.is-open .explore-photo-scope-chevron {
+    transform: rotate(180deg);
+}
+
+.explore-photo-scope-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    width: max(100%, 178px);
+    overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.16);
+    border-radius: 9px;
+    background: #ffffff;
+    box-shadow:
+        0 16px 34px rgba(26, 77, 78, 0.16),
+        0 4px 12px rgba(0, 54, 55, 0.08);
+    padding: 4px;
+}
+
+.explore-photo-scope-menu[hidden] {
+    display: none;
+}
+
+.explore-photo-scope-menu button {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: rgba(39, 45, 44, 0.82);
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.2;
+    padding: 0 10px;
+    text-align: left;
+    white-space: nowrap;
+    transition:
+        background 150ms ease,
+        color 150ms ease;
+}
+
+.explore-photo-scope-menu button:hover,
+.explore-photo-scope-menu button:focus-visible {
+    background: rgba(26, 77, 78, 0.06);
+    color: var(--teal-dark);
+}
+
+.explore-photo-scope-menu button:focus-visible {
+    outline: 2px solid rgba(26, 77, 78, 0.2);
+    outline-offset: -2px;
+}
+
+.explore-photo-scope-menu button.active {
+    color: var(--teal-dark);
+    background: rgba(26, 77, 78, 0.04);
+}
+
+.explore-photo-scope-check {
+    justify-self: end;
+    opacity: 0;
+}
+
+.explore-photo-scope-menu button.active .explore-photo-scope-check {
+    opacity: 1;
+}
+
+.explore-photo-scope-menu button:disabled {
     cursor: not-allowed;
     opacity: 0.42;
 }
@@ -8555,11 +8621,16 @@ body.photo-fullscreen-open {
         padding: 0 13px;
     }
 
-    .explore-photo-scope button {
+    .explore-photo-scope-trigger {
         white-space: nowrap;
-        min-height: 42px;
+        min-height: 38px;
         font-size: 13px;
-        padding: 0 8px;
+        padding: 0 13px;
+    }
+
+    .explore-photo-scope-menu button {
+        min-height: 38px;
+        font-size: 13px;
     }
 
     .explore-discovery-panel {
@@ -8593,9 +8664,13 @@ body.photo-fullscreen-open {
 
     .explore-discovery-panel .explore-photo-scope {
         pointer-events: auto;
+        justify-content: flex-end;
+    }
+
+    .explore-discovery-panel .explore-photo-scope-trigger {
         box-shadow:
             0 16px 36px rgba(26, 77, 78, 0.14),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+            0 4px 12px rgba(0, 54, 55, 0.08);
     }
 
     .explore-pin-preview {

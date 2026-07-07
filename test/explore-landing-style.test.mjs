@@ -11,12 +11,13 @@ test('Explore map controls follow the landing surface and accent language', () =
     assert.match(css, /\.map-search\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.96\);[^}]*0 24px 60px rgba\(26,\s*77,\s*78,\s*0\.16\)/s);
     assert.match(css, /\.map-search\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.map-search button\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
-    assert.match(css, /\.explore-photo-scope\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);[^}]*width:\s*100%;/s);
-    assert.match(css, /\.explore-photo-scope\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.16\);[^}]*border-radius:\s*14px;[^}]*background:\s*#ffffff;[^}]*padding:\s*3px;/s);
+    assert.match(css, /\.explore-photo-scope\s*\{[^}]*position:\s*relative;[^}]*justify-content:\s*flex-end;[^}]*justify-self:\s*end;/s);
+    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--teal-dark\);[^}]*padding:\s*0 14px;/s);
+    assert.match(css, /\.explore-photo-scope-menu\s*\{[^}]*top:\s*calc\(100% \+ 6px\);[^}]*right:\s*0;[^}]*z-index:\s*20;[^}]*border-radius:\s*9px;[^}]*background:\s*#ffffff;/s);
     assert.doesNotMatch(css, /\.explore-photo-scope-copy\s*\{/);
     assert.doesNotMatch(css, /\.explore-photo-scope-control\s*\{/);
-    assert.match(css, /\.explore-photo-scope button\s*\{[^}]*min-height:\s*46px;[^}]*font-size:\s*14px;[^}]*padding:\s*0 10px;/s);
-    assert.match(css, /\.explore-photo-scope button\.active\s*\{[^}]*background:[^}]*var\(--teal-dark\);/s);
+    assert.match(css, /\.explore-photo-scope-menu button\s*\{[^}]*grid-template-columns:\s*20px minmax\(0,\s*1fr\) 18px;[^}]*min-height:\s*38px;[^}]*font-size:\s*14px;/s);
+    assert.match(css, /\.explore-photo-scope-menu button\.active\s*\{[^}]*color:\s*var\(--teal-dark\);/s);
 });
 
 test('Explore preview and discovery panels use landing-style archive cards', () => {

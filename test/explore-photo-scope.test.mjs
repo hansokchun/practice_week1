@@ -5,27 +5,34 @@ import { test } from 'node:test';
 const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
 
-test('Explore exposes mutually exclusive photo owner scope controls', () => {
-    assert.doesNotMatch(html, /id="explore-photo-scope-title"/);
+test('Explore exposes the photo owner scope as a compact dropdown control', () => {
+    assert.doesNotMatch(html, /id=\"explore-photo-scope-title\"/);
     assert.doesNotMatch(html, /사진 출처 선택/);
     assert.doesNotMatch(html, /지도에 표시할 사진의 출처를 선택하세요\./);
     assert.doesNotMatch(html, /explore-photo-scope-control/);
-    assert.match(html, /class="explore-photo-scope" role="tablist"/);
-    assert.match(html, /data-explore-scope="others"/);
-    assert.match(html, /data-explore-scope="mine"/);
-    assert.match(html, /data-explore-scope="others"[^>]*aria-selected="false"[\s\S]*<span class="material-symbols-outlined" aria-hidden="true">public<\/span>[\s\S]*다른 사람 사진/);
-    assert.match(html, /data-explore-scope="mine"[^>]*class="active"[^>]*aria-selected="true"[\s\S]*<span class="material-symbols-outlined" aria-hidden="true">person<\/span>[\s\S]*내 사진/);
-    const panelStart = html.indexOf('id="explore-list"');
-    const scopeStart = html.indexOf('class="explore-photo-scope"', panelStart);
-    const bodyStart = html.indexOf('id="explore-discovery-body"', panelStart);
+    assert.match(html, /class=\"explore-photo-scope\" aria-label=\"지도에 표시할 사진 출처\"/);
+    assert.match(html, /class=\"explore-photo-scope-trigger\"[^>]*data-explore-scope-trigger[^>]*aria-haspopup=\"menu\"[^>]*aria-expanded=\"false\"/);
+    assert.match(html, /data-explore-scope-trigger-icon[^>]*aria-hidden=\"true\">person<\/span>/);
+    assert.match(html, /data-explore-scope-trigger-label>내 사진<\/span>/);
+    assert.match(html, /class=\"material-symbols-outlined explore-photo-scope-chevron\"[^>]*>keyboard_arrow_down<\/span>/);
+    assert.match(html, /id=\"explore-photo-scope-menu\" class=\"explore-photo-scope-menu\" role=\"menu\" hidden/);
+    assert.match(html, /data-explore-scope=\"others\"/);
+    assert.match(html, /data-explore-scope=\"mine\"/);
+    assert.match(html, /data-explore-scope=\"mine\"[^>]*class=\"active\"[^>]*aria-checked=\"true\"[\s\S]*<span class=\"material-symbols-outlined\" aria-hidden=\"true\">person<\/span>[\s\S]*내 사진[\s\S]*explore-photo-scope-check/);
+    assert.match(html, /data-explore-scope=\"others\"[^>]*aria-checked=\"false\"[\s\S]*<span class=\"material-symbols-outlined\" aria-hidden=\"true\">groups<\/span>[\s\S]*다른 사람 사진[\s\S]*explore-photo-scope-check/);
+    const panelStart = html.indexOf('id=\"explore-list\"');
+    const scopeStart = html.indexOf('class=\"explore-photo-scope\"', panelStart);
+    const bodyStart = html.indexOf('id=\"explore-discovery-body\"', panelStart);
 
     assert.ok(panelStart > -1);
     assert.ok(scopeStart > panelStart);
     assert.ok(scopeStart < bodyStart);
     assert.match(source, /explorePhotoScope:\s*'mine'/);
+    assert.match(source, /isExplorePhotoScopeMenuOpen:\s*false/);
     assert.match(source, /function setExplorePhotoScope\(scope\)/);
-    assert.match(source, /button\.setAttribute\('aria-selected', isActive \? 'true' : 'false'\)/);
-    assert.match(source, /button\.setAttribute\('aria-pressed', isActive \? 'true' : 'false'\)/);
+    assert.match(source, /function setExplorePhotoScopeMenuOpen\(isOpen\)/);
+    assert.match(source, /button\.setAttribute\('aria-checked', isActive \? 'true' : 'false'\)/);
+    assert.match(source, /event\.target\.closest\('\[data-explore-scope-trigger\]'\)/);
     assert.match(source, /event\.target\.closest\('\[data-explore-scope\]'\)/);
 });
 
