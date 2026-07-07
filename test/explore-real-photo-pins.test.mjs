@@ -46,6 +46,7 @@ test('Explore marks a normal pin selected only when the photo itself is selected
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(body, /const selected = Boolean\(photo\.id && photo\.id === state\.selectedPhotoId\)/);
+    assert.match(body, /zIndex: selected \? 1000 : 10/);
     assert.doesNotMatch(body, /const selected = photo\.album_id === selectedAlbumId \|\| photo\.id === state\.selectedPhotoId/);
 });
 

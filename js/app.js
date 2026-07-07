@@ -1054,7 +1054,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
                 title: getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진'),
                 icon: getExplorePinIcon(maps, { type: 'photo', selected }),
                 label: null,
-                zIndex: selected ? 12 : 10
+                zIndex: selected ? 1000 : 10
             });
             marker.addListener('click', () => {
                 openExplorePhotoPreview(photo, { focusMap: false });
