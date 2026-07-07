@@ -3481,6 +3481,7 @@ body.is-logged-in .home-workspace .panel-actions {
 }
 
 body.is-logged-in .home-workspace #btn-open-upload,
+body.is-logged-in .home-workspace #btn-open-album,
 body.is-logged-in .home-workspace #btn-open-photos,
 body.is-logged-in .home-workspace #btn-open-liked-photos {
     display: inline-flex;
@@ -3503,7 +3504,8 @@ body.is-logged-in .home-workspace #btn-open-liked-photos {
         transform 120ms ease-out;
 }
 
-body.is-logged-in .home-workspace #btn-open-upload {
+body.is-logged-in .home-workspace #btn-open-upload,
+body.is-logged-in .home-workspace #btn-open-album {
     border-color: rgba(0, 54, 55, 0.92);
     background: var(--teal-dark);
     color: #ffffff;
@@ -3521,6 +3523,7 @@ body.is-logged-in .home-workspace #btn-open-liked-photos {
 }
 
 body.is-logged-in .home-workspace #btn-open-upload .material-symbols-outlined,
+body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined,
 body.is-logged-in .home-workspace #btn-open-photos .material-symbols-outlined,
 body.is-logged-in .home-workspace #btn-open-liked-photos .material-symbols-outlined {
     color: currentColor;
@@ -3530,16 +3533,20 @@ body.is-logged-in .home-workspace #btn-open-liked-photos .material-symbols-outli
 }
 
 body.is-logged-in .home-workspace #btn-open-upload:hover,
+body.is-logged-in .home-workspace #btn-open-album:hover,
 body.is-logged-in .home-workspace #btn-open-photos:hover,
 body.is-logged-in .home-workspace #btn-open-liked-photos:hover,
 body.is-logged-in .home-workspace #btn-open-upload:focus-visible,
+body.is-logged-in .home-workspace #btn-open-album:focus-visible,
 body.is-logged-in .home-workspace #btn-open-photos:focus-visible,
 body.is-logged-in .home-workspace #btn-open-liked-photos:focus-visible {
     transform: translateY(-1px);
 }
 
 body.is-logged-in .home-workspace #btn-open-upload:hover,
-body.is-logged-in .home-workspace #btn-open-upload:focus-visible {
+body.is-logged-in .home-workspace #btn-open-album:hover,
+body.is-logged-in .home-workspace #btn-open-upload:focus-visible,
+body.is-logged-in .home-workspace #btn-open-album:focus-visible {
     background: #002b2c;
     box-shadow: 0 10px 22px rgba(26, 77, 78, 0.16);
 }
@@ -3554,6 +3561,7 @@ body.is-logged-in .home-workspace #btn-open-liked-photos:focus-visible {
 }
 
 body.is-logged-in .home-workspace #btn-open-upload:active,
+body.is-logged-in .home-workspace #btn-open-album:active,
 body.is-logged-in .home-workspace #btn-open-photos:active,
 body.is-logged-in .home-workspace #btn-open-liked-photos:active {
     transform: translateY(1px);

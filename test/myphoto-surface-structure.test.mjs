@@ -242,7 +242,7 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(recentHeader, /id="btn-open-photos"[^>]*>[\s\S]*전체 보기[\s\S]*class="material-symbols-outlined"[^>]*>arrow_forward<\/span>[\s\S]*<\/button>/);
     assert.match(likedHeader, /id="btn-open-liked-photos"[^>]*data-route="liked"[^>]*>[\s\S]*전체 보기[\s\S]*class="material-symbols-outlined"[^>]*>arrow_forward<\/span>[\s\S]*<\/button>/);
     assert.doesNotMatch(albumHeader, /id="myphoto-summary"/);
-    assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범 만들기<\/button>/);
+    assert.match(albumHeader, /id="btn-open-album"[^>]*>[\s\S]*class="material-symbols-outlined"[^>]*>add<\/span>[\s\S]*앨범 만들기[\s\S]*<\/button>/);
     assert.match(styles, /\.dashboard-section-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*line-height:\s*1;/s);
     assert.match(styles, /\.section-title-icon\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*transform:\s*translateY\(1px\);/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.panel-topline\s*\{[^}]*min-height:\s*44px;[^}]*margin-bottom:\s*18px;/s);
@@ -250,7 +250,7 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(styles, /body\.is-logged-in \.home-workspace \.album-panel\s*\{[^}]*margin-top:\s*34px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.dashboard-section-title\s*\{[^}]*font-size:\s*24px;[^}]*font-weight:\s*850;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*gap:\s*8px;[^}]*height:\s*42px;[^}]*border-radius:\s*8px;/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;[^}]*padding:\s*0 20px;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;[^}]*padding:\s*0 20px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.35\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.62\);[^}]*color:\s*var\(--teal-dark\);/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos \.material-symbols-outlined\s*\{[^}]*font-size:\s*18px;/s);
 });
