@@ -238,7 +238,9 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(recentHeader, /id="recent-photo-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*최근 사진/);
     assert.match(likedHeader, /id="liked-photo-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*좋아요한 사진/);
     assert.match(albumHeader, /id="my-albums-title" class="dashboard-section-title"[\s\S]*class="section-title-icon"[\s\S]*여행 앨범/);
-    assert.match(recentHeader, /id="btn-open-upload"[^>]*>사진 올리기<\/button>/);
+    assert.match(recentHeader, /id="btn-open-upload"[^>]*>[\s\S]*class="material-symbols-outlined"[^>]*>upload<\/span>[\s\S]*사진 올리기[\s\S]*<\/button>/);
+    assert.match(recentHeader, /id="btn-open-photos"[^>]*>[\s\S]*전체 보기[\s\S]*class="material-symbols-outlined"[^>]*>arrow_forward<\/span>[\s\S]*<\/button>/);
+    assert.match(likedHeader, /id="btn-open-liked-photos"[^>]*data-route="liked"[^>]*>[\s\S]*전체 보기[\s\S]*class="material-symbols-outlined"[^>]*>arrow_forward<\/span>[\s\S]*<\/button>/);
     assert.doesNotMatch(albumHeader, /id="myphoto-summary"/);
     assert.match(albumHeader, /id="btn-open-album"[^>]*>앨범 만들기<\/button>/);
     assert.match(styles, /\.dashboard-section-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*line-height:\s*1;/s);
@@ -247,9 +249,10 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(styles, /body\.is-logged-in \.home-workspace \.recent-photo-section\s*\{[^}]*margin:\s*34px 0 0;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.album-panel\s*\{[^}]*margin-top:\s*34px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace \.dashboard-section-title\s*\{[^}]*font-size:\s*24px;[^}]*font-weight:\s*850;/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*999px;/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album\s*\{[^}]*background:\s*linear-gradient\(180deg,\s*var\(--teal\),\s*var\(--teal-dark\)\);/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\);[^}]*color:\s*var\(--teal\);/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*gap:\s*8px;[^}]*height:\s*42px;[^}]*border-radius:\s*8px;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;[^}]*padding:\s*0 20px;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.35\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.62\);[^}]*color:\s*var\(--teal-dark\);/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos \.material-symbols-outlined\s*\{[^}]*font-size:\s*18px;/s);
 });
 
 test('home album thumbnails do not expose Supabase storage copy', () => {

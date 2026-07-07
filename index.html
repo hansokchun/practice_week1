@@ -137,8 +137,14 @@
                             최근 사진
                         </h2>
                         <div class="panel-actions">
-                            <button id="btn-open-upload" class="btn-primary compact-action-button" type="button">사진 올리기</button>
-                            <button id="btn-open-photos" class="text-button" type="button">전체 보기</button>
+                            <button id="btn-open-upload" class="btn-primary compact-action-button" type="button">
+                                <span class="material-symbols-outlined" aria-hidden="true">upload</span>
+                                <span>사진 올리기</span>
+                            </button>
+                            <button id="btn-open-photos" class="text-button" type="button">
+                                <span>전체 보기</span>
+                                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                            </button>
                         </div>
                     </div>
                     <div id="recent-photo-grid" class="recent-photo-grid">
@@ -157,7 +163,10 @@
                             </svg>
                             좋아요한 사진
                         </h2>
-                        <button id="btn-open-liked-photos" class="text-button" data-route="liked" type="button">전체 보기</button>
+                        <button id="btn-open-liked-photos" class="text-button" data-route="liked" type="button">
+                            <span>전체 보기</span>
+                            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                        </button>
                     </div>
                     <div id="liked-photo-grid" class="recent-photo-grid liked-photo-grid">
                         <article class="empty-state album-empty-state recent-photo-empty">
