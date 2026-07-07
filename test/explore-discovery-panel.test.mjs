@@ -90,7 +90,7 @@ test('Explore discovery panel can be collapsed and reopened from its header', ()
     assert.match(source, /setAttribute\('aria-expanded', String\(!nextCollapsed\)\)/);
 });
 
-test('Explore discovery items preserve original photo ratios without inline metadata', () => {
+test('Explore discovery items use a consistent preview-sized frame without inline metadata', () => {
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
@@ -98,14 +98,13 @@ test('Explore discovery items preserve original photo ratios without inline meta
     const renderer = source.slice(rendererStart, rendererEnd);
 
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*8px;/s);
-    assert.match(css, /\.explore-discovery-item\s*\{[^}]*flex:\s*0 0 auto;[^}]*display:\s*block;[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*border-radius:\s*0;/s);
+    assert.match(css, /\.explore-discovery-item\s*\{[^}]*flex:\s*0 0 auto;[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*4 \/ 3;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*border-radius:\s*0;[^}]*object-fit:\s*cover;/s);
     assert.match(renderer, /const selected = photo\.id && photo\.id === state\.selectedPhotoId \? ' is-selected' : '';/);
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected\s*\{/);
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected,[\s\S]*var\(--coral\)/);
     assert.doesNotMatch(css, /\.explore-discovery-image\s*\{[^}]*height:\s*100cqw;/s);
-    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*cover;/s);
     assert.match(renderer, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);
     assert.doesNotMatch(renderer, /const uploadTimeLabel = formatRelativeTime/);
     assert.doesNotMatch(renderer, /explore-discovery-copy/);

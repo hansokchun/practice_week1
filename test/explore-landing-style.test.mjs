@@ -32,15 +32,15 @@ test('Explore preview and discovery panels use landing-style archive cards', () 
     assert.doesNotMatch(css, /\.explore-discovery-time\s*\{/);
 });
 
-test('Explore photo thumbnails keep straight corners and original ratios', () => {
+test('Explore photo thumbnails keep straight corners and a consistent discovery frame', () => {
     assert.match(css, /\.explore-photo-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.map-pin img\s*\{[^}]*border-radius:\s*0;/s);
     assert.match(css, /\.pin-preview-photo-button\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*4 \/ 3;[^}]*border-radius:\s*0;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*border-radius:\s*0;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
     assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*aspect-ratio:\s*1 \/ 1;/s);
-    assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*cover;/s);
 });
 
 test('Explore discovery cards render image-only entries without inline metadata', () => {
@@ -56,6 +56,6 @@ test('Explore discovery cards render image-only entries without inline metadata'
 
 test('DESIGN documents the Explore map shell visual language', () => {
     assert.match(design, /Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces/);
-    assert.match(design, /Each thumbnail fills the panel width and preserves the original photo ratio/);
+    assert.match(design, /Each thumbnail fills the panel width in a consistent 4:3 frame/);
     assert.match(design, /description or relative-time metadata appears only after opening the photo preview/);
 });
