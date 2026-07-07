@@ -5306,12 +5306,9 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     box-shadow: none;
 }
 
-.explore-discovery-item.is-selected,
 .explore-discovery-item:focus-visible {
-    border-color: var(--coral);
-    outline: 2px solid rgba(244, 140, 113, 0.32);
+    outline: 2px solid rgba(26, 77, 78, 0.24);
     outline-offset: 2px;
-    background: #ffffff;
 }
 
 .explore-discovery-image {
