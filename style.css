@@ -133,6 +133,8 @@ img {
     font-weight: 800;
     padding: 20px 4px 17px;
     border-bottom: 2px solid transparent;
+    transition: color 150ms ease-out, transform 150ms ease-out;
+    transform-origin: center;
 }
 
 .top-nav a::after {
@@ -165,6 +167,15 @@ img {
     color: #050505;
     border-bottom-color: transparent;
     box-shadow: none;
+}
+
+.top-nav a:hover {
+    color: var(--teal-dark);
+    transform: translateY(1px) scale(0.98);
+}
+
+.top-nav a:active {
+    transform: translateY(2px) scale(0.96);
 }
 
 .top-nav a.active::after {
