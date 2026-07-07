@@ -5073,13 +5073,13 @@ body.is-logged-in .home-workspace .album-row {
 
 .explore-pin-preview {
     position: absolute;
-    top: 92px;
-    right: 28px;
+    top: 16px;
+    right: 16px;
     left: auto;
     z-index: 5;
     width: min(390px, calc(100% - 56px));
-    height: clamp(560px, calc(100svh - 108px), 900px);
-    max-height: calc(100svh - 108px);
+    height: clamp(560px, calc(100svh - 32px), 900px);
+    max-height: calc(100svh - 32px);
     display: grid;
     gap: 16px;
     align-content: start;
