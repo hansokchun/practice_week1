@@ -134,7 +134,11 @@ img {
     padding: 20px 4px 17px;
     border-bottom: 2px solid transparent;
     border-radius: 8px;
-    transition: background-color 150ms ease-out, color 150ms ease-out;
+    background-image: radial-gradient(circle, rgba(26, 77, 78, 0.1) 0 58%, transparent 62%);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 0 0;
+    transition: background-size 150ms ease-out, color 150ms ease-out;
 }
 
 .top-nav a::after {
@@ -170,7 +174,7 @@ img {
 }
 
 .top-nav a:hover {
-    background: rgba(26, 77, 78, 0.08);
+    background-size: 34px 34px;
     color: var(--teal-dark);
 }
 

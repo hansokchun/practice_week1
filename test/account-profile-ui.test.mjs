@@ -64,10 +64,10 @@ test('logged-in header exposes compact recommended notifications beside profile'
 test('top navigation keeps the existing bar with subtle separators', () => {
     assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
     assert.match(css, /\.top-nav\s*\{[^}]*gap:\s*40px;/s);
-    assert.match(css, /\.top-nav a\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*800;[^}]*padding:\s*20px 4px 17px;[^}]*border-radius:\s*8px;[^}]*transition:\s*background-color 150ms ease-out,\s*color 150ms ease-out;/s);
+    assert.match(css, /\.top-nav a\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*800;[^}]*padding:\s*20px 4px 17px;[^}]*border-radius:\s*8px;[^}]*background-image:\s*radial-gradient\(circle,\s*rgba\(26,\s*77,\s*78,\s*0\.1\)\s*0 58%,\s*transparent 62%\);[^}]*background-size:\s*0 0;[^}]*transition:\s*background-size 150ms ease-out,\s*color 150ms ease-out;/s);
     assert.match(css, /\.top-nav a \+ a::before\s*\{[^}]*left:\s*-20px;[^}]*width:\s*1px;[^}]*height:\s*24px;[^}]*background:\s*rgba\(5,\s*5,\s*5,\s*0\.18\);/s);
     assert.match(css, /\.top-nav a::after\s*\{[^}]*bottom:\s*9px;[^}]*height:\s*2px;[^}]*opacity:\s*0;/s);
-    assert.match(css, /\.top-nav a:hover\s*\{[^}]*background:\s*rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*color:\s*var\(--teal-dark\);/s);
+    assert.match(css, /\.top-nav a:hover\s*\{[^}]*background-size:\s*34px 34px;[^}]*color:\s*var\(--teal-dark\);/s);
     assert.match(css, /\.top-nav a:hover::after\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scaleX\(1\);/s);
     assert.match(css, /\.top-nav a\.active::after\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scaleX\(1\);/s);
     assert.match(css, /\.top-nav:has\(a:hover\) a\.active:not\(:hover\)::after\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*scaleX\(0\.72\);/s);
