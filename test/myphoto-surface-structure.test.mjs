@@ -255,7 +255,7 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos \.material-symbols-outlined\s*\{[^}]*font-size:\s*18px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos \.material-symbols-outlined\s*\{[^}]*display:\s*inline-grid;[^}]*place-items:\s*center;[^}]*width:\s*18px;[^}]*height:\s*18px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload > span:not\(\.material-symbols-outlined\),[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos > span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*inline-grid;[^}]*place-items:\s*center;[^}]*font-size:\s*13px;[^}]*line-height:\s*1\.25;/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album > span:not\(\.material-symbols-outlined\)\s*\{[^}]*color:\s*#ffffff;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album > span:not\(\.material-symbols-outlined\)\s*\{[^}]*color:\s*#ffffff;[^}]*translate:\s*-2px 0;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos > span:not\(\.material-symbols-outlined\)\s*\{[^}]*color:\s*var\(--teal\);/s);
 });
 
