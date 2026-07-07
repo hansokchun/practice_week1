@@ -3494,6 +3494,7 @@ body.is-logged-in .home-workspace #btn-open-liked-photos {
     gap: 8px;
     height: 42px;
     min-height: 42px;
+    box-sizing: border-box;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 850;
@@ -3510,10 +3511,12 @@ body.is-logged-in .home-workspace #btn-open-liked-photos {
 
 body.is-logged-in .home-workspace #btn-open-upload,
 body.is-logged-in .home-workspace #btn-open-album {
+    grid-template-columns: 18px auto;
     border-color: rgba(0, 54, 55, 0.92);
     background: var(--teal-dark);
     color: #ffffff;
-    padding: 0 20px;
+    min-width: 128px;
+    padding: 0 18px;
     box-shadow: 0 8px 18px rgba(26, 77, 78, 0.12);
 }
 
