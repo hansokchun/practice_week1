@@ -251,9 +251,9 @@ test('home archive creation actions sit in their matching section headers', () =
     assert.match(styles, /body\.is-logged-in \.home-workspace \.dashboard-section-title\s*\{[^}]*font-size:\s*24px;[^}]*font-weight:\s*850;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*gap:\s*8px;[^}]*height:\s*42px;[^}]*border-radius:\s*8px;/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;[^}]*padding:\s*0 20px;/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.35\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.62\);[^}]*color:\s*var\(--teal-dark\);/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-photos,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.35\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.62\);[^}]*color:\s*var\(--teal\);/s);
     assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload \.material-symbols-outlined,[\s\S]*body\.is-logged-in \.home-workspace #btn-open-liked-photos \.material-symbols-outlined\s*\{[^}]*font-size:\s*18px;/s);
-    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-album > span:not\(\.material-symbols-outlined\)\s*\{[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*color:\s*#ffffff;[^}]*font-size:\s*13px;[^}]*line-height:\s*1\.25;/s);
+    assert.match(styles, /body\.is-logged-in \.home-workspace #btn-open-upload > span:not\(\.material-symbols-outlined\),[\s\S]*body\.is-logged-in \.home-workspace #btn-open-album > span:not\(\.material-symbols-outlined\)\s*\{[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*color:\s*#ffffff;[^}]*font-size:\s*13px;[^}]*line-height:\s*1\.25;/s);
 });
 
 test('home album thumbnails do not expose Supabase storage copy', () => {

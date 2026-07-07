@@ -3517,7 +3517,7 @@ body.is-logged-in .home-workspace #btn-open-photos,
 body.is-logged-in .home-workspace #btn-open-liked-photos {
     border: 1px solid rgba(26, 77, 78, 0.35);
     background: rgba(255, 255, 255, 0.62);
-    color: var(--teal-dark);
+    color: var(--teal);
     padding: 0 18px;
     box-shadow: none;
 }
@@ -3532,6 +3532,7 @@ body.is-logged-in .home-workspace #btn-open-liked-photos .material-symbols-outli
     font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
+body.is-logged-in .home-workspace #btn-open-upload .material-symbols-outlined,
 body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined {
     display: inline-flex;
     align-items: center;
@@ -3541,6 +3542,7 @@ body.is-logged-in .home-workspace #btn-open-album .material-symbols-outlined {
     flex: 0 0 18px;
 }
 
+body.is-logged-in .home-workspace #btn-open-upload > span:not(.material-symbols-outlined),
 body.is-logged-in .home-workspace #btn-open-album > span:not(.material-symbols-outlined) {
     display: inline-flex;
     align-items: center;
@@ -3577,7 +3579,7 @@ body.is-logged-in .home-workspace #btn-open-photos:focus-visible,
 body.is-logged-in .home-workspace #btn-open-liked-photos:focus-visible {
     border-color: rgba(26, 77, 78, 0.38);
     background: rgba(26, 77, 78, 0.07);
-    color: var(--teal-dark);
+    color: var(--teal);
 }
 
 body.is-logged-in .home-workspace #btn-open-upload:active,
