@@ -243,7 +243,7 @@ test('logged-in home panels and thumbnails follow the explore visual language', 
     assert.match(styles, /--thumbnail-radius:\s*8px;/);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*var\(--thumbnail-radius\);/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-cover-layer img\s*\{[^}]*border-radius:\s*var\(--thumbnail-radius\);/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*14px;[^}]*box-shadow:/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*8px;[^}]*box-shadow:/s);
 });
 
 test('home archive creation actions sit in their matching section headers', () => {

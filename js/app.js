@@ -3126,26 +3126,39 @@ function renderMissingLocationTasks(photos) {
     `).join('');
 }
 
+function getUniqueAlbumCoverSources(sources, limit = 3) {
+    const uniqueSources = [];
+    for (const source of sources) {
+        if (!source || uniqueSources.includes(source)) continue;
+        uniqueSources.push(source);
+        if (uniqueSources.length >= limit) break;
+    }
+    return uniqueSources;
+}
+
+function getAlbumCoverLayerMarkup(source, layerClass) {
+    const blankClass = source ? '' : ' album-cover-layer--blank';
+    const imageMarkup = source ? `<img src="${escapeHtml(source)}" alt="">` : '';
+
+    return `
+            <span class="album-cover-layer ${layerClass}${blankClass}" aria-hidden="true">
+                ${imageMarkup}
+            </span>`;
+}
+
 function getAlbumCoverStackMarkup(sources, altText) {
-    const visibleSources = sources.filter(Boolean);
-    const coverSource = visibleSources[0] || 'images/main_bg2.jpg';
+    const visibleSources = getUniqueAlbumCoverSources(sources);
     const layerSources = [
-        visibleSources[2] || coverSource,
-        visibleSources[1] || coverSource,
-        coverSource
+        visibleSources[2] || '',
+        visibleSources[1] || '',
+        visibleSources[0] || ''
     ];
 
     return `
         <div class="album-cover-stack" aria-label="${escapeHtml(altText)} 대표 사진">
-            <span class="album-cover-layer album-cover-layer--back">
-                <img src="${escapeHtml(layerSources[0])}" alt="">
-            </span>
-            <span class="album-cover-layer album-cover-layer--middle">
-                <img src="${escapeHtml(layerSources[1])}" alt="">
-            </span>
-            <span class="album-cover-layer album-cover-layer--front">
-                <img src="${escapeHtml(layerSources[2])}" alt="">
-            </span>
+${getAlbumCoverLayerMarkup(layerSources[0], 'album-cover-layer--back')}
+${getAlbumCoverLayerMarkup(layerSources[1], 'album-cover-layer--middle')}
+${getAlbumCoverLayerMarkup(layerSources[2], 'album-cover-layer--front')}
         </div>
     `;
 }
@@ -3155,8 +3168,10 @@ function renderSavedAlbumRows(albums) {
     const summary = $('#myphoto-summary');
     if (!list) return;
     if (summary) summary.textContent = '';
+    const myPhotos = getMySavedPhotos();
     list.innerHTML = albums.map((album) => {
-        const coverMarkup = getAlbumCoverStackMarkup([album.cover_url], album.title);
+        const albumPhotos = myPhotos.filter((photo) => photo.album_id === album.id);
+        const coverMarkup = getAlbumCoverStackMarkup([album.cover_url, ...albumPhotos.map((photo) => photo.url)], album.title);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
                 ${coverMarkup}
@@ -3184,7 +3199,7 @@ function renderSavedPhotoAlbums(photos) {
     if (summary) summary.textContent = '';
     list.innerHTML = albums.map(([name, albumPhotos]) => {
         const shared = albumPhotos.some((photo) => photo.shared);
-        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.slice(0, 3).map((photo) => photo.url), name);
+        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.map((photo) => photo.url), name);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-name="${escapeHtml(name)}" data-myphoto-album-visibility="${shared ? 'public' : 'private'}">
                 ${coverMarkup}

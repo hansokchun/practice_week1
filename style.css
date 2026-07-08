@@ -3329,16 +3329,12 @@ body[data-page="explore"] .site-footer {
 
 .album-row {
     display: grid;
-    grid-template-columns: minmax(320px, 500px) minmax(0, 1fr);
-    align-items: center;
-    gap: 48px;
-    width: min(100%, 1120px);
-    min-height: 340px;
-    padding: 24px 34px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--surface);
-    box-shadow: var(--shadow);
+    grid-template-columns: minmax(200px, 248px) minmax(260px, 360px);
+    width: min(100%, 608px);
+    overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.08);
+    border-radius: 8px;
+    background: #ffffff;
     transition:
         transform 180ms ease,
         box-shadow 180ms ease,
@@ -3347,9 +3343,9 @@ body[data-page="explore"] .site-footer {
 
 .album-cover-stack {
     position: relative;
-    align-self: center;
     width: 100%;
-    min-height: 292px;
+    height: 100%;
+    min-height: 248px;
     isolation: isolate;
 }
 
@@ -3357,29 +3353,29 @@ body[data-page="explore"] .site-footer {
     position: absolute;
     overflow: hidden;
     border: 1px solid rgba(26, 77, 78, 0.12);
-    border-radius: 10px;
-    background: var(--surface);
+    border-radius: 8px;
+    background: #ffffff;
     box-shadow:
-        0 18px 34px rgba(26, 77, 78, 0.1),
-        0 8px 18px rgba(70, 40, 32, 0.08);
+        0 12px 24px rgba(26, 77, 78, 0.08),
+        0 6px 14px rgba(70, 40, 32, 0.06);
 }
 
 .album-cover-layer--back {
-    inset: 28px 78px 14px 0;
+    inset: 18px 38px 12px 0;
     transform: rotate(-3deg);
     opacity: 0.68;
     z-index: 1;
 }
 
 .album-cover-layer--middle {
-    inset: 16px 42px 10px 22px;
+    inset: 10px 20px 8px 10px;
     transform: rotate(1.6deg);
     opacity: 0.86;
     z-index: 2;
 }
 
 .album-cover-layer--front {
-    inset: 0 0 0 44px;
+    inset: 0 0 0 20px;
     z-index: 3;
 }
 
@@ -3389,48 +3385,61 @@ body[data-page="explore"] .site-footer {
     object-fit: cover;
 }
 
+.album-cover-layer--blank {
+    background:
+        linear-gradient(135deg, rgba(26, 77, 78, 0.06), rgba(255, 255, 255, 0.98)),
+        #ffffff;
+}
+
+.album-cover-layer--blank::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border: 1px dashed rgba(26, 77, 78, 0.16);
+    border-radius: 6px;
+}
+
 .album-row-content {
     display: grid;
     align-content: center;
-    gap: 18px;
+    gap: 10px;
     min-width: 0;
-    padding: 8px 10px 8px 0;
+    padding: 26px 30px;
 }
 
 .album-row strong {
     color: var(--teal);
     font-family: var(--headline);
-    font-size: 34px;
+    font-size: 28px;
     font-weight: 850;
-    line-height: 1.16;
+    line-height: 1.2;
 }
 
 .album-row p {
     margin: 0;
     color: var(--muted);
-    font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.6;
     text-wrap: pretty;
 }
 
 .album-row small {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     border-top: 1px solid var(--line);
     color: var(--muted);
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 800;
     line-height: 1;
-    padding-top: 18px;
+    padding-top: 14px;
 }
 
 .album-count-icon {
     position: relative;
     display: inline-block;
-    width: 22px;
-    height: 20px;
-    flex: 0 0 22px;
+    width: 17px;
+    height: 16px;
+    flex: 0 0 17px;
     color: var(--teal);
 }
 
@@ -3438,8 +3447,8 @@ body[data-page="explore"] .site-footer {
 .album-count-icon::after {
     content: "";
     position: absolute;
-    border: 2px solid currentColor;
-    border-radius: 5px;
+    border: 1.8px solid currentColor;
+    border-radius: 4px;
 }
 
 .album-count-icon::before {
@@ -3742,10 +3751,10 @@ body.is-logged-in .home-workspace .album-empty-state {
 
 body.is-logged-in .home-workspace .album-row {
     border-color: rgba(26, 77, 78, 0.14);
-    border-radius: 14px;
+    border-radius: 8px;
     box-shadow:
-        0 22px 54px rgba(26, 77, 78, 0.1),
-        0 10px 24px rgba(70, 40, 32, 0.07);
+        0 16px 36px rgba(26, 77, 78, 0.08),
+        0 8px 18px rgba(70, 40, 32, 0.06);
 }
 
 .explore-map-canvas {
@@ -8719,31 +8728,32 @@ body.photo-fullscreen-open {
 
     .album-row {
         grid-template-columns: 1fr;
-        gap: 18px;
+        gap: 0;
         width: 100%;
         min-height: 0;
-        padding: 18px;
+        padding: 0;
     }
 
     .album-cover-stack {
-        min-height: 220px;
+        height: 180px;
+        min-height: 180px;
     }
 
     .album-cover-layer--back {
-        inset: 24px 62px 10px 0;
+        inset: 18px 54px 10px 0;
     }
 
     .album-cover-layer--middle {
-        inset: 12px 34px 8px 16px;
+        inset: 10px 30px 8px 14px;
     }
 
     .album-cover-layer--front {
-        inset: 0 0 0 32px;
+        inset: 0 0 0 28px;
     }
 
     .album-row-content {
-        gap: 12px;
-        padding: 0;
+        gap: 10px;
+        padding: 18px;
     }
 
     .album-row strong {
@@ -8756,7 +8766,7 @@ body.photo-fullscreen-open {
     }
 
     .album-row small {
-        font-size: 14px;
+        font-size: 13px;
         padding-top: 14px;
     }
 
