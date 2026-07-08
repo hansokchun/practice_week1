@@ -648,6 +648,16 @@ body.is-logged-out .home-workspace {
     display: none;
 }
 
+body.is-app-booting .home-workspace,
+body.is-app-booting .hero,
+body.is-app-booting .home-section-divider,
+body.is-app-booting .home-feature-stories,
+body.is-app-booting .editorial-feature,
+body.is-app-booting .home-houses-reference,
+body.is-app-booting .white-band {
+    display: none;
+}
+
 body.is-logged-in .home-workspace {
     display: block;
     padding-top: 42px;

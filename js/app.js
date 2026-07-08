@@ -1729,6 +1729,10 @@ function updateAccountUI() {
     renderAccountNotifications();
 }
 
+function setAppBooting(isBooting) {
+    document.body.classList.toggle('is-app-booting', Boolean(isBooting));
+}
+
 function getAccountNotificationItems() {
     if (!state.currentUser) return [];
 
@@ -5132,26 +5136,30 @@ function bindEvents() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const restoredAuthContext = restorePendingAuthContext(window.sessionStorage, state);
-    if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
-    if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
-    const sharedAlbumId = parseSharedAlbumId(window.location.hash);
-    if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
-    state.currentUser = await getCurrentUser();
-    updateAccountUI();
-    await ensureCurrentUserPublicProfile();
-    await loadSavedLibrary();
-    await loadPublicProfileNames();
-    ensureProfileHeaderShell();
-    bindEvents();
-    startHomeHeroSlider();
-    renderStagedPhotos();
-    renderSavedPhotoSurfaces();
-    renderTravelDraftSurfaces();
-    renderExploreList();
-    setVisibilityMode(state.visibility);
-    setProfileTab(state.profileTab);
-    if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
-    else applyRouteHash(window.location.hash, { replace: !window.location.hash });
-    if (state.currentUser) await runPendingAuthAction();
+    try {
+        const restoredAuthContext = restorePendingAuthContext(window.sessionStorage, state);
+        if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
+        if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
+        const sharedAlbumId = parseSharedAlbumId(window.location.hash);
+        if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
+        state.currentUser = await getCurrentUser();
+        updateAccountUI();
+        await ensureCurrentUserPublicProfile();
+        await loadSavedLibrary();
+        await loadPublicProfileNames();
+        ensureProfileHeaderShell();
+        bindEvents();
+        startHomeHeroSlider();
+        renderStagedPhotos();
+        renderSavedPhotoSurfaces();
+        renderTravelDraftSurfaces();
+        renderExploreList();
+        setVisibilityMode(state.visibility);
+        setProfileTab(state.profileTab);
+        if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
+        else applyRouteHash(window.location.hash, { replace: !window.location.hash });
+        if (state.currentUser) await runPendingAuthAction();
+    } finally {
+        setAppBooting(false);
+    }
 });

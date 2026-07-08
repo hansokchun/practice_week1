@@ -42,6 +42,17 @@ test('home recent photo grid does not ship default sample photos before saved ph
     assert.match(app, /function loadSavedLibrary\(\) \{[\s\S]*Promise\.all\(\[[\s\S]*loadSavedPhotos\(\),[\s\S]*loadMyLikedPhotos\(\),[\s\S]*loadSavedAlbums\(\)[\s\S]*\]\);[\s\S]*\}/);
 });
 
+test('home stays visually gated until auth and saved library boot are finished', () => {
+    const markup = html();
+    const styles = css();
+    const app = source();
+
+    assert.match(markup, /<body[^>]*class="is-logged-out is-app-booting"/);
+    assert.match(styles, /body\.is-app-booting\s+\.home-workspace,[\s\S]*body\.is-app-booting\s+\.white-band\s*\{[^}]*display:\s*none;/s);
+    assert.match(app, /function setAppBooting\(isBooting\)\s*\{[\s\S]*document\.body\.classList\.toggle\('is-app-booting', Boolean\(isBooting\)\);[\s\S]*\}/);
+    assert.match(app, /document\.addEventListener\('DOMContentLoaded', async \(\) => \{[\s\S]*try \{[\s\S]*await loadSavedLibrary\(\);[\s\S]*\} finally \{[\s\S]*setAppBooting\(false\);[\s\S]*\}/);
+});
+
 test('home no longer renders temporary preview bands or removed intro candidates', () => {
     const markup = html();
 
@@ -348,7 +359,7 @@ test('home private workspace is only visible after login', () => {
     const styles = css();
     const app = source();
 
-    assert.match(markup, /<body[^>]*class="is-logged-out"/);
+    assert.match(markup, /<body[^>]*class="[^"]*is-logged-out/);
     assert.match(styles, /body\.is-logged-out\s+\.home-workspace\s*\{[^}]*display:\s*none;/s);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
     assert.match(app, /document\.body\.classList\.toggle\('is-logged-in', Boolean\(state\.currentUser\)\)/);
