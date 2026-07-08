@@ -100,7 +100,7 @@ test('Explore discovery items use a consistent preview-sized frame without inlin
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*8px;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*flex:\s*0 0 auto;[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s);
     assert.match(css, /\.explore-discovery-image\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*4 \/ 3;[^}]*border-radius:\s*var\(--thumbnail-radius\);[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*border-radius:\s*var\(--thumbnail-radius\);[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*border-radius:\s*var\(--thumbnail-radius\);[^}]*object-fit:\s*cover;/s);
     assert.match(renderer, /const selected = photo\.id && photo\.id === state\.selectedPhotoId \? ' is-selected' : '';/);
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected\s*\{/);
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected,[\s\S]*var\(--coral\)/);
