@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const appSource = () => readFileSync('js/app.js', 'utf8');
+const stylesheet = () => readFileSync('style.css', 'utf8');
 
 test('thumbnail images use higher quality Supabase render variants', () => {
     const app = appSource();
@@ -32,4 +33,12 @@ test('home and explore thumbnail surfaces render responsive image markup', () =>
     assert.match(exploreRenderer, /getThumbnailImageMarkup\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg', description \|\| label, \{ sizes: '390px' \}\)/);
     assert.match(albumRenderer, /getThumbnailImageMarkup\(source, '', \{ sizes: '248px' \}\)/);
     assert.match(app, /const srcsetMarkup = srcset \? ` srcset="\$\{escapeHtml\(srcset\)\}" sizes="\$\{escapeHtml\(sizes\)\}"` : '';/);
+});
+
+test('home and explore thumbnails fit full photos inside fixed frames', () => {
+    const css = stylesheet();
+
+    assert.match(css, /\.recent-photo-grid img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.personal-photo-card img\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*1;[^}]*object-fit:\s*contain;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;/s);
 });
