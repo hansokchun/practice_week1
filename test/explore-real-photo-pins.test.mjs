@@ -4,12 +4,20 @@ import { test } from 'node:test';
 
 const source = readFileSync('js/app.js', 'utf8');
 
+function getExploreMarkerMountBody() {
+    const fnStart = source.indexOf('function mountExploreMapMarkers');
+    const fnEnd = source.indexOf('function scheduleExploreMarkerRefreshAfterIdle', fnStart);
+    return source.slice(fnStart, fnEnd);
+}
+
 test('Explore renders cluster pins that expand without opening the preview panel', () => {
     const fnStart = source.indexOf('async function renderExploreMapMarkers');
     const fnEnd = source.indexOf('function updatePhotoDetailModal', fnStart);
-    const body = source.slice(fnStart, fnEnd);
+    const body = getExploreMarkerMountBody();
+    const renderBody = source.slice(fnStart, fnEnd);
 
-    assert.match(body, /const clusters = getExploreMarkerClusters/);
+    assert.match(renderBody, /const clusters = getExploreMarkerClusters/);
+    assert.match(source, /function mountExploreMapMarkers\(renderState\)/);
     assert.match(body, /state\.exploreMarkers = clusters\.map/);
     assert.match(body, /if \(cluster\.count === 1\)/);
     assert.match(body, /position: cluster\.position/);
@@ -20,6 +28,7 @@ test('Explore renders cluster pins that expand without opening the preview panel
     assert.match(body, /map\.fitBounds\(bounds, 96\)/);
     assert.match(body, /maps\.event\.addListenerOnce\(map, 'idle'/);
     assert.match(body, /map\.setZoom\(expansionZoom\)/);
+    assert.match(body, /clearExploreMapMarkers\(\)/);
     assert.match(body, /\$\('#explore-pin-preview'\)\?\.setAttribute\('hidden', ''\)/);
     assert.doesNotMatch(body, /updateExploreClusterPreview/);
     assert.doesNotMatch(body, /shouldShowExploreClusterLabel\(cluster\)/);
@@ -28,9 +37,7 @@ test('Explore renders cluster pins that expand without opening the preview panel
 });
 
 test('Explore renders a selected photo overlay when the photo is hidden in a cluster', () => {
-    const fnStart = source.indexOf('async function renderExploreMapMarkers');
-    const fnEnd = source.indexOf('function updatePhotoDetailModal', fnStart);
-    const body = source.slice(fnStart, fnEnd);
+    const body = getExploreMarkerMountBody();
 
     assert.match(body, /const selectedPhoto = locatedPhotos\.find\(\(photo\) => photo\.id === state\.selectedPhotoId\)/);
     assert.match(body, /const selectedPhotoHasVisibleMarker = clusters\.some/);
@@ -41,9 +48,7 @@ test('Explore renders a selected photo overlay when the photo is hidden in a clu
 });
 
 test('Explore marks a normal pin selected only when the photo itself is selected', () => {
-    const fnStart = source.indexOf('async function renderExploreMapMarkers');
-    const fnEnd = source.indexOf('function updatePhotoDetailModal', fnStart);
-    const body = source.slice(fnStart, fnEnd);
+    const body = getExploreMarkerMountBody();
 
     assert.match(body, /const selected = Boolean\(photo\.id && photo\.id === state\.selectedPhotoId\)/);
     assert.match(body, /zIndex: selected \? 1000 : 10/);

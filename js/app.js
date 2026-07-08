@@ -50,6 +50,7 @@ import {
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
 import { readPhotoExif } from './photo-exif-reader.mjs';
+import { optimizePhotoForUpload, shouldOptimizePhotoForUpload } from './photo-upload-optimizer.mjs';
 import {
     getSelectedPersonalPhotos,
     prunePersonalPhotoSelection,
@@ -166,6 +167,8 @@ const state = {
     exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
+    exploreMarkerIdleListener: null,
+    isExploreMarkerLoading: false,
     explorePhotoScope: 'mine',
     isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
@@ -1046,7 +1049,6 @@ async function ensureExploreMap() {
             && state.exploreMarkerPhotos.length
         ) {
             renderExploreDiscoveryPanel(state.exploreMarkerPhotos);
-            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
         }
     });
 
@@ -1070,27 +1072,18 @@ function getExplorePinIcon(maps, options = {}) {
     return getExplorePinSymbolIcon(maps, options);
 }
 
-async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
-    const renderToken = ++state.exploreMarkerRenderToken;
-    const map = await ensureExploreMap();
-    const maps = window.google?.maps;
-    if (renderToken !== state.exploreMarkerRenderToken) return;
-    if (!map || !maps) return;
+function setExploreMarkerLoading(isLoading) {
+    state.isExploreMarkerLoading = Boolean(isLoading);
+    $('.explore-map-canvas')?.classList.toggle('is-loading-pins', state.isExploreMarkerLoading);
+}
 
-    state.exploreMarkerPhotos = locatedPhotos;
-    state.exploreSelectedAlbumId = selectedAlbumId;
+function clearExploreMapMarkers() {
     state.exploreMarkers.forEach((marker) => marker.setMap(null));
     state.exploreMarkers = [];
-    if (!locatedPhotos.length) {
-        document.body.classList.remove('explore-pin-selected');
-        setExplorePreviewExpanded(false);
-        $('#explore-pin-preview')?.setAttribute('hidden', '');
-        renderExploreDiscoveryPanel([]);
-        return;
-    }
-    renderExploreDiscoveryPanel(locatedPhotos);
-    const currentZoom = map.getZoom?.() || state.exploreZoom;
-    const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
+}
+
+function mountExploreMapMarkers(renderState) {
+    const { maps, map, clusters, locatedPhotos, currentZoom } = renderState;
     state.exploreMarkers = clusters.map((cluster) => {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
@@ -1130,6 +1123,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             });
             const bounds = new maps.LatLngBounds();
             cluster.photos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+            setExploreMarkerLoading(true);
             maps.event.addListenerOnce(map, 'idle', () => {
                 if ((map.getZoom?.() || 0) < expansionZoom) {
                     map.setZoom(expansionZoom);
@@ -1137,10 +1131,12 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
                     renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
                 }
             });
+            clearExploreMapMarkers();
             map.fitBounds(bounds, 96);
         });
         return marker;
     });
+
     const selectedPhoto = locatedPhotos.find((photo) => photo.id === state.selectedPhotoId);
     const selectedPhotoHasVisibleMarker = clusters.some((cluster) => (
         cluster.count === 1
@@ -1160,9 +1156,44 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         });
         state.exploreMarkers.push(selectedMarker);
     }
+}
+
+function scheduleExploreMarkerRefreshAfterIdle(maps, map) {
+    if (!state.exploreMarkerPhotos.length) return;
+    setExploreMarkerLoading(true);
+    clearExploreMapMarkers();
+    state.exploreMarkerIdleListener?.remove?.();
+    const refreshToken = ++state.exploreMarkerRenderToken;
+    state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', () => {
+        state.exploreMarkerIdleListener = null;
+        if (refreshToken !== state.exploreMarkerRenderToken) return;
+        renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+    });
+}
+
+async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
+    const renderToken = ++state.exploreMarkerRenderToken;
+    const map = await ensureExploreMap();
+    const maps = window.google?.maps;
+    if (renderToken !== state.exploreMarkerRenderToken) return;
+    if (!map || !maps) return;
+
+    state.exploreMarkerPhotos = locatedPhotos;
+    state.exploreSelectedAlbumId = selectedAlbumId;
+    clearExploreMapMarkers();
+    if (!locatedPhotos.length) {
+        setExploreMarkerLoading(false);
+        document.body.classList.remove('explore-pin-selected');
+        setExplorePreviewExpanded(false);
+        $('#explore-pin-preview')?.setAttribute('hidden', '');
+        renderExploreDiscoveryPanel([]);
+        return;
+    }
+    renderExploreDiscoveryPanel(locatedPhotos);
+    const currentZoom = map.getZoom?.() || state.exploreZoom;
     if (!state.exploreClusterListener) {
         state.exploreClusterListener = map.addListener('zoom_changed', () => {
-            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+            scheduleExploreMarkerRefreshAfterIdle(maps, map);
         });
     }
 
@@ -1174,8 +1205,22 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     if (viewportAction.type === 'fit') {
         const bounds = new maps.LatLngBounds();
         locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
+        setExploreMarkerLoading(true);
+        state.exploreMarkerIdleListener?.remove?.();
+        state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', () => {
+            state.exploreMarkerIdleListener = null;
+            if (renderToken !== state.exploreMarkerRenderToken) return;
+            const settledZoom = map.getZoom?.() || state.exploreZoom;
+            const clusters = getExploreMarkerClusters(locatedPhotos, settledZoom, 54);
+            mountExploreMapMarkers({ maps, map, clusters, locatedPhotos, currentZoom: settledZoom });
+            setExploreMarkerLoading(false);
+        });
         map.fitBounds(bounds, 96);
+        return;
     }
+    const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);
+    mountExploreMapMarkers({ maps, map, clusters, locatedPhotos, currentZoom });
+    setExploreMarkerLoading(false);
 }
 
 async function ensureProfileMap() {
@@ -4036,7 +4081,9 @@ async function persistStagedPhotos() {
     state.isPersistingUpload = true;
     const status = $('#upload-storage-status');
     const reviewButton = $('#btn-review-upload');
+    const hasLargeUpload = selectedPhotos.some((photo) => shouldOptimizePhotoForUpload(photo.file));
     if (status) status.textContent = '사진을 Supabase Storage에 저장하는 중입니다...';
+    if (status && hasLargeUpload) status.textContent = '큰 사진은 3MB 이하로 정리한 뒤 저장하는 중입니다...';
     if (reviewButton) reviewButton.disabled = true;
 
     try {
@@ -4044,10 +4091,11 @@ async function persistStagedPhotos() {
         const saved = [];
         for (const [index, photo] of selectedPhotos.entries()) {
             const id = `${timestamp}-${index}`;
-            const fileName = `${state.currentUser.id}/${id}-${safeFileName(photo.name)}`;
             const exif = await readPhotoExif(photo.file);
             const hasExifLocation = hasUsableCoordinates(exif.lat, exif.lng);
-            const { url, error: uploadError } = await uploadImage(photo.file, fileName);
+            const storageFile = await optimizePhotoForUpload(photo.file);
+            const fileName = `${state.currentUser.id}/${id}-${safeFileName(storageFile.name || photo.name)}`;
+            const { url, error: uploadError } = await uploadImage(storageFile, fileName);
             if (uploadError) throw uploadError;
             const record = {
                 id,

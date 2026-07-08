@@ -4801,6 +4801,30 @@ body.is-logged-in .home-workspace .album-row {
     background: var(--surface-soft);
 }
 
+.explore-map-pin-loading {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 8px);
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--teal);
+    box-shadow: 0 12px 30px rgba(10, 41, 42, 0.12);
+    font-size: 13px;
+    font-weight: 900;
+    padding: 9px 13px;
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.explore-map-canvas.is-loading-pins .explore-map-pin-loading {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
 .map-api-warning {
     display: grid;
     place-content: center;
