@@ -822,6 +822,8 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
 }
 
 .home-houses-reference__photo {
+    --home-photo-lift: 0px;
+    --home-photo-transform: rotate(0deg);
     position: absolute;
     margin: 0;
     overflow: hidden;
@@ -830,13 +832,16 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
         0 30px 70px rgba(70, 40, 32, 0.22),
         0 12px 28px rgba(26, 77, 78, 0.12);
     cursor: pointer;
+    transform: translateY(var(--home-photo-lift)) var(--home-photo-transform);
+    transition: transform 220ms ease;
+    will-change: transform;
 }
 
 .home-houses-reference__photo img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 260ms ease;
 }
 
 .home-houses-reference__photo figcaption {
@@ -859,9 +864,9 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     pointer-events: none;
 }
 
-.home-houses-reference__photo:hover img,
-.home-houses-reference__photo:focus-visible img {
-    transform: scale(1.035);
+.home-houses-reference__photo:hover,
+.home-houses-reference__photo:focus-visible {
+    --home-photo-lift: -8px;
 }
 
 .home-houses-reference__photo:hover figcaption,
@@ -880,7 +885,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     bottom: 54px;
     width: 248px;
     aspect-ratio: 0.78;
-    transform: rotate(-8deg);
+    --home-photo-transform: rotate(-8deg);
 }
 
 .home-houses-reference__photo--b {
@@ -888,7 +893,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     bottom: 136px;
     width: 264px;
     aspect-ratio: 0.76;
-    transform: rotate(3deg);
+    --home-photo-transform: rotate(3deg);
 }
 
 .home-houses-reference__photo--c {
@@ -896,7 +901,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     bottom: 104px;
     width: 284px;
     aspect-ratio: 0.9;
-    transform: translateX(-50%) rotate(-2deg);
+    --home-photo-transform: translateX(-50%) rotate(-2deg);
     z-index: 2;
 }
 
@@ -905,7 +910,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     bottom: 134px;
     width: 264px;
     aspect-ratio: 0.78;
-    transform: rotate(-4deg);
+    --home-photo-transform: rotate(-4deg);
 }
 
 .home-houses-reference__photo--e {
@@ -913,7 +918,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     bottom: 54px;
     width: 248px;
     aspect-ratio: 0.84;
-    transform: rotate(6deg);
+    --home-photo-transform: rotate(6deg);
 }
 
 .home-section-divider {

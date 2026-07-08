@@ -170,13 +170,16 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__collage::before\s*\{/);
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
     assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
+    assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*--home-photo-lift:\s*0px;[^}]*--home-photo-transform:\s*rotate\(0deg\);[^}]*transform:\s*translateY\(var\(--home-photo-lift\)\)\s+var\(--home-photo-transform\);[^}]*transition:\s*transform 220ms ease;/s);
+    assert.match(styles, /\.home-houses-reference__photo:hover,[\s\S]*\.home-houses-reference__photo:focus-visible\s*\{[^}]*--home-photo-lift:\s*-8px;/s);
+    assert.doesNotMatch(styles, /\.home-houses-reference__photo:hover img,[\s\S]*\.home-houses-reference__photo:focus-visible img\s*\{[^}]*transform:/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__divider/);
     assert.match(styles, /\.home-section-divider\s*\{[^}]*height:\s*clamp\(108px,\s*16vw,\s*220px\);[^}]*margin-top:\s*clamp\(-48px,\s*-3vw,\s*-24px\);[^}]*margin-bottom:\s*clamp\(-48px,\s*-3vw,\s*-24px\);[^}]*background:\s*var\(--surface\);/s);
     assert.match(styles, /\.home-section-divider img\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center 52%;/s);
     assert.match(styles, /\.home-houses-reference__photo figcaption\s*\{[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__photo:hover figcaption,[\s\S]*\.home-houses-reference__photo:focus-visible figcaption\s*\{[^}]*opacity:\s*1;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__info-panel/);
-    assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;/s);
+    assert.match(styles, /\.home-houses-reference__photo--c\s*\{[^}]*width:\s*284px;[^}]*--home-photo-transform:\s*translateX\(-50%\)\s+rotate\(-2deg\);/s);
 });
 
 test('home collage photos reuse the existing photo detail modal', () => {
