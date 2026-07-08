@@ -17,6 +17,7 @@
     --houses-text: var(--text);
     --header-height: 76px;
     --container: 1280px;
+    --thumbnail-radius: 8px;
     --headline: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
     --body: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
     --brand: Georgia, 'Times New Roman', var(--headline);
@@ -134,7 +135,7 @@ img {
     padding: 20px 4px 17px;
     border-bottom: 2px solid transparent;
     border-radius: 8px;
-    background-image: radial-gradient(ellipse, rgba(26, 77, 78, 0.07) 0 44%, rgba(26, 77, 78, 0.035) 61%, rgba(26, 77, 78, 0.012) 73%, transparent 84%);
+    background-image: radial-gradient(ellipse at center, rgba(26, 77, 78, 0.064) 0 36%, rgba(26, 77, 78, 0.04) 52%, rgba(26, 77, 78, 0.02) 68%, rgba(26, 77, 78, 0.006) 84%, transparent 100%);
     background-position: center;
     background-repeat: no-repeat;
     background-size: 0 0;
@@ -174,7 +175,7 @@ img {
 }
 
 .top-nav a:hover {
-    background-size: 76px 46px;
+    background-size: 88px 48px;
     color: var(--teal-dark);
 }
 
@@ -3076,7 +3077,7 @@ body[data-page="explore"] .site-footer {
     position: relative;
     overflow: hidden;
     aspect-ratio: 1;
-    border-radius: 16px;
+    border-radius: var(--thumbnail-radius);
     background: var(--surface-soft);
 }
 
@@ -3645,7 +3646,7 @@ body.is-logged-in .home-workspace #btn-open-liked-photos:active {
 body.is-logged-in .home-workspace .recent-photo-grid article:not(.recent-photo-empty),
 body.is-logged-in .home-workspace .personal-photo-card {
     border: 1px solid rgba(26, 77, 78, 0.14);
-    border-radius: 0;
+    border-radius: var(--thumbnail-radius);
     background: #ffffff;
     box-shadow:
         0 18px 42px rgba(26, 77, 78, 0.1),
@@ -3655,7 +3656,7 @@ body.is-logged-in .home-workspace .personal-photo-card {
 body.is-logged-in .home-workspace .recent-photo-grid img,
 body.is-logged-in .home-workspace .personal-photo-card img,
 body.is-logged-in .home-workspace .album-row img {
-    border-radius: 0;
+    border-radius: var(--thumbnail-radius);
 }
 
 body.is-logged-in .home-workspace .recent-photo-empty,
@@ -5362,7 +5363,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     width: 100%;
     aspect-ratio: 4 / 3;
     min-height: 0;
-    border-radius: 0;
+    border-radius: var(--thumbnail-radius);
     overflow: hidden;
     background: var(--bg);
 }
@@ -5371,7 +5372,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 0;
+    border-radius: var(--thumbnail-radius);
     max-width: 100%;
     object-fit: cover;
 }
@@ -8621,7 +8622,7 @@ body.photo-fullscreen-open {
     }
 
     .personal-photo-card {
-        border-radius: 0;
+        border-radius: var(--thumbnail-radius);
     }
 
     .personal-photo-card img {

@@ -78,6 +78,7 @@ All spacing derives from a base of 4px.
 | `--space-16` | `64px` | Header and major rhythm |
 | `--space-20` | `80px` | Large section padding |
 | `--space-24` | `96px` | Maximum ordinary section separation |
+| `--thumbnail-radius` | `8px` | Home and Explore photo thumbnail corners |
 
 ### Grid
 
@@ -126,7 +127,13 @@ All spacing derives from a base of 4px.
 - **Structure**: Public Explore and profile maps use the shared `getExploreMapOptions` helper.
 - **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels, and removes transit line geometry so uploaded photo pins remain the visual focus.
 - **Controls**: Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces with teal-dark actions, coral metadata accents, and restrained media shadows so Explore feels connected to the landing feature rows. Large map panels use squared archive corners around 8-10px rather than soft rounded cards.
-- **Discovery Cards**: Public photo cards in the Explore discovery panel render as image-only thumbnail entries. Each thumbnail fills the panel width in a consistent 4:3 frame, matching the default preview photo rhythm so the list scans evenly. Thumbnail corners stay sharp, and description or relative-time metadata appears only after opening the photo preview.
+- **Discovery Cards**: Public photo cards in the Explore discovery panel render as image-only thumbnail entries. Each thumbnail fills the panel width in a consistent 4:3 frame, matching the default preview photo rhythm so the list scans evenly. Thumbnail corners use the shared 8px thumbnail radius, while description or relative-time metadata appears only after opening the photo preview.
+
+### Home Photo Thumbnails
+
+- **Structure**: Recent, liked, and personal photo thumbnails render as image-first archive tiles.
+- **Shape**: Use `--thumbnail-radius` so Home photo grids match Explore discovery thumbnails without becoming pill-like or overly soft.
+- **Motion**: Existing hover and selection states stay transform/opacity based and must not change thumbnail dimensions.
 
 ### Mobile Web Shell
 
