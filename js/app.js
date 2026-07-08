@@ -3126,20 +3126,44 @@ function renderMissingLocationTasks(photos) {
     `).join('');
 }
 
+function getAlbumCoverStackMarkup(sources, altText) {
+    const visibleSources = sources.filter(Boolean);
+    const coverSource = visibleSources[0] || 'images/main_bg2.jpg';
+    const layerSources = [
+        visibleSources[2] || coverSource,
+        visibleSources[1] || coverSource,
+        coverSource
+    ];
+
+    return `
+        <div class="album-cover-stack" aria-label="${escapeHtml(altText)} 대표 사진">
+            <span class="album-cover-layer album-cover-layer--back">
+                <img src="${escapeHtml(layerSources[0])}" alt="">
+            </span>
+            <span class="album-cover-layer album-cover-layer--middle">
+                <img src="${escapeHtml(layerSources[1])}" alt="">
+            </span>
+            <span class="album-cover-layer album-cover-layer--front">
+                <img src="${escapeHtml(layerSources[2])}" alt="">
+            </span>
+        </div>
+    `;
+}
+
 function renderSavedAlbumRows(albums) {
     const list = $('#album-list');
     const summary = $('#myphoto-summary');
     if (!list) return;
     if (summary) summary.textContent = '';
     list.innerHTML = albums.map((album) => {
-        const visibilityIcon = album.visibility === 'public' || album.visibility === 'link' ? 'public' : 'lock';
+        const coverMarkup = getAlbumCoverStackMarkup([album.cover_url], album.title);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
-                <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="${escapeHtml(album.title)}">
-                <div>
+                ${coverMarkup}
+                <div class="album-row-content">
                     <strong>${escapeHtml(album.title)}</strong>
                     <p>${escapeHtml(getAlbumVisibleNote(album) || '저장된 여행 앨범입니다.')}</p>
-                    <small><span class="material-symbols-outlined">${visibilityIcon}</span>${formatPhotoCount(album.photo_count)}</small>
+                    <small><span class="album-count-icon" aria-hidden="true"></span>${formatPhotoCount(album.photo_count)}</small>
                 </div>
             </article>
         `;
@@ -3159,15 +3183,15 @@ function renderSavedPhotoAlbums(photos) {
     const albums = Object.entries(grouped);
     if (summary) summary.textContent = '';
     list.innerHTML = albums.map(([name, albumPhotos]) => {
-        const cover = albumPhotos[0];
         const shared = albumPhotos.some((photo) => photo.shared);
+        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.slice(0, 3).map((photo) => photo.url), name);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-name="${escapeHtml(name)}" data-myphoto-album-visibility="${shared ? 'public' : 'private'}">
-                <img src="${cover.url}" alt="${escapeHtml(name)}">
-                <div>
+                ${coverMarkup}
+                <div class="album-row-content">
                     <strong>${escapeHtml(name)}</strong>
                     <p>저장된 사진을 기준으로 구성한 여행 앨범입니다.</p>
-                    <small><span class="material-symbols-outlined">${shared ? 'public' : 'lock'}</span>${formatPhotoCount(albumPhotos.length)}</small>
+                    <small><span class="album-count-icon" aria-hidden="true"></span>${formatPhotoCount(albumPhotos.length)}</small>
                 </div>
             </article>
         `;
@@ -3860,19 +3884,19 @@ function renderAlbumDrafts() {
     if (!state.albumDrafts.length) {
         list.innerHTML = `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-                <img src="images/main_bg2.jpg" alt="">
-                <div>
+                ${getAlbumCoverStackMarkup(['images/main_bg2.jpg'], '제주 4박 5일')}
+                <div class="album-row-content">
                     <strong>제주 4박 5일</strong>
                     <p>사진을 업로드하거나 앨범 초안을 저장하면 이곳에 실제 앨범이 표시됩니다.</p>
-                    <small><span class="material-symbols-outlined">lock</span>128장</small>
+                    <small><span class="album-count-icon" aria-hidden="true"></span>128장</small>
                 </div>
             </article>
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-                <img src="images/main_bg5.jpg" alt="">
-                <div>
+                ${getAlbumCoverStackMarkup(['images/main_bg5.jpg'], '동해 새벽 여행')}
+                <div class="album-row-content">
                     <strong>동해 새벽 여행</strong>
                     <p>공개 전까지는 Home에서만 확인할 수 있는 개인 여행 기록입니다.</p>
-                    <small><span class="material-symbols-outlined">lock</span>42장</small>
+                    <small><span class="album-count-icon" aria-hidden="true"></span>42장</small>
                 </div>
             </article>
         `;
@@ -3881,11 +3905,11 @@ function renderAlbumDrafts() {
 
     list.innerHTML = state.albumDrafts.map((album) => `
         <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-            <img src="images/main_bg4.jpg" alt="">
-            <div>
+            ${getAlbumCoverStackMarkup(['images/main_bg4.jpg'], album.name)}
+            <div class="album-row-content">
                 <strong>${escapeHtml(album.name)}</strong>
                 <p>${escapeHtml(getAlbumVisibleNote(album) || '비공개 앨범 초안입니다.')}</p>
-                <small><span class="material-symbols-outlined">lock</span>${formatPhotoCount(state.stagedPhotos.length)}</small>
+                <small><span class="album-count-icon" aria-hidden="true"></span>${formatPhotoCount(state.stagedPhotos.length)}</small>
             </div>
         </article>
     `).join('');

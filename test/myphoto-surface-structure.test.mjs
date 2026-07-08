@@ -242,8 +242,8 @@ test('logged-in home panels and thumbnails follow the explore visual language', 
     assert.match(styles, /\.compact-action-button\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*999px;/s);
     assert.match(styles, /--thumbnail-radius:\s*8px;/);
     assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid article:not\(\.recent-photo-empty\),[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card\s*\{[^}]*border-radius:\s*var\(--thumbnail-radius\);/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-row img\s*\{[^}]*border-radius:\s*var\(--thumbnail-radius\);/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*8px;[^}]*box-shadow:/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.recent-photo-grid img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.personal-photo-card img,[\s\S]*body\.is-logged-in\s+\.home-workspace\s+\.album-cover-layer img\s*\{[^}]*border-radius:\s*var\(--thumbnail-radius\);/s);
+    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s+\.album-row\s*\{[^}]*border-radius:\s*14px;[^}]*box-shadow:/s);
 });
 
 test('home archive creation actions sit in their matching section headers', () => {
@@ -302,8 +302,10 @@ test('home album thumbnails do not expose Supabase storage copy', () => {
     assert.doesNotMatch(albumRenderers, /\$\{visibilityLabel\}/);
     assert.doesNotMatch(albumRenderers, /앨범 기록/);
     assert.doesNotMatch(albumRenderers, /비공개'} · 저장됨/);
-    assert.match(albumRenderers, /<small><span class="material-symbols-outlined">\$\{visibilityIcon\}<\/span>\$\{formatPhotoCount\(album\.photo_count\)\}<\/small>/);
-    assert.match(albumRenderers, /<small><span class="material-symbols-outlined">\$\{shared \? 'public' : 'lock'\}<\/span>\$\{formatPhotoCount\(albumPhotos\.length\)\}<\/small>/);
+    assert.match(app, /class="album-cover-stack"/);
+    assert.match(albumRenderers, /class="album-row-content"/);
+    assert.match(albumRenderers, /<small><span class="album-count-icon" aria-hidden="true"><\/span>\$\{formatPhotoCount\(album\.photo_count\)\}<\/small>/);
+    assert.match(albumRenderers, /<small><span class="album-count-icon" aria-hidden="true"><\/span>\$\{formatPhotoCount\(albumPhotos\.length\)\}<\/small>/);
 });
 
 test('recent photos full view uses recent-photo naming without intro copy', () => {

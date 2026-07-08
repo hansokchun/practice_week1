@@ -3319,6 +3319,7 @@ body[data-page="explore"] .site-footer {
 .photo-grid.empty,
 .album-list {
     display: grid;
+    width: 100%;
     gap: 28px;
 }
 
@@ -3328,70 +3329,134 @@ body[data-page="explore"] .site-footer {
 
 .album-row {
     display: grid;
-    grid-template-columns: minmax(200px, 248px) minmax(260px, 360px);
-    width: min(100%, 608px);
-    overflow: hidden;
-    border: 1px solid rgba(26, 77, 78, 0.08);
-    border-radius: 8px;
-    background: #ffffff;
+    grid-template-columns: minmax(320px, 500px) minmax(0, 1fr);
+    align-items: center;
+    gap: 48px;
+    width: min(100%, 1120px);
+    min-height: 340px;
+    padding: 24px 34px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
     transition:
         transform 180ms ease,
         box-shadow 180ms ease,
         border-color 180ms ease;
 }
 
-.album-row img {
+.album-cover-stack {
+    position: relative;
+    align-self: center;
+    width: 100%;
+    min-height: 292px;
+    isolation: isolate;
+}
+
+.album-cover-layer {
+    position: absolute;
+    overflow: hidden;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow:
+        0 18px 34px rgba(26, 77, 78, 0.1),
+        0 8px 18px rgba(70, 40, 32, 0.08);
+}
+
+.album-cover-layer--back {
+    inset: 28px 78px 14px 0;
+    transform: rotate(-3deg);
+    opacity: 0.68;
+    z-index: 1;
+}
+
+.album-cover-layer--middle {
+    inset: 16px 42px 10px 22px;
+    transform: rotate(1.6deg);
+    opacity: 0.86;
+    z-index: 2;
+}
+
+.album-cover-layer--front {
+    inset: 0 0 0 44px;
+    z-index: 3;
+}
+
+.album-cover-layer img {
     width: 100%;
     height: 100%;
-    min-height: 248px;
-    aspect-ratio: 1;
     object-fit: cover;
 }
 
-.album-row div {
+.album-row-content {
     display: grid;
     align-content: center;
-    gap: 10px;
-    padding: 26px 30px;
+    gap: 18px;
+    min-width: 0;
+    padding: 8px 10px 8px 0;
 }
 
 .album-row strong {
     color: var(--teal);
     font-family: var(--headline);
-    font-size: 28px;
+    font-size: 34px;
+    font-weight: 850;
     line-height: 1.16;
 }
 
 .album-row p {
     margin: 0;
     color: var(--muted);
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.7;
+    text-wrap: pretty;
 }
 
 .album-row small {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     border-top: 1px solid var(--line);
     color: var(--muted);
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 800;
     line-height: 1;
-    padding-top: 14px;
+    padding-top: 18px;
 }
 
-.album-row small .material-symbols-outlined {
+.album-count-icon {
+    position: relative;
+    display: inline-block;
+    width: 22px;
+    height: 20px;
+    flex: 0 0 22px;
     color: var(--teal);
-    font-family: "Material Symbols Outlined";
-    font-size: 17px;
-    font-weight: 400;
-    line-height: 1;
+}
+
+.album-count-icon::before,
+.album-count-icon::after {
+    content: "";
+    position: absolute;
+    border: 2px solid currentColor;
+    border-radius: 5px;
+}
+
+.album-count-icon::before {
+    inset: 5px 1px 1px 5px;
+}
+
+.album-count-icon::after {
+    inset: 1px 5px 5px 1px;
+    opacity: 0.62;
 }
 
 .album-row:hover,
 .album-row:focus-visible {
-    border-color: rgba(26, 77, 78, 0.18);
-    box-shadow: 0 24px 58px rgba(26, 77, 78, 0.12);
+    border-color: rgba(26, 77, 78, 0.22);
+    box-shadow:
+        0 26px 68px rgba(26, 77, 78, 0.12),
+        0 12px 28px rgba(70, 40, 32, 0.08);
     transform: translateY(-2px);
 }
 
@@ -3665,7 +3730,7 @@ body.is-logged-in .home-workspace .personal-photo-card {
 
 body.is-logged-in .home-workspace .recent-photo-grid img,
 body.is-logged-in .home-workspace .personal-photo-card img,
-body.is-logged-in .home-workspace .album-row img {
+body.is-logged-in .home-workspace .album-cover-layer img {
     border-radius: var(--thumbnail-radius);
 }
 
@@ -3677,7 +3742,7 @@ body.is-logged-in .home-workspace .album-empty-state {
 
 body.is-logged-in .home-workspace .album-row {
     border-color: rgba(26, 77, 78, 0.14);
-    border-radius: 8px;
+    border-radius: 14px;
     box-shadow:
         0 22px 54px rgba(26, 77, 78, 0.1),
         0 10px 24px rgba(70, 40, 32, 0.07);
@@ -8652,17 +8717,47 @@ body.photo-fullscreen-open {
         transform: scale(0.92);
     }
 
-    .album-row img {
-        min-height: 180px;
-        height: 180px;
+    .album-row {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        width: 100%;
+        min-height: 0;
+        padding: 18px;
     }
 
-    .album-row div {
-        padding: 18px;
+    .album-cover-stack {
+        min-height: 220px;
+    }
+
+    .album-cover-layer--back {
+        inset: 24px 62px 10px 0;
+    }
+
+    .album-cover-layer--middle {
+        inset: 12px 34px 8px 16px;
+    }
+
+    .album-cover-layer--front {
+        inset: 0 0 0 32px;
+    }
+
+    .album-row-content {
+        gap: 12px;
+        padding: 0;
     }
 
     .album-row strong {
         font-size: 24px;
+    }
+
+    .album-row p {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .album-row small {
+        font-size: 14px;
+        padding-top: 14px;
     }
 
     .upload-dropzone {
