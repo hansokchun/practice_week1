@@ -279,8 +279,8 @@ function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
 
 const SUPABASE_STORAGE_OBJECT_PUBLIC_PATH = '/storage/v1/object/public/';
 const SUPABASE_STORAGE_RENDER_PUBLIC_PATH = '/storage/v1/render/image/public/';
-const THUMBNAIL_IMAGE_WIDTHS = [640, 960, 1280];
-const THUMBNAIL_IMAGE_QUALITY = 92;
+const THUMBNAIL_IMAGE_WIDTHS = [480, 720, 960];
+const THUMBNAIL_IMAGE_QUALITY = 84;
 const DEFAULT_THUMBNAIL_IMAGE_SIZES = '(max-width: 860px) calc(100vw - 32px), 360px';
 
 function getStorageImageVariantUrl(source, width) {
@@ -315,7 +315,7 @@ function getThumbnailImageMarkup(source, altText = '', {
     attributes = ''
 } = {}) {
     const fallbackSource = source || 'images/main_bg2.jpg';
-    const src = getStorageImageVariantUrl(fallbackSource, 960) || fallbackSource;
+    const src = getStorageImageVariantUrl(fallbackSource, 720) || fallbackSource;
     const srcset = getThumbnailImageSrcset(fallbackSource);
     const srcsetMarkup = srcset ? ` srcset="${escapeHtml(srcset)}" sizes="${escapeHtml(sizes)}"` : '';
     const extraAttributes = attributes ? ` ${attributes}` : '';
