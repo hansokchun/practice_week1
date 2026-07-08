@@ -130,6 +130,8 @@ const state = {
     savedPhotos: [],
     savedAlbums: [],
     likedPhotoIds: [],
+    hasLoadedSavedPhotos: false,
+    hasLoadedMyLikes: false,
     profileNames: {},
     publicProfiles: {},
     lastSavedPhotoIds: [],
@@ -1833,6 +1835,8 @@ async function handleLogout() {
     state.savedPhotos = [];
     state.savedAlbums = [];
     state.likedPhotoIds = [];
+    state.hasLoadedSavedPhotos = false;
+    state.hasLoadedMyLikes = false;
     state.lastSavedPhotoIds = [];
     closeModals();
     updateAccountUI();
@@ -2841,12 +2845,16 @@ async function loadSavedPhotos() {
     const { data, error } = await fetchPhotos();
     if (error) {
         state.savedPhotos = [];
+        state.hasLoadedSavedPhotos = true;
         showToast('저장된 사진을 불러오지 못했습니다.');
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
         return;
     }
     state.savedPhotos = (data || [])
         .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared || photo.visibility === 'public')
         .map(normalizeSavedPhoto);
+    state.hasLoadedSavedPhotos = true;
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
 }
@@ -2854,17 +2862,20 @@ async function loadSavedPhotos() {
 async function loadMyLikedPhotos() {
     if (!state.currentUser) {
         state.likedPhotoIds = [];
+        state.hasLoadedMyLikes = true;
         renderLikedPhotoSurfaces();
         return;
     }
     const { data, error } = await fetchMyLikes(state.currentUser.id);
     if (error) {
         state.likedPhotoIds = [];
+        state.hasLoadedMyLikes = true;
         showToast('좋아요한 사진을 불러오지 못했습니다.');
         renderLikedPhotoSurfaces();
         return;
     }
     state.likedPhotoIds = (data || []).map(String);
+    state.hasLoadedMyLikes = true;
     renderLikedPhotoSurfaces();
 }
 
@@ -2872,6 +2883,8 @@ async function loadSavedAlbums() {
     const { data, error } = await fetchAlbums();
     if (error) {
         state.savedAlbums = [];
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
         return;
     }
     state.savedAlbums = (data || [])
@@ -2879,6 +2892,14 @@ async function loadSavedAlbums() {
         .map(normalizeSavedAlbum);
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
+}
+
+function loadSavedLibrary() {
+    return Promise.all([
+        loadSavedPhotos(),
+        loadMyLikedPhotos(),
+        loadSavedAlbums()
+    ]);
 }
 
 async function loadPublicProfileNames() {
@@ -2901,6 +2922,7 @@ async function loadPublicProfileNames() {
 
 function renderSavedPhotoSurfaces() {
     const myPhotos = getMySavedPhotos();
+    const isSavedPhotoLoading = Boolean(state.currentUser && !state.hasLoadedSavedPhotos);
     const missingLocationPhotos = getMissingLocationPhotos(myPhotos);
     const savedAlbums = state.currentUser
         ? state.savedAlbums.filter((album) => album.owner_id === state.currentUser.id)
@@ -2925,7 +2947,16 @@ function renderSavedPhotoSurfaces() {
     renderLikedPhotoSurfaces();
 
     if (recentGrid) {
-        recentGrid.innerHTML = myPhotos.length
+        recentGrid.innerHTML = isSavedPhotoLoading
+            ? `
+            <article class="empty-state album-empty-state recent-photo-empty recent-photo-loading">
+                <div>
+                    <strong>사진을 불러오는 중입니다.</strong>
+                    <span>저장한 사진을 확인하고 있어요.</span>
+                </div>
+            </article>
+        `
+            : myPhotos.length
             ? myPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
@@ -2953,6 +2984,7 @@ function renderSavedPhotoSurfaces() {
 
 function renderLikedPhotoSurfaces() {
     const likedPhotos = getLikedPhotos();
+    const isLikedPhotoLoading = Boolean(state.currentUser && (!state.hasLoadedSavedPhotos || !state.hasLoadedMyLikes));
     const compactGrid = $('#liked-photo-grid');
     const fullGrid = $('#liked-photo-full-grid');
     const summary = $('#liked-photo-summary');
@@ -2969,7 +3001,16 @@ function renderLikedPhotoSurfaces() {
     `;
 
     if (compactGrid) {
-        compactGrid.innerHTML = likedPhotos.length
+        compactGrid.innerHTML = isLikedPhotoLoading
+            ? `
+            <article class="empty-state album-empty-state recent-photo-empty recent-photo-loading">
+                <div>
+                    <strong>좋아요한 사진을 불러오는 중입니다.</strong>
+                    <span>내가 표시한 사진을 확인하고 있어요.</span>
+                </div>
+            </article>
+        `
+            : likedPhotos.length
             ? likedPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
@@ -4408,9 +4449,7 @@ async function handleAuthSubmit(event) {
     state.currentUser = user;
     updateAccountUI();
     await ensureCurrentUserPublicProfile();
-    await loadSavedPhotos();
-    await loadMyLikedPhotos();
-    await loadSavedAlbums();
+    await loadSavedLibrary();
     closeModals();
     showToast('\uB85C\uADF8\uC778\uD588\uC5B4\uC694.');
     await runPendingAuthAction();
@@ -5101,9 +5140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     state.currentUser = await getCurrentUser();
     updateAccountUI();
     await ensureCurrentUserPublicProfile();
-    await loadSavedPhotos();
-    await loadMyLikedPhotos();
-    await loadSavedAlbums();
+    await loadSavedLibrary();
     await loadPublicProfileNames();
     ensureProfileHeaderShell();
     bindEvents();

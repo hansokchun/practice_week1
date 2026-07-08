@@ -134,7 +134,7 @@ img {
     padding: 20px 4px 17px;
     border-bottom: 2px solid transparent;
     border-radius: 8px;
-    background-image: radial-gradient(ellipse, rgba(26, 77, 78, 0.055) 0 68%, transparent 72%);
+    background-image: radial-gradient(ellipse, rgba(26, 77, 78, 0.07) 0 44%, rgba(26, 77, 78, 0.035) 61%, rgba(26, 77, 78, 0.012) 73%, transparent 84%);
     background-position: center;
     background-repeat: no-repeat;
     background-size: 0 0;
@@ -174,7 +174,7 @@ img {
 }
 
 .top-nav a:hover {
-    background-size: 80px 30px;
+    background-size: 76px 46px;
     color: var(--teal-dark);
 }
 

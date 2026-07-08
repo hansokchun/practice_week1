@@ -27,6 +27,21 @@ test('home absorbs the myphoto dashboard and top-level navigation is reduced to 
     assert.match(app, /renderedRoute === APP_SECTIONS\.HOME[\s\S]*renderSavedPhotoSurfaces\(\)/);
 });
 
+test('home recent photo grid does not ship default sample photos before saved photos load', () => {
+    const markup = html();
+    const app = source();
+    const recentGridStart = markup.indexOf('id="recent-photo-grid"');
+    const recentGridEnd = markup.indexOf('id="liked-photo-title"', recentGridStart);
+    const recentGridMarkup = markup.slice(recentGridStart, recentGridEnd);
+
+    assert.notEqual(recentGridStart, -1);
+    assert.doesNotMatch(recentGridMarkup, /images\/main_bg[1-4]\.jpg/);
+    assert.match(recentGridMarkup, /recent-photo-loading/);
+    assert.match(app, /hasLoadedSavedPhotos:\s*false/);
+    assert.match(app, /const isSavedPhotoLoading = Boolean\(state\.currentUser && !state\.hasLoadedSavedPhotos\);/);
+    assert.match(app, /function loadSavedLibrary\(\) \{[\s\S]*Promise\.all\(\[[\s\S]*loadSavedPhotos\(\),[\s\S]*loadMyLikedPhotos\(\),[\s\S]*loadSavedAlbums\(\)[\s\S]*\]\);[\s\S]*\}/);
+});
+
 test('home no longer renders temporary preview bands or removed intro candidates', () => {
     const markup = html();
 
