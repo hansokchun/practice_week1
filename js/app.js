@@ -274,6 +274,51 @@ function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
     return 'images/main_bg2.jpg';
 }
 
+const SUPABASE_STORAGE_OBJECT_PUBLIC_PATH = '/storage/v1/object/public/';
+const SUPABASE_STORAGE_RENDER_PUBLIC_PATH = '/storage/v1/render/image/public/';
+const THUMBNAIL_IMAGE_WIDTHS = [640, 960, 1280];
+const THUMBNAIL_IMAGE_QUALITY = 92;
+const DEFAULT_THUMBNAIL_IMAGE_SIZES = '(max-width: 860px) calc(100vw - 32px), 360px';
+
+function getStorageImageVariantUrl(source, width) {
+    if (!source || !width) return source || '';
+    try {
+        const url = new URL(source, window.location.origin);
+        if (url.pathname.includes(SUPABASE_STORAGE_OBJECT_PUBLIC_PATH)) {
+            url.pathname = url.pathname.replace(SUPABASE_STORAGE_OBJECT_PUBLIC_PATH, SUPABASE_STORAGE_RENDER_PUBLIC_PATH);
+        } else if (!url.pathname.includes(SUPABASE_STORAGE_RENDER_PUBLIC_PATH)) {
+            return source;
+        }
+        url.searchParams.set('width', String(width));
+        url.searchParams.set('quality', String(THUMBNAIL_IMAGE_QUALITY));
+        return url.toString();
+    } catch (_) {
+        return source;
+    }
+}
+
+function getThumbnailImageSrcset(source, widths = THUMBNAIL_IMAGE_WIDTHS) {
+    const srcset = widths
+        .map((width) => {
+            const variantUrl = getStorageImageVariantUrl(source, width);
+            return variantUrl && variantUrl !== source ? `${variantUrl} ${width}w` : '';
+        })
+        .filter(Boolean);
+    return srcset.join(', ');
+}
+
+function getThumbnailImageMarkup(source, altText = '', {
+    sizes = DEFAULT_THUMBNAIL_IMAGE_SIZES,
+    attributes = ''
+} = {}) {
+    const fallbackSource = source || 'images/main_bg2.jpg';
+    const src = getStorageImageVariantUrl(fallbackSource, 960) || fallbackSource;
+    const srcset = getThumbnailImageSrcset(fallbackSource);
+    const srcsetMarkup = srcset ? ` srcset="${escapeHtml(srcset)}" sizes="${escapeHtml(sizes)}"` : '';
+    const extraAttributes = attributes ? ` ${attributes}` : '';
+    return `<img src="${escapeHtml(src)}"${srcsetMarkup} alt="${escapeHtml(altText)}"${extraAttributes}>`;
+}
+
 function setImageSourceWithFallback(image, primarySrc, fallbackSrc = 'images/main_bg2.jpg') {
     if (!image) return;
     const source = primarySrc || fallbackSrc || 'images/main_bg2.jpg';
@@ -916,7 +961,7 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         return `
             <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
                 <span class="explore-discovery-image">
-                    <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
+                    ${getThumbnailImageMarkup(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg', description || label, { sizes: '390px' })}
                 </span>
             </article>
         `;
@@ -1228,7 +1273,7 @@ function renderPhotoDetailNearby(photo, context) {
         const imageSrc = getPhotoImageSrc(nearbyPhoto);
         return `
             <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
+                ${getThumbnailImageMarkup(imageSrc, label, { sizes: '84px' })}
             </button>
         `;
     }).join('');
@@ -1245,7 +1290,7 @@ function renderExplorePreviewNearby(photo) {
         const imageSrc = getPhotoImageSrc(nearbyPhoto);
         return `
             <button class="pin-preview-nearby__item" data-pin-preview-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
+                ${getThumbnailImageMarkup(imageSrc, label, { sizes: '84px' })}
             </button>
         `;
     }).join('');
@@ -2963,7 +3008,7 @@ function renderSavedPhotoSurfaces() {
             : myPhotos.length
             ? myPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${getThumbnailImageMarkup(photo.url, getPhotoFallbackLabel(photo), { sizes: '(max-width: 860px) calc((100vw - 48px) / 2), 300px' })}
             </article>
         `).join('')
             : `
@@ -3017,7 +3062,7 @@ function renderLikedPhotoSurfaces() {
             : likedPhotos.length
             ? likedPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${getThumbnailImageMarkup(photo.url, getPhotoFallbackLabel(photo), { sizes: '(max-width: 860px) calc((100vw - 48px) / 2), 300px' })}
             </article>
         `).join('')
             : emptyMarkup;
@@ -3041,7 +3086,7 @@ function renderLikedPhotoSurfaces() {
 
     fullGrid.innerHTML = likedPhotos.map((photo) => `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${getThumbnailImageMarkup(photo.url, getPhotoFallbackLabel(photo), { sizes: '(max-width: 860px) calc((100vw - 48px) / 2), 300px' })}
             </article>
         `).join('');
     renderAccountNotifications();
@@ -3076,7 +3121,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${shouldAnimateSelection ? 'is-selection-animated' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${getThumbnailImageMarkup(photo.url, getPhotoFallbackLabel(photo), { sizes: '(max-width: 860px) calc((100vw - 48px) / 2), 300px' })}
             </article>
         `;
     }).join('');
@@ -3138,7 +3183,7 @@ function getUniqueAlbumCoverSources(sources, limit = 3) {
 
 function getAlbumCoverLayerMarkup(source, layerClass) {
     const blankClass = source ? '' : ' album-cover-layer--blank';
-    const imageMarkup = source ? `<img src="${escapeHtml(source)}" alt="">` : '';
+    const imageMarkup = source ? getThumbnailImageMarkup(source, '', { sizes: '248px' }) : '';
 
     return `
             <span class="album-cover-layer ${layerClass}${blankClass}" aria-hidden="true">
