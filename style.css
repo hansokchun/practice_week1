@@ -3329,8 +3329,8 @@ body[data-page="explore"] .site-footer {
 
 .album-row {
     display: grid;
-    grid-template-columns: minmax(180px, 220px) minmax(260px, 360px);
-    width: min(100%, 580px);
+    grid-template-columns: minmax(200px, 248px) minmax(260px, 360px);
+    width: min(100%, 608px);
     overflow: hidden;
     border: 1px solid rgba(26, 77, 78, 0.08);
     border-radius: 8px;
@@ -3345,7 +3345,7 @@ body[data-page="explore"] .site-footer {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: 220px;
+    min-height: 248px;
     isolation: isolate;
 }
 
@@ -3361,21 +3361,21 @@ body[data-page="explore"] .site-footer {
 }
 
 .album-cover-layer--back {
-    inset: 16px 34px 10px 0;
+    inset: 32px 52px 26px 14px;
     transform: rotate(-3deg);
     opacity: 0.68;
     z-index: 1;
 }
 
 .album-cover-layer--middle {
-    inset: 9px 18px 7px 9px;
+    inset: 24px 34px 22px 24px;
     transform: rotate(1.6deg);
     opacity: 0.86;
     z-index: 2;
 }
 
 .album-cover-layer--front {
-    inset: 0 0 0 16px;
+    inset: 14px 14px 14px 34px;
     z-index: 3;
 }
 
@@ -3383,9 +3383,6 @@ body[data-page="explore"] .site-footer {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    image-rendering: auto;
-    transform: translateZ(0);
-    backface-visibility: hidden;
 }
 
 .album-cover-layer--blank {
@@ -8738,20 +8735,20 @@ body.photo-fullscreen-open {
     }
 
     .album-cover-stack {
-        height: 160px;
-        min-height: 160px;
+        height: 180px;
+        min-height: 180px;
     }
 
     .album-cover-layer--back {
-        inset: 15px 48px 9px 0;
+        inset: 28px 62px 22px 14px;
     }
 
     .album-cover-layer--middle {
-        inset: 8px 26px 7px 12px;
+        inset: 20px 42px 18px 24px;
     }
 
     .album-cover-layer--front {
-        inset: 0 0 0 24px;
+        inset: 12px 14px 14px 36px;
     }
 
     .album-row-content {

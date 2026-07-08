@@ -7,13 +7,13 @@ test('myphoto album cards use a compact stacked travel album layout', () => {
     const app = readFileSync('js/app.js', 'utf8');
 
     assert.match(css, /\.album-list\s*\{[^}]*justify-items:\s*start;/s);
-    assert.match(css, /\.album-row\s*\{[^}]*grid-template-columns:\s*minmax\(180px,\s*220px\)\s*minmax\(260px,\s*360px\);/s);
-    assert.match(css, /\.album-row\s*\{[^}]*width:\s*min\(100%,\s*580px\);[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.album-cover-stack\s*\{[^}]*position:\s*relative;[^}]*height:\s*100%;[^}]*min-height:\s*220px;/s);
+    assert.match(css, /\.album-row\s*\{[^}]*grid-template-columns:\s*minmax\(200px,\s*248px\)\s*minmax\(260px,\s*360px\);/s);
+    assert.match(css, /\.album-row\s*\{[^}]*width:\s*min\(100%,\s*608px\);[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.album-cover-stack\s*\{[^}]*position:\s*relative;[^}]*height:\s*100%;[^}]*min-height:\s*248px;/s);
     assert.match(css, /\.album-cover-layer--back\s*\{[^}]*transform:\s*rotate\(-3deg\);/s);
     assert.match(css, /\.album-cover-layer--middle\s*\{[^}]*transform:\s*rotate\(1\.6deg\);/s);
-    assert.match(css, /\.album-cover-layer--front\s*\{[^}]*z-index:\s*3;/s);
-    assert.match(css, /\.album-cover-layer img\s*\{[^}]*object-fit:\s*cover;[^}]*image-rendering:\s*auto;[^}]*transform:\s*translateZ\(0\);/s);
+    assert.match(css, /\.album-cover-layer--front\s*\{[^}]*inset:\s*14px 14px 14px 34px;[^}]*z-index:\s*3;/s);
+    assert.match(css, /\.album-cover-layer img\s*\{[^}]*object-fit:\s*cover;/s);
     assert.match(css, /\.album-cover-layer--blank\s*\{[^}]*linear-gradient/s);
     assert.match(css, /\.album-row-content\s*\{[^}]*align-content:\s*center;[^}]*gap:\s*10px;/s);
     assert.match(css, /\.album-row small\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*6px;[^}]*border-top:\s*1px solid var\(--line\);/s);
