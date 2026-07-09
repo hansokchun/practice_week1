@@ -149,7 +149,7 @@ All spacing derives from a base of 4px.
 - **Structure**: `.home-houses-reference` section with a decorative oversized word, centered copy, and absolutely positioned image collage with shadow depth.
 - **Variants**: Single top-of-home feature.
 - **Spacing**: Desktop top padding 140px; mobile top padding 84px.
-- **Backdrop**: The section uses the houses surface with a soft bottom fade into the next white section. A low-opacity cartography watermark, such as a compass and loose dashed route lines, may sit behind the brand word and collage. The collage itself should not sit on a separate blob, map grid, or plate.
+- **Backdrop**: The section uses the houses surface with a soft bottom fade into the next white section; the collage itself should not sit on a separate blob, map grid, or plate.
 - **States**: Photo captions reveal on hover and focus.
 - **Accessibility**: Decorative word hidden with `aria-hidden`; section heading is screen-reader only; collage has a group label, individual image alt text, and location captions.
 - **Motion**: Static collage, using transforms only for rotation/position.

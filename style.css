@@ -790,24 +790,11 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     padding-bottom: 96px;
 }
 
-.home-houses-reference::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-image: url("images/landing-compass-map.svg");
-    background-size: cover;
-    background-position: center top;
-    opacity: 0.72;
-    mix-blend-mode: multiply;
-}
 
 .home-houses-reference__word {
     position: absolute;
     top: -92px;
     left: 50%;
-    z-index: 1;
     transform: translateX(-50%);
     color: var(--houses-word);
     font-family: var(--brand);
@@ -842,7 +829,6 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
 
 .home-houses-reference__collage {
     position: relative;
-    z-index: 2;
     height: 560px;
     margin-top: 78px;
 }
