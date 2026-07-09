@@ -25,9 +25,17 @@ test('auth modal exposes social choices first, email signup, password reset, and
     assert.match(html, /id="btn-reset-password"/);
     assert.match(html, /id="auth-form" class="auth-form" hidden/);
     assert.match(html, /id="turnstile-container"/);
-    assert.match(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/);
+    assert.doesNotMatch(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/);
     assert.doesNotMatch(html, /auth-divider/);
     assert.doesNotMatch(html, /id="btn-login"/);
+});
+
+test('Turnstile script is lazy-loaded from the email auth surface', () => {
+    assert.match(appSource, /function loadTurnstileScript\(\)/);
+    assert.match(appSource, /script\.src = 'https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit'/);
+    assert.match(appSource, /script\.dataset\.turnstileScript = 'true'/);
+    assert.match(appSource, /document\.head\.appendChild\(script\)/);
+    assert.match(appSource, /void initTurnstile\(\)/);
 });
 
 test('email start choice reveals the email form while auth modal opens collapsed', () => {

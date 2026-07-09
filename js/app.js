@@ -210,6 +210,7 @@ const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const TURNSTILE_SITE_KEY = window.TRAVELGRAM_TURNSTILE_SITE_KEY || '';
 let turnstileWidgetId = null;
 let turnstileToken = '';
+let turnstileLoadPromise = null;
 
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -309,6 +310,45 @@ function getTurnstileToken() {
     return turnstileToken;
 }
 
+function loadTurnstileScript() {
+    if (!TURNSTILE_SITE_KEY) return Promise.resolve(false);
+    if (window.turnstile) return Promise.resolve(true);
+    if (turnstileLoadPromise) return turnstileLoadPromise;
+
+    turnstileLoadPromise = new Promise((resolve) => {
+        const existingScript = document.querySelector('script[data-turnstile-script]');
+        if (existingScript) {
+            if (existingScript.dataset.turnstileLoaded === 'true') {
+                resolve(Boolean(window.turnstile));
+                return;
+            }
+            existingScript.addEventListener('load', () => resolve(Boolean(window.turnstile)), { once: true });
+            existingScript.addEventListener('error', () => {
+                turnstileLoadPromise = null;
+                resolve(false);
+            }, { once: true });
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        script.async = true;
+        script.defer = true;
+        script.dataset.turnstileScript = 'true';
+        script.onload = () => {
+            script.dataset.turnstileLoaded = 'true';
+            resolve(Boolean(window.turnstile));
+        };
+        script.onerror = () => {
+            turnstileLoadPromise = null;
+            resolve(false);
+        };
+        document.head.appendChild(script);
+    });
+
+    return turnstileLoadPromise;
+}
+
 function resetTurnstile() {
     turnstileToken = '';
     if (window.turnstile && turnstileWidgetId !== null) {
@@ -316,9 +356,11 @@ function resetTurnstile() {
     }
 }
 
-function initTurnstile() {
+async function initTurnstile() {
     const container = $('#turnstile-container');
-    if (!container || !TURNSTILE_SITE_KEY || !window.turnstile || turnstileWidgetId !== null) return;
+    if (!container || !TURNSTILE_SITE_KEY || turnstileWidgetId !== null) return;
+    const isLoaded = await loadTurnstileScript();
+    if (!isLoaded || !window.turnstile || turnstileWidgetId !== null) return;
     turnstileWidgetId = window.turnstile.render(container, {
         sitekey: TURNSTILE_SITE_KEY,
         callback: (token) => {
@@ -384,7 +426,7 @@ function showEmailAuthForm() {
     const form = $('#auth-form');
     if (form) form.hidden = false;
     $('#email-input')?.focus();
-    initTurnstile();
+    void initTurnstile();
 }
 
 function parseRouteHash(hash) {
@@ -5225,7 +5267,6 @@ function bindEvents() {
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
-    initTurnstile();
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
