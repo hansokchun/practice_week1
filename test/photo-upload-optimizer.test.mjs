@@ -9,6 +9,7 @@ import {
     getConstrainedPhotoSize,
     getOptimizedPhotoFileName,
     getOptimizedPhotoMimeType,
+    getPhotoOptimizationAttempts,
     optimizePhotoForUpload,
     shouldOptimizePhotoForUpload
 } from '../js/photo-upload-optimizer.mjs';
@@ -41,4 +42,21 @@ test('photo upload optimization constrains long edges while preserving ratio', (
     assert.deepEqual(getConstrainedPhotoSize(1200, 900, 2000), { width: 1200, height: 900 });
     assert.ok(PHOTO_OPTIMIZATION_QUALITY_STEPS.every((quality) => quality > 0 && quality <= 1));
     assert.deepEqual(PHOTO_OPTIMIZATION_QUALITY_STEPS, [0.96, 0.93, 0.9, 0.86, 0.82, 0.76]);
+});
+
+test('photo upload optimization preserves quality before reducing compression', () => {
+    const attempts = getPhotoOptimizationAttempts(4600, 3450);
+
+    assert.deepEqual(attempts.slice(0, 4), [
+        { edge: 3200, quality: 0.96 },
+        { edge: 2752, quality: 0.96 },
+        { edge: 2304, quality: 0.96 },
+        { edge: 1600, quality: 0.96 }
+    ]);
+    assert.deepEqual(attempts.slice(4, 8), [
+        { edge: 3200, quality: 0.93 },
+        { edge: 2752, quality: 0.93 },
+        { edge: 2304, quality: 0.93 },
+        { edge: 1600, quality: 0.93 }
+    ]);
 });

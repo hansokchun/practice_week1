@@ -42,6 +42,13 @@ function getOptimizationEdges(width, height) {
     ].filter((edge, index, edges) => edge && edges.indexOf(edge) === index);
 }
 
+export function getPhotoOptimizationAttempts(width, height) {
+    const edges = getOptimizationEdges(width, height);
+    return PHOTO_OPTIMIZATION_QUALITY_STEPS.flatMap((quality) => (
+        edges.map((edge) => ({ edge, quality }))
+    ));
+}
+
 function loadPhotoElement(file) {
     return new Promise((resolve, reject) => {
         if (typeof Image === 'undefined' || typeof URL === 'undefined') {
@@ -101,20 +108,23 @@ export async function optimizePhotoForUpload(file) {
 
         if (!context || !sourceWidth || !sourceHeight) return file;
 
-        for (const edge of getOptimizationEdges(sourceWidth, sourceHeight)) {
-            const size = getConstrainedPhotoSize(sourceWidth, sourceHeight, edge);
-            canvas.width = size.width;
-            canvas.height = size.height;
-            context.clearRect(0, 0, size.width, size.height);
-            context.drawImage(photoSource, 0, 0, size.width, size.height);
+        let renderedEdge = null;
 
-            for (const quality of PHOTO_OPTIMIZATION_QUALITY_STEPS) {
-                const blob = await canvasToBlob(canvas, mimeType, quality);
-                if (!blob) continue;
-                const optimizedFile = createOptimizedFile(blob, file, mimeType);
-                if (optimizedFile.size < bestFile.size) bestFile = optimizedFile;
-                if (optimizedFile.size <= TARGET_PHOTO_UPLOAD_SIZE_BYTES) return optimizedFile;
+        for (const { edge, quality } of getPhotoOptimizationAttempts(sourceWidth, sourceHeight)) {
+            const size = getConstrainedPhotoSize(sourceWidth, sourceHeight, edge);
+            if (renderedEdge !== edge) {
+                canvas.width = size.width;
+                canvas.height = size.height;
+                context.clearRect(0, 0, size.width, size.height);
+                context.drawImage(photoSource, 0, 0, size.width, size.height);
+                renderedEdge = edge;
             }
+
+            const blob = await canvasToBlob(canvas, mimeType, quality);
+            if (!blob) continue;
+            const optimizedFile = createOptimizedFile(blob, file, mimeType);
+            if (optimizedFile.size < bestFile.size) bestFile = optimizedFile;
+            if (optimizedFile.size <= TARGET_PHOTO_UPLOAD_SIZE_BYTES) return optimizedFile;
         }
 
         return bestFile;
