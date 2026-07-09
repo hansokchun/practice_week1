@@ -170,7 +170,7 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
     assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
     assert.doesNotMatch(styles, /--houses-base:/);
-    assert.match(styles, /\.home-houses-reference::before\s*\{[^}]*background-image:\s*url\("images\/landing-compass-map\.svg"\);[^}]*opacity:\s*0\.72;[^}]*mix-blend-mode:\s*multiply;/s);
+    assert.match(styles, /\.home-houses-reference::before\s*\{[^}]*background-image:\s*url\("images\/landing-compass-map\.jpg"\);[^}]*background-repeat:\s*no-repeat;[^}]*opacity:\s*1;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
     assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(180deg,\s*var\(--houses-surface\)\s*0%,\s*var\(--houses-surface\)\s*78%,\s*var\(--surface\)\s*100%\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference\s*\{[^}]*background-size:\s*72px 72px/s);

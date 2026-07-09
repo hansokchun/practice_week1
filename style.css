@@ -796,11 +796,11 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background-image: url("images/landing-compass-map.svg");
+    background-image: url("images/landing-compass-map.jpg");
     background-size: cover;
     background-position: center top;
-    opacity: 0.72;
-    mix-blend-mode: multiply;
+    background-repeat: no-repeat;
+    opacity: 1;
 }
 
 .home-houses-reference__word {
