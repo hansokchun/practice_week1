@@ -484,8 +484,12 @@ function renderRoute(section) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const renderedRoute = getRenderedRoute(normalized);
     const previousRoute = document.body.dataset.page || null;
+    const routeSharedState = getSharedRouteState(window.location.hash);
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
+    }
+    if (normalized === APP_SECTIONS.EXPLORE && previousRoute !== APP_SECTIONS.EXPLORE && !routeSharedState.albumId) {
+        resetExploreSelectionState();
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
     const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip'].includes(normalized)
@@ -685,23 +689,24 @@ function setExplorePhotoScope(scope) {
     if (!['mine', 'others'].includes(scope)) return;
     state.explorePhotoScope = scope;
     state.isExplorePhotoScopeMenuOpen = false;
-    state.selectedPublicAlbumId = null;
-    state.selectedPhotoId = null;
     state.explorePreserveViewportOnce = true;
-    document.body.classList.remove('explore-pin-selected');
-    $('#explore-pin-preview')?.setAttribute('hidden', '');
+    resetExploreSelectionState();
     renderExplorePhotoScopeControls();
     renderPublicSurfaces();
 }
 
-function clearExplorePinSelection() {
-    const hadSelection = Boolean(state.selectedPhotoId);
+function resetExploreSelectionState() {
     state.selectedPhotoId = null;
     state.selectedPublicAlbumId = null;
     setExploreDiscoverySelection(null);
     document.body.classList.remove('explore-pin-selected');
     setExplorePreviewExpanded(false);
     $('#explore-pin-preview')?.setAttribute('hidden', '');
+}
+
+function clearExplorePinSelection() {
+    const hadSelection = Boolean(state.selectedPhotoId);
+    resetExploreSelectionState();
     if (hadSelection && state.exploreMap && state.exploreMarkerPhotos.length) {
         renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
     }
@@ -2093,6 +2098,10 @@ function getSelectedPublicAlbum(albums = getPublicAlbums()) {
     return albums.find((album) => album.id === state.selectedPublicAlbumId) || albums[0];
 }
 
+function getSelectedExploreAlbum(albums = getPublicAlbums()) {
+    return albums.find((album) => album.id === state.selectedPublicAlbumId) || null;
+}
+
 function getSelectedAuthorName(album = getSelectedPublicAlbum()) {
     return getPublicAuthorName(album, {
         currentUser: state.currentUser,
@@ -2661,11 +2670,13 @@ function renderPublicSurfaces() {
         renderPublicOwnerProfile(state.selectedPublicOwnerId, explorePhotos);
         return;
     }
-    const selected = getSelectedPublicAlbum(albums);
+    const selected = document.body.dataset.page === APP_SECTIONS.EXPLORE
+        ? getSelectedExploreAlbum(albums)
+        : getSelectedPublicAlbum(albums);
     if (!selected) {
         if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
             renderExploreMapMarkers(explorePhotos, null);
-            const selectedPhoto = explorePhotos.find((photo) => photo.id === state.selectedPhotoId) || explorePhotos[0];
+            const selectedPhoto = explorePhotos.find((photo) => photo.id === state.selectedPhotoId);
             if (selectedPhoto && state.selectedPhotoId) {
                 updateExplorePhotoPreview(selectedPhoto);
                 document.body.classList.add('explore-pin-selected');

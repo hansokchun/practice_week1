@@ -59,10 +59,25 @@ test('Explore clears selected pin highlight when the user clicks an empty map ar
     const fnStart = source.indexOf('function clearExplorePinSelection');
     const fnEnd = source.indexOf('function getExplorePinPosition', fnStart);
     const body = source.slice(fnStart, fnEnd);
+    const resetStart = source.indexOf('function resetExploreSelectionState');
+    const resetEnd = source.indexOf('function clearExplorePinSelection', resetStart);
+    const resetBody = source.slice(resetStart, resetEnd);
 
+    assert.match(source, /function resetExploreSelectionState\(\)/);
     assert.match(source, /function clearExplorePinSelection/);
-    assert.match(body, /state\.selectedPhotoId = null/);
-    assert.match(body, /document\.body\.classList\.remove\('explore-pin-selected'\)/);
+    assert.match(resetBody, /state\.selectedPhotoId = null/);
+    assert.match(resetBody, /document\.body\.classList\.remove\('explore-pin-selected'\)/);
+    assert.match(body, /resetExploreSelectionState\(\)/);
     assert.match(body, /renderExploreMapMarkers\(state\.exploreMarkerPhotos, state\.exploreSelectedAlbumId\)/);
     assert.match(source, /map\.addListener\('click', \(\) => clearExplorePinSelection\(\)\)/);
+});
+
+test('Explore route opens without carrying a stale selected pin from another route', () => {
+    const fnStart = source.indexOf('function renderRoute');
+    const fnEnd = source.indexOf('function applyRouteHash', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /const routeSharedState = getSharedRouteState\(window\.location\.hash\)/);
+    assert.match(body, /normalized === APP_SECTIONS\.EXPLORE && previousRoute !== APP_SECTIONS\.EXPLORE && !routeSharedState\.albumId/);
+    assert.match(body, /resetExploreSelectionState\(\)/);
 });

@@ -47,12 +47,15 @@ test('profile route restores owner id from the hash after refresh', () => {
     assert.match(body, /if \(sharedRoute\.albumId \|\| sharedRoute\.ownerId\) renderPublicSurfaces\(\)/);
 });
 
-test('Explore restores the selected public photo preview when no public album exists', () => {
+test('Explore restores a selected public photo preview only when that photo still exists', () => {
     const fnStart = source.indexOf('function renderPublicSurfaces()');
     const fnEnd = source.indexOf('if (state.albumDetailEditMode', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.match(body, /const selectedPhoto = explorePhotos\.find\(\(photo\) => photo\.id === state\.selectedPhotoId\) \|\| explorePhotos\[0\]/);
+    assert.match(source, /function getSelectedExploreAlbum\(albums = getPublicAlbums\(\)\)/);
+    assert.match(body, /document\.body\.dataset\.page === APP_SECTIONS\.EXPLORE\s*\?\s*getSelectedExploreAlbum\(albums\)\s*:\s*getSelectedPublicAlbum\(albums\)/s);
+    assert.match(body, /const selectedPhoto = explorePhotos\.find\(\(photo\) => photo\.id === state\.selectedPhotoId\)/);
+    assert.doesNotMatch(body, /\|\| explorePhotos\[0\]/);
     assert.match(body, /updateExplorePhotoPreview\(selectedPhoto\)/);
     assert.match(body, /renderPublicOwnerProfile\(state\.selectedPublicOwnerId, explorePhotos\)/);
 });

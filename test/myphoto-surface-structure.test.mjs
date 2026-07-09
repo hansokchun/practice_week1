@@ -170,14 +170,14 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(styles, /--houses-surface:\s*var\(--bg\);/);
     assert.match(styles, /--houses-word:\s*rgba\(26,\s*77,\s*78,\s*0\.16\);/);
     assert.doesNotMatch(styles, /--houses-base:/);
-    assert.doesNotMatch(styles, /\.home-houses-reference::before\s*\{/);
+    assert.match(styles, /\.home-houses-reference::before\s*\{[^}]*background-image:\s*url\("images\/landing-compass-map\.svg"\);[^}]*opacity:\s*0\.72;[^}]*mix-blend-mode:\s*multiply;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__mapline\s*\{/);
     assert.match(styles, /\.home-houses-reference\s*\{[^}]*linear-gradient\(180deg,\s*var\(--houses-surface\)\s*0%,\s*var\(--houses-surface\)\s*78%,\s*var\(--surface\)\s*100%\);[^}]*padding-top:\s*140px;[^}]*padding-bottom:\s*96px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference\s*\{[^}]*background-size:\s*72px 72px/s);
     assert.match(styles, /\.home-houses-reference__word\s*\{[^}]*font-size:\s*clamp\(300px,\s*36vw,\s*660px\);[^}]*letter-spacing:\s*0;/s);
     assert.match(styles, /\.home-houses-reference__copy\s*\{[^}]*font-size:\s*23px;[^}]*font-weight:\s*700;[^}]*line-height:\s*1\.56;/s);
     assert.match(styles, /\.home-houses-reference__content\s*\{[^}]*padding-top:\s*clamp\(300px,\s*calc\(31vw - 120px\),\s*440px\);/s);
-    assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
+    assert.match(styles, /\.home-houses-reference__collage\s*\{[^}]*z-index:\s*2;[^}]*height:\s*560px;[^}]*margin-top:\s*78px;/s);
     assert.doesNotMatch(styles, /\.home-houses-reference__collage::before\s*\{/);
     assert.doesNotMatch(styles, /\.home-houses-reference__base\s*\{/);
     assert.match(styles, /\.home-houses-reference__photo\s*\{[^}]*box-shadow:\s*[\s\S]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.22\),[\s\S]*0 12px 28px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
