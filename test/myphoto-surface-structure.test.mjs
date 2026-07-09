@@ -39,7 +39,7 @@ test('home recent photo grid does not ship default sample photos before saved ph
     assert.match(recentGridMarkup, /recent-photo-loading/);
     assert.match(app, /hasLoadedSavedPhotos:\s*false/);
     assert.match(app, /const isSavedPhotoLoading = Boolean\(state\.currentUser && !state\.hasLoadedSavedPhotos\);/);
-    assert.match(app, /function loadSavedLibrary\(\) \{[\s\S]*Promise\.all\(\[[\s\S]*loadSavedPhotos\(\),[\s\S]*loadMyLikedPhotos\(\),[\s\S]*loadSavedAlbums\(\)[\s\S]*\]\);[\s\S]*\}/);
+    assert.match(app, /function loadSavedLibrary\(\) \{[\s\S]*Promise\.all\(\[[\s\S]*loadSavedPhotos\(\{ render: false \}\),[\s\S]*loadMyLikedPhotos\(\{ render: false \}\),[\s\S]*loadSavedAlbums\(\{ render: false \}\)[\s\S]*\]\)\.then\(\(\) => \{[\s\S]*renderSavedPhotoSurfaces\(\);[\s\S]*renderPublicSurfaces\(\);[\s\S]*renderLikedPhotoSurfaces\(\);[\s\S]*\}\);[\s\S]*\}/);
 });
 
 test('home stays visually gated until auth and saved library boot are finished', () => {
@@ -434,9 +434,9 @@ test('home and personal photo cards omit visible caption wrappers', () => {
     assert.doesNotMatch(personalRenderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(personalRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
-    assert.match(personalRenderer, /<article class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{shouldAnimateSelection \? 'is-selection-animated' : ''\}"[^>]*>\s*<button class="photo-select-button"[^>]*><\/button>\s*<img src="\$\{photo\.url\}" alt="\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}">\s*<\/article>/s);
+    assert.match(personalRenderer, /<article class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{shouldAnimateSelection \? 'is-selection-animated' : ''\}"[^>]*>\s*<button class="photo-select-button"[^>]*><\/button>\s*\$\{renderPhotoImage\(photo\)\}\s*<\/article>/s);
     assert.doesNotMatch(likedRenderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(description\)\}<\/strong>/);
     assert.doesNotMatch(likedRenderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}<\/strong>/);
-    assert.match(likedRenderer, /<article class="personal-photo-card liked-photo-card"[^>]*>\s*<img src="\$\{photo\.url\}" alt="\$\{escapeHtml\(getPhotoFallbackLabel\(photo\)\)\}">\s*<\/article>/s);
+    assert.match(likedRenderer, /<article class="personal-photo-card liked-photo-card"[^>]*>\s*\$\{renderPhotoImage\(photo\)\}\s*<\/article>/s);
 });

@@ -61,7 +61,7 @@ test('missing location task list renders thumbnails without photo names', () => 
     const fnEnd = source.indexOf('function renderSavedAlbumRows', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.match(body, /<img src="\$\{photo\.url\}"/);
+    assert.match(body, /<img src="\$\{escapeHtml\(photo\.url\)\}" alt="" loading="lazy" decoding="async">/);
     assert.doesNotMatch(body, /<strong>\$\{escapeHtml\(photo\.name\)\}<\/strong>/);
     assert.doesNotMatch(body, /<small>/);
 });

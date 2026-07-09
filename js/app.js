@@ -272,6 +272,12 @@ function getPhotoImageSrc(photo = {}) {
     return photo?.url || photo?.albumCoverUrl || 'images/main_bg2.jpg';
 }
 
+function renderPhotoImage(photo = {}, fallback = '사진') {
+    const src = escapeHtml(getPhotoImageSrc(photo));
+    const alt = escapeHtml(getPhotoFallbackLabel(photo, fallback));
+    return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`;
+}
+
 function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
     if (photo?.albumCoverUrl && photo.albumCoverUrl !== primarySrc) return photo.albumCoverUrl;
     return 'images/main_bg2.jpg';
@@ -919,7 +925,7 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         return `
             <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
                 <span class="explore-discovery-image">
-                    <img src="${escapeHtml(photo.url || photo.albumCoverUrl || 'images/main_bg2.jpg')}" alt="${escapeHtml(description || label)}">
+                    ${renderPhotoImage(photo, label)}
                 </span>
             </article>
         `;
@@ -1273,7 +1279,7 @@ function renderPhotoDetailNearby(photo, context) {
         const imageSrc = getPhotoImageSrc(nearbyPhoto);
         return `
             <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
+                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
             </button>
         `;
     }).join('');
@@ -1290,7 +1296,7 @@ function renderExplorePreviewNearby(photo) {
         const imageSrc = getPhotoImageSrc(nearbyPhoto);
         return `
             <button class="pin-preview-nearby__item" data-pin-preview-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}">
+                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
             </button>
         `;
     }).join('');
@@ -2193,7 +2199,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
                 const description = getPhotoDescriptionText(photo);
                 return `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                    <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
+                    ${renderPhotoImage(photo, '공개 사진')}
                     ${description ? `
                     <div class="photo-visible-copy">
                         <strong>${escapeHtml(description)}</strong>
@@ -2210,7 +2216,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         profileAlbumGrid.innerHTML = ownerAlbums.length
             ? ownerAlbums.slice(0, 12).map((album) => `
                 <article class="${getPublicAlbumCardClass(album.id, state.selectedPublicAlbumId)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                    <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
+                    <img src="${escapeHtml(album.cover_url || 'images/main_bg2.jpg')}" alt="" loading="lazy" decoding="async">
                     <strong>${escapeHtml(album.title)}</strong>
                     <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
                 </article>
@@ -2306,7 +2312,7 @@ function renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing) {
             data-photo-id="${escapeHtml(photoId)}"
         >
             ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photoId)}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제"><span class="material-symbols-outlined">close</span></button>` : ''}
-            <img src="${photo.url || cover}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}">
+            <img src="${escapeHtml(photo.url || cover || 'images/main_bg2.jpg')}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}" loading="lazy" decoding="async">
         </article>
     `;
 }
@@ -2816,7 +2822,7 @@ function renderPublicSurfaces() {
     if (relatedGrid) {
         relatedGrid.innerHTML = getRelatedAlbums(albums, selected).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
+                <img src="${escapeHtml(album.cover_url || 'images/main_bg2.jpg')}" alt="" loading="lazy" decoding="async">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
@@ -2834,7 +2840,7 @@ function renderPublicSurfaces() {
                 const description = getPhotoDescriptionText(photo);
                 return `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                    <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo, '공개 사진'))}">
+                    ${renderPhotoImage(photo, '공개 사진')}
                     ${description ? `
                     <div class="photo-visible-copy">
                         <strong>${escapeHtml(description)}</strong>
@@ -2851,7 +2857,7 @@ function renderPublicSurfaces() {
     if (profileAlbumGrid) {
         profileAlbumGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                <img src="${album.cover_url || 'images/main_bg2.jpg'}" alt="">
+                <img src="${escapeHtml(album.cover_url || 'images/main_bg2.jpg')}" alt="" loading="lazy" decoding="async">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
@@ -2890,29 +2896,33 @@ function renderPublicSurfaces() {
     });
 }
 
-async function loadSavedPhotos() {
+async function loadSavedPhotos({ render = true } = {}) {
     const { data, error } = await fetchPhotos();
     if (error) {
         state.savedPhotos = [];
         state.hasLoadedSavedPhotos = true;
         showToast('저장된 사진을 불러오지 못했습니다.');
-        renderSavedPhotoSurfaces();
-        renderPublicSurfaces();
+        if (render) {
+            renderSavedPhotoSurfaces();
+            renderPublicSurfaces();
+        }
         return;
     }
     state.savedPhotos = (data || [])
         .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared || photo.visibility === 'public')
         .map(normalizeSavedPhoto);
     state.hasLoadedSavedPhotos = true;
-    renderSavedPhotoSurfaces();
-    renderPublicSurfaces();
+    if (render) {
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+    }
 }
 
-async function loadMyLikedPhotos() {
+async function loadMyLikedPhotos({ render = true } = {}) {
     if (!state.currentUser) {
         state.likedPhotoIds = [];
         state.hasLoadedMyLikes = true;
-        renderLikedPhotoSurfaces();
+        if (render) renderLikedPhotoSurfaces();
         return;
     }
     const { data, error } = await fetchMyLikes(state.currentUser.id);
@@ -2920,35 +2930,43 @@ async function loadMyLikedPhotos() {
         state.likedPhotoIds = [];
         state.hasLoadedMyLikes = true;
         showToast('좋아요한 사진을 불러오지 못했습니다.');
-        renderLikedPhotoSurfaces();
+        if (render) renderLikedPhotoSurfaces();
         return;
     }
     state.likedPhotoIds = (data || []).map(String);
     state.hasLoadedMyLikes = true;
-    renderLikedPhotoSurfaces();
+    if (render) renderLikedPhotoSurfaces();
 }
 
-async function loadSavedAlbums() {
+async function loadSavedAlbums({ render = true } = {}) {
     const { data, error } = await fetchAlbums();
     if (error) {
         state.savedAlbums = [];
-        renderSavedPhotoSurfaces();
-        renderPublicSurfaces();
+        if (render) {
+            renderSavedPhotoSurfaces();
+            renderPublicSurfaces();
+        }
         return;
     }
     state.savedAlbums = (data || [])
         .filter((album) => !state.currentUser || album.owner_id === state.currentUser.id || ['public', 'link'].includes(album.visibility))
         .map(normalizeSavedAlbum);
-    renderSavedPhotoSurfaces();
-    renderPublicSurfaces();
+    if (render) {
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+    }
 }
 
 function loadSavedLibrary() {
     return Promise.all([
-        loadSavedPhotos(),
-        loadMyLikedPhotos(),
-        loadSavedAlbums()
-    ]);
+        loadSavedPhotos({ render: false }),
+        loadMyLikedPhotos({ render: false }),
+        loadSavedAlbums({ render: false })
+    ]).then(() => {
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+        renderLikedPhotoSurfaces();
+    });
 }
 
 async function loadPublicProfileNames() {
@@ -3008,7 +3026,7 @@ function renderSavedPhotoSurfaces() {
             : myPhotos.length
             ? myPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${renderPhotoImage(photo)}
             </article>
         `).join('')
             : `
@@ -3062,7 +3080,7 @@ function renderLikedPhotoSurfaces() {
             : likedPhotos.length
             ? likedPhotos.slice(0, 8).map((photo) => `
             <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${renderPhotoImage(photo)}
             </article>
         `).join('')
             : emptyMarkup;
@@ -3086,7 +3104,7 @@ function renderLikedPhotoSurfaces() {
 
     fullGrid.innerHTML = likedPhotos.map((photo) => `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${renderPhotoImage(photo)}
             </article>
         `).join('');
     renderAccountNotifications();
@@ -3121,7 +3139,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${shouldAnimateSelection ? 'is-selection-animated' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${renderPhotoImage(photo)}
             </article>
         `;
     }).join('');
@@ -3166,7 +3184,7 @@ function renderMissingLocationTasks(photos) {
 
     list.innerHTML = photos.slice(0, 4).map((photo) => `
         <button class="missing-location-thumb" type="button" data-open-photo-editor data-photo-id="${escapeHtml(photo.id)}" aria-label="위치 직접 지정">
-            <img src="${photo.url}" alt="">
+            <img src="${escapeHtml(photo.url)}" alt="" loading="lazy" decoding="async">
         </button>
     `).join('');
 }
@@ -3183,7 +3201,7 @@ function getUniqueAlbumCoverSources(sources, limit = 3) {
 
 function getAlbumCoverLayerMarkup(source, layerClass) {
     const blankClass = source ? '' : ' album-cover-layer--blank';
-    const imageMarkup = source ? `<img src="${escapeHtml(source)}" alt="">` : '';
+    const imageMarkup = source ? `<img src="${escapeHtml(source)}" alt="" loading="lazy" decoding="async">` : '';
 
     return `
             <span class="album-cover-layer ${layerClass}${blankClass}" aria-hidden="true">
@@ -3312,7 +3330,7 @@ function renderStagedPhotos() {
             <div class="upload-thumbnail-grid" aria-label="업로드할 사진 선택">
                 ${state.stagedPhotos.map((photo) => `
                     <button class="upload-thumbnail${photo.selected === false ? '' : ' is-selected'}" type="button" data-upload-photo-id="${escapeHtml(photo.localId)}" aria-pressed="${photo.selected === false ? 'false' : 'true'}" draggable="false">
-                        <img src="${photo.url}" alt="선택한 사진" draggable="false">
+                        <img src="${escapeHtml(photo.url)}" alt="선택한 사진" draggable="false" decoding="async">
                     </button>
                 `).join('')}
             </div>
@@ -3321,7 +3339,7 @@ function renderStagedPhotos() {
     }
     if (grid) grid.innerHTML = state.stagedPhotos.map((photo) => `
         <article class="photo-card">
-            <img src="${photo.url}" alt="선택한 사진">
+            <img src="${escapeHtml(photo.url)}" alt="선택한 사진" decoding="async">
             <span>선택한 사진</span>
         </article>
     `).join('');
@@ -3425,7 +3443,7 @@ function renderAlbumPhotoPickerPage() {
                         const isSelected = selected.has(photo.id);
                         return `
                             <button class="album-photo-picker-card ${isSelected ? 'is-selected' : ''}" data-toggle-album-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}">
-                                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                                ${renderPhotoImage(photo)}
                                 <span>${escapeHtml(getPhotoFallbackLabel(photo))}</span>
                             </button>
                         `;
@@ -3466,7 +3484,7 @@ function renderTravelDraftSurfaces() {
     if (analysisStrip) {
         analysisStrip.innerHTML = draftPhotos.slice(0, 4).map((photo, index) => `
             <article>
-                <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                ${renderPhotoImage(photo)}
                 <span>${index === 0 ? 'Cover' : index === 1 ? 'Route' : 'Photo'}</span>
             </article>
         `).join('');
@@ -3486,7 +3504,7 @@ function renderTravelDraftSurfaces() {
                             ${day.photos.slice(0, 6).map((photo) => `
                                 <figure>
                                     <button class="album-photo-remove" data-remove-album-photo="${escapeHtml(photo.id)}" type="button" aria-label="앨범에서 사진 제거">×</button>
-                                    <img src="${photo.url}" alt="${escapeHtml(getPhotoFallbackLabel(photo))}">
+                                    ${renderPhotoImage(photo)}
                                 </figure>
                             `).join('')}
                         </div>
@@ -3505,7 +3523,7 @@ function renderTravelDraftSurfaces() {
     if (albumPins) {
         albumPins.innerHTML = albumLocatedPhotos.slice(0, 8).map((photo, index) => `
             <button class="album-map-pin pin-${index + 1}" type="button" data-open-photo-detail data-photo-id="${escapeHtml(photo.id || photo.localId)}">
-                <img src="${photo.url}" alt="">
+                <img src="${escapeHtml(photo.url)}" alt="" loading="lazy" decoding="async">
             </button>
         `).join('');
     }
