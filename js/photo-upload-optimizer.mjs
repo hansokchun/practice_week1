@@ -1,9 +1,9 @@
 const OPTIMIZABLE_PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 export const TARGET_PHOTO_UPLOAD_SIZE_BYTES = 3 * 1024 * 1024;
-export const MAX_OPTIMIZED_PHOTO_EDGE = 2560;
-export const MIN_OPTIMIZED_PHOTO_EDGE = 1280;
-export const PHOTO_OPTIMIZATION_QUALITY_STEPS = [0.86, 0.78, 0.7, 0.62];
+export const MAX_OPTIMIZED_PHOTO_EDGE = 2880;
+export const MIN_OPTIMIZED_PHOTO_EDGE = 1440;
+export const PHOTO_OPTIMIZATION_QUALITY_STEPS = [0.92, 0.88, 0.84, 0.78, 0.72];
 
 export function shouldOptimizePhotoForUpload(file) {
     return OPTIMIZABLE_PHOTO_TYPES.has(file?.type) && Number(file?.size || 0) > TARGET_PHOTO_UPLOAD_SIZE_BYTES;
