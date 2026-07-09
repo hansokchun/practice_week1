@@ -6,6 +6,9 @@ const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 
 test('site uses SUIT and Inter as the primary public font stack', () => {
+  assert.match(html, /<link rel="preconnect" href="https:\/\/cdn\.jsdelivr\.net">/);
+  assert.match(html, /<link rel="preconnect" href="https:\/\/fonts\.googleapis\.com">/);
+  assert.match(html, /<link rel="preconnect" href="https:\/\/fonts\.gstatic\.com" crossorigin>/);
   assert.match(html, /family=Inter:wght@400;500;600;700;800;900/);
   assert.doesNotMatch(html, /Oswald/);
   assert.match(html, /cdn.jsdelivr.net\/gh\/sunn-us\/SUIT\/fonts\/variable\/woff2\/SUIT-Variable\.css/);
@@ -21,4 +24,10 @@ test('brand typography is the only non-icon serif exception', () => {
   assert.doesNotMatch(css, /font-family:\s*'Oswald'/);
   assert.doesNotMatch(css, /font-family:\s*var\(--font\)/);
   assert.doesNotMatch(css, /letter-spacing:\s*-/);
+});
+
+test('external scripts are deferred without removing route modules', () => {
+  assert.match(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit" defer/);
+  assert.match(html, /cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\/dist\/umd\/supabase\.min\.js" defer/);
+  assert.match(html, /<script type="module" src="\/js\/app\.js"><\/script>/);
 });

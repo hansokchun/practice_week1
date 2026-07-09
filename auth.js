@@ -12,6 +12,11 @@ import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
+const PROFILE_SELECT_COLUMNS = 'id,user_id,nickname,display_name,bio,avatar_url';
+const PHOTO_SELECT_COLUMNS = 'id,url,date,created_at,uploaded_at,description,lat,lng,liked,shared,owner_id,album,album_id,visibility,geo_source';
+const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
+const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
+const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
 
 let _supabaseClient = null;
 
@@ -153,7 +158,7 @@ export async function fetchProfilesByIds(userIds) {
         const sb = getSupabase();
         const { data, error } = await sb
             .from('profiles')
-            .select('*')
+            .select(PROFILE_SELECT_COLUMNS)
             .in('id', ids);
         if (error) throw error;
         const rows = data || [];
@@ -165,7 +170,7 @@ export async function fetchProfilesByIds(userIds) {
         try {
             const { data: userProfiles, error: userProfileError } = await sb
                 .from('profiles')
-                .select('*')
+                .select(PROFILE_SELECT_COLUMNS)
                 .in('user_id', missingIds);
             if (userProfileError) throw userProfileError;
             return { data: [...rows, ...(userProfiles || [])], error: null };
@@ -191,7 +196,7 @@ export async function fetchPhotos() {
         const sb = getSupabase();
         const { data, error } = await sb
             .from('photos')
-            .select('*')
+            .select(PHOTO_SELECT_COLUMNS)
             .order('date', { ascending: false });
         if (error) throw error;
         return { data: data || [], error: null };
@@ -242,7 +247,7 @@ export async function updatePhotoLocation(photoId, lat, lng) {
                 geo_source: 'manual'
             })
             .eq('id', photoId.toString())
-            .select('*')
+            .select(PHOTO_SELECT_COLUMNS)
             .single();
         if (error) throw error;
         return { data, error: null };
@@ -269,7 +274,7 @@ export async function updatePhotoInfo(photoId, updates = {}) {
             .from('photos')
             .update(payload)
             .eq('id', photoId.toString())
-            .select('*')
+            .select(PHOTO_SELECT_COLUMNS)
             .single();
         if (error) throw error;
         return { data, error: null };
@@ -424,7 +429,7 @@ export async function fetchComments(photoId) {
         const sb = getSupabase();
         const { data, error } = await sb
             .from('comments')
-            .select('*')
+            .select(COMMENT_SELECT_COLUMNS)
             .eq('photo_id', photoId.toString())
             .order('date', { ascending: false });
         if (error) throw error;
@@ -461,7 +466,7 @@ export async function fetchAlbums() {
         const sb = getSupabase();
         const { data, error } = await sb
             .from('albums')
-            .select('*')
+            .select(ALBUM_SELECT_COLUMNS)
             .order('created_at', { ascending: false });
         if (error) throw error;
         return { data: data || [], error: null };
@@ -485,7 +490,7 @@ export async function createAlbum(album) {
                 date_end: album.date_end || null,
                 photo_count: Number(album.photo_count || 0)
             })
-            .select('*')
+            .select(ALBUM_SELECT_COLUMNS)
             .single();
         if (error) throw error;
         return { data, error: null };
@@ -507,7 +512,7 @@ export async function updateAlbum(albumId, album) {
                 photo_count: Number(album.photo_count || 0)
             })
             .eq('id', albumId)
-            .select('*')
+            .select(ALBUM_SELECT_COLUMNS)
             .single();
         if (error) throw error;
         return { data, error: null };
@@ -551,7 +556,7 @@ export async function attachPhotosToAlbum(albumId, photoIds) {
         const { data, error } = await sb
             .from('album_photos')
             .upsert(rows, { onConflict: 'album_id,photo_id' })
-            .select('*');
+            .select(ALBUM_PHOTO_SELECT_COLUMNS);
         if (error) throw error;
         await sb
             .from('photos')
@@ -590,7 +595,7 @@ export async function detachPhotosFromAlbum(photoIds) {
             .from('photos')
             .update({ album_id: null, album: null })
             .in('id', ids)
-            .select('*');
+            .select(PHOTO_SELECT_COLUMNS);
         if (error) throw error;
         return { data: data || [], error: null };
     } catch (error) {
@@ -605,7 +610,7 @@ export async function updateAlbumVisibility(albumId, visibility) {
             .from('albums')
             .update({ visibility })
             .eq('id', albumId)
-            .select('*')
+            .select(ALBUM_SELECT_COLUMNS)
             .single();
         if (error) throw error;
         return { data, error: null };
@@ -626,7 +631,7 @@ export async function updatePhotosVisibility(photoIds, visibility) {
                 shared: visibility === 'public'
             })
             .in('id', ids)
-            .select('*');
+            .select(PHOTO_SELECT_COLUMNS);
         if (error) throw error;
         return { data: data || [], error: null };
     } catch (error) {

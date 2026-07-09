@@ -951,6 +951,16 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     object-position: center 52%;
 }
 
+.home-section-divider picture,
+.home-feature-story__media picture {
+    display: block;
+}
+
+.home-section-divider picture {
+    width: 100%;
+    height: 100%;
+}
+
 .soft-band {
     border-top: 1px solid var(--line);
 }

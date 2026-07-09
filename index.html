@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ikkyee | Personal Travel Map Archive</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -81,14 +85,20 @@
             </section>
 
             <div class="home-section-divider" aria-hidden="true">
-                <img src="images/home-section-divider.png" width="2172" height="724" alt="" loading="lazy" decoding="async">
+                <picture>
+                    <source srcset="images/home-section-divider.jpg" type="image/jpeg">
+                    <img src="images/home-section-divider.png" width="2172" height="724" alt="" loading="lazy" decoding="async">
+                </picture>
             </div>
 
             <section class="home-feature-stories" aria-labelledby="home-feature-stories-title">
                 <h2 id="home-feature-stories-title" class="sr-only">Ikkyee 주요 기능 소개</h2>
                 <article class="home-feature-story">
                     <div class="home-feature-story__media">
-                        <img src="images/home-map-memory-board.png" width="1535" height="1024" alt="여행 사진이 지도 핀과 기록 카드로 정리된 화면" loading="lazy" decoding="async">
+                        <picture>
+                            <source srcset="images/home-map-memory-board.jpg" type="image/jpeg">
+                            <img src="images/home-map-memory-board.png" width="1535" height="1024" alt="여행 사진이 지도 핀과 기록 카드로 정리된 화면" loading="lazy" decoding="async">
+                        </picture>
                     </div>
                     <div class="home-feature-story__copy">
                         <p class="eyebrow">Photo to Map</p>
@@ -98,7 +108,10 @@
                 </article>
                 <article class="home-feature-story">
                     <div class="home-feature-story__media">
-                        <img src="images/home-travel-replay.png" width="1672" height="941" alt="날짜와 장소 흐름으로 정리된 여행 기록 화면" loading="lazy" decoding="async">
+                        <picture>
+                            <source srcset="images/home-travel-replay.jpg" type="image/jpeg">
+                            <img src="images/home-travel-replay.png" width="1672" height="941" alt="날짜와 장소 흐름으로 정리된 여행 기록 화면" loading="lazy" decoding="async">
+                        </picture>
                     </div>
                     <div class="home-feature-story__copy">
                         <p class="eyebrow">Travel Flow</p>
@@ -108,7 +121,10 @@
                 </article>
                 <article class="home-feature-story home-feature-story--explore">
                     <div class="home-feature-story__media">
-                        <img src="images/home-explore-guide.png" width="1672" height="941" alt="Explore 지도에서 공개 사진과 장소를 둘러보는 화면" loading="lazy" decoding="async">
+                        <picture>
+                            <source srcset="images/home-explore-guide.jpg" type="image/jpeg">
+                            <img src="images/home-explore-guide.png" width="1672" height="941" alt="Explore 지도에서 공개 사진과 장소를 둘러보는 화면" loading="lazy" decoding="async">
+                        </picture>
                     </div>
                     <div class="home-feature-story__copy">
                         <p class="eyebrow">How Explore Works</p>
@@ -764,7 +780,7 @@
     </nav>
 
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
     <script type="module" src="/js/app.js"></script>
 </body>
 
