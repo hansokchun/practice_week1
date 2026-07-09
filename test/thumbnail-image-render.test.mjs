@@ -36,10 +36,10 @@ test('home and explore thumbnails render responsive image markup', () => {
     assert.match(app, /const srcsetMarkup = srcset \? ` srcset="\$\{escapeHtml\(srcset\)\}" sizes="\$\{escapeHtml\(sizes\)\}"` : '';/);
 });
 
-test('overview thumbnails fit photos inside rounded frames', () => {
+test('overview thumbnails keep filled rounded frames', () => {
     const css = stylesheet();
 
-    assert.match(css, /\.recent-photo-grid img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;[^}]*object-position:\s*center;/s);
-    assert.match(css, /\.personal-photo-card img\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*1;[^}]*object-fit:\s*contain;[^}]*object-position:\s*center;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;[^}]*object-position:\s*center;/s);
+    assert.match(css, /\.recent-photo-grid img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center;/s);
+    assert.match(css, /\.personal-photo-card img\s*\{[^}]*width:\s*100%;[^}]*aspect-ratio:\s*1;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center;/s);
 });
