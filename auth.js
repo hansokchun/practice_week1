@@ -12,8 +12,8 @@ import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
-const PROFILE_SELECT_COLUMNS = 'id,user_id,nickname,display_name,bio,avatar_url';
-const PHOTO_SELECT_COLUMNS = 'id,url,date,created_at,uploaded_at,description,lat,lng,liked,shared,owner_id,album,album_id,visibility,geo_source';
+const PROFILE_SELECT_COLUMNS = 'id,nickname';
+const PHOTO_SELECT_COLUMNS = 'id,url,date,created_at,title,description,lat,lng,liked,shared,owner_id,album,album_id,visibility,geo_source';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
@@ -161,22 +161,7 @@ export async function fetchProfilesByIds(userIds) {
             .select(PROFILE_SELECT_COLUMNS)
             .in('id', ids);
         if (error) throw error;
-        const rows = data || [];
-        const foundIds = new Set(rows.flatMap((profile) => [profile?.id, profile?.user_id]).filter(Boolean));
-        const missingIds = ids.filter((id) => !foundIds.has(id));
-
-        if (missingIds.length === 0) return { data: rows, error: null };
-
-        try {
-            const { data: userProfiles, error: userProfileError } = await sb
-                .from('profiles')
-                .select(PROFILE_SELECT_COLUMNS)
-                .in('user_id', missingIds);
-            if (userProfileError) throw userProfileError;
-            return { data: [...rows, ...(userProfiles || [])], error: null };
-        } catch {
-            return { data: rows, error: null };
-        }
+        return { data: data || [], error: null };
     } catch (error) {
         return { data: [], error };
     }
