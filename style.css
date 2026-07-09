@@ -784,7 +784,6 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
 .home-houses-reference {
     position: relative;
     overflow: hidden;
-    isolation: isolate;
     background:
         linear-gradient(180deg, var(--houses-surface) 0%, var(--houses-surface) 78%, var(--surface) 100%);
     padding-top: 140px;
@@ -795,22 +794,20 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     content: "";
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: 0;
     pointer-events: none;
-    background-image: url("images/landing-compass-map.jpg");
+    background-image: url("images/landing-compass-map.svg");
     background-size: cover;
-    background-position: center 88px;
-    background-repeat: no-repeat;
-    opacity: 1;
-    -webkit-mask-image: linear-gradient(180deg, #000 0, #000 300px, rgba(0, 0, 0, 0.22) 420px, transparent 560px);
-    mask-image: linear-gradient(180deg, #000 0, #000 300px, rgba(0, 0, 0, 0.22) 420px, transparent 560px);
+    background-position: center top;
+    opacity: 0.72;
+    mix-blend-mode: multiply;
 }
 
 .home-houses-reference__word {
     position: absolute;
     top: -92px;
     left: 50%;
-    z-index: 2;
+    z-index: 1;
     transform: translateX(-50%);
     color: var(--houses-word);
     font-family: var(--brand);
@@ -825,7 +822,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
 
 .home-houses-reference__content {
     position: relative;
-    z-index: 3;
+    z-index: 2;
     display: grid;
     justify-items: center;
     gap: 26px;
@@ -845,7 +842,7 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
 
 .home-houses-reference__collage {
     position: relative;
-    z-index: 3;
+    z-index: 2;
     height: 560px;
     margin-top: 78px;
 }
@@ -8368,12 +8365,6 @@ body.photo-fullscreen-open {
         padding-right: 16px;
         padding-top: 84px;
         padding-bottom: 68px;
-    }
-
-    .home-houses-reference::before {
-        background-position: center 56px;
-        -webkit-mask-image: linear-gradient(180deg, #000 0, #000 120px, rgba(0, 0, 0, 0.24) 180px, transparent 280px);
-        mask-image: linear-gradient(180deg, #000 0, #000 120px, rgba(0, 0, 0, 0.24) 180px, transparent 280px);
     }
 
     .home-houses-reference__word {
