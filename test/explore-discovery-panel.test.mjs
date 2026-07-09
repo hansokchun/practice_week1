@@ -105,7 +105,7 @@ test('Explore discovery items use a consistent preview-sized frame without inlin
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected\s*\{/);
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected,[\s\S]*var\(--coral\)/);
     assert.doesNotMatch(css, /\.explore-discovery-image\s*\{[^}]*height:\s*100cqw;/s);
-    assert.match(renderer, /<span class="explore-discovery-image">[\s\S]*getThumbnailImageMarkup\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg', description \|\| label, \{ sizes: '390px' \}\)/);
+    assert.match(renderer, /<span class="explore-discovery-image">[\s\S]*<img src="\$\{escapeHtml\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg'\)\}"/);
     assert.doesNotMatch(renderer, /const uploadTimeLabel = formatRelativeTime/);
     assert.doesNotMatch(renderer, /explore-discovery-copy/);
     assert.doesNotMatch(renderer, /explore-discovery-time/);
@@ -121,7 +121,7 @@ test('Explore discovery items keep descriptions only as accessibility labels', (
 
     assert.match(renderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.match(renderer, /aria-label="\$\{escapeHtml\(description \|\| label\)\} 사진 보기"/);
-    assert.match(renderer, /getThumbnailImageMarkup\(photo\.url \|\| photo\.albumCoverUrl \|\| 'images\/main_bg2\.jpg', description \|\| label, \{ sizes: '390px' \}\)/);
+    assert.match(renderer, /alt="\$\{escapeHtml\(description \|\| label\)\}"/);
     assert.doesNotMatch(renderer, /explore-discovery-copy/);
     assert.doesNotMatch(renderer, /explore-discovery-time/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
