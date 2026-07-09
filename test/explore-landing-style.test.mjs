@@ -41,7 +41,7 @@ test('Explore discovery thumbnails keep softly rounded corners and a consistent 
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*border-radius:\s*var\(--thumbnail-radius\);/s);
     assert.match(css, /\.explore-discovery-item img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
     assert.doesNotMatch(css, /\.explore-discovery-item img\s*\{[^}]*aspect-ratio:\s*1 \/ 1;/s);
-    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.explore-discovery-item img\s*\{[^}]*object-fit:\s*contain;/s);
 });
 
 test('Explore discovery cards render image-only entries without inline metadata', () => {
@@ -57,7 +57,8 @@ test('Explore discovery cards render image-only entries without inline metadata'
 
 test('DESIGN documents the Explore map shell visual language', () => {
     assert.match(design, /Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces/);
-    assert.match(design, /Each thumbnail fills the panel width in a consistent 4:3 frame/);
+    assert.match(design, /Each thumbnail keeps a consistent 4:3 frame/);
+    assert.match(design, /fit inside the frame so the full photo remains easier to recognize/);
     assert.match(design, /Thumbnail corners use the shared 8px thumbnail radius/);
     assert.match(design, /description or relative-time metadata appears only after opening the photo preview/);
 });
