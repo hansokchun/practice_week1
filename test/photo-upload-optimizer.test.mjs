@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import {
     MAX_OPTIMIZED_PHOTO_EDGE,
+    MIN_OPTIMIZED_PHOTO_EDGE,
     PHOTO_OPTIMIZATION_QUALITY_STEPS,
     TARGET_PHOTO_UPLOAD_SIZE_BYTES,
     getConstrainedPhotoSize,
@@ -34,9 +35,10 @@ test('photo upload optimization uses browser-friendly output formats and names',
 });
 
 test('photo upload optimization constrains long edges while preserving ratio', () => {
-    assert.equal(MAX_OPTIMIZED_PHOTO_EDGE, 2880);
+    assert.equal(MAX_OPTIMIZED_PHOTO_EDGE, 3200);
+    assert.equal(MIN_OPTIMIZED_PHOTO_EDGE, 1600);
     assert.deepEqual(getConstrainedPhotoSize(4000, 3000, 2000), { width: 2000, height: 1500 });
     assert.deepEqual(getConstrainedPhotoSize(1200, 900, 2000), { width: 1200, height: 900 });
     assert.ok(PHOTO_OPTIMIZATION_QUALITY_STEPS.every((quality) => quality > 0 && quality <= 1));
-    assert.deepEqual(PHOTO_OPTIMIZATION_QUALITY_STEPS, [0.92, 0.88, 0.84, 0.78, 0.72]);
+    assert.deepEqual(PHOTO_OPTIMIZATION_QUALITY_STEPS, [0.96, 0.93, 0.9, 0.86, 0.82, 0.76]);
 });
