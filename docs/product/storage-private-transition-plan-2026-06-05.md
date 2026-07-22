@@ -16,6 +16,21 @@ Project: Travelgram / Ikkyee
   - Public profile
   - Photo detail modal
 
+## Implementation Status: 2026-07-22
+
+- Added `public.photos.storage_path` and backfilled it for all 21 existing photo rows.
+- Added the `photos_bucket_select_owned_or_public_photo` Storage SELECT policy. It permits an owner to read their own object and permits anyone to request a public photo object.
+- The browser now requests 15-minute signed URLs for rows with `storage_path`; the old `url` column remains only as a migration fallback.
+- New photo uploads persist `storage_path` and delete operations prefer that stored path.
+- The `photos` bucket is deliberately still public during the compatibility rollout. Setting it private before the signed-URL build reaches `main` would break the currently deployed production app.
+
+### Remaining Production Cutover
+
+1. Verify the `dev` Preview with an owner account, another signed-in account, and a logged-out browser.
+2. Deploy the signed-URL build to `main` after explicit release approval.
+3. Change `storage.buckets.public` for `photos` to `false`.
+4. Re-run the access checks: owners can see private photos, logged-out users can see public photos, and direct legacy public URLs fail.
+
 ## Goal
 
 Private photos should be genuinely private:
@@ -43,28 +58,14 @@ Runtime URL rules:
 - Logged-out or other user viewing public photo: frontend requests a signed URL only if the DB row is public.
 - Private photo from another user: no signed URL.
 
-## Required Backend Surface
+## Access Boundary
 
-Because signed URLs require a server-side check before issuing them, add a Cloudflare Pages Function:
+Signed URLs are requested from the Supabase browser SDK under Storage RLS rather than through a privileged Pages Function.
 
-- `GET /api/photo-url?id=<photo_id>`
-
-Flow:
-
-1. Read the current Supabase session from the request if present.
-2. Fetch the photo row.
-3. Allow when:
-   - `photo.visibility = 'public'`, or
-   - `photo.shared = true`, or
-   - authenticated user id matches `photo.owner_id`
-4. Create a signed URL for `photo.storage_path`.
-5. Return `{ url, expiresAt }`.
-
-Notes:
-
-- Do not expose a service role key in frontend code.
-- If the Pages Function needs elevated access, store the secret only in Cloudflare environment variables.
-- Prefer short expiry first, such as 10 to 30 minutes.
+- The owner can sign URLs for their own files through the existing object-owner policy.
+- A public photo can receive a signed URL through `photos_bucket_select_owned_or_public_photo`.
+- Private files for another user receive neither a direct object read nor a signed URL.
+- No service-role key is exposed to the browser or stored in the repository.
 
 ## Migration Steps
 

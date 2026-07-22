@@ -14,6 +14,7 @@ test('photo select columns match the live photos schema used by saved photo surf
     const columns = getSelectColumns('PHOTO_SELECT_COLUMNS');
 
     assert.ok(columns.includes('title'));
+    assert.ok(columns.includes('storage_path'));
     assert.equal(columns.includes('uploaded_at'), false);
 });
 

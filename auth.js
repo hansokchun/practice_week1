@@ -9,11 +9,12 @@
 
 import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
 import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
+import { applySignedPhotoUrls, getPhotoStoragePath } from './js/photo-storage.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 const PROFILE_SELECT_COLUMNS = 'id,nickname';
-const PHOTO_SELECT_COLUMNS = 'id,url,date,created_at,title,description,lat,lng,liked,shared,owner_id,album,album_id,visibility,geo_source';
+const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,liked,shared,owner_id,album,album_id,visibility,geo_source';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
@@ -34,6 +35,23 @@ function getAuthOptions(options = {}) {
     if (options.captchaToken) authOptions.captchaToken = options.captchaToken;
     if (options.redirectTo) authOptions.redirectTo = options.redirectTo;
     return authOptions;
+}
+
+async function hydrateSignedPhotoUrls(sb, photos = []) {
+    const paths = [...new Set(photos.map(getPhotoStoragePath).filter(Boolean))];
+    if (!paths.length) return photos;
+
+    const { data, error } = await sb.storage
+        .from('photos')
+        .createSignedUrls(paths, 900);
+    if (error) return photos;
+
+    const signedUrlByPath = new Map(
+        (data || [])
+            .filter((item) => item?.path && item?.signedUrl)
+            .map((item) => [item.path, item.signedUrl])
+    );
+    return applySignedPhotoUrls(photos, signedUrlByPath);
 }
 
 // ═══════════════════════════════════════════════════
@@ -184,7 +202,7 @@ export async function fetchPhotos() {
             .select(PHOTO_SELECT_COLUMNS)
             .order('date', { ascending: false });
         if (error) throw error;
-        return { data: data || [], error: null };
+        return { data: await hydrateSignedPhotoUrls(sb, data || []), error: null };
     } catch (error) {
         return { data: [], error };
     }
@@ -202,6 +220,7 @@ export async function upsertPhoto(photo) {
             .upsert({
                 id: photo.id.toString(),
                 url: photo.url,
+                storage_path: photo.storage_path || null,
                 date: photo.date,
                 description: photo.description || '',
                 lat: photo.lat,
@@ -367,19 +386,7 @@ export async function deleteLike(userId, photoId) {
  * RLS 정책으로 본인 사진만 DELETE 가능
  * 관련 댓글은 ON DELETE CASCADE로 DB가 자동 삭제
  */
-function getStoragePathFromPublicUrl(url) {
-    if (!url) return null;
-    try {
-        const parsed = new URL(url);
-        const marker = '/storage/v1/object/public/photos/';
-        const index = parsed.pathname.indexOf(marker);
-        return index === -1 ? null : decodeURIComponent(parsed.pathname.slice(index + marker.length));
-    } catch {
-        return null;
-    }
-}
-
-export async function deletePhoto(id, url) {
+export async function deletePhoto(id, url, storagePath) {
     try {
         const sb = getSupabase();
 
@@ -390,7 +397,7 @@ export async function deletePhoto(id, url) {
                 `${id}_grid.jpg`,
                 `${id}_detail.jpg`
             ];
-            const uploadedPath = getStoragePathFromPublicUrl(url);
+            const uploadedPath = storagePath || getPhotoStoragePath({ url });
             if (uploadedPath) paths.push(uploadedPath);
             await sb.storage.from('photos').remove([...new Set(paths)]);
         } catch {}
@@ -629,7 +636,7 @@ export async function updatePhotosVisibility(photoIds, visibility) {
 // ═══════════════════════════════════════════════════
 
 /**
- * 이미지를 Supabase Storage에 업로드하고 공개 URL을 반환
+ * 이미지를 Supabase Storage에 업로드하고 짧게 유효한 표시 URL을 반환
  * 왜 별도 함수: 업로드(Storage) → DB 저장(upsertPhoto) 2단계로 분리
  */
 export async function uploadImage(file, fileName) {
@@ -641,14 +648,14 @@ export async function uploadImage(file, fileName) {
             .upload(fileName, file, getStorageUploadOptions(file));
         if (error) throw error;
 
-        // 업로드 성공 시 퍼블릭 URL 생성
-        const { data: urlData } = sb.storage
+        const { data: signedUrlData, error: signedUrlError } = await sb.storage
             .from('photos')
-            .getPublicUrl(fileName);
+            .createSignedUrl(fileName, 900);
+        if (signedUrlError) throw signedUrlError;
 
-        return { url: urlData.publicUrl, error: null };
+        return { url: signedUrlData.signedUrl, storagePath: fileName, error: null };
     } catch (error) {
-        return { url: null, error };
+        return { url: null, storagePath: null, error };
     }
 }
 

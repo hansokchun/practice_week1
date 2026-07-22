@@ -29,10 +29,10 @@
 ### P0: Release Blockers
 
 - [x] Establish a passing automated-test and build baseline.
-- [ ] Approve the private-photo storage migration: private bucket, `storage_path`, signed URL policy, and rollback plan.
-- [ ] Backfill `photos.storage_path` for existing images while retaining compatibility with existing `url` values.
-- [ ] Add an authorization-checked signed URL endpoint using only server-side secrets.
-- [ ] Move upload, image rendering, and deletion flows to the private-storage model.
+- [x] Approve the private-photo storage migration: private bucket, `storage_path`, signed URL policy, and rollback plan.
+- [x] Backfill `photos.storage_path` for existing images while retaining compatibility with existing `url` values.
+- [x] Add an RLS-controlled 15-minute signed URL resolver without exposing privileged credentials.
+- [x] Move upload, image rendering, and deletion flows to the private-storage-compatible model.
 - [ ] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible.
 - [ ] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.

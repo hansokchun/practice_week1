@@ -1969,6 +1969,7 @@ function normalizeSavedPhoto(photo) {
         id: photo.id,
         description: photo.description || '',
         url: photo.url,
+        storage_path: photo.storage_path || null,
         date: photo.date || photo.created_at || new Date().toISOString(),
         created_at: photo.created_at || photo.uploaded_at || photo.createdAt || null,
         lat: hasLocation ? Number(photo.lat) : null,
@@ -3211,7 +3212,7 @@ async function deleteSelectedPersonalPhotos() {
 
     try {
         for (const photo of selectedPhotos) {
-            const { error } = await deletePhoto(photo.id, photo.url);
+            const { error } = await deletePhoto(photo.id, photo.url, photo.storage_path);
             if (error) throw error;
         }
         state.savedPhotos = removeSelectedPersonalPhotos(state.savedPhotos, state.selectedPersonalPhotoIds);
@@ -4121,11 +4122,12 @@ async function persistStagedPhotos() {
             const hasExifLocation = hasUsableCoordinates(exif.lat, exif.lng);
             const storageFile = await optimizePhotoForUpload(photo.file);
             const fileName = `${state.currentUser.id}/${id}-${safeFileName(storageFile.name || photo.name)}`;
-            const { url, error: uploadError } = await uploadImage(storageFile, fileName);
+            const { url, storagePath, error: uploadError } = await uploadImage(storageFile, fileName);
             if (uploadError) throw uploadError;
             const record = {
                 id,
                 url,
+                storage_path: storagePath,
                 date: exif.date || new Date().toISOString(),
                 description: '',
                 lat: hasExifLocation ? exif.lat : null,
