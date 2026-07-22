@@ -1,0 +1,77 @@
+# Public Beta Operations Runbook
+
+**Owner:** Project operator (`benet9827@gmail.com`)  
+**Last reviewed:** 2026-07-22  
+**Deployment model:** GitHub `dev` -> Cloudflare Pages Preview, explicit `main` -> Cloudflare Pages Production.
+
+## Service Inventory
+
+| Service | Resource | Operator action |
+| --- | --- | --- |
+| GitHub | `hansokchun/practice_week1` | Use `dev` for all implementation and Preview validation. Only move to `main` after release approval. |
+| Cloudflare Pages | `practice-week1` | Builds with `npm run build`; serves `dist`; production branch is `main`. |
+| Supabase | `pqczcponriukilrtpbdl` (`ikkyee`) | Hosts Auth, Postgres, RLS policies, and the `photos` Storage bucket. |
+| Notion | Travelgram project workspace | Tracks launch gates, decisions, and QA outcomes. |
+
+## Runtime Values
+
+Never commit secret values to this repository or Notion.
+
+| Value | Location | Classification | Required control |
+| --- | --- | --- | --- |
+| `GOOGLE_MAPS_API_KEY` or `VITE_GOOGLE_MAPS_API_KEY` | Cloudflare Pages environment | Browser-visible API key | Restrict in Google Cloud to the Pages origins and only required Maps/Places APIs. `functions/api/config.js` returns it to the browser. |
+| Supabase publishable key | `auth.js` | Browser-visible publishable key | Keep RLS enabled; this key is not a service-role secret. |
+| Supabase service-role key | Supabase dashboard only, if ever needed | Secret | Do not add to browser code, GitHub, Cloudflare Pages client variables, or Notion. Use a server-side Worker/Function only. |
+| Turnstile site key | Browser runtime configuration, if enabled | Browser-visible site key | Pair with a server-side Turnstile secret verification flow before treating CAPTCHA as an enforcement control. |
+| Turnstile secret key | Cloudflare environment only, if verification is added | Secret | Never expose through `window`, Vite variables, or `/api/config`. |
+
+## Pre-Production Checklist
+
+1. Confirm the `dev` Preview serves the commit being reviewed and run `npm test` plus `npm run build` locally.
+2. Verify Google Maps browser-key referrer restrictions include the production and Preview Pages origins.
+3. In Supabase Auth, enable leaked-password protection and run one email sign-up/reset test.
+4. Confirm the `photos` bucket remains public only until signed-URL Preview QA is complete. Change it to private only after the signed-URL build is on `main`.
+5. Run owner, second signed-in user, and logged-out access checks for private photos, public Explore, likes, and public locations.
+6. Record the tested commit, Preview URL, tester accounts by role (not credentials), and results in Notion.
+
+## Backup And Recovery
+
+1. Before a production schema or Storage policy change, create a Supabase database backup using the plan-supported Supabase dashboard backup or PITR flow and record its timestamp in Notion.
+2. For the `photos` bucket, keep the Storage object inventory and database `photos.storage_path` rows intact. Do not delete original objects during a privacy rollout.
+3. Export no authentication credentials, access tokens, or private image URLs into project documentation.
+4. For a data incident, first make affected photos private, then verify Storage object access before deleting any data.
+
+## Rollback
+
+### Application Rollback
+
+1. Identify the last known-good commit on `main` or `dev`.
+2. Revert the release commit on the relevant branch.
+3. Run tests and build, then push the revert. Cloudflare Pages deploys the previous behavior automatically.
+4. Verify the deployed HTML references the expected release and repeat the affected smoke test.
+
+### Photo Storage Rollback
+
+The signed-URL compatibility work is safe to leave in place. Do not remove `photos.storage_path` during an incident. If a private bucket causes unavailable images, temporarily return `storage.buckets.public` for `photos` to `true`, then investigate signed URL and RLS failures before another private cutover.
+
+### Location Privacy Rollback
+
+Do not drop `photo_private_locations` as an emergency shortcut; it contains the source coordinates. If a release needs the legacy location behavior, restore public map columns from owner values before reverting the client:
+
+```sql
+update public.photos p
+set lat = l.lat,
+    lng = l.lng
+from public.photo_private_locations l
+where l.photo_id = p.id;
+```
+
+Use this only with an explicit privacy decision because it restores exact coordinates to publicly readable rows.
+
+## Incident Triage
+
+1. Confirm the affected branch, deployment URL, browser state, account role, and photo visibility.
+2. Check Supabase API, Auth, Storage, and Postgres logs for the incident window.
+3. Run the Supabase security advisor after every RLS, trigger, or Storage policy change.
+4. Prefer revoking publication or making a photo private before changing application code under pressure.
+5. Write the timeline, mitigation, and follow-up task in Notion before closing the incident.

@@ -22,6 +22,7 @@
 - Converted 6 existing public photo coordinates to `approximate` values.
 - Assigned `hidden` to the remaining private photos.
 - Verified all 6 public approximate rows are rounded and no hidden public row has coordinates.
+- Revoked `anon` and `authenticated` execution access to the internal location trigger function after the Supabase security advisor flagged it.
 
 ## Product Behavior
 

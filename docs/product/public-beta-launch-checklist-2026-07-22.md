@@ -37,7 +37,7 @@
 - [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.
 - [ ] Enable Supabase leaked-password protection and confirm email sign-up behavior.
-- [ ] Record production environment variables, secrets ownership, backup/recovery steps, and migration rollback steps.
+- [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. The documented runbook is ready for that confirmation.
 - [ ] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
 - [ ] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
@@ -107,3 +107,4 @@ Local tests and build
 - `docs/product/operating-cost-estimate-2026-06-05.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`
+- `docs/operations/public-beta-operations-runbook-2026-07-22.md`
