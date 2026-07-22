@@ -14,7 +14,7 @@ import { applySignedPhotoUrls, getPhotoStoragePath } from './js/photo-storage.mj
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 const PROFILE_SELECT_COLUMNS = 'id,nickname';
-const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,liked,shared,owner_id,album,album_id,visibility,geo_source';
+const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,liked,shared,owner_id,album,album_id,visibility,geo_source';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
@@ -52,6 +52,25 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
             .map((item) => [item.path, item.signedUrl])
     );
     return applySignedPhotoUrls(photos, signedUrlByPath);
+}
+
+async function hydratePrivatePhotoLocations(sb, photos = []) {
+    const photoIds = photos.map((photo) => photo.id).filter(Boolean);
+    if (!photoIds.length) return photos;
+
+    const { data, error } = await sb
+        .from('photo_private_locations')
+        .select('photo_id,lat,lng')
+        .in('photo_id', photoIds);
+    if (error || !data?.length) return photos;
+
+    const locationsByPhotoId = new Map(data.map((location) => [location.photo_id, location]));
+    return photos.map((photo) => {
+        const privateLocation = locationsByPhotoId.get(photo.id);
+        return privateLocation
+            ? { ...photo, lat: privateLocation.lat, lng: privateLocation.lng }
+            : photo;
+    });
 }
 
 // ═══════════════════════════════════════════════════
@@ -202,7 +221,8 @@ export async function fetchPhotos() {
             .select(PHOTO_SELECT_COLUMNS)
             .order('date', { ascending: false });
         if (error) throw error;
-        return { data: await hydrateSignedPhotoUrls(sb, data || []), error: null };
+        const photosWithPrivateLocations = await hydratePrivatePhotoLocations(sb, data || []);
+        return { data: await hydrateSignedPhotoUrls(sb, photosWithPrivateLocations), error: null };
     } catch (error) {
         return { data: [], error };
     }
@@ -269,6 +289,7 @@ export async function updatePhotoInfo(photoId, updates = {}) {
         if ('lat' in updates) payload.lat = updates.lat;
         if ('lng' in updates) payload.lng = updates.lng;
         if ('geo_source' in updates) payload.geo_source = updates.geo_source;
+        if ('location_precision' in updates) payload.location_precision = updates.location_precision;
         if ('visibility' in updates) {
             payload.visibility = updates.visibility;
             payload.shared = updates.visibility === 'public';
@@ -611,17 +632,20 @@ export async function updateAlbumVisibility(albumId, visibility) {
     }
 }
 
-export async function updatePhotosVisibility(photoIds, visibility) {
+export async function updatePhotosVisibility(photoIds, visibility, locationPrecision) {
     try {
         const ids = [...new Set((photoIds || []).filter(Boolean).map((id) => id.toString()))];
         if (ids.length === 0) return { data: [], error: null };
         const sb = getSupabase();
+        const payload = {
+            visibility,
+            shared: visibility === 'public'
+        };
+        if (locationPrecision) payload.location_precision = locationPrecision;
+
         const { data, error } = await sb
             .from('photos')
-            .update({
-                visibility,
-                shared: visibility === 'public'
-            })
+            .update(payload)
             .in('id', ids)
             .select(PHOTO_SELECT_COLUMNS);
         if (error) throw error;

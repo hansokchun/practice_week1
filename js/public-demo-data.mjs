@@ -97,6 +97,7 @@ export function getPublicDemoPhotos(album = sampleAlbum) {
         album_id: album.id,
         owner_id: album.owner_id,
         visibility: 'public',
+        location_precision: 'exact',
         shared: true
     }));
 }

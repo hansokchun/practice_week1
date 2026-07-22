@@ -16,7 +16,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 370 passing, 0 failing (2026-07-22) |
+| Automated verification | Passing | `npm test`: 379 passing, 0 failing (2026-07-22) |
 | Production build | Passing | `npm run build` (2026-07-22) |
 | Preview delivery | Connected | GitHub `dev` push triggers Cloudflare Pages preview |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -34,7 +34,7 @@
 - [x] Add an RLS-controlled 15-minute signed URL resolver without exposing privileged credentials.
 - [x] Move upload, image rendering, and deletion flows to the private-storage-compatible model.
 - [ ] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible.
-- [ ] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
+- [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.
 - [ ] Enable Supabase leaked-password protection and confirm email sign-up behavior.
 - [ ] Record production environment variables, secrets ownership, backup/recovery steps, and migration rollback steps.

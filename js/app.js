@@ -123,6 +123,10 @@ import {
 import { getPublicDemoAlbumEntries, getPublicDemoAlbums, getPublicDemoPhotos } from './public-demo-data.mjs';
 import { combinePublicAlbumsWithDemoEntries } from './public-album-entries.mjs';
 import { getPublicSurfaceAlbums } from './public-surface-albums.mjs';
+import {
+    canShowPhotoOnPublicMap,
+    normalizeLocationPrecision
+} from './photo-location-privacy.mjs';
 
 const state = {
     currentUser: null,
@@ -154,6 +158,7 @@ const state = {
     tripReviewFocusPhotoId: null,
     removedAlbumPhotoKeys: {},
     editingPhotoVisibility: 'private',
+    editingPhotoLocationPrecision: 'hidden',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     pendingAuthRoute: null,
@@ -601,6 +606,7 @@ function getHomeReferencePhotoDetail(trigger) {
         date: trigger?.dataset?.homePhotoDate || new Date().toISOString(),
         album: 'Ikkyee 소개 사진',
         visibility: 'public',
+        location_precision: 'exact',
         shared: true,
         owner_id: 'demo',
         placeName: trigger?.dataset?.homePhotoLocation || '',
@@ -634,7 +640,7 @@ function formatPhotoDateInput(value) {
 
 function getPublicPhotoMapItems() {
     return state.savedPhotos
-        .filter((photo) => hasPhotoLocation(photo) && (photo.shared || ['public', 'link'].includes(photo.visibility)))
+        .filter((photo) => canShowPhotoOnPublicMap(photo) && (photo.shared || ['public', 'link'].includes(photo.visibility)))
         .filter((photo) => {
             if (!state.currentUser) return state.explorePhotoScope === 'others';
             const isMine = photo.owner_id === state.currentUser.id;
@@ -871,7 +877,8 @@ async function saveExplorePreviewEdits(event) {
     if (message) message.textContent = '저장 중입니다...';
     const { data, error } = await updatePhotoInfo(photo.id, {
         description,
-        visibility: visibility
+        visibility,
+        location_precision: visibility === 'public' ? 'approximate' : photo.location_precision
     });
     if (error) {
         if (message) message.textContent = error.message || '사진 정보를 저장하지 못했습니다.';
@@ -1979,6 +1986,7 @@ function normalizeSavedPhoto(photo) {
         liked: Number(photo.liked || 0),
         album_id: photo.album_id || null,
         visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
+        location_precision: normalizeLocationPrecision(photo.location_precision),
         album: photo.album || null
     };
 }
@@ -3667,7 +3675,8 @@ async function saveShareSettings() {
             }
         }
         const photoIds = getSharePhotoIds();
-        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(photoIds, state.visibility);
+        const publicLocationPrecision = ['public', 'link'].includes(state.visibility) ? 'approximate' : undefined;
+        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(photoIds, state.visibility, publicLocationPrecision);
         if (photoVisibilityError) throw photoVisibilityError;
         if (updatedPhotos?.length) {
             const normalized = updatedPhotos.map(normalizeSavedPhoto);
@@ -4475,8 +4484,12 @@ function setLocationEditorPhoto(photoId) {
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
     updateLocationEditorMap(Number(draft.lat), Number(draft.lng));
     state.editingPhotoVisibility = photo?.visibility === 'public' || photo?.shared ? 'public' : 'private';
+    state.editingPhotoLocationPrecision = normalizeLocationPrecision(photo?.location_precision);
     $$('[data-photo-visibility]').forEach((button) => {
         button.classList.toggle('active', button.dataset.photoVisibility === state.editingPhotoVisibility);
+    });
+    $$('[data-photo-location-precision]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.photoLocationPrecision === state.editingPhotoLocationPrecision);
     });
     if (message) {
         message.textContent = photo
@@ -4548,6 +4561,7 @@ async function saveManualLocation(event) {
         lat,
         lng,
         visibility: state.editingPhotoVisibility,
+        location_precision: state.editingPhotoLocationPrecision,
         geo_source: 'manual'
     });
     if (error) {
@@ -5100,6 +5114,15 @@ function bindEvents() {
             state.editingPhotoVisibility = photoVisibilityButton.dataset.photoVisibility === 'public' ? 'public' : 'private';
             $$('[data-photo-visibility]').forEach((button) => {
                 button.classList.toggle('active', button === photoVisibilityButton);
+            });
+            return;
+        }
+
+        const locationPrecisionButton = event.target.closest('[data-photo-location-precision]');
+        if (locationPrecisionButton) {
+            state.editingPhotoLocationPrecision = normalizeLocationPrecision(locationPrecisionButton.dataset.photoLocationPrecision);
+            $$('[data-photo-location-precision]').forEach((button) => {
+                button.classList.toggle('active', button === locationPrecisionButton);
             });
             return;
         }

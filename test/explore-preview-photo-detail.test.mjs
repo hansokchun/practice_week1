@@ -186,7 +186,7 @@ test('Explore photo preview keeps capture info as compact chips below the story'
     assert.doesNotMatch(body, /<b>찍은 날짜<\/b>/);
 });
 
-test('Explore expanded own-photo preview can edit only description and visibility', () => {
+test('Explore expanded own-photo preview edits description, visibility, and a safe default location precision', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
@@ -198,7 +198,7 @@ test('Explore expanded own-photo preview can edit only description and visibilit
     assert.match(preview, /id="pin-preview-description-input"/);
     assert.match(preview, /data-preview-visibility="private"/);
     assert.match(preview, /data-preview-visibility="public"/);
-    assert.match(saveBody, /updatePhotoInfo\(photo\.id, \{\s*description,\s*visibility:/s);
+    assert.match(saveBody, /updatePhotoInfo\(photo\.id, \{\s*description,\s*visibility,\s*location_precision: visibility === 'public' \? 'approximate' : photo\.location_precision/s);
     assert.doesNotMatch(saveBody, /lat,/);
     assert.doesNotMatch(saveBody, /lng,/);
     assert.doesNotMatch(saveBody, /date:/);

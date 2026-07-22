@@ -60,5 +60,6 @@ test('only photo reads hydrate signed image URLs', () => {
     const photosBody = authSource.slice(photosStart, upsertStart);
 
     assert.doesNotMatch(profilesBody, /hydrateSignedPhotoUrls/);
-    assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, data \|\| \[\]\)/);
+    assert.match(photosBody, /await hydratePrivatePhotoLocations\(sb, data \|\| \[\]\)/);
+    assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, photosWithPrivateLocations\)/);
 });

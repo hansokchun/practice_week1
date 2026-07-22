@@ -663,6 +663,14 @@
                         </button>
                     </div>
                 </div>
+                <div class="photo-visibility-editor" aria-label="공개 위치 정확도">
+                    <span>공개 위치</span>
+                    <div>
+                        <button data-photo-location-precision="exact" type="button">정확한 위치</button>
+                        <button data-photo-location-precision="approximate" type="button">대략 위치</button>
+                        <button class="active" data-photo-location-precision="hidden" type="button">위치 숨김</button>
+                    </div>
+                </div>
                 <label for="location-lat-input">Latitude</label>
                 <input id="location-lat-input" type="text" inputmode="decimal" placeholder="33.450701" readonly>
                 <label for="location-lng-input">Longitude</label>
