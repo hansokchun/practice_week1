@@ -12,13 +12,17 @@
 | Photo row read policy | Pass for intended rule | The policy permits an owner or photos marked `public`/`link`/shared. |
 | Storage signed-URL policy | Present | Storage SELECT policy allows an object owner or an object whose photo row is public. |
 | Logged-out public Explore | Pass | An isolated logged-out browser opened `dev` Preview Explore and rendered public map pins and a public photo card. |
+| Anonymous private-row read | Pass | An anonymous Data API request returned 0 private photo rows. |
+| Anonymous public-row read | Pass | An anonymous Data API request returned all 6 currently public photo rows. |
+| Anonymous private signed URL | Pass | A signed-URL request for a private object was rejected with HTTP 400. |
+| Anonymous public signed URL | Pass | A signed-URL request for a public object succeeded with HTTP 200. |
 | Logged-out direct private object URL | **Fail / expected before cutover** | A legacy public object URL for a private photo returned HTTP 200 because the `photos` bucket is still public. |
-| Owner private-image rendering | Not run | Requires an owner test session after the bucket becomes private. |
+| Owner private-image rendering on `dev` | Pass before cutover | The signed-in owner library rendered 19 of 19 images from signed URLs; no library image used a legacy public URL. |
 | Non-owner private-image denial | Not run | Requires a second signed-in test account after the bucket becomes private. |
 
 ## Current Security Finding
 
-The database and Storage RLS policies are in place, but they cannot protect direct object URLs while `storage.buckets.public` remains `true` for `photos`. This is the known compatibility-rollout risk, not a new policy regression.
+The database and Storage RLS policies behave as intended for anonymous row reads and signed-URL issuance. They cannot protect direct object URLs while `storage.buckets.public` remains `true` for `photos`. This is the known compatibility-rollout risk, not a new policy regression.
 
 ## Cutover Gate
 
