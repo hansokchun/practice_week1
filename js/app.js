@@ -1230,6 +1230,26 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     });
     state.explorePreserveViewportOnce = false;
     state.exploreLastBoundsKey = viewportAction.boundsKey;
+    if (viewportAction.type === 'focus') {
+        setExploreMarkerLoading(true);
+        state.exploreMarkerIdleListener?.remove?.();
+        state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', () => {
+            state.exploreMarkerIdleListener = null;
+            if (renderToken !== state.exploreMarkerRenderToken) return;
+            mountExploreMapMarkers({
+                maps,
+                map,
+                clusters: getExploreMarkerClusters(locatedPhotos, map.getZoom?.() || 13, 54),
+                locatedPhotos,
+                currentZoom: map.getZoom?.() || 13
+            });
+            renderExploreDiscoveryPanel(locatedPhotos);
+            setExploreMarkerLoading(false);
+        });
+        map.setCenter(viewportAction.center);
+        map.setZoom(13);
+        return;
+    }
     if (viewportAction.type === 'fit') {
         const bounds = new maps.LatLngBounds();
         locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));

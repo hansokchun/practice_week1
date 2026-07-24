@@ -17,7 +17,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 386 passing, 0 failing (2026-07-25) |
+| Automated verification | Passing | `npm test`: 387 passing, 0 failing (2026-07-25) |
 | Production build | Passing | `npm run build` (2026-07-25) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |

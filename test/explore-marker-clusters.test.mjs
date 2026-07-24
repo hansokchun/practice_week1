@@ -84,6 +84,22 @@ test('Explore viewport fits only when the marker data set changes', () => {
     });
 });
 
+test('Explore viewport focuses a single photo when the marker data set changes', () => {
+    const photos = [
+        { id: 'single', lat: 34.77, lng: 127.66 }
+    ];
+
+    assert.deepEqual(getExploreViewportAction(photos, 'old-key'), {
+        type: 'focus',
+        boundsKey: 'single:34.77:127.66',
+        center: { lat: 34.77, lng: 127.66 }
+    });
+    assert.deepEqual(getExploreViewportAction(photos, 'single:34.77:127.66'), {
+        type: 'none',
+        boundsKey: 'single:34.77:127.66'
+    });
+});
+
 test('Explore viewport can be preserved when only the photo scope changes', () => {
     const photos = [
         { id: 'mine-a', lat: 33.4, lng: 126.5 },
