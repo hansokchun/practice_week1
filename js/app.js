@@ -168,7 +168,7 @@ const state = {
     exploreClusterListener: null,
     exploreMarkerPhotos: [],
     exploreSelectedAlbumId: null,
-    exploreSearchBox: null,
+    exploreAutocomplete: null,
     exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
@@ -1028,7 +1028,7 @@ function loadGoogleMapsApi() {
                 delete window[callbackName];
             };
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=${callbackName}`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&loading=async&callback=${callbackName}`;
             script.async = true;
             script.defer = true;
             script.onerror = () => reject(new Error('Google Maps API failed to load'));
@@ -1068,13 +1068,10 @@ async function ensureExploreMap() {
     });
 
     const input = $('#explore-map-search-input');
-    if (input && maps.places?.SearchBox) {
-        state.exploreSearchBox = new maps.places.SearchBox(input);
-        state.exploreMap.addListener('bounds_changed', () => {
-            state.exploreSearchBox.setBounds(state.exploreMap.getBounds());
-        });
-        state.exploreSearchBox.addListener('places_changed', () => {
-            const [place] = state.exploreSearchBox.getPlaces() || [];
+    if (input && maps.places?.Autocomplete) {
+        state.exploreAutocomplete = new maps.places.Autocomplete(input, { fields: ['geometry', 'name'] });
+        state.exploreAutocomplete.addListener('place_changed', () => {
+            const place = state.exploreAutocomplete.getPlace();
             if (!place?.geometry?.location) return;
             state.exploreMap.panTo(place.geometry.location);
             state.exploreMap.setZoom(13);
