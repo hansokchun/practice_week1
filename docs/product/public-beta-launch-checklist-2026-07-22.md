@@ -43,7 +43,7 @@
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
 - [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. The documented runbook is ready for that confirmation.
-- [ ] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication.
+- [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
 - [ ] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
 - [ ] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
@@ -115,6 +115,7 @@ Local tests and build
 - `docs/product/v2.1-current-scope-decision.md`
 - `docs/product/storage-private-transition-plan-2026-06-05.md`
 - `docs/product/operating-cost-estimate-2026-06-05.md`
+- `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`
 - `docs/operations/public-beta-operations-runbook-2026-07-22.md`
