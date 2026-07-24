@@ -1,6 +1,7 @@
 # Ikkyee Public Beta Launch Checklist
 
-**Updated:** 2026-07-22  
+**Updated:** 2026-07-24
+
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
 
@@ -16,13 +17,17 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 379 passing, 0 failing (2026-07-22) |
-| Production build | Passing | `npm run build` (2026-07-22) |
-| Preview delivery | Connected | GitHub `dev` push triggers Cloudflare Pages preview |
+| Automated verification | Passing | `npm test`: 381 passing, 0 failing (2026-07-24) |
+| Production build | Passing | `npm run build` (2026-07-24) |
+| Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
-| Photo storage privacy | Blocked | `photos` bucket is currently public |
-| Password safety | Blocked | Supabase leaked-password protection is disabled |
+| Photo storage privacy | QA pending | `storage_path` backfill and signed URL compatibility are deployed to `dev`; the bucket remains public until three-account access QA and the private cutover decision |
+| Public location privacy | Implemented, QA pending | Location precision and owner-only source coordinates are implemented; public/owner/logged-out validation remains |
+| Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
+| Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
+| Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
+| Database backup/PITR | Manual process required on Free | Automatic backups and PITR are unavailable; use a local encrypted `supabase db dump` export before production data changes |
 
 ## Launch Gates
 
@@ -36,12 +41,17 @@
 - [ ] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible.
 - [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.
-- [ ] Enable Supabase leaked-password protection and confirm email sign-up behavior.
+- [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
 - [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. The documented runbook is ready for that confirmation.
 - [ ] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
 - [ ] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
 - [ ] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
+
+### Recently Completed Hardening
+
+- [x] Replace deprecated Google Maps Explore search integration with the supported `Autocomplete` API and async loader.
+- [x] Add Cloudflare Pages response security headers and verify them against the `dev` Preview deployment.
 
 ### P1: Public Beta Readiness
 
@@ -94,11 +104,11 @@ Local tests and build
 
 ## First Execution Order
 
-1. Finish the private Storage migration design and create its implementation plan.
-2. Decide the public location policy before exposing more public photos.
-3. Implement and verify the Storage/RLS changes in `dev`.
-4. Execute the account, photo lifecycle, and Explore QA scripts in Cloudflare Preview.
-5. Prepare the operating and legal copy, then run the production rehearsal.
+1. Run the three-account Storage/RLS access QA in Cloudflare Preview, then make the explicit private-bucket cutover decision.
+2. Verify and record the Free-plan manual database export and recovery procedure before the next production data change.
+3. Execute the account, photo lifecycle, and Explore QA scripts in Cloudflare Preview.
+4. Prepare the operating and legal copy, then run the production rehearsal.
+5. Revisit leaked-password protection only when the Supabase plan is upgraded.
 
 ## References
 

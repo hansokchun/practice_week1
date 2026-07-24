@@ -1,7 +1,8 @@
 # Public Beta Operations Runbook
 
 **Owner:** Project operator (`benet9827@gmail.com`)  
-**Last reviewed:** 2026-07-22  
+**Last reviewed:** 2026-07-24
+
 **Deployment model:** GitHub `dev` -> Cloudflare Pages Preview, explicit `main` -> Cloudflare Pages Production.
 
 ## Service Inventory
@@ -29,17 +30,18 @@ Never commit secret values to this repository or Notion.
 
 1. Confirm the `dev` Preview serves the commit being reviewed and run `npm test` plus `npm run build` locally.
 2. Verify Google Maps browser-key referrer restrictions include the production and Preview Pages origins.
-3. In Supabase Auth, enable leaked-password protection and run one email sign-up/reset test.
+3. On the current Supabase Free plan, record leaked-password protection as deferred: it requires a paid plan. After an upgrade, enable it in Supabase Auth and run one email sign-up/reset test.
 4. Confirm the `photos` bucket remains public only until signed-URL Preview QA is complete. Change it to private only after the signed-URL build is on `main`.
 5. Run owner, second signed-in user, and logged-out access checks for private photos, public Explore, likes, and public locations.
 6. Record the tested commit, Preview URL, tester accounts by role (not credentials), and results in Notion.
 
 ## Backup And Recovery
 
-1. Before a production schema or Storage policy change, create a Supabase database backup using the plan-supported Supabase dashboard backup or PITR flow and record its timestamp in Notion.
-2. For the `photos` bucket, keep the Storage object inventory and database `photos.storage_path` rows intact. Do not delete original objects during a privacy rollout.
-3. Export no authentication credentials, access tokens, or private image URLs into project documentation.
-4. For a data incident, first make affected photos private, then verify Storage object access before deleting any data.
+1. On the current Supabase Free plan, automatic database backups and PITR are unavailable. Before a production schema or Storage policy change, create a local encrypted logical export with `supabase db dump` and record its timestamp, SHA-256 checksum, and secure storage location in Notion. Do not commit the export or its credentials.
+2. After a Supabase paid-plan upgrade, replace the manual export gate with the dashboard backup or PITR flow and record the available restore point.
+3. For the `photos` bucket, keep the Storage object inventory and database `photos.storage_path` rows intact. Do not delete original objects during a privacy rollout.
+4. Export no authentication credentials, access tokens, or private image URLs into project documentation.
+5. For a data incident, first make affected photos private, then verify Storage object access before deleting any data.
 
 ## Rollback
 
