@@ -26,6 +26,7 @@ import {
     updateAlbumVisibility,
     deletePhoto,
     replaceAlbumPhotos,
+    removeUploadedImage,
     upsertPhoto
 } from '../auth.js';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
@@ -4155,9 +4156,10 @@ async function persistStagedPhotos() {
     if (status && hasLargeUpload) status.textContent = '큰 사진은 3MB 이하로 정리한 뒤 저장하는 중입니다...';
     if (reviewButton) reviewButton.disabled = true;
 
+    const saved = [];
+    let pendingStoragePath = null;
     try {
         const timestamp = Date.now();
-        const saved = [];
         for (const [index, photo] of selectedPhotos.entries()) {
             const id = `${timestamp}-${index}`;
             const exif = await readPhotoExif(photo.file);
@@ -4166,6 +4168,7 @@ async function persistStagedPhotos() {
             const fileName = `${state.currentUser.id}/${id}-${safeFileName(storageFile.name || photo.name)}`;
             const { url, storagePath, error: uploadError } = await uploadImage(storageFile, fileName);
             if (uploadError) throw uploadError;
+            pendingStoragePath = storagePath;
             const record = {
                 id,
                 url,
@@ -4179,11 +4182,13 @@ async function persistStagedPhotos() {
                 owner_id: state.currentUser.id,
                 album: null,
                 visibility: 'private',
-                geo_source: hasExifLocation ? 'exif' : 'unknown'
+                geo_source: hasExifLocation ? 'exif' : 'unknown',
+                location_precision: 'hidden'
             };
             const { error: dbError } = await upsertPhoto(record);
             if (dbError) throw dbError;
             saved.push(normalizeSavedPhoto(record));
+            pendingStoragePath = null;
         }
         state.lastSavedPhotoIds = saved.map((photo) => photo.id);
         state.savedPhotos = [
@@ -4196,6 +4201,10 @@ async function persistStagedPhotos() {
         clearUploadQueue();
         routeTo(getUploadNextRoute(saved.length));
     } catch (error) {
+        if (pendingStoragePath) await removeUploadedImage(pendingStoragePath);
+        for (const record of [...saved].reverse()) {
+            await deletePhoto(record.id, record.url, record.storage_path);
+        }
         if (status) status.textContent = error.message || '사진 저장에 실패했습니다.';
         showToast('사진 저장에 실패했습니다. 로컬 초안은 유지됩니다.');
     } finally {

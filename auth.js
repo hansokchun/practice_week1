@@ -251,7 +251,8 @@ export async function upsertPhoto(photo) {
                 album: photo.album || null,
                 album_id: photo.album_id || null,
                 visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
-                geo_source: photo.geo_source || 'unknown'
+                geo_source: photo.geo_source || 'unknown',
+                location_precision: photo.location_precision || 'hidden'
             }, { onConflict: 'id' });
         if (error) throw error;
         return { data, error: null };
@@ -659,11 +660,26 @@ export async function updatePhotosVisibility(photoIds, visibility, locationPreci
 //  3. 파일 저장소 (Storage) — 이미지 업로드
 // ═══════════════════════════════════════════════════
 
+export async function removeUploadedImage(storagePath) {
+    if (!storagePath) return { error: null };
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.storage
+            .from('photos')
+            .remove([storagePath]);
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
+    }
+}
+
 /**
  * 이미지를 Supabase Storage에 업로드하고 짧게 유효한 표시 URL을 반환
  * 왜 별도 함수: 업로드(Storage) → DB 저장(upsertPhoto) 2단계로 분리
  */
 export async function uploadImage(file, fileName) {
+    let uploadedPath = null;
     try {
         const sb = getSupabase();
         
@@ -671,6 +687,7 @@ export async function uploadImage(file, fileName) {
             .from('photos')
             .upload(fileName, file, getStorageUploadOptions(file));
         if (error) throw error;
+        uploadedPath = fileName;
 
         const { data: signedUrlData, error: signedUrlError } = await sb.storage
             .from('photos')
@@ -679,6 +696,7 @@ export async function uploadImage(file, fileName) {
 
         return { url: signedUrlData.signedUrl, storagePath: fileName, error: null };
     } catch (error) {
+        if (uploadedPath) await removeUploadedImage(uploadedPath);
         return { url: null, storagePath: null, error };
     }
 }
