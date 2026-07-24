@@ -17,7 +17,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 387 passing, 0 failing (2026-07-25) |
+| Automated verification | Passing | `npm test`: 390 passing, 0 failing (2026-07-25) |
 | Production build | Passing | `npm run build` (2026-07-25) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -46,7 +46,7 @@
 - [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. The documented runbook is ready for that confirmation.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
-- [ ] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
+- [x] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
 - [x] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
 
 ### Recently Completed Hardening
@@ -107,7 +107,7 @@ Local tests and build
 
 1. Run the three-account Storage/RLS access QA in Cloudflare Preview, then make the explicit private-bucket cutover decision.
 2. Install/start Docker, run and record the first Free-plan encrypted export, then rehearse recovery against a disposable project before the next production data change. The export helper and procedure are implemented.
-3. Execute the account, photo lifecycle, and Explore QA scripts in Cloudflare Preview.
+3. Execute the account QA script in Cloudflare Preview. Photo lifecycle and Explore QA are complete.
 4. Prepare the operating and legal copy, then run the production rehearsal.
 5. Revisit leaked-password protection only when the Supabase plan is upgraded.
 
@@ -117,6 +117,7 @@ Local tests and build
 - `docs/product/storage-private-transition-plan-2026-06-05.md`
 - `docs/product/operating-cost-estimate-2026-06-05.md`
 - `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`
+- `docs/qa/photo-lifecycle-preview-qa-2026-07-25.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`
 - `docs/operations/public-beta-operations-runbook-2026-07-22.md`
