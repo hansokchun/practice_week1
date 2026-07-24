@@ -37,11 +37,48 @@ Never commit secret values to this repository or Notion.
 
 ## Backup And Recovery
 
-1. On the current Supabase Free plan, automatic database backups and PITR are unavailable. Before a production schema or Storage policy change, create a local encrypted logical export with `supabase db dump` and record its timestamp, SHA-256 checksum, and secure storage location in Notion. Do not commit the export or its credentials.
+1. On the current Supabase Free plan, automatic database backups and PITR are unavailable. Before a production schema or Storage policy change, create a local encrypted logical export with `npm run backup:db` and record its timestamp, SHA-256 checksum, and secure storage location in Notion. Do not commit the export or its credentials.
 2. After a Supabase paid-plan upgrade, replace the manual export gate with the dashboard backup or PITR flow and record the available restore point.
 3. For the `photos` bucket, keep the Storage object inventory and database `photos.storage_path` rows intact. Do not delete original objects during a privacy rollout.
 4. Export no authentication credentials, access tokens, or private image URLs into project documentation.
 5. For a data incident, first make affected photos private, then verify Storage object access before deleting any data.
+
+### Manual Encrypted Export
+
+The helper uses the official Supabase CLI `db dump` flow for roles, schema, and data. Supabase CLI 2.109.1 is pinned through `npx`. The raw SQL files exist only in a temporary directory; the retained archive is encrypted with AES-256-CBC/PBKDF2 and receives a SHA-256 checksum.
+
+Prerequisites:
+
+1. Install and start Docker Desktop. The Supabase CLI runs its compatible `pg_dump` image through Docker.
+2. In Supabase Dashboard, open **Connect** and copy the percent-encoded session-pooler database connection string. Do not save it in the repository or shell history.
+3. Choose a backup destination outside the repository. The default is `~/Backups/ikkyee`.
+4. Use an encryption passphrase of at least 16 characters and store it separately from the archive.
+
+Run the prerequisite check:
+
+```bash
+npm run backup:check
+```
+
+Run an interactive encrypted export:
+
+```bash
+npm run backup:db
+```
+
+The script privately prompts for the database connection string and archive passphrase, so neither value is written to shell history. It verifies that all three SQL files are non-empty, decrypts the final archive into a temporary file, and validates its tar contents. Only the `.tar.gz.enc` and `.sha256` files remain.
+
+### Restore Rehearsal
+
+Never restore a logical export over the active production project as a test. Create a disposable Supabase project and follow the current Supabase backup/restore guide:
+
+1. Decrypt and extract `roles.sql`, `schema.sql`, and `data.sql` in a temporary directory.
+2. Restore with `psql --single-transaction --variable ON_ERROR_STOP=1`, applying roles, schema, and data in that order.
+3. Compare extensions, key table counts, RLS policies, and Storage metadata with the source inventory.
+4. Confirm Auth users must re-authenticate if the target project uses different JWT secrets.
+5. Delete the temporary plaintext files and disposable project after the rehearsal record is complete.
+
+Database logical exports include Storage metadata, not the binary objects. Preserve and inventory the `photos` bucket separately before destructive Storage work.
 
 ## Rollback
 

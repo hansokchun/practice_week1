@@ -17,7 +17,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 381 passing, 0 failing (2026-07-24) |
+| Automated verification | Passing | `npm test`: 384 passing, 0 failing (2026-07-24) |
 | Production build | Passing | `npm run build` (2026-07-24) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -27,7 +27,7 @@
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
-| Database backup/PITR | Manual process required on Free | Automatic backups and PITR are unavailable; use a local encrypted `supabase db dump` export before production data changes |
+| Database backup/PITR | Helper implemented, live export pending | Automatic backups and PITR are unavailable; `npm run backup:db` creates an encrypted roles/schema/data export outside the repository. Docker and a database connection string are still required for the first live export. |
 
 ## Launch Gates
 
@@ -105,7 +105,7 @@ Local tests and build
 ## First Execution Order
 
 1. Run the three-account Storage/RLS access QA in Cloudflare Preview, then make the explicit private-bucket cutover decision.
-2. Verify and record the Free-plan manual database export and recovery procedure before the next production data change.
+2. Install/start Docker, run and record the first Free-plan encrypted export, then rehearse recovery against a disposable project before the next production data change. The export helper and procedure are implemented.
 3. Execute the account, photo lifecycle, and Explore QA scripts in Cloudflare Preview.
 4. Prepare the operating and legal copy, then run the production rehearsal.
 5. Revisit leaked-password protection only when the Supabase plan is upgraded.
