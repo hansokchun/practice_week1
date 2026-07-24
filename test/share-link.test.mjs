@@ -117,3 +117,11 @@ test('getSharedRouteState no longer exposes removed review and share pages', () 
         ownerId: null
     });
 });
+
+test('getSharedRouteState preserves the authenticated liked photos route', () => {
+    assert.deepEqual(getSharedRouteState('#/liked'), {
+        route: 'liked',
+        albumId: null,
+        ownerId: null
+    });
+});
