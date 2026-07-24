@@ -743,6 +743,8 @@ function updateExplorePhotoPreview(photo) {
     const storyWrap = preview.querySelector('.pin-preview-story');
     const story = preview.querySelector('.pin-preview-story p');
     const meta = preview.querySelector('.pin-preview-meta');
+    const likeButton = preview.querySelector('#pin-preview-like');
+    const likeCount = preview.querySelector('#pin-preview-like-count');
     const profileButton = preview.querySelector('[data-go-profile]');
     const authorAvatar = preview.querySelector('.pin-author .avatar');
     const authorNameNode = preview.querySelector('.pin-author strong');
@@ -755,6 +757,8 @@ function updateExplorePhotoPreview(photo) {
     const visibilityValue = photo.visibility === 'public' || photo.shared || photo.albumVisibility === 'public'
         ? 'public'
         : 'private';
+    const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
+    const likeTotal = Number(photo.liked || 0);
     state.selectedPhotoId = photo.id || null;
     state.selectedPublicOwnerId = ownerId || state.selectedPublicOwnerId;
     const authorName = getPublicAuthorName({ owner_id: ownerId }, {
@@ -788,6 +792,14 @@ function updateExplorePhotoPreview(photo) {
             ${visibilityMeta}
         `;
     }
+    if (likeButton) {
+        likeButton.disabled = !photo.id || !state.currentUser;
+        likeButton.classList.toggle('is-liked', isLiked);
+        likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
+        likeButton.dataset.photoId = photo.id || '';
+        likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
+    }
+    if (likeCount) likeCount.textContent = String(likeTotal);
     renderExplorePreviewNearby(photo);
     if (ownerActions) ownerActions.hidden = !isOwnPhoto;
     if (descriptionInput) descriptionInput.value = description;

@@ -7259,7 +7259,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-size: 20px;
 }
 
-.photo-detail-like-panel {
+.photo-detail-like-panel,
+.pin-preview-like-panel {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -7320,7 +7321,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     opacity: 0.55;
 }
 
-#photo-detail-like-count {
+#photo-detail-like-count,
+#pin-preview-like-count {
     min-width: 1ch;
     color: #3f4e4f;
     font-size: 14px;

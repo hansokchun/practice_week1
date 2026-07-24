@@ -16,19 +16,21 @@ test('photo detail exposes like action and total like count', () => {
     assert.doesNotMatch(detail, /data-like-label/);
 });
 
-test('Explore photo preview does not expose an inline like control', () => {
+test('Explore photo preview exposes a heart-only like control and count', () => {
     const html = readFileSync('index.html', 'utf8');
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
 
-    assert.doesNotMatch(preview, /id="pin-preview-like"/);
-    assert.doesNotMatch(preview, /data-toggle-photo-like/);
-    assert.doesNotMatch(preview, /pin-preview-like-panel/);
+    assert.match(preview, /id="pin-preview-like"/);
+    assert.match(preview, /data-toggle-photo-like/);
+    assert.match(preview, /class="pin-preview-like-panel"/);
+    assert.match(preview, /id="pin-preview-like-count">0<\/span>/);
+    assert.match(preview, /<span class="material-symbols-outlined">favorite<\/span>/);
     assert.doesNotMatch(preview, /data-like-label/);
 });
 
-test('Explore discovery and preview surfaces rely on the shared photo detail like control', () => {
+test('Explore discovery cards stay image-only while the preview syncs its like control', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
     const rendererEnd = source.indexOf('async function ensureExploreMap', rendererStart);
@@ -39,8 +41,10 @@ test('Explore discovery and preview surfaces rely on the shared photo detail lik
 
     assert.doesNotMatch(renderer, /class="photo-like-button explore-discovery-like-button/);
     assert.doesNotMatch(renderer, /data-like-surface="explore-discovery"/);
-    assert.doesNotMatch(preview, /pin-preview-like/);
-    assert.doesNotMatch(preview, /likeButton\.dataset\.photoId = photo\.id \|\| ''/);
+    assert.match(preview, /const likeButton = preview\.querySelector\('#pin-preview-like'\)/);
+    assert.match(preview, /likeButton\.dataset\.photoId = photo\.id \|\| ''/);
+    assert.match(preview, /likeButton\.setAttribute\('aria-pressed', isLiked \? 'true' : 'false'\)/);
+    assert.match(preview, /likeCount\.textContent = String\(likeTotal\)/);
     assert.match(preview, /updatePhotoDetailModal\(photo, \{ context: 'explore' \}\)/);
 });
 
