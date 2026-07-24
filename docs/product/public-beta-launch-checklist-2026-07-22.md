@@ -1,6 +1,6 @@
 # Ikkyee Public Beta Launch Checklist
 
-**Updated:** 2026-07-24
+**Updated:** 2026-07-25
 
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
@@ -17,13 +17,14 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 385 passing, 0 failing (2026-07-24) |
-| Production build | Passing | `npm run build` (2026-07-24) |
+| Automated verification | Passing | `npm test`: 386 passing, 0 failing (2026-07-25) |
+| Production build | Passing | `npm run build` (2026-07-25) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | QA pending | `storage_path` backfill and signed URL compatibility are deployed to `dev`; the bucket remains public until three-account access QA and the private cutover decision |
 | Public location privacy | Implemented, QA pending | Location precision and owner-only source coordinates are implemented; public/owner/logged-out validation remains |
+| Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
@@ -46,7 +47,7 @@
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
 - [ ] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
-- [ ] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
+- [x] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
 
 ### Recently Completed Hardening
 

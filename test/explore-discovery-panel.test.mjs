@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import {
     getExploreDiscoveryPhotos,
-    normalizeExploreBounds
+    normalizeExploreBounds,
+    shouldPreserveExploreViewport
 } from '../js/explore-discovery-panel.mjs';
 
 test('Explore discovery panel keeps only photos inside the current map bounds', () => {
@@ -43,6 +44,26 @@ test('Explore discovery panel accepts Google Maps bounds-like objects', () => {
     });
 
     assert.deepEqual(bounds, { north: 38, south: 37, east: 128, west: 126 });
+});
+
+test('Explore preserves the current viewport only when the next scope has a visible photo', () => {
+    const bounds = {
+        north: 38,
+        south: 37,
+        east: 127,
+        west: 126
+    };
+
+    assert.equal(shouldPreserveExploreViewport([
+        { id: 'inside', lat: 37.5, lng: 126.8 }
+    ], bounds), true);
+    assert.equal(shouldPreserveExploreViewport([
+        { id: 'outside', lat: 35.1, lng: 129.0 }
+    ], bounds), false);
+    assert.equal(shouldPreserveExploreViewport([], bounds), false);
+    assert.equal(shouldPreserveExploreViewport([
+        { id: 'inside', lat: 37.5, lng: 126.8 }
+    ], null), false);
 });
 
 test('Explore shell exposes a desktop discovery panel instead of a hidden-only list', () => {

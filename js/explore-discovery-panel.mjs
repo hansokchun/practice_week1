@@ -70,3 +70,9 @@ export function getExploreDiscoveryPhotos(photos, options = {}) {
         .sort((a, b) => getTimestamp(b) - getTimestamp(a));
     return disperseRepeatedOwners(sorted).slice(0, Math.max(0, limit));
 }
+
+export function shouldPreserveExploreViewport(photos, bounds) {
+    const normalizedBounds = normalizeExploreBounds(bounds);
+    if (!normalizedBounds) return false;
+    return (photos || []).some((photo) => isPhotoInsideBounds(photo, normalizedBounds));
+}

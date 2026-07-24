@@ -112,7 +112,8 @@ import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import {
     getExploreDiscoveryPhotos,
-    normalizeExploreBounds
+    normalizeExploreBounds,
+    shouldPreserveExploreViewport
 } from './explore-discovery-panel.mjs';
 import {
     formatDayCount,
@@ -695,7 +696,10 @@ function setExplorePhotoScope(scope) {
     if (!['mine', 'others'].includes(scope)) return;
     state.explorePhotoScope = scope;
     state.isExplorePhotoScopeMenuOpen = false;
-    state.explorePreserveViewportOnce = true;
+    state.explorePreserveViewportOnce = shouldPreserveExploreViewport(
+        getPublicPhotoMapItems(),
+        getExploreCurrentBounds()
+    );
     resetExploreSelectionState();
     renderExplorePhotoScopeControls();
     renderPublicSurfaces();
