@@ -18,11 +18,13 @@
 | Anonymous public signed URL | Pass | A signed-URL request for a public object succeeded with HTTP 200. |
 | Logged-out direct private object URL | **Fail / expected before cutover** | A legacy public object URL for a private photo returned HTTP 200 because the `photos` bucket is still public. |
 | Owner private-image rendering on `dev` | Pass before cutover | The signed-in owner library rendered 19 of 19 images from signed URLs; no library image used a legacy public URL. |
-| Non-owner private-image denial | Not run | Requires a second signed-in test account after the bucket becomes private. |
+| Authenticated non-owner row/object denial | Pass at RLS level | An existing second user was simulated with the `authenticated` role and JWT subject. The owner's private photo row and matching Storage object both returned 0 visible records. |
+| Authenticated owner row/object access | Pass at RLS level | The same private photo was queried as its owner; the photo row and matching Storage object both returned 1 visible record. |
+| Non-owner browser image denial after cutover | Not run | Requires a second signed-in browser session after the bucket becomes private. |
 
 ## Current Security Finding
 
-The database and Storage RLS policies behave as intended for anonymous row reads and signed-URL issuance. They cannot protect direct object URLs while `storage.buckets.public` remains `true` for `photos`. This is the known compatibility-rollout risk, not a new policy regression.
+The database and Storage RLS policies behave as intended for anonymous access, authenticated owner access, authenticated non-owner denial, and signed-URL issuance. The authenticated checks used existing users in a rolled-back SQL transaction and did not create accounts, change passwords, or mutate application data. RLS cannot protect direct object URLs while `storage.buckets.public` remains `true` for `photos`. This is the known compatibility-rollout risk, not a new policy regression.
 
 ## Cutover Gate
 
