@@ -4,6 +4,16 @@
 
 **Scope:** Read-only policy audit and anonymous Cloudflare Preview checks. No production bucket setting was changed.
 
+## 2026-07-25 Cutover Readiness Recheck
+
+- Supabase project `pqczcponriukilrtpbdl` is active and healthy.
+- The shared `photos` bucket is still public.
+- All 21 photo rows have `storage_path`; 6 are public and 15 are non-public.
+- Storage policies still allow SELECT only for the object owner or a public/shared photo row. Insert, update, and delete remain owner-scoped.
+- The Supabase security advisor reports only the known Free-plan leaked-password-protection warning. No new RLS warning was reported.
+- `origin/dev` is at `3e69124`; `origin/main` is at `6dbc08e` and is 443 commits behind. The production client still calls `getPublicUrl()` and does not contain the signed-URL compatibility layer.
+- Result: the privacy cutover is technically prepared on `dev` but blocked until an explicit production release. Changing the shared bucket now would break production image delivery.
+
 ## Results
 
 | Scenario | Result | Evidence |
@@ -28,7 +38,7 @@ The database and Storage RLS policies behave as intended for anonymous access, a
 
 ## Cutover Gate
 
-Do not change the bucket to private until the signed-URL build is explicitly approved for `main`. The bucket is shared by `dev` and production; changing it early could break the currently deployed production application.
+Do not change the bucket to private until the signed-URL build is explicitly approved and deployed to `main`. The bucket is shared by `dev` and production; changing it early would break the currently deployed production application.
 
 After `main` has the signed-URL build, run these checks in order:
 

@@ -1,7 +1,7 @@
 # Public Beta Operations Runbook
 
 **Owner:** Project operator (`benet9827@gmail.com`)  
-**Last reviewed:** 2026-07-24
+**Last reviewed:** 2026-07-25
 
 **Deployment model:** GitHub `dev` -> Cloudflare Pages Preview, explicit `main` -> Cloudflare Pages Production.
 
@@ -14,6 +14,16 @@
 | Supabase | `pqczcponriukilrtpbdl` (`ikkyee`) | Hosts Auth, Postgres, RLS policies, and the `photos` Storage bucket. |
 | Notion | Travelgram project workspace | Tracks launch gates, decisions, and QA outcomes. |
 
+## 2026-07-25 Live Dashboard Audit
+
+- The Cloudflare account is accessible by the documented operator account.
+- Pages project `practice-week1` is connected to `hansokchun/practice_week1`.
+- Production branch `main`, automatic deployments, build command `npm run build`, and output directory `dist` match this runbook.
+- Production has encrypted `GOOGLE_MAPS_API_KEY` and `VITE_GOOGLE_MAPS_API_KEY` entries. These are browser-visible in application use even though Cloudflare stores them as encrypted values.
+- The unused encrypted `SUPABASE_JWT_SECRET` was removed from both Production and Preview after repository-wide usage checks. Its value was not inspected.
+- Unused R2 binding `MY_BUCKET` was removed from Production. The `my-photos-storage` bucket itself was not changed or deleted.
+- `npm run backup:check` still fails because Docker is not installed. The first encrypted export and disposable-project restore rehearsal remain incomplete.
+
 ## Runtime Values
 
 Never commit secret values to this repository or Notion.
@@ -25,6 +35,8 @@ Never commit secret values to this repository or Notion.
 | Supabase service-role key | Supabase dashboard only, if ever needed | Secret | Do not add to browser code, GitHub, Cloudflare Pages client variables, or Notion. Use a server-side Worker/Function only. |
 | Turnstile site key | Browser runtime configuration, if enabled | Browser-visible site key | Pair with a server-side Turnstile secret verification flow before treating CAPTCHA as an enforcement control. |
 | Turnstile secret key | Cloudflare environment only, if verification is added | Secret | Never expose through `window`, Vite variables, or `/api/config`. |
+
+Unused secrets should not remain attached to Pages. Confirm that no deployed Function reads them, then remove them through an approved dashboard change without copying or revealing their values.
 
 ## Pre-Production Checklist
 
