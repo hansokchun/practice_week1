@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 408 passing, 0 failing (2026-07-26) |
+| Automated verification | Passing | `npm test`: 413 passing, 0 failing (2026-07-26) |
 | Production build | Passing | `npm run build` (2026-07-26) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -59,6 +59,7 @@
 - [x] Add enforceable JS, CSS, and image budgets; remove 8 MB of unused PNG build output; and record mobile route-render timing.
 - [x] Consolidate incident ownership, severity, Cloudflare/Supabase log paths, reversible rollback, privacy safeguards, and closeout evidence into one runbook.
 - [x] Define five privacy-conscious beta metrics using existing first-party aggregate records, with seven-day cohorts and small-group suppression.
+- [x] Rehearse the non-production release gate, deployed-shell smoke checks, and reversible rollback sequence.
 
 ### P1: Public Beta Readiness
 
@@ -67,7 +68,7 @@
 - [x] Measure mobile loading and route transitions; set an image-size and loading budget. See `docs/performance/mobile-performance-budget-2026-07-26.md`.
 - [x] Write a single incident runbook with Cloudflare/Supabase log paths, support contact, and rollback procedure.
 - [x] Define privacy-conscious beta metrics: sign-up, first upload, first album, first publish, and Explore engagement.
-- [ ] Rehearse the production deployment, smoke test, and rollback path before public traffic.
+- [x] Rehearse the production deployment, smoke test, and rollback path before public traffic.
 
 ### P2: After Public Beta Opens
 
@@ -129,3 +130,4 @@ Local tests and build
 - `docs/cloudflare.md`
 - `docs/integrations.md`
 - `docs/operations/public-beta-operations-runbook-2026-07-22.md`
+- `docs/operations/public-beta-release-rehearsal-2026-07-26.md`
