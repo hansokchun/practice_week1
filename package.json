@@ -8,6 +8,7 @@
     "test": "node --test",
     "build": "vite build",
     "preview": "vite preview",
+    "perf:budget": "npm run build && node scripts/check-performance-budget.mjs",
     "backup:check": "bash scripts/backup-supabase.sh --check",
     "backup:db": "bash scripts/backup-supabase.sh",
     "cf:deploy:dev": "npm run build && npx wrangler pages deploy dist --project-name practice-week1 --branch dev",

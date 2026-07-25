@@ -103,9 +103,9 @@ test('home keeps only the remaining public explanation sections before the priva
     assert.ok(workspaceIndex > featureStoriesIndex);
     assert.ok(workspaceIndex > -1);
     assert.equal(markup.match(/<article class="home-feature-story(?:\s|")/g)?.length, 3);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.png[\s\S]*지도에 핀을 찍듯이 사진을 지도에 직접 올려보세요/);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.png[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
-    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.png[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-map-memory-board\.jpg[\s\S]*지도에 핀을 찍듯이 사진을 지도에 직접 올려보세요/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-travel-replay\.jpg[\s\S]*날짜와 장소를 따라 여행의 흐름을 다시 엮습니다/);
+    assert.match(markup, /class="home-feature-stories"[\s\S]*images\/home-explore-guide\.jpg[\s\S]*지도를 움직이며 사진이 남겨진 장소를 찾아보세요/);
     assert.match(markup, /class="home-feature-story home-feature-story--explore"[\s\S]*장소를 검색하고,[\s\S]*Explore 흐름을 홈에서 먼저 보여줍니다\.[\s\S]*Explore 열기[\s\S]*내 사진 올리기/);
     assert.doesNotMatch(markup, /class="content-band home-explore-guide"/);
     assert.doesNotMatch(markup, /class="editorial-feature editorial-feature--korean"/);
@@ -151,7 +151,7 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
     assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
     assert.doesNotMatch(markup, /home-houses-reference__divider/);
-    assert.match(markup, /class="home-section-divider"[\s\S]*images\/home-section-divider\.png[\s\S]*width="2172"[\s\S]*height="724"/);
+    assert.match(markup, /class="home-section-divider"[\s\S]*images\/home-section-divider\.jpg[\s\S]*width="2172"[\s\S]*height="724"/);
     assert.doesNotMatch(markup, /home-houses-reference__mapline/);
     assert.doesNotMatch(markup, /home-houses-reference__photo--f/);
     assert.doesNotMatch(markup, /France · Paris/);

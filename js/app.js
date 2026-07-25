@@ -521,6 +521,7 @@ function clearUploadQueue() {
 }
 
 function renderRoute(section) {
+    const routeRenderStartedAt = window.performance.now();
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const renderedRoute = getRenderedRoute(normalized);
     const previousRoute = document.body.dataset.page || null;
@@ -552,6 +553,7 @@ function renderRoute(section) {
         ensureExploreMap();
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.body.dataset.routeRenderMs = (window.performance.now() - routeRenderStartedAt).toFixed(2);
 }
 
 function applyRouteHash(hash, options = {}) {
