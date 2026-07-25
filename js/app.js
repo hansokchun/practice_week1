@@ -129,6 +129,11 @@ import {
     canShowPhotoOnPublicMap,
     normalizeLocationPrecision
 } from './photo-location-privacy.mjs';
+import {
+    getLibraryFailureState,
+    getMapUnavailableState,
+    getUploadFailureState
+} from './user-facing-failure-states.mjs';
 
 const state = {
     currentUser: null,
@@ -139,6 +144,10 @@ const state = {
     likedPhotoIds: [],
     hasLoadedSavedPhotos: false,
     hasLoadedMyLikes: false,
+    hasLoadedSavedAlbums: false,
+    savedPhotosLoadError: false,
+    savedAlbumsLoadError: false,
+    myLikesLoadError: false,
     profileNames: {},
     publicProfiles: {},
     lastSavedPhotoIds: [],
@@ -218,6 +227,30 @@ const TURNSTILE_SITE_KEY = window.TRAVELGRAM_TURNSTILE_SITE_KEY || '';
 let turnstileWidgetId = null;
 let turnstileToken = '';
 let turnstileLoadPromise = null;
+
+function renderActionableFailure(copy, action = 'data-retry-saved-library') {
+    return `
+        <article class="empty-state album-empty-state actionable-failure-state" role="status">
+            <div>
+                <strong>${escapeHtml(copy.title)}</strong>
+                <span>${escapeHtml(copy.body)}</span>
+            </div>
+            <button class="btn-secondary" ${action} type="button">${escapeHtml(copy.action)}</button>
+        </article>
+    `;
+}
+
+function renderMapUnavailable(container) {
+    if (!container) return;
+    const copy = getMapUnavailableState();
+    container.innerHTML = `
+        <div class="map-api-warning" role="status">
+            <strong>${escapeHtml(copy.title)}</strong>
+            <span>${escapeHtml(copy.body)}</span>
+            <button class="btn-secondary" data-retry-map type="button">${escapeHtml(copy.action)}</button>
+        </div>
+    `;
+}
 
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -1065,7 +1098,7 @@ async function ensureExploreMap() {
 
     const maps = await loadGoogleMapsApi();
     if (!maps) {
-        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>VITE_GOOGLE_MAPS_API_KEY를 설정하면 Google 지도와 Places 검색이 표시됩니다.</span></div>';
+        renderMapUnavailable(container);
         return null;
     }
 
@@ -1279,7 +1312,7 @@ async function ensureProfileMap() {
 
     const maps = await loadGoogleMapsApi();
     if (!maps) {
-        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 설정이 필요합니다.</strong><span>공개 프로필 지도는 API 키 설정 후 표시됩니다.</span></div>';
+        renderMapUnavailable(container);
         return null;
     }
 
@@ -2654,7 +2687,7 @@ async function renderTripReviewMap(albumPhotos) {
     const maps = await loadGoogleMapsApi();
     if (renderToken !== state.tripReviewMapRenderToken) return;
     if (!maps) {
-        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API 키가 필요합니다.</strong><span>지도 설정이 완료되면 앨범 위치가 표시됩니다.</span></div>';
+        renderMapUnavailable(container);
         setTripReviewMapLoading(false);
         return;
     }
@@ -2997,6 +3030,7 @@ async function loadSavedPhotos({ render = true } = {}) {
     if (error) {
         state.savedPhotos = [];
         state.hasLoadedSavedPhotos = true;
+        state.savedPhotosLoadError = true;
         showToast('저장된 사진을 불러오지 못했습니다.');
         if (render) {
             renderSavedPhotoSurfaces();
@@ -3004,6 +3038,7 @@ async function loadSavedPhotos({ render = true } = {}) {
         }
         return;
     }
+    state.savedPhotosLoadError = false;
     state.savedPhotos = (data || [])
         .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared || photo.visibility === 'public')
         .map(normalizeSavedPhoto);
@@ -3025,10 +3060,12 @@ async function loadMyLikedPhotos({ render = true } = {}) {
     if (error) {
         state.likedPhotoIds = [];
         state.hasLoadedMyLikes = true;
+        state.myLikesLoadError = true;
         showToast('좋아요한 사진을 불러오지 못했습니다.');
         if (render) renderLikedPhotoSurfaces();
         return;
     }
+    state.myLikesLoadError = false;
     state.likedPhotoIds = (data || []).map(String);
     state.hasLoadedMyLikes = true;
     if (render) renderLikedPhotoSurfaces();
@@ -3038,12 +3075,16 @@ async function loadSavedAlbums({ render = true } = {}) {
     const { data, error } = await fetchAlbums();
     if (error) {
         state.savedAlbums = [];
+        state.hasLoadedSavedAlbums = true;
+        state.savedAlbumsLoadError = true;
         if (render) {
             renderSavedPhotoSurfaces();
             renderPublicSurfaces();
         }
         return;
     }
+    state.hasLoadedSavedAlbums = true;
+    state.savedAlbumsLoadError = false;
     state.savedAlbums = (data || [])
         .filter((album) => !state.currentUser || album.owner_id === state.currentUser.id || ['public', 'link'].includes(album.visibility))
         .map(normalizeSavedAlbum);
@@ -3063,6 +3104,18 @@ function loadSavedLibrary() {
         renderPublicSurfaces();
         renderLikedPhotoSurfaces();
     });
+}
+
+async function retrySavedLibrary() {
+    state.hasLoadedSavedPhotos = false;
+    state.hasLoadedMyLikes = false;
+    state.hasLoadedSavedAlbums = false;
+    state.savedPhotosLoadError = false;
+    state.savedAlbumsLoadError = false;
+    state.myLikesLoadError = false;
+    renderSavedPhotoSurfaces();
+    renderLikedPhotoSurfaces();
+    await loadSavedLibrary();
 }
 
 async function loadPublicProfileNames() {
@@ -3092,6 +3145,7 @@ function renderSavedPhotoSurfaces() {
         : [];
     const stats = getMyphotoStats(myPhotos, savedAlbums);
     const recentGrid = $('#recent-photo-grid');
+    const albumList = $('#album-list');
 
     $('#stat-photo-count') && ($('#stat-photo-count').textContent = String(stats.photoCount));
     $('#stat-located-count') && ($('#stat-located-count').textContent = String(stats.locatedCount));
@@ -3110,7 +3164,9 @@ function renderSavedPhotoSurfaces() {
     renderLikedPhotoSurfaces();
 
     if (recentGrid) {
-        recentGrid.innerHTML = isSavedPhotoLoading
+        recentGrid.innerHTML = state.savedPhotosLoadError
+            ? renderActionableFailure(getLibraryFailureState('photos', { online: navigator.onLine }))
+            : isSavedPhotoLoading
             ? `
             <article class="empty-state album-empty-state recent-photo-empty recent-photo-loading">
                 <div>
@@ -3136,7 +3192,18 @@ function renderSavedPhotoSurfaces() {
         `;
     }
 
-    if (state.albumDrafts.length) {
+    if (state.savedAlbumsLoadError && albumList) {
+        albumList.innerHTML = renderActionableFailure(getLibraryFailureState('albums', { online: navigator.onLine }));
+    } else if (state.currentUser && !state.hasLoadedSavedAlbums && albumList) {
+        albumList.innerHTML = `
+            <article class="empty-state album-empty-state recent-photo-loading" role="status">
+                <div>
+                    <strong>앨범을 불러오는 중입니다.</strong>
+                    <span>저장한 여행을 확인하고 있어요.</span>
+                </div>
+            </article>
+        `;
+    } else if (state.albumDrafts.length) {
         renderAlbumDrafts();
     } else if (savedAlbums.length) {
         renderSavedAlbumRows(savedAlbums);
@@ -3162,9 +3229,14 @@ function renderLikedPhotoSurfaces() {
             <button class="btn-secondary" data-route="explore" type="button">Explore 열기</button>
         </article>
     `;
+    const failureMarkup = renderActionableFailure(
+        getLibraryFailureState('likes', { online: navigator.onLine })
+    );
 
     if (compactGrid) {
-        compactGrid.innerHTML = isLikedPhotoLoading
+        compactGrid.innerHTML = state.myLikesLoadError
+            ? failureMarkup
+            : isLikedPhotoLoading
             ? `
             <article class="empty-state album-empty-state recent-photo-empty recent-photo-loading">
                 <div>
@@ -3183,6 +3255,11 @@ function renderLikedPhotoSurfaces() {
     }
 
     if (!fullGrid) {
+        renderAccountNotifications();
+        return;
+    }
+    if (state.myLikesLoadError) {
+        fullGrid.innerHTML = failureMarkup;
         renderAccountNotifications();
         return;
     }
@@ -3217,6 +3294,13 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         deleteButton.hidden = selectedCount === 0;
         deleteButton.disabled = selectedCount === 0;
         deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
+    }
+
+    if (state.savedPhotosLoadError) {
+        grid.innerHTML = renderActionableFailure(
+            getLibraryFailureState('photos', { online: navigator.onLine })
+        );
+        return;
     }
 
     if (!photos.length) {
@@ -4205,8 +4289,9 @@ async function persistStagedPhotos() {
         for (const record of [...saved].reverse()) {
             await deletePhoto(record.id, record.url, record.storage_path);
         }
-        if (status) status.textContent = error.message || '사진 저장에 실패했습니다.';
-        showToast('사진 저장에 실패했습니다. 로컬 초안은 유지됩니다.');
+        const failure = getUploadFailureState({ online: navigator.onLine });
+        if (status) status.textContent = `${failure.title} ${failure.body}`;
+        showToast(failure.title);
     } finally {
         state.isPersistingUpload = false;
         renderStagedPhotos();
@@ -4474,7 +4559,7 @@ async function ensureLocationEditorMap(center) {
     if (!container) return null;
     const maps = await loadGoogleMapsApi();
     if (!maps) {
-        container.innerHTML = '<div class="map-api-warning"><strong>Google Maps API key is required.</strong><span>지도 설정이 완료되면 위치를 직접 확인할 수 있습니다.</span></div>';
+        renderMapUnavailable(container);
         return null;
     }
     const position = { lat: Number(center.lat), lng: Number(center.lng) };
@@ -4800,6 +4885,18 @@ function bindEvents() {
         if (!event.target.closest('.account-notification-shell')) setAccountNotificationsOpen(false);
         if (state.isExplorePhotoScopeMenuOpen && !event.target.closest('.explore-photo-scope')) {
             setExplorePhotoScopeMenuOpen(false);
+        }
+
+        const retryLibraryButton = event.target.closest('[data-retry-saved-library]');
+        if (retryLibraryButton) {
+            retryLibraryButton.disabled = true;
+            await retrySavedLibrary();
+            return;
+        }
+
+        if (event.target.closest('[data-retry-map]')) {
+            window.location.reload();
+            return;
         }
 
         const homePhotoDetailButton = event.target.closest('[data-home-photo-detail]');

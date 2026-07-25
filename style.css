@@ -3567,6 +3567,16 @@ body[data-page="explore"] .site-footer {
     justify-self: center;
 }
 
+.actionable-failure-state {
+    border-style: solid;
+    border-color: rgba(176, 65, 47, 0.24);
+    background: rgba(255, 248, 246, 0.92);
+}
+
+.actionable-failure-state strong {
+    color: #9a3d30;
+}
+
 body.is-logged-in .home-workspace .recent-photo-section,
 body.is-logged-in .home-workspace .dashboard-panel,
 body.is-logged-in .home-workspace .album-panel {
@@ -4862,6 +4872,12 @@ body.is-logged-in .home-workspace .album-row {
     color: var(--teal);
     font-family: var(--headline);
     font-size: 24px;
+}
+
+.map-api-warning button {
+    width: fit-content;
+    justify-self: center;
+    margin-top: 4px;
 }
 
 .map-search {
