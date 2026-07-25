@@ -1,9 +1,83 @@
 # Public Beta Operations Runbook
 
-**Owner:** Project operator (`benet9827@gmail.com`)  
-**Last reviewed:** 2026-07-25
+**Owner:** Project operator (`benet9827@gmail.com`)
+
+**Last reviewed:** 2026-07-26
 
 **Deployment model:** GitHub `dev` -> Cloudflare Pages Preview, explicit `main` -> Cloudflare Pages Production.
+
+## Incident Contacts
+
+- Incident owner and internal escalation: project operator (`benet9827@gmail.com`).
+- User support intake: the public support alias is still a release approval item in `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`. Until it is approved, use the operator address only for internal beta-test reports; do not publish it as the permanent support address.
+- Cloudflare account access: the incident owner account documented in the 2026-07-25 dashboard audit.
+- Supabase project access: project `pqczcponriukilrtpbdl`; use the connected Supabase MCP for read-only log retrieval when the dashboard is unavailable.
+
+Never paste passwords, access tokens, private photo URLs, or raw personal data into GitHub, Notion, chat, screenshots, or incident notes. Record user roles and redacted identifiers only.
+
+## Severity And Response Targets
+
+| Severity | Examples | Acknowledge | First mitigation target |
+| --- | --- | ---: | ---: |
+| `SEV-1` | Private photo or exact-location exposure, destructive data change, all users unable to sign in or load the service | 15 minutes | 30 minutes |
+| `SEV-2` | Upload, Explore, maps, or one auth provider broadly unavailable with a usable fallback | 30 minutes | 2 hours |
+| `SEV-3` | Isolated account, browser, copy, or visual defect without privacy or data risk | Next working session | Next planned `dev` release |
+
+Privacy and data integrity outrank availability. When unsure between two levels, start at the higher severity and downgrade only after evidence rules out exposure or loss.
+
+## First 15 Minutes
+
+1. Record the start time in KST and UTC, reporter, affected URL, branch, commit, account role, browser, and photo visibility. Redact personal data.
+2. Declare `SEV-1`, `SEV-2`, or `SEV-3` and stop unrelated deployments. Do not push to `main` while the incident scope is unknown.
+3. Reproduce once on the affected URL and once in a clean logged-out session when privacy permits. Do not repeatedly retry a write or deletion.
+4. Check [Cloudflare Status](https://www.cloudflarestatus.com/) and [Supabase Status](https://status.supabase.com/), then open the product-specific logs below for the same time window.
+5. Choose the smallest reversible mitigation: revoke publication, disable the affected user action in code, roll back the application, or pause the release.
+6. For `SEV-1`, preserve timestamps and request IDs before changing configuration. Do not delete records or logs to make symptoms disappear.
+7. Post an internal update with severity, scope, mitigation owner, and next update time.
+
+## Log Paths
+
+### Cloudflare Pages
+
+- Build failure: Cloudflare Dashboard -> **Workers & Pages** -> `practice-week1` -> **Deployments > View details > Build log**.
+- Pages Function runtime failure: open the affected production or Preview deployment, then **Deployments > View details > Functions**.
+- CLI live tail for the latest production deployment:
+
+```bash
+npx wrangler pages deployment tail --project-name practice-week1 --environment production --status error
+```
+
+- CLI live tail for the latest Preview deployment:
+
+```bash
+npx wrangler pages deployment tail --project-name practice-week1 --environment preview --status error
+```
+
+Pages Functions logs are a live stream and are not stored by Cloudflare Pages. Start the tail while reproducing `/api/config`; capture only the timestamp, route, status, request ID, and redacted exception needed for the incident record.
+
+### Supabase
+
+Use these dashboard paths for project `pqczcponriukilrtpbdl`:
+
+- API and Data API requests: `https://supabase.com/dashboard/project/pqczcponriukilrtpbdl/logs/edge-logs`
+- Authentication: `https://supabase.com/dashboard/project/pqczcponriukilrtpbdl/logs/auth-logs`
+- Storage upload and retrieval: `https://supabase.com/dashboard/project/pqczcponriukilrtpbdl/logs/storage-logs`
+- Postgres errors and activity: `https://supabase.com/dashboard/project/pqczcponriukilrtpbdl/logs/postgres-logs`
+- Cross-product query surface: `https://supabase.com/dashboard/project/pqczcponriukilrtpbdl/logs-explorer`
+
+The connected Supabase MCP can retrieve the last 24 hours by service (`api`, `auth`, `storage`, or `postgres`) without changing the project. Filter by a narrow incident window and avoid exporting unnecessary headers, IP addresses, emails, or private object paths.
+
+## Triage Matrix
+
+| Symptom | First evidence | First reversible action |
+| --- | --- | --- |
+| Cloudflare build failed | Build log and failed GitHub check | Leave production unchanged; revert or fix the `dev` commit and redeploy Preview. |
+| Blank page or broken static UI | Deployment commit, browser console, response headers | Roll back the production deployment, then reconcile Git using the application procedure below. |
+| `/api/config` or Maps unavailable | Pages Functions live log and environment key names | Roll back the Function change or restore the approved key binding. Never copy the key value into notes. |
+| Sign-in, OAuth, verification, or reset fails | Supabase Auth logs, redirect URL, provider status | Stop auth configuration changes; restore the last approved redirect/provider configuration. |
+| Upload or image retrieval fails | Storage logs, then API and Postgres logs | Preserve the object and `storage_path`; roll back client or policy changes without deleting files. |
+| Empty data, permission denied, or silent update | API and Postgres logs, current RLS policies | Revert the policy migration. Never disable RLS as an emergency shortcut. |
+| Private photo or exact location appears publicly | Logged-out reproduction and affected row/object scope | Treat as `SEV-1`; revoke publication or make affected records private before debugging further. |
 
 ## Service Inventory
 
@@ -96,14 +170,32 @@ Database logical exports include Storage metadata, not the binary objects. Prese
 
 ### Application Rollback
 
-1. Identify the last known-good commit on `main` or `dev`.
-2. Revert the release commit on the relevant branch.
-3. Run tests and build, then push the revert. Cloudflare Pages deploys the previous behavior automatically.
-4. Verify the deployed HTML references the expected release and repeat the affected smoke test.
+For an active production outage, Cloudflare Dashboard rollback is the fastest mitigation:
+
+1. Open **Workers & Pages** -> `practice-week1` -> **Deployments**.
+2. From the last known-good successful production deployment, choose **Rollback to this deployment** and confirm.
+3. Verify Home, `/api/config`, authentication entry, one private-photo owner view, and logged-out Explore.
+4. Preview deployments are not rollback targets. A `dev` Preview failure must be fixed or reverted on `dev`.
+
+Cloudflare rollback changes what is served but does not repair Git history. After service recovery and explicit incident-owner approval, reconcile `main` with a normal revert:
+
+```bash
+git fetch origin
+git switch main
+git pull --ff-only origin main
+git revert <bad-release-sha>
+npm test
+npm run perf:budget
+git push origin main
+```
+
+For a Preview-only regression, use the same flow on `dev`, then verify the new branch Preview. Never rewrite shared history during an incident.
 
 ### Photo Storage Rollback
 
-The signed-URL compatibility work is safe to leave in place. Do not remove `photos.storage_path` during an incident. If a private bucket causes unavailable images, temporarily return `storage.buckets.public` for `photos` to `true`, then investigate signed URL and RLS failures before another private cutover.
+The signed-URL compatibility work is safe to leave in place. Do not remove `photos.storage_path`, delete objects, or rotate paths during an incident. Do not make the photos bucket public as a routine availability fix. Prefer rolling back the client, signed-URL resolver, or Storage policy to the last known-good private-compatible version.
+
+Returning a private bucket to public is an exceptional privacy decision, not a technical shortcut. It requires `SEV-1` review, an inventory of every object that would become reachable, explicit owner approval, and a documented time-limited reversal plan.
 
 ### Location Privacy Rollback
 
@@ -119,10 +211,41 @@ where l.photo_id = p.id;
 
 Use this only with an explicit privacy decision because it restores exact coordinates to publicly readable rows.
 
-## Incident Triage
+## Incident Record Template
 
-1. Confirm the affected branch, deployment URL, browser state, account role, and photo visibility.
-2. Check Supabase API, Auth, Storage, and Postgres logs for the incident window.
-3. Run the Supabase security advisor after every RLS, trigger, or Storage policy change.
-4. Prefer revoking publication or making a photo private before changing application code under pressure.
-5. Write the timeline, mitigation, and follow-up task in Notion before closing the incident.
+```text
+Title:
+Severity:
+Started (KST / UTC):
+Detected by:
+Affected URL, branch, and commit:
+Affected user roles and feature:
+Privacy or data-loss impact:
+Cloudflare evidence:
+Supabase evidence:
+Mitigation and owner:
+Recovery time:
+Verification performed:
+Root cause:
+Follow-up tasks:
+Next update or close time:
+```
+
+Store the record in Notion without credentials, raw logs, private URLs, exact user locations, or unredacted personal data. Link the GitHub commit and Cloudflare deployment instead of pasting full payloads.
+
+## Closeout
+
+1. Verify the repaired path in production or Preview, plus one adjacent path that shares the same auth, Storage, or database dependency.
+2. For privacy incidents, verify owner, another signed-in user, and logged-out access before closure.
+3. Run the Supabase security advisor after every RLS, function, trigger, or Storage policy change.
+4. Confirm Cloudflare and Git point to the intended behavior after any dashboard rollback.
+5. Record the timeline, root cause, user impact, exposure determination, mitigation, and follow-up owner in Notion.
+6. Keep a `SEV-1` or recurring `SEV-2` open until a regression test or monitoring improvement is merged.
+7. Review this runbook after the incident and update stale dashboard paths or commands.
+
+## Authoritative References
+
+- [Cloudflare Pages build logs](https://developers.cloudflare.com/pages/configuration/debugging-pages/)
+- [Cloudflare Pages Functions logs](https://developers.cloudflare.com/pages/functions/debugging-and-logging/)
+- [Cloudflare Pages production rollback](https://developers.cloudflare.com/pages/configuration/rollbacks/)
+- [Supabase product logs and Logs Explorer](https://supabase.com/docs/guides/telemetry/logs)
