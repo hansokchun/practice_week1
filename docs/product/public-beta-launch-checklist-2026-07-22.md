@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 403 passing, 0 failing (2026-07-26) |
+| Automated verification | Passing | `npm test`: 408 passing, 0 failing (2026-07-26) |
 | Production build | Passing | `npm run build` (2026-07-26) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -58,6 +58,7 @@
 - [x] Distinguish saved-library failures from empty states, add retry actions, and replace map/upload backend details with safe user-facing guidance.
 - [x] Add enforceable JS, CSS, and image budgets; remove 8 MB of unused PNG build output; and record mobile route-render timing.
 - [x] Consolidate incident ownership, severity, Cloudflare/Supabase log paths, reversible rollback, privacy safeguards, and closeout evidence into one runbook.
+- [x] Define five privacy-conscious beta metrics using existing first-party aggregate records, with seven-day cohorts and small-group suppression.
 
 ### P1: Public Beta Readiness
 
@@ -65,7 +66,7 @@
 - [x] Make empty, loading, map-key, network, and upload-failure states actionable and non-sensitive.
 - [x] Measure mobile loading and route transitions; set an image-size and loading budget. See `docs/performance/mobile-performance-budget-2026-07-26.md`.
 - [x] Write a single incident runbook with Cloudflare/Supabase log paths, support contact, and rollback procedure.
-- [ ] Define privacy-conscious beta metrics: sign-up, first upload, first album, first publish, and Explore engagement.
+- [x] Define privacy-conscious beta metrics: sign-up, first upload, first album, first publish, and Explore engagement.
 - [ ] Rehearse the production deployment, smoke test, and rollback path before public traffic.
 
 ### P2: After Public Beta Opens
@@ -122,6 +123,7 @@ Local tests and build
 - `docs/product/storage-private-transition-plan-2026-06-05.md`
 - `docs/product/operating-cost-estimate-2026-06-05.md`
 - `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`
+- `docs/product/public-beta-metrics-2026-07-26.md`
 - `docs/qa/photo-lifecycle-preview-qa-2026-07-25.md`
 - `docs/performance/mobile-performance-budget-2026-07-26.md`
 - `docs/cloudflare.md`
