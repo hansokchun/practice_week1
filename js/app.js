@@ -109,6 +109,7 @@ import {
     getEmbeddedOAuthBrowserMessage,
     isLikelyEmbeddedOAuthBrowser
 } from './mobile-oauth-browser.mjs';
+import { getOAuthRedirectUrl } from './oauth-redirect-url.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import {
@@ -4769,7 +4770,8 @@ async function handleSignup() {
     if (!email || !password) return;
     if (message) message.textContent = '\uAC00\uC785 \uC911\uC785\uB2C8\uB2E4...';
     const { error } = await signUpWithEmail(email, password, {
-        captchaToken: getTurnstileToken()
+        captchaToken: getTurnstileToken(),
+        redirectTo: getOAuthRedirectUrl(window.location)
     });
     resetTurnstile();
     if (error) {
@@ -4791,7 +4793,7 @@ async function handlePasswordReset() {
     if (message) message.textContent = '\uBE44\uBC00\uBC88\uD638 \uC7AC\uC124\uC815 \uBA54\uC77C\uC744 \uBCF4\uB0B4\uB294 \uC911\uC785\uB2C8\uB2E4...';
     const { error } = await resetPasswordForEmail(email, {
         captchaToken: getTurnstileToken(),
-        redirectTo: window.location.origin
+        redirectTo: getOAuthRedirectUrl(window.location)
     });
     resetTurnstile();
     if (error) {

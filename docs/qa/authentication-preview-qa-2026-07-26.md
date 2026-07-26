@@ -1,0 +1,66 @@
+# Ikkyee Authentication Preview QA
+
+**Date:** 2026-07-26  
+**Environment:** `https://dev.practice-week1-cws.pages.dev`  
+**Status:** Partial pass; real-device launch gate remains open
+
+## Scope And Boundary
+
+This pass used an existing Chrome desktop browser session and a separate 390 x 844 responsive viewport. The responsive check is not a physical iOS or Android device. No password, verification code, OAuth consent, CAPTCHA, or private credential was entered or recorded.
+
+The pass verifies authentication entry, redirects to provider-owned login hosts, responsive modal fit, logout, and dashboard configuration. It does not claim end-to-end signup or social-login completion.
+
+## Browser Results
+
+| Scenario | Surface | Result | Evidence |
+| --- | --- | --- | --- |
+| Existing-session logout | Chrome desktop | Pass | Own profile opened, logout completed, Home returned to logged-out state, and confirmation status appeared |
+| Login modal | Chrome desktop | Pass | Google, Kakao, and email choices rendered |
+| Email login form | Chrome desktop | Pass | Email, password, login, signup switch, and reset controls rendered |
+| Empty reset validation | Chrome desktop | Pass | User received a safe prompt to enter the reset email |
+| Signup mode | Chrome desktop | Pass | Title and submit control changed to signup; login return control appeared |
+| Google OAuth initiation | Chrome desktop | Pass | Navigation reached `accounts.google.com`; account choice and consent were not completed |
+| Kakao OAuth initiation | Chrome desktop | Pass with scope finding | Navigation reached `accounts.kakao.com`; account login and consent were not completed |
+| Responsive login modal | 390 x 844 responsive viewport | Pass | Modal stayed within 12 px side margins with no horizontal overflow; all three login choices were visible |
+
+## Kakao Scope Finding
+
+The deployed client appended `profile_nickname profile_image`, but Supabase Auth already supplies its built-in Kakao defaults. The observed request therefore contained duplicate profile scopes and `account_email`.
+
+Supabase Auth currently hardcodes `account_email`, `profile_image`, and `profile_nickname` for its built-in Kakao provider, then appends any client-supplied scopes. The client fix removes its custom `scopes` option, eliminating duplicates while preserving the provider's supported default flow.
+
+This does not remove `account_email` from the built-in Supabase Kakao request. The Supabase dashboard already has **Allow users without an email** enabled, so Kakao can still authenticate when no email is returned. Removing the email request entirely would require a separately reviewed Kakao ID-token/custom-provider architecture rather than a client scope option.
+
+References:
+
+- [Supabase Kakao login guide](https://supabase.com/docs/guides/auth/social-login/auth-kakao)
+- [Supabase Auth Kakao provider source](https://github.com/supabase/auth/blob/master/internal/api/provider/kakao.go)
+- [Kakao authorization scope behavior](https://developers.kakao.com/docs/en/kakaologin/rest-api)
+
+## Supabase Dashboard Audit
+
+Read-only inspection confirmed:
+
+- New user signups are enabled.
+- Confirm email is enabled.
+- Email, Google, and Kakao providers are enabled.
+- Kakao **Allow users without an email** is enabled.
+- Redirect allow list contains the `dev` branch URL and the Production Pages URL.
+- The default Site URL is still `http://localhost:3000`.
+
+No provider key or secret was copied into this document, repository, Notion, or chat.
+
+The localhost Site URL remains an operator configuration blocker because it is Supabase's fallback and email-template base. The client now explicitly supplies the normalized branch or Production redirect for signup and password reset, preventing those app flows from relying on the fallback. The dashboard Site URL should still be changed to the Production Pages origin after explicit approval.
+
+## Remaining End-To-End Checks
+
+- Create a fresh email account, complete actual email receipt and confirmation link handling, then sign in.
+- Request an actual password-reset email and recovery link, confirm the recovery session, and stop before the final password change unless separately approved.
+- Complete final Google and Kakao consent and verify return to the intended branch alias.
+- Repeat signup, reset, Google OAuth, Kakao OAuth, and logout on physical iOS Safari.
+- Repeat the same flows on physical Android Chrome.
+- Confirm OAuth initiated inside an embedded mobile browser shows or follows the expected safe handoff behavior.
+
+## Launch Decision
+
+The browser-verifiable portion passes after the redirect and duplicate-scope fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.

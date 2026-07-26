@@ -62,7 +62,10 @@ test('email signup waits for verification instead of opening the app as a logged
     const end = appSource.indexOf('async function handlePasswordReset', start);
     const body = appSource.slice(start, end);
 
-    assert.match(body, /await signUpWithEmail\(email, password, \{\s*captchaToken:\s*getTurnstileToken\(\)\s*\}\)/s);
+    assert.match(
+        body,
+        /await signUpWithEmail\(email, password, \{\s*captchaToken:\s*getTurnstileToken\(\),\s*redirectTo:\s*getOAuthRedirectUrl\(window\.location\)\s*\}\)/s
+    );
     assert.doesNotMatch(body, /state\.currentUser\s*=\s*user/);
     assert.match(body, /const verificationMessage = '\\uC774\\uBA54\\uC77C \\uC778\\uC99D \\uB9C1\\uD06C\\uB97C/);
     assert.match(body, /showToast\(verificationMessage\)/);

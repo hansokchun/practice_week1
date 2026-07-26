@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 413 passing, 0 failing (2026-07-26) |
+| Automated verification | Passing | `npm test`: 417 passing, 0 failing (2026-07-26) |
 | Production build | Passing | `npm run build` (2026-07-26) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -28,6 +28,7 @@
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
+| Authentication QA | Partial, P0 open | Desktop logout, auth entry, provider initiation, and a 390 x 844 responsive pass are recorded; physical devices, email links, final OAuth consent, and the dashboard Site URL remain |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
 | Database backup/PITR | Helper implemented, live export pending | Automatic backups and PITR are unavailable; `npm run backup:db` creates an encrypted roles/schema/data export outside the repository. `npm run backup:check` confirms Docker is still missing. |
@@ -60,6 +61,7 @@
 - [x] Consolidate incident ownership, severity, Cloudflare/Supabase log paths, reversible rollback, privacy safeguards, and closeout evidence into one runbook.
 - [x] Define five privacy-conscious beta metrics using existing first-party aggregate records, with seven-day cohorts and small-group suppression.
 - [x] Rehearse the non-production release gate, deployed-shell smoke checks, and reversible rollback sequence.
+- [x] Normalize email confirmation/reset redirects and remove duplicate Kakao scopes found during Preview authentication QA.
 
 ### P1: Public Beta Readiness
 
@@ -126,6 +128,7 @@ Local tests and build
 - `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`
 - `docs/product/public-beta-metrics-2026-07-26.md`
 - `docs/qa/photo-lifecycle-preview-qa-2026-07-25.md`
+- `docs/qa/authentication-preview-qa-2026-07-26.md`
 - `docs/performance/mobile-performance-budget-2026-07-26.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`
