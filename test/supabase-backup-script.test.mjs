@@ -37,7 +37,9 @@ test('Backup runbook separates database exports from Storage object recovery', (
   assert.match(runbook, /npm run backup:check/);
   assert.match(runbook, /npm run backup:db/);
   assert.match(runbook, /Colima `0\.10\.3`/);
-  assert.match(runbook, /first encrypted export still requires the operator/i);
+  assert.match(runbook, /First Encrypted Export Record/);
+  assert.match(runbook, /checksum `OK`/);
+  assert.match(runbook, /owner-only `600` permissions/);
   assert.match(runbook, /Database logical exports include Storage metadata, not the binary objects/);
   assert.match(runbook, /disposable Supabase project/);
 });

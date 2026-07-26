@@ -96,7 +96,7 @@ The connected Supabase MCP can retrieve the last 24 hours by service (`api`, `au
 - Production has encrypted `GOOGLE_MAPS_API_KEY` and `VITE_GOOGLE_MAPS_API_KEY` entries. These are browser-visible in application use even though Cloudflare stores them as encrypted values.
 - The unused encrypted `SUPABASE_JWT_SECRET` was removed from both Production and Preview after repository-wide usage checks. Its value was not inspected.
 - Unused R2 binding `MY_BUCKET` was removed from Production. The `my-photos-storage` bucket itself was not changed or deleted.
-- `npm run backup:check` still fails because Docker is not installed. The first encrypted export and disposable-project restore rehearsal remain incomplete.
+- The local Colima/Docker prerequisite check and first encrypted export are complete. The disposable-project restore rehearsal remains incomplete.
 
 ## Runtime Values
 
@@ -146,7 +146,7 @@ Run the prerequisite check:
 npm run backup:check
 ```
 
-The prerequisite check passed on 2026-07-26 with Colima `0.10.3`, Lima `2.2.0`, Docker CLI `29.6.2`, and Supabase CLI `2.109.1`. The first encrypted export still requires the operator to enter the database connection string and a new archive passphrase through the private terminal prompts.
+The prerequisite check passed on 2026-07-26 with Colima `0.10.3`, Lima `2.2.0`, Docker CLI `29.6.2`, and Supabase CLI `2.109.1`.
 
 Run an interactive encrypted export:
 
@@ -155,6 +155,15 @@ npm run backup:db
 ```
 
 The script privately prompts for the database connection string and archive passphrase, so neither value is written to shell history. It verifies that all three SQL files are non-empty, decrypts the final archive into a temporary file, and validates its tar contents. Only the `.tar.gz.enc` and `.sha256` files remain.
+
+### First Encrypted Export Record
+
+- Created: `2026-07-26 14:59 KST` (`2026-07-26T05:59Z`)
+- Archive: `~/Backups/ikkyee/ikkyee-supabase-20260726T055809Z.tar.gz.enc`
+- SHA-256: `a4de44a24ce6ad0c7cd7aa005d29a9cf520b107e25dd03b673ec5634c26560ad`
+- Verification: checksum `OK`; encrypted archive and checksum file both use owner-only `600` permissions
+- Secrets: the database URL and archive passphrase were not recorded in the repository, Notion, or chat
+- Remaining: restore the archive into a disposable Supabase project and compare schema, policies, and safe aggregate counts
 
 ### Restore Rehearsal
 
