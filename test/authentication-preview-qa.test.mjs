@@ -30,10 +30,11 @@ test('authentication QA record distinguishes browser checks from real-device com
     assert.match(source, /accounts\.kakao\.com/);
 });
 
-test('authentication QA records the remaining external and dashboard blockers', () => {
+test('authentication QA records the completed dashboard fix and remaining external checks', () => {
     const source = qaRecord();
 
-    assert.match(source, /Site URL.*localhost:3000/i);
+    assert.match(source, /Site URL.*https:\/\/practice-week1-cws\.pages\.dev/i);
+    assert.doesNotMatch(source, /Site URL.*still.*localhost:3000/i);
     assert.match(source, /email receipt and confirmation link/i);
     assert.match(source, /password-reset email and recovery link/i);
     assert.match(source, /final Google and Kakao consent/i);

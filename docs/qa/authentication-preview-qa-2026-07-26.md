@@ -46,11 +46,11 @@ Read-only inspection confirmed:
 - Email, Google, and Kakao providers are enabled.
 - Kakao **Allow users without an email** is enabled.
 - Redirect allow list contains the `dev` branch URL and the Production Pages URL.
-- The default Site URL is still `http://localhost:3000`.
+- The default Site URL was changed from localhost to `https://practice-week1-cws.pages.dev` after explicit approval.
 
 No provider key or secret was copied into this document, repository, Notion, or chat.
 
-The localhost Site URL remains an operator configuration blocker because it is Supabase's fallback and email-template base. The client now explicitly supplies the normalized branch or Production redirect for signup and password reset, preventing those app flows from relying on the fallback. The dashboard Site URL should still be changed to the Production Pages origin after explicit approval.
+Supabase confirmed the Site URL update with a success notification, and a fresh dashboard read showed the Production Pages origin. This removes the localhost fallback for email templates and unmatched redirects. The client also explicitly supplies the normalized branch or Production redirect for signup and password reset.
 
 ## Remaining End-To-End Checks
 
