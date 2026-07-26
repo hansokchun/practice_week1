@@ -18,13 +18,13 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 417 passing, 0 failing (2026-07-26) |
+| Automated verification | Passing | `npm test`: 418 passing, 0 failing (2026-07-26) |
 | Production build | Passing | `npm run build` (2026-07-26) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Cutover blocked by production release | `dev` is signed-URL compatible, but `origin/main` still uses public URLs and is 443 commits behind `origin/dev` as of 2026-07-25. The shared bucket must remain public until an explicitly approved `main` release. |
-| Public location privacy | Implemented, QA pending | Location precision and owner-only source coordinates are implemented; public/owner/logged-out validation remains |
+| Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
@@ -62,6 +62,7 @@
 - [x] Define five privacy-conscious beta metrics using existing first-party aggregate records, with seven-day cohorts and small-group suppression.
 - [x] Rehearse the non-production release gate, deployed-shell smoke checks, and reversible rollback sequence.
 - [x] Normalize email confirmation/reset redirects and remove duplicate Kakao scopes found during Preview authentication QA.
+- [x] Verify public location privacy with owner, non-owner, and anonymous database roles without exposing coordinates or user identifiers.
 
 ### P1: Public Beta Readiness
 
@@ -129,6 +130,7 @@ Local tests and build
 - `docs/product/public-beta-metrics-2026-07-26.md`
 - `docs/qa/photo-lifecycle-preview-qa-2026-07-25.md`
 - `docs/qa/authentication-preview-qa-2026-07-26.md`
+- `docs/qa/public-location-privacy-role-qa-2026-07-26.md`
 - `docs/performance/mobile-performance-budget-2026-07-26.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`
