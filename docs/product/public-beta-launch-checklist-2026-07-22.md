@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 418 passing, 0 failing (2026-07-26) |
+| Automated verification | Passing | `npm test`: 420 passing, 0 failing (2026-07-26) |
 | Production build | Passing | `npm run build` (2026-07-26) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
@@ -31,7 +31,7 @@
 | Authentication QA | Partial, P0 open | Desktop logout, auth entry, provider initiation, and a 390 x 844 responsive pass are recorded; Supabase Site URL now uses Production Pages, while physical devices, email links, and final OAuth consent remain |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
-| Database backup/PITR | First encrypted export verified | Automatic backups and PITR are unavailable; the 2026-07-26 encrypted roles/schema/data export is stored outside the repository with a verified SHA-256 record and owner-only permissions. Disposable-project restore rehearsal remains. |
+| Database backup/PITR | Export and schema baseline verified | Automatic backups and PITR are unavailable; the 2026-07-26 encrypted roles/schema/data export is stored outside the repository with a verified SHA-256 record and owner-only permissions. A data-free live schema baseline now captures 7 tables, 24 policies, and all current RLS state. Disposable-project restore rehearsal remains. |
 
 ## Launch Gates
 
@@ -46,7 +46,7 @@
 - [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user. Role-level checks pass; the final browser regression must follow the private-bucket cutover.
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
-- [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. Cloudflare settings, unused-secret cleanup, and the first encrypted backup are complete; the disposable-project restore rehearsal remains.
+- [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. Cloudflare settings, unused-secret cleanup, the first encrypted backup, and the live schema baseline are complete; the disposable-project restore rehearsal remains.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
 - [x] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
@@ -63,6 +63,7 @@
 - [x] Rehearse the non-production release gate, deployed-shell smoke checks, and reversible rollback sequence.
 - [x] Normalize email confirmation/reset redirects and remove duplicate Kakao scopes found during Preview authentication QA.
 - [x] Verify public location privacy with owner, non-owner, and anonymous database roles without exposing coordinates or user identifiers.
+- [x] Capture and automatically validate a secret-free, data-free live Supabase schema baseline for disaster recovery.
 
 ### P1: Public Beta Readiness
 

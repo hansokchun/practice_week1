@@ -177,6 +177,26 @@ Never restore a logical export over the active production project as a test. Cre
 
 Database logical exports include Storage metadata, not the binary objects. Preserve and inventory the `photos` bucket separately before destructive Storage work.
 
+### Live Schema Baseline
+
+The repository migration history does not yet contain every table, function, trigger, grant, and RLS policy that exists in the live project. Capture a data-free baseline before the disposable-project restore rehearsal:
+
+```bash
+npm run schema:pull
+```
+
+The command privately prompts for the percent-encoded Session pooler DB URL, runs the pinned Supabase CLI schema dump, rejects possible connection strings or secrets, and writes `supabase/schema.sql` with no table rows. Review and commit that generated schema. Do not treat the baseline as a replacement for small forward migrations; use it to reconstruct the current starting point in a fresh project.
+
+Baseline record:
+
+- Captured: `2026-07-26`
+- Generator: Supabase CLI `2.109.1`
+- Repository artifact: `supabase/schema.sql`
+- Inventory: 7 tables, 4 functions, 24 RLS policies, 1 trigger, and 7 RLS-enabled tables
+- Validation: no table-row `COPY`/`INSERT` statements, database URLs, JWTs, or Supabase secret-key patterns detected
+- Privacy control: the location publication trigger and owner-only private-location policies are present; `apply_photo_location_privacy()` is revoked from `PUBLIC`
+- Remaining: apply the encrypted backup and this baseline in a disposable project, then compare schema, policies, and safe aggregate counts
+
 ## Rollback
 
 ### Application Rollback

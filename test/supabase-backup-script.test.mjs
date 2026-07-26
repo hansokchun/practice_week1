@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const script = readFileSync('scripts/backup-supabase.sh', 'utf8');
+const schemaPullScript = readFileSync('scripts/pull-supabase-schema.sh', 'utf8');
+const schemaBaseline = readFileSync('supabase/schema.sql', 'utf8');
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const runbook = readFileSync(
   'docs/operations/public-beta-operations-runbook-2026-07-22.md',
@@ -19,6 +21,55 @@ test('Supabase backup commands expose a prerequisite check and encrypted export'
     'bash scripts/backup-supabase.sh'
   );
   assert.match(script, /export PATH="\$HOME\/\.local\/bin:\$PATH"/);
+});
+
+test('Supabase schema pull creates a secret-free reproducible baseline', () => {
+  assert.equal(
+    packageJson.scripts['schema:pull'],
+    'bash scripts/pull-supabase-schema.sh'
+  );
+  assert.match(schemaPullScript, /read -r -s -p "Supabase DB URL: "/);
+  assert.match(schemaPullScript, /db dump/);
+  assert.match(schemaPullScript, /supabase\/schema\.sql/);
+  assert.match(schemaPullScript, /postgresql:\/\/|postgres:\/\//);
+  assert.match(schemaPullScript, /service_role/);
+  assert.match(schemaPullScript, /chmod 644/);
+  assert.match(schemaPullScript, /unset SUPABASE_DB_URL/);
+});
+
+test('Supabase schema baseline preserves privacy controls without rows or secrets', () => {
+  assert.match(schemaBaseline, /^-- Ikkyee live Supabase schema baseline\./);
+  assert.match(
+    schemaBaseline,
+    /CREATE TABLE IF NOT EXISTS "public"\."photos"/
+  );
+  assert.match(
+    schemaBaseline,
+    /CREATE TABLE IF NOT EXISTS "public"\."photo_private_locations"/
+  );
+  assert.match(
+    schemaBaseline,
+    /CREATE OR REPLACE FUNCTION "public"\."apply_photo_location_privacy"\(\) RETURNS "trigger"/
+  );
+  assert.match(
+    schemaBaseline,
+    /CREATE OR REPLACE TRIGGER "photos_apply_location_privacy"/
+  );
+  assert.match(
+    schemaBaseline,
+    /ALTER TABLE "public"\."photo_private_locations" ENABLE ROW LEVEL SECURITY;/
+  );
+  assert.match(
+    schemaBaseline,
+    /CREATE POLICY "photos_select_owner_or_visible"/
+  );
+  assert.match(
+    schemaBaseline,
+    /REVOKE ALL ON FUNCTION "public"\."apply_photo_location_privacy"\(\) FROM PUBLIC;/
+  );
+  assert.doesNotMatch(schemaBaseline, /^(?:COPY|INSERT INTO)\s/im);
+  assert.doesNotMatch(schemaBaseline, /postgres(?:ql)?:\/\//i);
+  assert.doesNotMatch(schemaBaseline, /(?:sb_secret_|eyJ[A-Za-z0-9_-]{20,})/);
 });
 
 test('Supabase backup keeps raw dumps temporary and encrypts the retained archive', () => {
