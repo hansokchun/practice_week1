@@ -31,7 +31,7 @@
 | Authentication QA | Partial, P0 open | Desktop logout, auth entry, provider initiation, and a 390 x 844 responsive pass are recorded; Supabase Site URL now uses Production Pages, while physical devices, email links, and final OAuth consent remain |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
-| Database backup/PITR | Helper implemented, live export pending | Automatic backups and PITR are unavailable; `npm run backup:db` creates an encrypted roles/schema/data export outside the repository. `npm run backup:check` confirms Docker is still missing. |
+| Database backup/PITR | Runtime ready, live export pending | Automatic backups and PITR are unavailable; user-local Colima/Docker and Supabase CLI prerequisites now pass. `npm run backup:db` creates an encrypted roles/schema/data export outside the repository after private operator credential entry. |
 
 ## Launch Gates
 
@@ -46,7 +46,7 @@
 - [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
 - [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user. Role-level checks pass; the final browser regression must follow the private-bucket cutover.
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
-- [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. Cloudflare settings and unused-secret cleanup are complete; the first encrypted backup/restore rehearsal remains.
+- [ ] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard. Cloudflare settings, unused-secret cleanup, and the local backup runtime are complete; the first encrypted backup/restore rehearsal remains.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
 - [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
 - [x] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
@@ -115,7 +115,7 @@ Local tests and build
 ## First Execution Order
 
 1. Explicitly approve and deploy the signed-URL-compatible `dev` release to `main`, then make the shared `photos` bucket private and finish the three-account browser regression.
-2. Install/start Docker, run and record the first Free-plan encrypted export, then rehearse recovery against a disposable project before the next production data change. The export helper and procedure are implemented.
+2. Run and record the first Free-plan encrypted export using the ready Colima runtime, then rehearse recovery against a disposable project before the next production data change. The export helper, tooling, and procedure are implemented.
 3. Execute the account QA script in Cloudflare Preview. Photo lifecycle and Explore QA are complete.
 4. Prepare the operating and legal copy, then run the production rehearsal.
 5. Revisit leaked-password protection only when the Supabase plan is upgraded.

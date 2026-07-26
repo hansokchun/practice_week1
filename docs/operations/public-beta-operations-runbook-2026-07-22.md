@@ -135,7 +135,7 @@ The helper uses the official Supabase CLI `db dump` flow for roles, schema, and 
 
 Prerequisites:
 
-1. Install and start Docker Desktop. The Supabase CLI runs its compatible `pg_dump` image through Docker.
+1. Install and start a Docker-compatible runtime. This Mac uses user-local Colima, Lima, and Docker CLI binaries under `~/.local/bin`; run `~/.local/bin/colima start` when the runtime is stopped. Docker Desktop is also supported. The Supabase CLI runs its compatible `pg_dump` image through Docker.
 2. In Supabase Dashboard, open **Connect** and copy the percent-encoded session-pooler database connection string. Do not save it in the repository or shell history.
 3. Choose a backup destination outside the repository. The default is `~/Backups/ikkyee`.
 4. Use an encryption passphrase of at least 16 characters and store it separately from the archive.
@@ -145,6 +145,8 @@ Run the prerequisite check:
 ```bash
 npm run backup:check
 ```
+
+The prerequisite check passed on 2026-07-26 with Colima `0.10.3`, Lima `2.2.0`, Docker CLI `29.6.2`, and Supabase CLI `2.109.1`. The first encrypted export still requires the operator to enter the database connection string and a new archive passphrase through the private terminal prompts.
 
 Run an interactive encrypted export:
 

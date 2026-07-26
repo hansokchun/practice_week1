@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+export PATH="$HOME/.local/bin:$PATH"
+
 PROJECT_REF="${SUPABASE_PROJECT_REF:-pqczcponriukilrtpbdl}"
 CLI_VERSION="2.109.1"
 BACKUP_DIR="${IKKYEE_BACKUP_DIR:-$HOME/Backups/ikkyee}"

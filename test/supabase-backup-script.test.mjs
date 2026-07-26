@@ -18,6 +18,7 @@ test('Supabase backup commands expose a prerequisite check and encrypted export'
     packageJson.scripts['backup:db'],
     'bash scripts/backup-supabase.sh'
   );
+  assert.match(script, /export PATH="\$HOME\/\.local\/bin:\$PATH"/);
 });
 
 test('Supabase backup keeps raw dumps temporary and encrypts the retained archive', () => {
@@ -35,6 +36,8 @@ test('Supabase backup keeps raw dumps temporary and encrypts the retained archiv
 test('Backup runbook separates database exports from Storage object recovery', () => {
   assert.match(runbook, /npm run backup:check/);
   assert.match(runbook, /npm run backup:db/);
+  assert.match(runbook, /Colima `0\.10\.3`/);
+  assert.match(runbook, /first encrypted export still requires the operator/i);
   assert.match(runbook, /Database logical exports include Storage metadata, not the binary objects/);
   assert.match(runbook, /disposable Supabase project/);
 });
