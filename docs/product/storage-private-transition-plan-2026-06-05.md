@@ -24,12 +24,20 @@ Project: Travelgram / Ikkyee
 - New photo uploads persist `storage_path` and delete operations prefer that stored path.
 - The `photos` bucket is deliberately still public during the compatibility rollout. Setting it private before the signed-URL build reaches `main` would break the currently deployed production app.
 
+## Data Preservation Decision: 2026-07-27
+
+The current photos, albums, likes, comments, locations, and Storage objects are pre-launch sample content. They may be deleted if retaining or repairing them would slow the private-bucket cutover. Auth accounts, schemas, policies, secrets, and deployment configuration are outside this deletion scope.
+
+The cutover no longer requires object-by-object preservation of the 21 existing sample rows. The preferred path is to delete the current sample content when useful, make the `photos` bucket private, and create fresh minimal three-account QA fixtures for final verification.
+
 ### Remaining Production Cutover
 
-1. Verify the `dev` Preview with an owner account, another signed-in account, and a logged-out browser.
-2. Deploy the signed-URL build to `main` after explicit release approval.
-3. Change `storage.buckets.public` for `photos` to `false`.
-4. Re-run the access checks: owners can see private photos, logged-out users can see public photos, and direct legacy public URLs fail.
+1. Deploy the signed-URL build to `main` after explicit release approval.
+2. Delete the current sample content and Storage objects if they add migration or QA work.
+3. Make the `photos` bucket private.
+4. Create fresh minimal three-account QA fixtures for an owner, another signed-in account, and a logged-out browser.
+5. Verify that owners can see private photos, non-owners and logged-out users cannot resolve private files, logged-out users can see the new public fixture in Explore, and direct legacy public URLs fail.
+6. Remove temporary fixtures after recording the evidence.
 
 ## Goal
 
@@ -138,4 +146,4 @@ After QA:
 
 ## Recommendation
 
-Do not switch the bucket to private immediately. First add `storage_path`, signed URL resolution, and compatibility rendering. Once all image surfaces work with signed URLs, then change the bucket privacy.
+The compatibility implementation is complete on `dev`. After explicit `main` release approval, use the sample-data reset decision to avoid preserving disposable content, make the bucket private, and verify the final access boundary with a minimal fresh fixture set.

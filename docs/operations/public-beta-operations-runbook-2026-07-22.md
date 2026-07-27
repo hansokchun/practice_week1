@@ -125,7 +125,7 @@ Unused secrets should not remain attached to Pages. Confirm that no deployed Fun
 
 1. On the current Supabase Free plan, automatic database backups and PITR are unavailable. Before a production schema or Storage policy change, create a local encrypted logical export with `npm run backup:db` and record its timestamp, SHA-256 checksum, and secure storage location in Notion. Do not commit the export or its credentials.
 2. After a Supabase paid-plan upgrade, replace the manual export gate with the dashboard backup or PITR flow and record the available restore point.
-3. For the `photos` bucket, keep the Storage object inventory and database `photos.storage_path` rows intact. Do not delete original objects during a privacy rollout.
+3. Preserve real user Storage objects and `photos.storage_path` rows during normal migrations. The current pre-launch sample content is explicitly disposable and may be reset under the policy below.
 4. Export no authentication credentials, access tokens, or private image URLs into project documentation.
 5. For a data incident, first make affected photos private, then verify Storage object access before deleting any data.
 
@@ -201,6 +201,16 @@ For a hosted rehearsal, create a separate Supabase project only after reviewing 
 5. Delete the temporary plaintext files and disposable project after the rehearsal record is complete.
 
 Database logical exports include Storage metadata, not the binary objects. Preserve and inventory the `photos` bucket separately before destructive Storage work.
+
+### Pre-Launch Sample Data Reset
+
+The current pre-launch photos, albums, likes, comments, locations, and `photos` bucket objects are sample content and may be deleted when preservation would slow the private Storage cutover. This is a planned reset exception, not an incident-response shortcut.
+
+- Do not spend time repairing or migrating individual sample objects.
+- Keep schemas, RLS and Storage policies, environment variables, OAuth settings, Auth accounts, and encrypted backups unless a separate operation explicitly targets them.
+- After reset, create only the minimum owner, non-owner, and logged-out QA fixtures required to verify private and public access.
+- Once real beta users are admitted, this exception ends and normal preservation, backup, retention, and incident rules apply.
+- The full decision is recorded in `docs/product/sample-data-reset-decision-2026-07-27.md`.
 
 ### Live Schema Baseline
 

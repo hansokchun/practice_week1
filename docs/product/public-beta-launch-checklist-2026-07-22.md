@@ -1,6 +1,6 @@
 # Ikkyee Public Beta Launch Checklist
 
-**Updated:** 2026-07-26
+**Updated:** 2026-07-27
 
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
@@ -18,12 +18,12 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 421 passing, 0 failing (2026-07-27) |
+| Automated verification | Passing | `npm test`: 423 passing, 0 failing (2026-07-27) |
 | Production build | Passing | `npm run build` (2026-07-27) |
 | Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
-| Photo storage privacy | Cutover blocked by production release | `dev` is signed-URL compatible, but `origin/main` still uses public URLs and is 443 commits behind `origin/dev` as of 2026-07-25. The shared bucket must remain public until an explicitly approved `main` release. |
+| Photo storage privacy | Cutover blocked by production release | `dev` is signed-URL compatible, but the shared bucket must remain public until an explicitly approved `main` release. Existing sample content may be deleted instead of migrated or repaired during the cutover. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
@@ -42,9 +42,9 @@
 - [x] Backfill `photos.storage_path` for existing images while retaining compatibility with existing `url` values.
 - [x] Add an RLS-controlled 15-minute signed URL resolver without exposing privileged credentials.
 - [x] Move upload, image rendering, and deletion flows to the private-storage-compatible model.
-- [ ] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible. Pre-cutover RLS and signed-URL checks pass; direct private URLs remain reachable while the shared bucket is public.
+- [ ] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible. Existing sample content may be deleted instead of migrated; run the final check with fresh minimal fixtures after the bucket becomes private.
 - [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
-- [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user. Role-level checks pass; the final browser regression must follow the private-bucket cutover.
+- [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user. Create only the minimum three-account QA fixtures after the private-bucket cutover; do not preserve the current sample library for this test.
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
 - [x] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
@@ -65,6 +65,7 @@
 - [x] Verify public location privacy with owner, non-owner, and anonymous database roles without exposing coordinates or user identifiers.
 - [x] Capture and automatically validate a secret-free, data-free live Supabase schema baseline for disaster recovery.
 - [x] Restore the encrypted backup transactionally in an isolated local Supabase database and verify schema, RLS, policies, triggers, safe aggregates, and cleanup.
+- [x] Classify all current pre-launch content as disposable sample data so Storage cutover work can use a clean reset and minimal fresh QA fixtures.
 
 ### P1: Public Beta Readiness
 
@@ -91,9 +92,9 @@
 
 ### Private Archive
 
-1. Upload a GPS image and confirm map placement.
-2. Upload an image without GPS, choose a point on the map, and save it.
-3. Add photos to an album, edit a description, change visibility, delete a photo, then refresh.
+1. After any sample reset, upload one fresh GPS image and confirm map placement.
+2. Upload one fresh image without GPS, choose a point on the map, and save it.
+3. Add only the required fixtures to an album, edit a description, change visibility, delete a photo, then refresh.
 4. Confirm a second account and a logged-out browser cannot view private records or image files.
 
 ### Public Exploration
@@ -117,16 +118,18 @@ Local tests and build
 
 ## First Execution Order
 
-1. Explicitly approve and deploy the signed-URL-compatible `dev` release to `main`, then make the shared `photos` bucket private and finish the three-account browser regression.
-2. Run and record the first Free-plan encrypted export using the ready Colima runtime, then rehearse recovery against a disposable project before the next production data change. The export helper, tooling, and procedure are implemented.
-3. Execute the account QA script in Cloudflare Preview. Photo lifecycle and Explore QA are complete.
-4. Prepare the operating and legal copy, then run the production rehearsal.
-5. Revisit leaked-password protection only when the Supabase plan is upgraded.
+1. Explicitly approve and deploy the signed-URL-compatible `dev` release to `main`.
+2. Delete current sample content if it complicates the cutover, then make the shared `photos` bucket private.
+3. Create only the minimum three-account QA fixtures and finish private-file, public Explore, upload, delete, and direct-URL browser checks.
+4. Run real-device email, Google, Kakao, upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
+5. Approve the final support address, retention policy, and legal copy before opening public traffic.
+6. Revisit leaked-password protection only when the Supabase plan is upgraded.
 
 ## References
 
 - `docs/product/v2.1-current-scope-decision.md`
 - `docs/product/storage-private-transition-plan-2026-06-05.md`
+- `docs/product/sample-data-reset-decision-2026-07-27.md`
 - `docs/product/operating-cost-estimate-2026-06-05.md`
 - `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`
 - `docs/product/public-beta-metrics-2026-07-26.md`
