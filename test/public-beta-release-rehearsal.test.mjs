@@ -36,6 +36,15 @@ test('release rehearsal smoke-checks the deployed shell, config, assets, and sec
     assert.match(source, /\/assets\//);
 });
 
+test('release rehearsal requires noindex only for Preview deployments', () => {
+    const source = script();
+
+    assert.match(source, /IKKYEE_EXPECT_NOINDEX/);
+    assert.match(source, /expect_noindex/);
+    assert.match(source, /x-robots-tag/);
+    assert.match(source, /practice-week1-cws\.pages\.dev/);
+});
+
 test('rollback rehearsal is non-destructive and uses reversible recovery', () => {
     const source = script();
 

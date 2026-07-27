@@ -4,6 +4,8 @@ set -euo pipefail
 
 BASE_URL="${IKKYEE_RELEASE_BASE_URL:-https://dev.practice-week1-cws.pages.dev}"
 EXPECTED_BRANCH="${IKKYEE_RELEASE_BRANCH:-dev}"
+PRODUCTION_BASE_URL="${IKKYEE_PRODUCTION_BASE_URL:-https://practice-week1-cws.pages.dev}"
+expect_noindex="${IKKYEE_EXPECT_NOINDEX:-auto}"
 
 fail() {
   printf 'Release rehearsal failed: %s\n' "$1" >&2
@@ -24,6 +26,19 @@ case "$BASE_URL" in
   *) fail "IKKYEE_RELEASE_BASE_URL must be an HTTP or HTTPS origin." ;;
 esac
 BASE_URL="${BASE_URL%/}"
+PRODUCTION_BASE_URL="${PRODUCTION_BASE_URL%/}"
+
+case "$expect_noindex" in
+  auto)
+    if [[ "$BASE_URL" == "$PRODUCTION_BASE_URL" ]]; then
+      expect_noindex="false"
+    else
+      expect_noindex="true"
+    fi
+    ;;
+  true | false) ;;
+  *) fail "IKKYEE_EXPECT_NOINDEX must be auto, true, or false." ;;
+esac
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" ||
   fail "run this command from the project repository."
@@ -73,7 +88,7 @@ curl --fail --silent --show-error \
   --output "$html_file" \
   "$BASE_URL/"
 
-node - "$headers_file" <<'NODE'
+node - "$headers_file" "$expect_noindex" <<'NODE'
 const { readFileSync } = require('node:fs');
 const headers = readFileSync(process.argv[2], 'utf8').toLowerCase();
 for (const name of [
@@ -81,12 +96,14 @@ for (const name of [
   'permissions-policy',
   'referrer-policy',
   'x-content-type-options',
-  'x-frame-options',
-  'x-robots-tag'
+  'x-frame-options'
 ]) {
   if (!headers.includes(`${name}:`)) {
     throw new Error(`missing required response header: ${name}`);
   }
+}
+if (process.argv[3] === 'true' && !headers.includes('x-robots-tag: noindex')) {
+  throw new Error('missing required Preview response header: x-robots-tag: noindex');
 }
 NODE
 
