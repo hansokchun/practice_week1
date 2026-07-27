@@ -5,6 +5,7 @@ import { test } from 'node:test';
 const script = () => readFileSync('scripts/rehearse-public-beta-release.sh', 'utf8');
 const record = () => readFileSync('docs/operations/public-beta-release-rehearsal-2026-07-26.md', 'utf8');
 const candidateRecord = () => readFileSync('docs/operations/public-beta-release-candidate-2026-07-27.md', 'utf8');
+const productionRecord = () => readFileSync('docs/operations/public-beta-production-release-2026-07-27.md', 'utf8');
 const checklist = () => readFileSync('docs/product/public-beta-launch-checklist-2026-07-22.md', 'utf8');
 const packageJson = () => JSON.parse(readFileSync('package.json', 'utf8'));
 
@@ -78,4 +79,15 @@ test('latest release candidate records immutable evidence without approving prod
     assert.match(source, /No `main` push/i);
     assert.match(source, /No Supabase data deletion/i);
     assert.match(source, /4 P0 gates remain/i);
+});
+
+test('production release record preserves deployment and Storage boundaries', () => {
+    const source = productionRecord();
+
+    assert.match(source, /a3030727e97f/);
+    assert.match(source, /73a8903c\.practice-week1-cws\.pages\.dev/);
+    assert.match(source, /427 passing, 0 failing/i);
+    assert.match(source, /Candidate distance from production.*0 commits/i);
+    assert.match(source, /No Supabase data/i);
+    assert.match(source, /bucket remains public/i);
 });

@@ -18,12 +18,12 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 427 passing, 0 failing (2026-07-27) |
+| Automated verification | Passing | `npm test`: 428 passing, 0 failing (2026-07-27) |
 | Production build | Passing | `npm run build` (2026-07-27) |
 | Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
-| Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
+| Production delivery | Verified | GitHub `main` and `dev` synchronized at application release `a3030727e97f`; Cloudflare Production deployment and smoke verification passed on 2026-07-27 |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
-| Photo storage privacy | Cutover blocked by production release | `dev` is signed-URL compatible, but the shared bucket must remain public until an explicitly approved `main` release. Existing sample content may be deleted instead of migrated or repaired during the cutover. |
+| Photo storage privacy | Cutover ready | Production is signed-URL compatible. The shared bucket remains public pending the separate private-bucket mutation and three-account regression. Existing sample content may be deleted instead of migrated or repaired during the cutover. |
 | Storage cutover preflight | Passing, non-production | Live aggregate check: project healthy, 0 photo rows missing `storage_path`, 4 Storage policies; repeatable `npm run storage:preflight` gate added. The bucket remains public until an approved release. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
@@ -69,6 +69,7 @@
 - [x] Classify all current pre-launch content as disposable sample data so Storage cutover work can use a clean reset and minimal fresh QA fixtures.
 - [x] Revalidate the exact `dev` release candidate against the deployed Preview and record its commit, production distance, non-destructive boundary, and remaining gates.
 - [x] Add a non-destructive private Storage preflight that validates signed-URL compatibility, aggregate live evidence, Git state, Preview smoke checks, tests, and build before cutover approval.
+- [x] Fast-forward the approved signed-URL-compatible release to `main` and pass the Cloudflare Production smoke verification.
 
 ### P1: Public Beta Readiness
 
@@ -121,7 +122,7 @@ Local tests and build
 
 ## First Execution Order
 
-1. Explicitly approve and deploy the signed-URL-compatible `dev` release to `main`.
+1. [Complete] Deploy the signed-URL-compatible release to `main` and pass Production smoke verification.
 2. Delete current sample content if it complicates the cutover, then make the shared `photos` bucket private.
 3. Create only the minimum three-account QA fixtures and finish private-file, public Explore, upload, delete, and direct-URL browser checks.
 4. Run real-device email, Google, Kakao, upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
@@ -145,3 +146,4 @@ Local tests and build
 - `docs/operations/public-beta-operations-runbook-2026-07-22.md`
 - `docs/operations/public-beta-release-rehearsal-2026-07-26.md`
 - `docs/operations/public-beta-release-candidate-2026-07-27.md`
+- `docs/operations/public-beta-production-release-2026-07-27.md`
