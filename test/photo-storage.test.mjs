@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
+    applySignedAlbumCoverUrls,
     applySignedPhotoUrls,
     getPhotoStoragePath
 } from '../js/photo-storage.mjs';
@@ -28,6 +29,15 @@ test('getPhotoStoragePath extracts the path from a legacy public URL', () => {
     );
 });
 
+test('getPhotoStoragePath extracts the path from an expiring signed URL', () => {
+    assert.equal(
+        getPhotoStoragePath({
+            url: 'https://project.supabase.co/storage/v1/object/sign/photos/owner-1/photo.jpg?token=secret'
+        }),
+        'owner-1/photo.jpg'
+    );
+});
+
 test('applySignedPhotoUrls replaces only rows with a matching signed URL', () => {
     const photos = [
         { id: 'private', storage_path: 'owner-1/private.jpg', url: null },
@@ -46,20 +56,43 @@ test('applySignedPhotoUrls replaces only rows with a matching signed URL', () =>
     assert.notEqual(hydrated[0], photos[0]);
 });
 
+test('applySignedAlbumCoverUrls replaces legacy album covers with signed URLs', () => {
+    const albums = [
+        {
+            id: 'album-1',
+            cover_url: 'https://project.supabase.co/storage/v1/object/public/photos/owner-1/cover.jpg'
+        }
+    ];
+
+    assert.deepEqual(
+        applySignedAlbumCoverUrls(
+            albums,
+            new Map([['owner-1/cover.jpg', 'https://signed.example/cover.jpg']])
+        ),
+        [{ id: 'album-1', cover_url: 'https://signed.example/cover.jpg' }]
+    );
+});
+
 test('photo persistence requests signed URLs for stored paths instead of public URLs', () => {
-    assert.match(authSource, /import \{ applySignedPhotoUrls, getPhotoStoragePath \} from '\.\/js\/photo-storage\.mjs';/);
+    assert.match(authSource, /applySignedAlbumCoverUrls/);
+    assert.match(authSource, /applySignedPhotoUrls/);
+    assert.match(authSource, /getPhotoStoragePath/);
     assert.match(authSource, /createSignedUrls\(paths, 900\)/);
     assert.match(authSource, /createSignedUrl\(fileName, 900\)/);
 });
 
-test('only photo reads hydrate signed image URLs', () => {
+test('photo and album reads hydrate signed image URLs', () => {
     const profilesStart = authSource.indexOf('export async function fetchProfilesByIds');
     const photosStart = authSource.indexOf('export async function fetchPhotos');
     const upsertStart = authSource.indexOf('export async function upsertPhoto');
     const profilesBody = authSource.slice(profilesStart, photosStart);
     const photosBody = authSource.slice(photosStart, upsertStart);
+    const albumsStart = authSource.indexOf('export async function fetchAlbums');
+    const createAlbumStart = authSource.indexOf('export async function createAlbum');
+    const albumsBody = authSource.slice(albumsStart, createAlbumStart);
 
     assert.doesNotMatch(profilesBody, /hydrateSignedPhotoUrls/);
     assert.match(photosBody, /await hydratePrivatePhotoLocations\(sb, data \|\| \[\]\)/);
     assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, photosWithPrivateLocations\)/);
+    assert.match(albumsBody, /await hydrateSignedAlbumCoverUrls\(sb, data \|\| \[\]\)/);
 });

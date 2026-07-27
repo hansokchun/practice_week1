@@ -11,8 +11,8 @@ Usage:
   npm run storage:preflight
 
 The check command validates local prerequisites and the latest aggregate
-Supabase readiness snapshot. The full command also requires a clean dev branch,
-confirms it matches origin/dev, and runs the non-production release rehearsal.
+Supabase cutover snapshot. The full command also requires a clean dev branch,
+confirms it matches origin/dev, and runs the release rehearsal.
 
 Neither command changes Git branches, Supabase data, or Storage configuration.
 EOF
@@ -65,8 +65,14 @@ const allowedWarnings = new Set(['auth_leaked_password_protection']);
 if (snapshot.project_ref !== expectedProject) {
   throw new Error('the readiness snapshot belongs to a different project');
 }
-if (snapshot.photos_bucket_public !== true) {
+if (!['pre_cutover', 'post_cutover'].includes(snapshot.phase)) {
+  throw new Error('the Storage snapshot phase is missing or invalid');
+}
+if (snapshot.phase === 'pre_cutover' && snapshot.photos_bucket_public !== true) {
   throw new Error('expected the pre-cutover photos bucket to remain public');
+}
+if (snapshot.phase === 'post_cutover' && snapshot.photos_bucket_public !== false) {
+  throw new Error('expected the post-cutover photos bucket to be private');
 }
 if (snapshot.missing_storage_path_rows !== 0) {
   throw new Error('photo rows without storage_path remain');
@@ -84,13 +90,14 @@ for (const warning of snapshot.security_warnings || []) {
 }
 
 console.log(`Supabase snapshot: ${snapshot.verified_at}`);
+console.log(`Storage phase: ${snapshot.phase}`);
 console.log(`Photo rows with missing storage paths: ${snapshot.missing_storage_path_rows}`);
 console.log(`Storage policy count: ${snapshot.storage_policy_count}`);
 NODE
 
 if [[ "$MODE" == "--check" ]]; then
-  printf 'Local private Storage prerequisites are ready.\n'
-  printf 'Live Supabase state must be refreshed immediately before an approved cutover.\n'
+  printf 'Local private Storage contract and recorded cutover state are valid.\n'
+  printf 'Refresh live Supabase evidence before future Storage policy changes.\n'
   exit 0
 fi
 
@@ -111,6 +118,5 @@ git merge-base --is-ancestor origin/main origin/dev ||
 
 npm run release:rehearse
 
-printf '\nPrivate Storage preflight passed without changing production or Supabase.\n'
-printf 'Next gate: explicit main deployment approval, then refresh live Supabase evidence.\n'
-
+printf '\nPrivate Storage verification passed without changing production or Supabase.\n'
+printf 'The recorded cutover is complete; keep role and browser regression evidence current.\n'

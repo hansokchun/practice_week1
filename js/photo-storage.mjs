@@ -1,4 +1,5 @@
 const PUBLIC_PHOTO_URL_MARKER = '/storage/v1/object/public/photos/';
+const SIGNED_PHOTO_URL_MARKER = '/storage/v1/object/sign/photos/';
 
 export function getPhotoStoragePath(photo = {}) {
     const savedPath = String(photo.storage_path || '').trim();
@@ -9,12 +10,23 @@ export function getPhotoStoragePath(photo = {}) {
 
     try {
         const parsed = new URL(legacyUrl);
-        const markerIndex = parsed.pathname.indexOf(PUBLIC_PHOTO_URL_MARKER);
+        const marker = parsed.pathname.includes(PUBLIC_PHOTO_URL_MARKER)
+            ? PUBLIC_PHOTO_URL_MARKER
+            : SIGNED_PHOTO_URL_MARKER;
+        const markerIndex = parsed.pathname.indexOf(marker);
         if (markerIndex === -1) return null;
-        return decodeURIComponent(parsed.pathname.slice(markerIndex + PUBLIC_PHOTO_URL_MARKER.length));
+        return decodeURIComponent(parsed.pathname.slice(markerIndex + marker.length));
     } catch {
         return null;
     }
+}
+
+export function applySignedAlbumCoverUrls(albums = [], signedUrlByPath = new Map()) {
+    return albums.map((album) => {
+        const storagePath = getPhotoStoragePath({ url: album.cover_url });
+        const signedUrl = storagePath ? signedUrlByPath.get(storagePath) : null;
+        return signedUrl ? { ...album, cover_url: signedUrl } : { ...album };
+    });
 }
 
 export function applySignedPhotoUrls(photos = [], signedUrlByPath = new Map()) {

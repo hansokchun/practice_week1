@@ -9,7 +9,11 @@
 
 import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
 import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
-import { applySignedPhotoUrls, getPhotoStoragePath } from './js/photo-storage.mjs';
+import {
+    applySignedAlbumCoverUrls,
+    applySignedPhotoUrls,
+    getPhotoStoragePath
+} from './js/photo-storage.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
@@ -52,6 +56,27 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
             .map((item) => [item.path, item.signedUrl])
     );
     return applySignedPhotoUrls(photos, signedUrlByPath);
+}
+
+async function hydrateSignedAlbumCoverUrls(sb, albums = []) {
+    const paths = [...new Set(
+        albums
+            .map((album) => getPhotoStoragePath({ url: album.cover_url }))
+            .filter(Boolean)
+    )];
+    if (!paths.length) return albums;
+
+    const { data, error } = await sb.storage
+        .from('photos')
+        .createSignedUrls(paths, 900);
+    if (error) return albums;
+
+    const signedUrlByPath = new Map(
+        (data || [])
+            .filter((item) => item?.path && item?.signedUrl)
+            .map((item) => [item.path, item.signedUrl])
+    );
+    return applySignedAlbumCoverUrls(albums, signedUrlByPath);
 }
 
 async function hydratePrivatePhotoLocations(sb, photos = []) {
@@ -483,7 +508,7 @@ export async function fetchAlbums() {
             .select(ALBUM_SELECT_COLUMNS)
             .order('created_at', { ascending: false });
         if (error) throw error;
-        return { data: data || [], error: null };
+        return { data: await hydrateSignedAlbumCoverUrls(sb, data || []), error: null };
     } catch (error) {
         return { data: [], error };
     }

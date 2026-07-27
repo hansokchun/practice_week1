@@ -23,10 +23,10 @@ test('launch plan treats current content as disposable sample data', () => {
   assert.match(decision, /Do not spend migration time preserving sample content/i);
 });
 
-test('private Storage cutover uses fresh minimal QA fixtures', () => {
-  assert.match(storagePlan, /delete the current sample content/i);
-  assert.match(storagePlan, /fresh minimal three-account QA fixtures/i);
-  assert.match(storagePlan, /make the `photos` bucket private/i);
-  assert.match(checklist, /Existing sample content may be deleted instead of migrated/i);
-  assert.match(checklist, /Create only the minimum three-account QA fixtures/i);
+test('private Storage cutover does not spend time preserving disposable samples', () => {
+  assert.match(storagePlan, /samples were retained as useful QA fixtures/i);
+  assert.match(storagePlan, /no reset was needed/i);
+  assert.match(storagePlan, /made the `photos` bucket private/i);
+  assert.match(checklist, /Disposable samples were retained because they were already compatible/i);
+  assert.match(checklist, /Keep the compatible disposable samples as QA fixtures/i);
 });

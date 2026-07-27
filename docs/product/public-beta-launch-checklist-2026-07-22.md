@@ -1,10 +1,10 @@
 # Ikkyee Public Beta Launch Checklist
 
-**Updated:** 2026-07-27
+**Updated:** 2026-07-28
 
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
-**P0 progress:** 10 of 14 gates complete; 4 remain, including 1 paid-plan deferral.
+**P0 progress:** 12 of 14 gates complete; 2 remain, including 1 paid-plan deferral.
 
 ## How To Use This Checklist
 
@@ -18,13 +18,13 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 428 passing, 0 failing (2026-07-27) |
-| Production build | Passing | `npm run build` (2026-07-27) |
+| Automated verification | Passing | `npm test`: 431 passing, 0 failing (2026-07-28) |
+| Production build | Passing | `npm run build` (2026-07-28) |
 | Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
 | Production delivery | Verified | GitHub `main` and `dev` synchronized at application release `a3030727e97f`; Cloudflare Production deployment and smoke verification passed on 2026-07-27 |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
-| Photo storage privacy | Cutover ready | Production is signed-URL compatible. The shared bucket remains public pending the separate private-bucket mutation and three-account regression. Existing sample content may be deleted instead of migrated or repaired during the cutover. |
-| Storage cutover preflight | Passing, non-production | Live aggregate check: project healthy, 0 photo rows missing `storage_path`, 4 Storage policies; repeatable `npm run storage:preflight` gate added. The bucket remains public until an approved release. |
+| Photo storage privacy | Private, passing | The `photos` bucket is private. Owner, non-owner, anonymous, signed-URL, legacy public-URL, and logged-out Production Explore checks passed. |
+| Storage cutover verification | Passing | Live aggregate check: 0 photo rows missing `storage_path`, 4 Storage policies, 2 Auth accounts preserved. Disposable samples were retained because they were already compatible and useful as QA fixtures. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
@@ -43,9 +43,9 @@
 - [x] Backfill `photos.storage_path` for existing images while retaining compatibility with existing `url` values.
 - [x] Add an RLS-controlled 15-minute signed URL resolver without exposing privileged credentials.
 - [x] Move upload, image rendering, and deletion flows to the private-storage-compatible model.
-- [ ] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible. Existing sample content may be deleted instead of migrated; run the final check with fresh minimal fixtures after the bucket becomes private.
+- [x] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible.
 - [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
-- [ ] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user. Create only the minimum three-account QA fixtures after the private-bucket cutover; do not preserve the current sample library for this test.
+- [x] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
 - [x] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
@@ -70,6 +70,7 @@
 - [x] Revalidate the exact `dev` release candidate against the deployed Preview and record its commit, production distance, non-destructive boundary, and remaining gates.
 - [x] Add a non-destructive private Storage preflight that validates signed-URL compatibility, aggregate live evidence, Git state, Preview smoke checks, tests, and build before cutover approval.
 - [x] Fast-forward the approved signed-URL-compatible release to `main` and pass the Cloudflare Production smoke verification.
+- [x] Make the shared `photos` bucket private and pass role, direct-URL, signed-URL, and logged-out Production Explore regression checks.
 
 ### P1: Public Beta Readiness
 
@@ -123,11 +124,10 @@ Local tests and build
 ## First Execution Order
 
 1. [Complete] Deploy the signed-URL-compatible release to `main` and pass Production smoke verification.
-2. Delete current sample content if it complicates the cutover, then make the shared `photos` bucket private.
-3. Create only the minimum three-account QA fixtures and finish private-file, public Explore, upload, delete, and direct-URL browser checks.
-4. Run real-device email, Google, Kakao, upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
-5. Approve the final support address, retention policy, and legal copy before opening public traffic.
-6. Revisit leaked-password protection only when the Supabase plan is upgraded.
+2. [Complete] Keep the compatible disposable samples as QA fixtures, make the shared `photos` bucket private, and pass final access regression.
+3. Run real-device email, Google, Kakao, upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
+4. Approve the final support address, retention policy, and legal copy before opening public traffic.
+5. Revisit leaked-password protection only when the Supabase plan is upgraded.
 
 ## References
 
@@ -140,6 +140,7 @@ Local tests and build
 - `docs/qa/photo-lifecycle-preview-qa-2026-07-25.md`
 - `docs/qa/authentication-preview-qa-2026-07-26.md`
 - `docs/qa/public-location-privacy-role-qa-2026-07-26.md`
+- `docs/qa/private-storage-cutover-2026-07-28.md`
 - `docs/performance/mobile-performance-budget-2026-07-26.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`

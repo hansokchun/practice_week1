@@ -1,18 +1,20 @@
 {
-  "verified_at": "2026-07-27T14:10:00+09:00",
-  "verification_method": "connected Supabase MCP read-only aggregate SQL and advisors",
+  "verified_at": "2026-07-28T00:11:57+09:00",
+  "verification_method": "connected Supabase MCP aggregate SQL, advisors, role simulation, HTTP checks, and logged-out browser QA",
+  "phase": "post_cutover",
   "project_ref": "pqczcponriukilrtpbdl",
   "project_status": "ACTIVE_HEALTHY",
-  "photos_bucket_public": true,
+  "photos_bucket_public": false,
   "photo_rows": 21,
   "missing_storage_path_rows": 0,
   "photo_objects": 31,
   "storage_policy_count": 4,
   "public_policy_count": 24,
+  "auth_user_count": 2,
+  "profile_rows": 2,
   "security_warnings": [
     "auth_leaked_password_protection"
   ],
   "contains_user_data": false,
-  "mutation_performed": false
+  "mutation_performed": true
 }
-

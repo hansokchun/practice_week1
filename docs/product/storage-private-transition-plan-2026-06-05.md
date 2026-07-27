@@ -5,8 +5,8 @@ Project: Travelgram / Ikkyee
 
 ## Current State
 
-- Supabase Storage bucket `photos` is public.
-- `photos.url` stores a public Storage URL and the frontend renders images directly from it.
+- Supabase Storage bucket `photos` is private as of 2026-07-28.
+- `photos.storage_path` is the canonical object identifier and runtime image surfaces use 15-minute signed URLs.
 - Database RLS protects photo rows, but it does not protect the binary image file once someone has the public URL.
 - The app currently relies on direct image URLs in these surfaces:
   - Myphoto recent photos
@@ -16,28 +16,29 @@ Project: Travelgram / Ikkyee
   - Public profile
   - Photo detail modal
 
-## Implementation Status: 2026-07-22
+## Implementation Status: 2026-07-28
 
 - Added `public.photos.storage_path` and backfilled it for all 21 existing photo rows.
 - Added the `photos_bucket_select_owned_or_public_photo` Storage SELECT policy. It permits an owner to read their own object and permits anyone to request a public photo object.
 - The browser now requests 15-minute signed URLs for rows with `storage_path`; the old `url` column remains only as a migration fallback.
 - New photo uploads persist `storage_path` and delete operations prefer that stored path.
-- The `photos` bucket is deliberately still public during the compatibility rollout. Setting it private before the signed-URL build reaches `main` would break the currently deployed production app.
+- The signed-URL build reached `main`, the `photos` bucket was made private, and owner, non-owner, anonymous, direct-URL, and Production Explore checks passed.
+- Album cover URLs are also rehydrated so public profile and album surfaces do not rely on the legacy public endpoint.
 
 ## Data Preservation Decision: 2026-07-27
 
 The current photos, albums, likes, comments, locations, and Storage objects are pre-launch sample content. They may be deleted if retaining or repairing them would slow the private-bucket cutover. Auth accounts, schemas, policies, secrets, and deployment configuration are outside this deletion scope.
 
-The cutover no longer requires object-by-object preservation of the 21 existing sample rows. The preferred path is to delete the current sample content when useful, make the `photos` bucket private, and create fresh minimal three-account QA fixtures for final verification.
+The cutover did not require object-by-object repair of the 21 existing sample rows because all rows already had canonical paths. The samples were retained as useful QA fixtures; this does not change their disposable classification.
 
-### Remaining Production Cutover
+### Completed Production Cutover
 
-1. Deploy the signed-URL build to `main` after explicit release approval.
-2. Delete the current sample content and Storage objects if they add migration or QA work.
-3. Make the `photos` bucket private.
-4. Create fresh minimal three-account QA fixtures for an owner, another signed-in account, and a logged-out browser.
-5. Verify that owners can see private photos, non-owners and logged-out users cannot resolve private files, logged-out users can see the new public fixture in Explore, and direct legacy public URLs fail.
-6. Remove temporary fixtures after recording the evidence.
+1. Deployed the signed-URL build to `main`.
+2. Confirmed all 21 sample photo rows had `storage_path`; no reset was needed.
+3. Made the `photos` bucket private.
+4. Verified owner, another signed-in account, and logged-out access boundaries.
+5. Verified legacy public URLs fail, public signed URLs work, private anonymous signing fails, and logged-out Production Explore remains visible.
+6. Preserved Auth accounts, profiles, schemas, policies, secrets, and deployment configuration.
 
 ## Goal
 
@@ -146,7 +147,7 @@ After QA:
 
 ## Recommendation
 
-The compatibility implementation is complete on `dev`. After explicit `main` release approval, use the sample-data reset decision to avoid preserving disposable content, make the bucket private, and verify the final access boundary with a minimal fresh fixture set.
+The private Storage cutover is complete. Keep `storage_path`, signed-URL hydration, the private bucket setting, and the Storage policies as one release contract. Re-run the aggregate, role, HTTP, and browser checks before changing any part of that contract.
 
 Before requesting or performing that approval, run:
 
@@ -160,4 +161,4 @@ After the preflight files are committed and pushed to `origin/dev`, run the full
 npm run storage:preflight
 ```
 
-The commands validate the signed-URL source contract, the latest aggregate Supabase readiness snapshot, Git branch ancestry, the deployed Preview, automated tests, and the production build. They do not push `main`, delete sample content, or change the bucket. Refresh the aggregate live Supabase evidence immediately before an approved cutover because the committed snapshot is evidence, not a permanent substitute for a live check.
+The commands validate the signed-URL source contract, the latest aggregate Supabase cutover snapshot, Git branch ancestry, the deployed Preview, automated tests, and the production build. They do not push `main`, delete sample content, or change the bucket. Refresh the aggregate live Supabase evidence before any future Storage policy or bucket-privacy change.
