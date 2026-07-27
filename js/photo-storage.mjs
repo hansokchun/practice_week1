@@ -29,6 +29,20 @@ export function applySignedAlbumCoverUrls(albums = [], signedUrlByPath = new Map
     });
 }
 
+export function applyPhotoUrlsToAlbumCovers(albums = [], photos = []) {
+    const photoUrlByPath = new Map(
+        photos
+            .map((photo) => [getPhotoStoragePath(photo), photo.url])
+            .filter(([path, url]) => path && url)
+    );
+
+    return albums.map((album) => {
+        const storagePath = getPhotoStoragePath({ url: album.cover_url });
+        const photoUrl = storagePath ? photoUrlByPath.get(storagePath) : null;
+        return photoUrl ? { ...album, cover_url: photoUrl } : { ...album };
+    });
+}
+
 export function applySignedPhotoUrls(photos = [], signedUrlByPath = new Map()) {
     return photos.map((photo) => {
         const storagePath = getPhotoStoragePath(photo);

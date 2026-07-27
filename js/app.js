@@ -41,6 +41,7 @@ import {
 } from './location-workflow.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
+import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
@@ -3103,6 +3104,7 @@ function loadSavedLibrary() {
         loadMyLikedPhotos({ render: false }),
         loadSavedAlbums({ render: false })
     ]).then(() => {
+        state.savedAlbums = applyPhotoUrlsToAlbumCovers(state.savedAlbums, state.savedPhotos);
         renderSavedPhotoSurfaces();
         renderPublicSurfaces();
         renderLikedPhotoSurfaces();

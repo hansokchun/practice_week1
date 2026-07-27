@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 431 passing, 0 failing (2026-07-28) |
+| Automated verification | Passing | `npm test`: 432 passing, 0 failing (2026-07-28) |
 | Production build | Passing | `npm run build` (2026-07-28) |
 | Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
 | Production delivery | Verified | GitHub `main` and `dev` synchronized at application release `a3030727e97f`; Cloudflare Production deployment and smoke verification passed on 2026-07-27 |

@@ -3,12 +3,14 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
+    applyPhotoUrlsToAlbumCovers,
     applySignedAlbumCoverUrls,
     applySignedPhotoUrls,
     getPhotoStoragePath
 } from '../js/photo-storage.mjs';
 
 const authSource = readFileSync('auth.js', 'utf8');
+const appSource = readFileSync('js/app.js', 'utf8');
 
 test('getPhotoStoragePath prefers the saved private object path', () => {
     assert.equal(
@@ -73,6 +75,23 @@ test('applySignedAlbumCoverUrls replaces legacy album covers with signed URLs', 
     );
 });
 
+test('applyPhotoUrlsToAlbumCovers reconciles album covers after parallel reads', () => {
+    const albums = [{
+        id: 'album-1',
+        cover_url: 'https://project.supabase.co/storage/v1/object/public/photos/owner-1/cover.jpg'
+    }];
+    const photos = [{
+        id: 'photo-1',
+        storage_path: 'owner-1/cover.jpg',
+        url: 'https://project.supabase.co/storage/v1/object/sign/photos/owner-1/cover.jpg?token=fresh'
+    }];
+
+    assert.deepEqual(applyPhotoUrlsToAlbumCovers(albums, photos), [{
+        id: 'album-1',
+        cover_url: photos[0].url
+    }]);
+});
+
 test('photo persistence requests signed URLs for stored paths instead of public URLs', () => {
     assert.match(authSource, /applySignedAlbumCoverUrls/);
     assert.match(authSource, /applySignedPhotoUrls/);
@@ -95,4 +114,6 @@ test('photo and album reads hydrate signed image URLs', () => {
     assert.match(photosBody, /await hydratePrivatePhotoLocations\(sb, data \|\| \[\]\)/);
     assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, photosWithPrivateLocations\)/);
     assert.match(albumsBody, /await hydrateSignedAlbumCoverUrls\(sb, data \|\| \[\]\)/);
+    assert.match(authSource, /hydrateSignedAlbumCoverUrls/);
+    assert.match(appSource, /state\.savedAlbums = applyPhotoUrlsToAlbumCovers\(state\.savedAlbums, state\.savedPhotos\)/);
 });
