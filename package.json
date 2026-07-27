@@ -14,6 +14,8 @@
     "restore:check": "bash scripts/restore-supabase-backup.sh --check",
     "restore:db": "bash scripts/restore-supabase-backup.sh",
     "schema:pull": "bash scripts/pull-supabase-schema.sh",
+    "storage:preflight:check": "bash scripts/check-storage-cutover-readiness.sh --check",
+    "storage:preflight": "bash scripts/check-storage-cutover-readiness.sh",
     "release:rehearse": "bash scripts/rehearse-public-beta-release.sh",
     "cf:deploy:dev": "npm run build && npx wrangler pages deploy dist --project-name practice-week1 --branch dev",
     "cf:deploy:main": "npm run build && npx wrangler pages deploy dist --project-name practice-week1 --branch main"

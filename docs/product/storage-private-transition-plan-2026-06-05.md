@@ -147,3 +147,17 @@ After QA:
 ## Recommendation
 
 The compatibility implementation is complete on `dev`. After explicit `main` release approval, use the sample-data reset decision to avoid preserving disposable content, make the bucket private, and verify the final access boundary with a minimal fresh fixture set.
+
+Before requesting or performing that approval, run:
+
+```bash
+npm run storage:preflight:check
+```
+
+After the preflight files are committed and pushed to `origin/dev`, run the full non-production gate:
+
+```bash
+npm run storage:preflight
+```
+
+The commands validate the signed-URL source contract, the latest aggregate Supabase readiness snapshot, Git branch ancestry, the deployed Preview, automated tests, and the production build. They do not push `main`, delete sample content, or change the bucket. Refresh the aggregate live Supabase evidence immediately before an approved cutover because the committed snapshot is evidence, not a permanent substitute for a live check.

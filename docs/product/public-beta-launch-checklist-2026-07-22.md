@@ -18,12 +18,13 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 424 passing, 0 failing (2026-07-27) |
+| Automated verification | Passing | `npm test`: 426 passing, 0 failing (2026-07-27) |
 | Production build | Passing | `npm run build` (2026-07-27) |
 | Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Cutover blocked by production release | `dev` is signed-URL compatible, but the shared bucket must remain public until an explicitly approved `main` release. Existing sample content may be deleted instead of migrated or repaired during the cutover. |
+| Storage cutover preflight | Passing, non-production | Live aggregate check: project healthy, 0 photo rows missing `storage_path`, 4 Storage policies; repeatable `npm run storage:preflight` gate added. The bucket remains public until an approved release. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
@@ -67,6 +68,7 @@
 - [x] Restore the encrypted backup transactionally in an isolated local Supabase database and verify schema, RLS, policies, triggers, safe aggregates, and cleanup.
 - [x] Classify all current pre-launch content as disposable sample data so Storage cutover work can use a clean reset and minimal fresh QA fixtures.
 - [x] Revalidate the exact `dev` release candidate against the deployed Preview and record its commit, production distance, non-destructive boundary, and remaining gates.
+- [x] Add a non-destructive private Storage preflight that validates signed-URL compatibility, aggregate live evidence, Git state, Preview smoke checks, tests, and build before cutover approval.
 
 ### P1: Public Beta Readiness
 
