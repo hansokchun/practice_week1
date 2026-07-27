@@ -4,6 +4,7 @@ import { test } from 'node:test';
 
 const script = () => readFileSync('scripts/rehearse-public-beta-release.sh', 'utf8');
 const record = () => readFileSync('docs/operations/public-beta-release-rehearsal-2026-07-26.md', 'utf8');
+const candidateRecord = () => readFileSync('docs/operations/public-beta-release-candidate-2026-07-27.md', 'utf8');
 const checklist = () => readFileSync('docs/product/public-beta-launch-checklist-2026-07-22.md', 'utf8');
 const packageJson = () => JSON.parse(readFileSync('package.json', 'utf8'));
 
@@ -56,4 +57,16 @@ test('release record preserves blockers and checklist marks rehearsal complete',
         checklist(),
         /- \[x\] Rehearse the production deployment, smoke test, and rollback path before public traffic\./
     );
+});
+
+test('latest release candidate records immutable evidence without approving production', () => {
+    const source = candidateRecord();
+
+    assert.match(source, /ed19c3582b05/);
+    assert.match(source, /457 commits/);
+    assert.match(source, /423 passing, 0 failing/i);
+    assert.match(source, /https:\/\/dev\.practice-week1-cws\.pages\.dev/);
+    assert.match(source, /No `main` push/i);
+    assert.match(source, /No Supabase data deletion/i);
+    assert.match(source, /4 P0 gates remain/i);
 });

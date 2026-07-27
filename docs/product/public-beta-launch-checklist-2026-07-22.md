@@ -18,9 +18,9 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 423 passing, 0 failing (2026-07-27) |
+| Automated verification | Passing | `npm test`: 424 passing, 0 failing (2026-07-27) |
 | Production build | Passing | `npm run build` (2026-07-27) |
-| Preview delivery | Verified | GitHub `dev` push triggers Cloudflare Pages Preview; current Preview: `https://dev.practice-week1-cws.pages.dev` |
+| Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
 | Production delivery | Connected | GitHub `main` push triggers Cloudflare Pages production |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Cutover blocked by production release | `dev` is signed-URL compatible, but the shared bucket must remain public until an explicitly approved `main` release. Existing sample content may be deleted instead of migrated or repaired during the cutover. |
@@ -66,6 +66,7 @@
 - [x] Capture and automatically validate a secret-free, data-free live Supabase schema baseline for disaster recovery.
 - [x] Restore the encrypted backup transactionally in an isolated local Supabase database and verify schema, RLS, policies, triggers, safe aggregates, and cleanup.
 - [x] Classify all current pre-launch content as disposable sample data so Storage cutover work can use a clean reset and minimal fresh QA fixtures.
+- [x] Revalidate the exact `dev` release candidate against the deployed Preview and record its commit, production distance, non-destructive boundary, and remaining gates.
 
 ### P1: Public Beta Readiness
 
@@ -141,3 +142,4 @@ Local tests and build
 - `docs/integrations.md`
 - `docs/operations/public-beta-operations-runbook-2026-07-22.md`
 - `docs/operations/public-beta-release-rehearsal-2026-07-26.md`
+- `docs/operations/public-beta-release-candidate-2026-07-27.md`
