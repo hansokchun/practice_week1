@@ -3,8 +3,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const script = readFileSync('scripts/backup-supabase.sh', 'utf8');
+const restoreScript = readFileSync('scripts/restore-supabase-backup.sh', 'utf8');
 const schemaPullScript = readFileSync('scripts/pull-supabase-schema.sh', 'utf8');
 const schemaBaseline = readFileSync('supabase/schema.sql', 'utf8');
+const restoreQaRecord = readFileSync(
+  'docs/qa/supabase-restore-rehearsal-2026-07-27.md',
+  'utf8'
+);
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const runbook = readFileSync(
   'docs/operations/public-beta-operations-runbook-2026-07-22.md',
@@ -84,6 +89,32 @@ test('Supabase backup keeps raw dumps temporary and encrypts the retained archiv
   assert.match(script, /backup destination must be outside the Git repository/);
 });
 
+test('Supabase restore rehearsal is isolated, verified, and leaves no plaintext', () => {
+  assert.equal(
+    packageJson.scripts['restore:check'],
+    'bash scripts/restore-supabase-backup.sh --check'
+  );
+  assert.equal(
+    packageJson.scripts['restore:db'],
+    'bash scripts/restore-supabase-backup.sh'
+  );
+  assert.match(restoreScript, /CLI_VERSION="2\.109\.1"/);
+  assert.match(restoreScript, /read -r -s -p "Backup encryption passphrase: "/);
+  assert.match(restoreScript, /shasum -a 256 -c/);
+  assert.match(restoreScript, /openssl enc -d -aes-256-cbc -pbkdf2/);
+  assert.match(restoreScript, /mktemp -d/);
+  assert.match(restoreScript, /supabase@\$CLI_VERSION" db start/);
+  assert.match(restoreScript, /--single-transaction/);
+  assert.match(restoreScript, /SET session_replication_role = replica/);
+  assert.match(restoreScript, /pg_policies/);
+  assert.match(restoreScript, /--no-backup/);
+  assert.match(restoreScript, /trap cleanup EXIT/);
+  assert.match(restoreQaRecord, /\*\*Status:\*\* Pass/);
+  assert.match(restoreQaRecord, /\| Public schema \| 7 tables \|/);
+  assert.match(restoreQaRecord, /\| RLS policies \| 24 policies \|/);
+  assert.match(restoreQaRecord, /No disposable container, database volume/);
+});
+
 test('Backup runbook separates database exports from Storage object recovery', () => {
   assert.match(runbook, /npm run backup:check/);
   assert.match(runbook, /npm run backup:db/);
@@ -92,5 +123,7 @@ test('Backup runbook separates database exports from Storage object recovery', (
   assert.match(runbook, /checksum `OK`/);
   assert.match(runbook, /owner-only `600` permissions/);
   assert.match(runbook, /Database logical exports include Storage metadata, not the binary objects/);
-  assert.match(runbook, /disposable Supabase project/);
+  assert.match(runbook, /disposable local Supabase database/);
+  assert.match(runbook, /npm run restore:check/);
+  assert.match(runbook, /npm run restore:db/);
 });

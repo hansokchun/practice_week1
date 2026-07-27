@@ -44,7 +44,7 @@ test('location privacy QA records owner, non-owner, and anonymous role evidence'
     assert.match(locationQaRecord, /0 target private photos/i);
     assert.match(locationQaRecord, /owner could read 19 owned photos and 17 owned private source rows/i);
     assert.match(locationQaRecord, /0 approximate rows matched their private source coordinates exactly/i);
-    assert.match(locationQaRecord, /full baseline is now captured in `supabase\/schema\.sql`/i);
-    assert.match(locationQaRecord, /disposable-project restore rehearsal remains pending/i);
+    assert.match(locationQaRecord, /full baseline is captured in `supabase\/schema\.sql`/i);
+    assert.match(locationQaRecord, /2026-07-27 isolated restore rehearsal confirmed/i);
     assert.match(launchChecklist, /\| Public location privacy \| Passing \|/);
 });

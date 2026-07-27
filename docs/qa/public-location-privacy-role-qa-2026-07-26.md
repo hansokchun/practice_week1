@@ -25,7 +25,7 @@ This was a read-only verification. It did not output user IDs, coordinates, obje
 
 Twelve private/hidden legacy photo rows still retain owner-visible coordinates in `photos`. They were not visible to anonymous or non-owner roles, and the publication trigger removes or transforms them before public/link exposure. The canonical private source remains `photo_private_locations`.
 
-The incremental migration history still does not contain the original creation of every live object. A secret-free and data-free full baseline is now captured in `supabase/schema.sql`, including the location table, policies, trigger, grants, and RLS state. Use that baseline as the fresh-project starting point and keep `supabase/migrations` for forward changes. Applying both in a disposable-project restore rehearsal remains pending.
+The incremental migration history still does not contain the original creation of every live object. A secret-free and data-free full baseline is captured in `supabase/schema.sql`, including the location table, policies, trigger, grants, and RLS state. The 2026-07-27 isolated restore rehearsal confirmed that the backup reconstructs all 7 public tables, 24 policies, the publication trigger, and RLS on every public table.
 
 ## Decision
 

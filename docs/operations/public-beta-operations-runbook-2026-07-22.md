@@ -96,7 +96,7 @@ The connected Supabase MCP can retrieve the last 24 hours by service (`api`, `au
 - Production has encrypted `GOOGLE_MAPS_API_KEY` and `VITE_GOOGLE_MAPS_API_KEY` entries. These are browser-visible in application use even though Cloudflare stores them as encrypted values.
 - The unused encrypted `SUPABASE_JWT_SECRET` was removed from both Production and Preview after repository-wide usage checks. Its value was not inspected.
 - Unused R2 binding `MY_BUCKET` was removed from Production. The `my-photos-storage` bucket itself was not changed or deleted.
-- The local Colima/Docker prerequisite check and first encrypted export are complete. The disposable-project restore rehearsal remains incomplete.
+- The local Colima/Docker prerequisite check, first encrypted export, live schema baseline, and isolated restore rehearsal are complete.
 
 ## Runtime Values
 
@@ -163,11 +163,36 @@ The script privately prompts for the database connection string and archive pass
 - SHA-256: `a4de44a24ce6ad0c7cd7aa005d29a9cf520b107e25dd03b673ec5634c26560ad`
 - Verification: checksum `OK`; encrypted archive and checksum file both use owner-only `600` permissions
 - Secrets: the database URL and archive passphrase were not recorded in the repository, Notion, or chat
-- Remaining: restore the archive into a disposable Supabase project and compare schema, policies, and safe aggregate counts
+- Restore rehearsal: passed in an isolated local Supabase database on `2026-07-27`
 
 ### Restore Rehearsal
 
-Never restore a logical export over the active production project as a test. Create a disposable Supabase project and follow the current Supabase backup/restore guide:
+Never restore a logical export over the active production project as a test. Prefer the isolated local rehearsal because it has no hosted-project cost and cannot change the live database.
+
+Check Docker, the pinned Supabase CLI, the latest encrypted archive, and its SHA-256 record:
+
+```bash
+npm run restore:check
+```
+
+Run the complete rehearsal:
+
+```bash
+npm run restore:db
+```
+
+Enter the backup encryption passphrase only in the hidden terminal prompt. The helper verifies the encrypted archive and its internal manifest, initializes a disposable local Supabase database, restores roles, schema, and data in one transaction, and verifies 7 tables, 24 policies, 1 trigger, and 7 RLS-enabled tables. It prints only safe aggregate row counts. On success or failure, it deletes the local database volume and all temporary plaintext files.
+
+Rehearsal record:
+
+- Completed: `2026-07-27`
+- Archive: first encrypted export from `2026-07-26`
+- Result: checksum, internal manifest, transactional restore, schema inventory, RLS inventory, trigger inventory, and safe aggregate queries passed
+- Isolation: no hosted project was created and the live Supabase project was not changed
+- Cleanup: no disposable container, database volume, decrypted archive, or temporary SQL directory remained
+- Evidence: `docs/qa/supabase-restore-rehearsal-2026-07-27.md`
+
+For a hosted rehearsal, create a separate Supabase project only after reviewing and approving its cost. Then follow the current Supabase backup/restore guide:
 
 1. Decrypt and extract `roles.sql`, `schema.sql`, and `data.sql` in a temporary directory.
 2. Restore with `psql --single-transaction --variable ON_ERROR_STOP=1`, applying roles, schema, and data in that order.
@@ -195,7 +220,7 @@ Baseline record:
 - Inventory: 7 tables, 4 functions, 24 RLS policies, 1 trigger, and 7 RLS-enabled tables
 - Validation: no table-row `COPY`/`INSERT` statements, database URLs, JWTs, or Supabase secret-key patterns detected
 - Privacy control: the location publication trigger and owner-only private-location policies are present; `apply_photo_location_privacy()` is revoked from `PUBLIC`
-- Remaining: apply the encrypted backup and this baseline in a disposable project, then compare schema, policies, and safe aggregate counts
+- Restore validation: the encrypted backup was applied to an isolated local Supabase database on `2026-07-27`; schema, policies, triggers, RLS coverage, and safe aggregate queries passed
 
 ## Rollback
 

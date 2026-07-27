@@ -11,6 +11,8 @@
     "perf:budget": "npm run build && node scripts/check-performance-budget.mjs",
     "backup:check": "bash scripts/backup-supabase.sh --check",
     "backup:db": "bash scripts/backup-supabase.sh",
+    "restore:check": "bash scripts/restore-supabase-backup.sh --check",
+    "restore:db": "bash scripts/restore-supabase-backup.sh",
     "schema:pull": "bash scripts/pull-supabase-schema.sh",
     "release:rehearse": "bash scripts/rehearse-public-beta-release.sh",
     "cf:deploy:dev": "npm run build && npx wrangler pages deploy dist --project-name practice-week1 --branch dev",

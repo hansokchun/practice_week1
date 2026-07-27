@@ -61,13 +61,14 @@ Storage privacy is handled separately. Do not make a private bucket public as a 
 
 ## Remaining Production Blockers
 
-- Complete the encrypted database backup and restore rehearsal against a disposable Supabase project.
 - Complete real-device authentication QA for email verification, reset, Google OAuth, Kakao OAuth, and logout.
 - Obtain explicit approval for the release and private-bucket cutover.
 - After the signed-URL-compatible build reaches `main`, perform the private-bucket cutover and final owner, second-account, and logged-out Storage regression.
 - Approve the public support address, retention policy, and final legal copy before opening public traffic.
 
 This rehearsal closes the P1 procedure-design gate. It does not close or waive any P0 blocker.
+
+The encrypted backup and restore rehearsal blocker was resolved on 2026-07-27 in an isolated local Supabase database. See `docs/qa/supabase-restore-rehearsal-2026-07-27.md`.
 
 ## Related Files
 
