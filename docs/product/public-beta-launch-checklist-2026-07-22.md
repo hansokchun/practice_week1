@@ -1,6 +1,6 @@
 # Ikkyee Public Beta Launch Checklist
 
-**Updated:** 2026-07-28
+**Updated:** 2026-07-31
 
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
@@ -18,8 +18,8 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 432 passing, 0 failing (2026-07-28) |
-| Production build | Passing | `npm run build` (2026-07-28) |
+| Automated verification | Passing | `npm test`: 436 passing, 0 failing (2026-07-31) |
+| Production build | Passing | `npm run build` (2026-07-31) |
 | Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
 | Production delivery | Verified | GitHub `main` and `dev` synchronized at application release `a3030727e97f`; Cloudflare Production deployment and smoke verification passed on 2026-07-27 |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
@@ -29,7 +29,7 @@
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
-| Authentication QA | Partial, P0 open | Desktop logout, auth entry, provider initiation, and a 390 x 844 responsive pass are recorded; Supabase Site URL now uses Production Pages, while physical devices, email links, and final OAuth consent remain |
+| Authentication QA | Partial, P0 open | Kakao is enabled with no-email accounts allowed; Production reaches the Kakao login host and no-email Kakao identities pass account guards. Physical devices, email links, and final OAuth consent remain. |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
 | Database backup/PITR | Manual recovery rehearsed | The encrypted export and data-free schema baseline are verified. On 2026-07-27 the backup restored transactionally in an isolated local Supabase database with 7 tables, 24 policies, 1 trigger, and RLS on all 7 public tables. Storage binaries remain a separate recovery boundary. |
@@ -71,6 +71,7 @@
 - [x] Add a non-destructive private Storage preflight that validates signed-URL compatibility, aggregate live evidence, Git state, Preview smoke checks, tests, and build before cutover approval.
 - [x] Fast-forward the approved signed-URL-compatible release to `main` and pass the Cloudflare Production smoke verification.
 - [x] Make the shared `photos` bucket private and pass role, direct-URL, signed-URL, and logged-out Production Explore regression checks.
+- [x] Revalidate Kakao Auth in Production and allow authenticated Kakao accounts without email to use upload and publish flows.
 
 ### P1: Public Beta Readiness
 

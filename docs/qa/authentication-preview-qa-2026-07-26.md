@@ -61,6 +61,20 @@ Supabase confirmed the Site URL update with a success notification, and a fresh 
 - Repeat the same flows on physical Android Chrome.
 - Confirm OAuth initiated inside an embedded mobile browser shows or follows the expected safe handoff behavior.
 
+## 2026-07-31 Kakao Production Revalidation
+
+The current Supabase dashboard and Production site were checked again without exposing or changing provider credentials.
+
+- Kakao is enabled in Supabase Auth and has provider credentials configured.
+- **Allow users without an email** is enabled.
+- The Supabase callback remains `https://pqczcponriukilrtpbdl.supabase.co/auth/v1/callback`.
+- The Production login modal exposes **Kakao로 계속하기**.
+- Starting Kakao login from Production reaches `accounts.kakao.com`.
+- The OAuth request returns to `https://practice-week1-cws.pages.dev/` after the Supabase callback.
+- No Kakao identity existed before this check, and no account password, consent, or new user creation was performed during QA.
+
+One application gap was fixed: a Kakao account without an email could authenticate successfully but still be treated as unverified by upload and publish guards. Google and Kakao OAuth identities are now accepted as verified social accounts, while unconfirmed email/password accounts remain blocked.
+
 ## Launch Decision
 
-The browser-verifiable portion passes after the redirect and duplicate-scope fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.
+The browser-verifiable portion passes after the redirect, duplicate-scope, and no-email Kakao account fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.

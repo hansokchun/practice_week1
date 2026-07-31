@@ -39,6 +39,11 @@ test('authentication QA records the completed dashboard fix and remaining extern
     assert.match(source, /password-reset email and recovery link/i);
     assert.match(source, /final Google and Kakao consent/i);
     assert.match(source, /Kakao.*account_email/i);
+    assert.match(source, /2026-07-31 Kakao Production Revalidation/i);
+    assert.match(source, /Kakao is enabled in Supabase Auth/i);
+    assert.match(source, /Allow users without an email/i);
+    assert.match(source, /Production reaches `accounts\.kakao\.com`/i);
+    assert.match(source, /Kakao account without an email/i);
 });
 
 test('real-device authentication launch gate remains open', () => {

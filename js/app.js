@@ -30,6 +30,7 @@ import {
     upsertPhoto
 } from '../auth.js';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
+import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
 import { getExplorePreviewExpansionAction } from './explore-preview-expansion.mjs';
@@ -4394,9 +4395,7 @@ function enforceAccountUploadLimit(incomingUploadCount = 0) {
 }
 
 function isCurrentUserEmailVerified() {
-    const user = state.currentUser;
-    const provider = user?.app_metadata?.provider;
-    return Boolean(user?.email_confirmed_at || user?.confirmed_at || provider === 'google');
+    return isVerifiedAccount(state.currentUser);
 }
 
 function enforceVerifiedAccount(action) {
