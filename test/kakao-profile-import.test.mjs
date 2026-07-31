@@ -21,9 +21,24 @@ function createStorage() {
 test('pending Kakao login survives the OAuth redirect and is consumed once', () => {
     const storage = createStorage();
 
-    assert.equal(setPendingOAuthProvider(storage, 'kakao'), 'kakao');
+    assert.equal(setPendingOAuthProvider(storage, 'kakao', 1_000), 'kakao');
+    assert.equal(takePendingOAuthProvider(storage, 2_000), 'kakao');
+    assert.equal(takePendingOAuthProvider(storage, 2_000), null);
+});
+
+test('stale pending OAuth providers are discarded after the mobile app handoff window', () => {
+    const storage = createStorage();
+
+    setPendingOAuthProvider(storage, 'kakao', 1_000);
+
+    assert.equal(takePendingOAuthProvider(storage, 1_000 + (16 * 60 * 1_000)), null);
+});
+
+test('legacy pending OAuth provider values remain consumable during rollout', () => {
+    const storage = createStorage();
+    storage.setItem('ikkyee.pendingOAuthProvider', 'kakao');
+
     assert.equal(takePendingOAuthProvider(storage), 'kakao');
-    assert.equal(takePendingOAuthProvider(storage), null);
 });
 
 test('Kakao identity profile is read instead of linked Google metadata', () => {
@@ -84,8 +99,8 @@ test('Kakao login return offers a profile preview and explicit choices', () => {
     assert.match(html, /카카오 프로필을 적용할까요\?/);
     assert.match(html, /id="btn-apply-kakao-profile"/);
     assert.match(html, /id="btn-keep-ikkyee-profile"/);
-    assert.match(app, /setPendingOAuthProvider\(window\.sessionStorage,\s*provider\)/);
-    assert.match(app, /takePendingOAuthProvider\(window\.sessionStorage\)/);
+    assert.match(app, /setPendingOAuthProvider\(window\.localStorage,\s*provider\)/);
+    assert.match(app, /takePendingOAuthProvider\(window\.localStorage\)/);
     assert.match(app, /getOAuthIdentityProfile\(state\.currentUser,\s*'kakao'\)/);
     assert.match(app, /\$\('#btn-apply-kakao-profile'\)\?\.addEventListener\('click',\s*applyPendingKakaoProfile\)/);
 });

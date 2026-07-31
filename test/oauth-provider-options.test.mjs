@@ -4,11 +4,25 @@ import { test } from 'node:test';
 
 import { getOAuthProviderOptions } from '../js/oauth-provider-options.mjs';
 
-test('Kakao OAuth relies on Supabase defaults without appending duplicate scopes', () => {
+test('Kakao OAuth uses the account login screen on mobile to avoid losing the callback', () => {
     const options = getOAuthProviderOptions('kakao', {
         origin: 'https://dev.practice-week1-cws.pages.dev',
         hostname: 'dev.practice-week1-cws.pages.dev'
+    }, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1');
+
+    assert.deepEqual(options, {
+        redirectTo: 'https://dev.practice-week1-cws.pages.dev/',
+        queryParams: {
+            prompt: 'login'
+        }
     });
+});
+
+test('Kakao OAuth keeps the default account chooser on desktop', () => {
+    const options = getOAuthProviderOptions('kakao', {
+        origin: 'https://dev.practice-week1-cws.pages.dev',
+        hostname: 'dev.practice-week1-cws.pages.dev'
+    }, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15');
 
     assert.deepEqual(options, {
         redirectTo: 'https://dev.practice-week1-cws.pages.dev/'

@@ -148,7 +148,11 @@ export async function signInWithOAuthProvider(provider) {
         const sb = getSupabase();
         const { data, error } = await sb.auth.signInWithOAuth({
             provider,
-            options: getOAuthProviderOptions(provider, window.location)
+            options: getOAuthProviderOptions(
+                provider,
+                window.location,
+                window.navigator?.userAgent
+            )
         });
         if (error) throw error;
         return { data, error: null };

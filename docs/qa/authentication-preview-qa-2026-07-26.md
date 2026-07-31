@@ -87,7 +87,7 @@ The Google and Kakao identities for the tested email resolve to the same Supabas
 
 ## 2026-07-31 Kakao Profile Import Choice
 
-Kakao OAuth now records the initiating provider in session storage for the duration of the redirect. When the user returns, the app reads the linked Kakao identity directly and offers a preview before changing the canonical Ikkyee profile.
+Kakao OAuth records the initiating provider for the duration of the redirect. When the user returns, the app reads the linked Kakao identity directly and offers a preview before changing the canonical Ikkyee profile.
 
 - **카카오 프로필 적용** saves the Kakao name and available avatar while preserving the existing Ikkyee bio.
 - **현재 프로필 유지** closes the prompt without changing saved profile data.
@@ -95,6 +95,18 @@ Kakao OAuth now records the initiating provider in session storage for the durat
 - The prompt is consumed once per Kakao login return and is not shown after Google or email login.
 - Desktop and 390 x 844 responsive layouts kept the preview and both actions inside the viewport.
 - `npm test` passed 444 tests and `npm run build` passed after the change.
+
+## 2026-07-31 Physical Mobile Kakao Finding
+
+Physical-device testing found that choosing KakaoTalk app login could return to the site without completing the Supabase callback, while entering the Kakao account credentials in the browser completed login successfully.
+
+- Supabase Auth logs confirmed the successful browser credential flow, callback, and subsequent `/user` requests.
+- The profile-import marker used tab-scoped session storage, so a mobile app or new-tab handoff could also suppress the Kakao profile choice after a successful return.
+- The marker now uses a cross-tab local-storage record with a 15-minute expiry and is consumed once.
+- Mobile Kakao OAuth requests use Kakao's supported `prompt=login` option to keep authentication in the browser and avoid the unreliable native-app handoff.
+- Desktop Kakao and Google OAuth behavior is unchanged.
+- `npm test` passed 447 tests and `npm run build` passed after the change.
+- Physical-device Kakao login, profile choice, logout, and second login still require a post-deployment retest before this QA item can pass.
 
 ## Launch Decision
 

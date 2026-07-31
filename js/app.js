@@ -2056,7 +2056,7 @@ async function ensureCurrentUserPublicProfile() {
 }
 
 function showPendingKakaoProfileImport() {
-    const provider = takePendingOAuthProvider(window.sessionStorage);
+    const provider = takePendingOAuthProvider(window.localStorage);
     if (provider !== 'kakao' || !state.currentUser) return;
 
     const kakaoProfile = getOAuthIdentityProfile(state.currentUser, 'kakao');
@@ -4911,12 +4911,12 @@ async function handleSocialLogin(provider) {
         visibility: state.visibility,
         albumId: state.selectedPublicAlbumId
     });
-    setPendingOAuthProvider(window.sessionStorage, provider);
+    setPendingOAuthProvider(window.localStorage, provider);
     const { error } = provider === 'google'
         ? await signInWithGoogle()
         : await signInWithKakao();
     if (error) {
-        takePendingOAuthProvider(window.sessionStorage);
+        takePendingOAuthProvider(window.localStorage);
         if (message) message.textContent = error.message || '소셜 로그인으로 이동하지 못했습니다.';
     }
 }

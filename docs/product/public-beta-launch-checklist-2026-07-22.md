@@ -29,7 +29,7 @@
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
-| Authentication QA | Partial, P0 open | Google and Kakao identities for the same verified email share one Supabase user and one canonical Ikkyee profile. Kakao no-email account guards pass. Physical devices, email links, and final OAuth consent remain. |
+| Authentication QA | Partial, P0 open | Physical mobile testing found an unreliable KakaoTalk app handoff. Mobile Kakao now stays in the browser, and the profile-choice marker survives cross-tab returns for 15 minutes. A device retest plus email links and remaining OAuth checks are still required. |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
 | Database backup/PITR | Manual recovery rehearsed | The encrypted export and data-free schema baseline are verified. On 2026-07-27 the backup restored transactionally in an isolated local Supabase database with 7 tables, 24 policies, 1 trigger, and RLS on all 7 public tables. Storage binaries remain a separate recovery boundary. |
@@ -74,6 +74,7 @@
 - [x] Revalidate Kakao Auth in Production and allow authenticated Kakao accounts without email to use upload and publish flows.
 - [x] Persist one canonical Ikkyee profile across linked Google and Kakao identities so provider metadata cannot swap the visible profile.
 - [x] Ask after Kakao OAuth whether to apply the Kakao name and avatar, with an explicit option to keep the current Ikkyee profile.
+- [x] Keep mobile Kakao OAuth in the browser and preserve the one-time profile choice across app or tab handoffs.
 
 ### P1: Public Beta Readiness
 
