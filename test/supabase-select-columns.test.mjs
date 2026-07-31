@@ -18,8 +18,8 @@ test('photo select columns match the live photos schema used by saved photo surf
     assert.equal(columns.includes('uploaded_at'), false);
 });
 
-test('profile select columns avoid optional profile fields absent from the live schema', () => {
+test('profile select columns include the canonical shared profile fields', () => {
     const columns = getSelectColumns('PROFILE_SELECT_COLUMNS');
 
-    assert.deepEqual(columns, ['id', 'nickname']);
+    assert.deepEqual(columns, ['id', 'nickname', 'bio', 'avatar_url']);
 });

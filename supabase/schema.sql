@@ -113,11 +113,31 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
-BEGIN
-  INSERT INTO public.profiles (id, nickname)
-  VALUES (new.id, split_part(new.email, '@', 1));
-  RETURN new;
-END;
+begin
+  insert into public.profiles (id, nickname, bio, avatar_url)
+  values (
+    new.id,
+    coalesce(
+      nullif(new.raw_user_meta_data ->> 'nickname', ''),
+      nullif(new.raw_user_meta_data ->> 'full_name', ''),
+      nullif(new.raw_user_meta_data ->> 'name', ''),
+      split_part(coalesce(new.email, ''), '@', 1),
+      'Guest'
+    ),
+    coalesce(new.raw_user_meta_data ->> 'bio', ''),
+    regexp_replace(
+      coalesce(
+        nullif(new.raw_user_meta_data ->> 'avatar_url', ''),
+        nullif(new.raw_user_meta_data ->> 'picture', ''),
+        ''
+      ),
+      '^http://',
+      'https://'
+    )
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
 $$;
 
 
@@ -245,7 +265,9 @@ ALTER TABLE "public"."photos" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "id" "uuid" NOT NULL,
-    "nickname" "text"
+    "nickname" "text",
+    "bio" "text" DEFAULT ''::"text" NOT NULL,
+    "avatar_url" "text" DEFAULT ''::"text" NOT NULL
 );
 
 

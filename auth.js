@@ -17,7 +17,7 @@ import {
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
-const PROFILE_SELECT_COLUMNS = 'id,nickname';
+const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url';
 const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,liked,shared,owner_id,album,album_id,visibility,geo_source';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
@@ -209,6 +209,26 @@ export async function updateNicknameInDB(userId, newNickname) {
         return { error: null };
     } catch (error) {
         return { error };
+    }
+}
+
+export async function updateProfileInDB(userId, profile = {}) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('profiles')
+            .upsert({
+                id: userId,
+                nickname: profile.nickname,
+                bio: profile.bio || '',
+                avatar_url: profile.avatarUrl || ''
+            }, { onConflict: 'id' })
+            .select(PROFILE_SELECT_COLUMNS)
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
     }
 }
 

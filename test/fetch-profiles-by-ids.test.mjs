@@ -9,7 +9,7 @@ test('fetchProfilesByIds loads live profile display columns by profile id', () =
     const fnEnd = source.indexOf('//', fnStart + 1);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.match(source, /const PROFILE_SELECT_COLUMNS = 'id,nickname'/);
+    assert.match(source, /const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url'/);
     assert.match(body, /\.select\(PROFILE_SELECT_COLUMNS\)/);
     assert.doesNotMatch(body, /\.select\('\*'\)/);
     assert.match(body, /\.in\('id', ids\)/);

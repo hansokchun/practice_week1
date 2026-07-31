@@ -134,7 +134,7 @@ test('profile updates use nickname, bio, and uploaded avatar metadata only', () 
     assert.match(app, /const bio = bioInput\s*\?\s*String\(bioInput\.value \|\| ''\)\.trim\(\)\s*:\s*getCurrentAccountProfile\(\)\.bio;/s);
     assert.match(app, /await uploadImage\(avatarFile,\s*fileName\)/);
     assert.match(app, /await updateUserMetadata\(\{\s*nickname,\s*bio,\s*avatar_url: avatarUrl\s*\}\)/s);
-    assert.match(app, /await updateNicknameInDB\(state\.currentUser\.id,\s*nickname\)/);
+    assert.match(app, /await updateProfileInDB\(state\.currentUser\.id,\s*\{\s*nickname,\s*bio,\s*avatarUrl\s*\}\)/s);
     assert.match(app, /state\.profileNames = \{ \.\.\.state\.profileNames, \[state\.currentUser\.id\]: nickname \};/);
     assert.doesNotMatch(app, /profile-website-input/);
     assert.doesNotMatch(app, /profile-username-input/);

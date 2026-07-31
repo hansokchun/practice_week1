@@ -18,7 +18,7 @@ import {
     insertLike,
     toggleLikePhoto,
     updateUserMetadata,
-    updateNicknameInDB,
+    updateProfileInDB,
     updatePhotoInfo,
     updatePhotosVisibility,
     uploadImage,
@@ -29,6 +29,10 @@ import {
     removeUploadedImage,
     upsertPhoto
 } from '../auth.js';
+import {
+    getProviderAccountProfile,
+    resolveAccountProfile
+} from './account-profile.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
@@ -1598,16 +1602,12 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
 
 function getCurrentAccountProfile() {
     const user = state.currentUser;
-    const metadata = user?.user_metadata || {};
-    const nickname = String(
-        metadata.nickname
-        || state.profileNames[user?.id]
-        || user?.email?.split('@')[0]
-        || 'Guest'
-    ).trim();
-    const bio = String(metadata.bio || '').trim();
-    const avatarUrl = String(metadata.avatar_url || '').trim();
-    return { nickname, bio, avatarUrl };
+    const storedProfile = user?.id ? state.publicProfiles[user.id] || null : null;
+    const profile = resolveAccountProfile(user, storedProfile);
+    return {
+        ...profile,
+        nickname: state.profileNames[user?.id] || profile.nickname
+    };
 }
 
 function getPublicProfileDetails(ownerId) {
@@ -1850,32 +1850,27 @@ async function saveAccountProfile(event) {
         }
         avatarUrl = url;
     }
-    const { user, error } = await updateUserMetadata({
+    const { data: savedProfile, error: profileError } = await updateProfileInDB(state.currentUser.id, {
+        nickname,
+        bio,
+        avatarUrl
+    });
+    if (profileError) {
+        if (message) message.textContent = profileError.message || '공유 프로필을 저장하지 못했어요.';
+        return;
+    }
+    const { user } = await updateUserMetadata({
         nickname,
         bio,
         avatar_url: avatarUrl
     });
-
-    if (error) {
-        if (message) message.textContent = error.message || '프로필을 저장하지 못했어요.';
-        return;
-    }
-
-    state.currentUser = user || {
-        ...state.currentUser,
-        user_metadata: {
-            ...(state.currentUser?.user_metadata || {}),
-            nickname,
-            bio,
-            avatar_url: avatarUrl
-        }
-    };
-    await updateNicknameInDB(state.currentUser.id, nickname);
+    if (user) state.currentUser = user;
     state.profileNames = { ...state.profileNames, [state.currentUser.id]: nickname };
     state.publicProfiles = {
         ...state.publicProfiles,
         [state.currentUser.id]: {
             ...(state.publicProfiles[state.currentUser.id] || {}),
+            ...(savedProfile || {}),
             id: state.currentUser.id,
             nickname,
             bio,
@@ -2029,17 +2024,28 @@ async function handleLogout() {
 async function ensureCurrentUserPublicProfile() {
     const user = state.currentUser;
     if (!user?.id) return;
-    const nickname = String(user.user_metadata?.nickname || user.email?.split('@')[0] || '').trim();
-    if (!nickname) return;
     const { data } = await fetchProfilesByIds([user.id]);
     const profile = (data || []).find((row) => getProfileUserId(row) === user.id);
-    const existingName = getProfileDisplayName(profile);
-    if (existingName) {
-        state.profileNames = { ...state.profileNames, [user.id]: existingName };
-        return;
+    let storedProfile = profile || null;
+
+    if (!storedProfile) {
+        const providerProfile = getProviderAccountProfile(user);
+        const { data: createdProfile, error } = await updateProfileInDB(user.id, providerProfile);
+        if (!error) storedProfile = createdProfile;
     }
-    const { error } = await updateNicknameInDB(user.id, nickname);
-    if (!error) state.profileNames = { ...state.profileNames, [user.id]: nickname };
+
+    const resolvedProfile = resolveAccountProfile(user, storedProfile);
+    state.profileNames = { ...state.profileNames, [user.id]: resolvedProfile.nickname };
+    state.publicProfiles = {
+        ...state.publicProfiles,
+        [user.id]: {
+            ...(storedProfile || {}),
+            id: user.id,
+            nickname: resolvedProfile.nickname,
+            bio: resolvedProfile.bio,
+            avatar_url: resolvedProfile.avatarUrl
+        }
+    };
 }
 
 function normalizeSavedPhoto(photo) {
@@ -3139,6 +3145,11 @@ async function loadPublicProfileNames() {
         if (userId && displayName) names[userId] = displayName;
         return names;
     }, { ...state.profileNames });
+    state.publicProfiles = (data || []).reduce((profiles, profile) => {
+        const userId = getProfileUserId(profile);
+        if (userId) profiles[userId] = profile;
+        return profiles;
+    }, { ...state.publicProfiles });
     renderPublicSurfaces();
 }
 
@@ -4756,8 +4767,8 @@ async function handleAuthSubmit(event) {
         return;
     }
     state.currentUser = user;
-    updateAccountUI();
     await ensureCurrentUserPublicProfile();
+    updateAccountUI();
     await loadSavedLibrary();
     closeModals();
     showToast('\uB85C\uADF8\uC778\uD588\uC5B4\uC694.');
@@ -5469,8 +5480,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const sharedAlbumId = parseSharedAlbumId(window.location.hash);
         if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
         state.currentUser = await getCurrentUser();
-        updateAccountUI();
         await ensureCurrentUserPublicProfile();
+        updateAccountUI();
         await loadSavedLibrary();
         await loadPublicProfileNames();
         ensureProfileHeaderShell();

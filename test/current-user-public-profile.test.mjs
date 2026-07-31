@@ -4,19 +4,20 @@ import { test } from 'node:test';
 
 const app = readFileSync('js/app.js', 'utf8');
 
-test('current user profile is upserted from login metadata for public author display', () => {
+test('current user profile is loaded once and reused across login providers', () => {
     const fnStart = app.indexOf('async function ensureCurrentUserPublicProfile');
     const fnEnd = app.indexOf('function normalizeSavedPhoto', fnStart);
     const body = app.slice(fnStart, fnEnd);
 
     assert.match(body, /fetchProfilesByIds\(\[user\.id\]\)/);
-    assert.match(body, /const existingName = getProfileDisplayName\(profile\)/);
-    assert.match(body, /if \(existingName\)/);
-    assert.match(body, /updateNicknameInDB\(user\.id, nickname\)/);
-    assert.match(body, /state\.profileNames = \{ \.\.\.state\.profileNames, \[user\.id\]: nickname \}/);
+    assert.match(body, /if \(!storedProfile\)/);
+    assert.match(body, /getProviderAccountProfile\(user\)/);
+    assert.match(body, /updateProfileInDB\(user\.id, providerProfile\)/);
+    assert.match(body, /resolveAccountProfile\(user, storedProfile\)/);
+    assert.match(body, /state\.publicProfiles = \{/);
 });
 
-test('app startup and email auth refresh the public profile row', () => {
-    assert.match(app, /state\.currentUser = await getCurrentUser\(\);\s+updateAccountUI\(\);\s+await ensureCurrentUserPublicProfile\(\);/);
-    assert.match(app, /state\.currentUser = user;\s+updateAccountUI\(\);\s+await ensureCurrentUserPublicProfile\(\);/);
+test('app startup and email auth load the stored profile before account UI', () => {
+    assert.match(app, /state\.currentUser = await getCurrentUser\(\);\s+await ensureCurrentUserPublicProfile\(\);\s+updateAccountUI\(\);/);
+    assert.match(app, /state\.currentUser = user;\s+await ensureCurrentUserPublicProfile\(\);\s+updateAccountUI\(\);/);
 });

@@ -75,6 +75,16 @@ The current Supabase dashboard and Production site were checked again without ex
 
 One application gap was fixed: a Kakao account without an email could authenticate successfully but still be treated as unverified by upload and publish guards. Google and Kakao OAuth identities are now accepted as verified social accounts, while unconfirmed email/password accounts remain blocked.
 
+## 2026-07-31 Linked Identity Profile Revalidation
+
+The Google and Kakao identities for the tested email resolve to the same Supabase Auth user. The application now treats `public.profiles` as the canonical Ikkyee profile instead of rendering the latest OAuth provider metadata directly.
+
+- The existing profile was backfilled once with nickname, bio, and avatar data.
+- Future profile edits update the canonical profile row and are reused after either Google or Kakao login.
+- An intentionally removed profile image remains removed instead of falling back to a provider image.
+- Database verification confirmed that both linked identities reference the same profile row.
+- `npm test` passed 440 tests and `npm run build` passed after the change.
+
 ## Launch Decision
 
 The browser-verifiable portion passes after the redirect, duplicate-scope, and no-email Kakao account fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.
