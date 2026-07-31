@@ -17,6 +17,7 @@ import {
     signInWithKakao,
     insertLike,
     toggleLikePhoto,
+    updatePassword,
     updateUserMetadata,
     updateProfileInDB,
     updatePhotoInfo,
@@ -147,6 +148,9 @@ import {
     getMapUnavailableState,
     getUploadFailureState
 } from './user-facing-failure-states.mjs';
+import { isPasswordRecoveryCallback } from './password-recovery.mjs';
+
+const initialAuthHash = window.location.hash;
 
 const state = {
     currentUser: null,
@@ -4896,6 +4900,36 @@ async function handlePasswordReset() {
     showToast(resetMessage);
 }
 
+async function handlePasswordRecoverySubmit(event) {
+    event.preventDefault();
+    const password = $('#new-password-input')?.value || '';
+    const confirmation = $('#confirm-password-input')?.value || '';
+    const message = $('#password-recovery-message');
+    const submitButton = $('#btn-update-password');
+
+    if (password.length < 8) {
+        if (message) message.textContent = '새 비밀번호는 8자 이상 입력해주세요.';
+        return;
+    }
+    if (password !== confirmation) {
+        if (message) message.textContent = '새 비밀번호가 서로 일치하지 않습니다.';
+        return;
+    }
+
+    if (submitButton) submitButton.disabled = true;
+    if (message) message.textContent = '비밀번호를 변경하는 중입니다...';
+    const { error } = await updatePassword(password);
+    if (error) {
+        if (submitButton) submitButton.disabled = false;
+        if (message) message.textContent = '비밀번호를 변경하지 못했어요. 재설정 링크를 다시 요청해주세요.';
+        return;
+    }
+
+    if (message) message.textContent = '비밀번호를 변경했습니다. 새 비밀번호로 다시 로그인해주세요.';
+    await signOut();
+    window.setTimeout(() => window.location.replace(`${window.location.origin}/#/`), 800);
+}
+
 async function handleSocialLogin(provider) {
     const message = $('#auth-message');
     if (provider === 'google' && isLikelyEmbeddedOAuthBrowser(window.navigator?.userAgent)) {
@@ -5537,6 +5571,7 @@ function bindEvents() {
     $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));
     $('#btn-switch-login')?.addEventListener('click', () => setAuthMode('login'));
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
+    $('#password-recovery-form')?.addEventListener('submit', handlePasswordRecoverySubmit);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
     $('#btn-apply-kakao-profile')?.addEventListener('click', applyPendingKakaoProfile);
@@ -5582,6 +5617,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
         if (state.currentUser) await runPendingAuthAction();
+        if (isPasswordRecoveryCallback(initialAuthHash)) {
+            openModal('#password-recovery-modal');
+            $('#new-password-input')?.focus();
+        }
     } finally {
         setAppBooting(false);
     }

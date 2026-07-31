@@ -719,6 +719,25 @@
         </div>
     </div>
 
+    <div id="password-recovery-modal" class="modal" aria-hidden="true">
+        <div class="modal-card auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="password-recovery-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="닫기">&times;</button>
+            <p class="eyebrow">Account Recovery</p>
+            <h2 id="password-recovery-title">새 비밀번호 설정</h2>
+            <p class="auth-intro">새로 사용할 비밀번호를 입력해주세요.</p>
+            <form id="password-recovery-form" class="auth-form">
+                <label for="new-password-input">새 비밀번호</label>
+                <input id="new-password-input" type="password" autocomplete="new-password" minlength="8" required>
+                <label for="confirm-password-input">새 비밀번호 확인</label>
+                <input id="confirm-password-input" type="password" autocomplete="new-password" minlength="8" required>
+                <div class="auth-actions">
+                    <button id="btn-update-password" class="btn-primary" type="submit">비밀번호 변경</button>
+                </div>
+            </form>
+            <p id="password-recovery-message" class="auth-message" role="status"></p>
+        </div>
+    </div>
+
     <div id="kakao-profile-import-modal" class="modal" aria-hidden="true">
         <div class="modal-card kakao-profile-import-card" role="dialog" aria-modal="true" aria-labelledby="kakao-profile-import-title">
             <button class="modal-close" data-kakao-profile-dismiss type="button" aria-label="닫기">&times;</button>

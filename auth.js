@@ -143,6 +143,17 @@ export async function resetPasswordForEmail(email, options = {}) {
     }
 }
 
+export async function updatePassword(password) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb.auth.updateUser({ password });
+        if (error) throw error;
+        return { user: data.user, error: null };
+    } catch (error) {
+        return { user: null, error };
+    }
+}
+
 export async function signInWithOAuthProvider(provider) {
     try {
         const sb = getSupabase();

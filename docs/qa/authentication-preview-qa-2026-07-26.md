@@ -111,3 +111,14 @@ Physical-device testing found that choosing KakaoTalk app login could return to 
 ## Launch Decision
 
 The browser-verifiable portion passes after the redirect, duplicate-scope, and no-email Kakao account fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.
+
+## 2026-07-31 Password Recovery Finding
+
+Production successfully sent a password recovery email and returned the user to the site, but the application did not expose a new-password form because it had no recovery callback UI.
+
+- Production UI and Supabase logs confirmed `/recover` 200, `user_recovery_requested`, and recovery `mail.send`.
+- The app now detects Supabase implicit-flow callbacks with `type=recovery` before the SDK consumes the URL hash.
+- A dedicated modal requires an eight-character password and matching confirmation before calling `updateUser({ password })`.
+- Successful changes sign the recovery session out and return the user to the login entry.
+- The callback helper, UI contract, validation wiring, 450-test suite, build, and local callback-modal behavior pass.
+- A fresh Production recovery email and physical-device callback retest remain required after deployment.

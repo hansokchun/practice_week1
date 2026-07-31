@@ -30,6 +30,18 @@ test('auth modal exposes social choices first, email signup, password reset, and
     assert.doesNotMatch(html, /id="btn-login"/);
 });
 
+test('password recovery callbacks open a dedicated password update flow', () => {
+    assert.match(html, /id="password-recovery-modal"/);
+    assert.match(html, /id="password-recovery-form"/);
+    assert.match(html, /id="new-password-input"/);
+    assert.match(html, /id="confirm-password-input"/);
+    assert.match(authSource, /export async function updatePassword\(password\)/);
+    assert.match(authSource, /sb\.auth\.updateUser\(\{ password \}\)/);
+    assert.match(appSource, /isPasswordRecoveryCallback\(initialAuthHash\)/);
+    assert.match(appSource, /openModal\('#password-recovery-modal'\)/);
+    assert.match(appSource, /#password-recovery-form'\)\?\.addEventListener\('submit', handlePasswordRecoverySubmit\)/);
+});
+
 test('Turnstile script is lazy-loaded from the email auth surface', () => {
     assert.match(appSource, /function loadTurnstileScript\(\)/);
     assert.match(appSource, /script\.src = 'https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit'/);

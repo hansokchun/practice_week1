@@ -75,6 +75,7 @@
 - [x] Persist one canonical Ikkyee profile across linked Google and Kakao identities so provider metadata cannot swap the visible profile.
 - [x] Ask after Kakao OAuth whether to apply the Kakao name and avatar, with an explicit option to keep the current Ikkyee profile.
 - [x] Keep mobile Kakao OAuth in the browser and preserve the one-time profile choice across app or tab handoffs.
+- [x] Show a dedicated new-password form after a Supabase recovery callback and safely end the recovery session after success.
 
 ### P1: Public Beta Readiness
 
