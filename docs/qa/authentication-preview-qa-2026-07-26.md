@@ -85,6 +85,17 @@ The Google and Kakao identities for the tested email resolve to the same Supabas
 - Database verification confirmed that both linked identities reference the same profile row.
 - `npm test` passed 440 tests and `npm run build` passed after the change.
 
+## 2026-07-31 Kakao Profile Import Choice
+
+Kakao OAuth now records the initiating provider in session storage for the duration of the redirect. When the user returns, the app reads the linked Kakao identity directly and offers a preview before changing the canonical Ikkyee profile.
+
+- **카카오 프로필 적용** saves the Kakao name and available avatar while preserving the existing Ikkyee bio.
+- **현재 프로필 유지** closes the prompt without changing saved profile data.
+- Missing Kakao values do not erase existing profile values.
+- The prompt is consumed once per Kakao login return and is not shown after Google or email login.
+- Desktop and 390 x 844 responsive layouts kept the preview and both actions inside the viewport.
+- `npm test` passed 444 tests and `npm run build` passed after the change.
+
 ## Launch Decision
 
 The browser-verifiable portion passes after the redirect, duplicate-scope, and no-email Kakao account fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.

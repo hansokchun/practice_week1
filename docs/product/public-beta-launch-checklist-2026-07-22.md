@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 440 passing, 0 failing (2026-07-31) |
+| Automated verification | Passing | `npm test`: 444 passing, 0 failing (2026-07-31) |
 | Production build | Passing | `npm run build` (2026-07-31) |
 | Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
 | Production delivery | Verified | GitHub `main` and `dev` synchronized at application release `a3030727e97f`; Cloudflare Production deployment and smoke verification passed on 2026-07-27 |
@@ -73,6 +73,7 @@
 - [x] Make the shared `photos` bucket private and pass role, direct-URL, signed-URL, and logged-out Production Explore regression checks.
 - [x] Revalidate Kakao Auth in Production and allow authenticated Kakao accounts without email to use upload and publish flows.
 - [x] Persist one canonical Ikkyee profile across linked Google and Kakao identities so provider metadata cannot swap the visible profile.
+- [x] Ask after Kakao OAuth whether to apply the Kakao name and avatar, with an explicit option to keep the current Ikkyee profile.
 
 ### P1: Public Beta Readiness
 

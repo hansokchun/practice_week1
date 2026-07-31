@@ -116,6 +116,12 @@ import {
     isLikelyEmbeddedOAuthBrowser
 } from './mobile-oauth-browser.mjs';
 import { getOAuthRedirectUrl } from './oauth-redirect-url.mjs';
+import {
+    getOAuthIdentityProfile,
+    mergeOAuthIdentityProfile,
+    setPendingOAuthProvider,
+    takePendingOAuthProvider
+} from './oauth-profile-import.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import {
@@ -157,6 +163,7 @@ const state = {
     myLikesLoadError: false,
     profileNames: {},
     publicProfiles: {},
+    pendingKakaoProfile: null,
     lastSavedPhotoIds: [],
     albumDrafts: [],
     visibility: 'private',
@@ -2046,6 +2053,78 @@ async function ensureCurrentUserPublicProfile() {
             avatar_url: resolvedProfile.avatarUrl
         }
     };
+}
+
+function showPendingKakaoProfileImport() {
+    const provider = takePendingOAuthProvider(window.sessionStorage);
+    if (provider !== 'kakao' || !state.currentUser) return;
+
+    const kakaoProfile = getOAuthIdentityProfile(state.currentUser, 'kakao');
+    if (!kakaoProfile || (!kakaoProfile.nickname && !kakaoProfile.avatarUrl)) return;
+
+    state.pendingKakaoProfile = kakaoProfile;
+    const previewProfile = mergeOAuthIdentityProfile(getCurrentAccountProfile(), kakaoProfile);
+    const name = $('#kakao-profile-import-name');
+    const message = $('#kakao-profile-import-message');
+    const applyButton = $('#btn-apply-kakao-profile');
+    if (name) name.textContent = previewProfile.nickname;
+    if (message) message.textContent = '';
+    if (applyButton) applyButton.disabled = false;
+    setAvatarDisplay(
+        $('#kakao-profile-import-avatar-image'),
+        $('#kakao-profile-import-avatar-fallback'),
+        previewProfile.avatarUrl,
+        previewProfile.nickname
+    );
+    openModal('#kakao-profile-import-modal');
+}
+
+function dismissPendingKakaoProfileImport() {
+    state.pendingKakaoProfile = null;
+    closeModals();
+}
+
+async function applyPendingKakaoProfile() {
+    const kakaoProfile = state.pendingKakaoProfile;
+    const user = state.currentUser;
+    if (!kakaoProfile || !user?.id) return;
+
+    const message = $('#kakao-profile-import-message');
+    const applyButton = $('#btn-apply-kakao-profile');
+    const nextProfile = mergeOAuthIdentityProfile(getCurrentAccountProfile(), kakaoProfile);
+    if (applyButton) applyButton.disabled = true;
+    if (message) message.textContent = '카카오 프로필을 적용하는 중입니다...';
+
+    const { data: savedProfile, error } = await updateProfileInDB(user.id, nextProfile);
+    if (error) {
+        if (applyButton) applyButton.disabled = false;
+        if (message) message.textContent = '카카오 프로필을 적용하지 못했어요. 다시 시도해주세요.';
+        return;
+    }
+
+    const { user: updatedUser } = await updateUserMetadata({
+        nickname: nextProfile.nickname,
+        bio: nextProfile.bio,
+        avatar_url: nextProfile.avatarUrl
+    });
+    if (updatedUser) state.currentUser = updatedUser;
+    state.profileNames = { ...state.profileNames, [user.id]: nextProfile.nickname };
+    state.publicProfiles = {
+        ...state.publicProfiles,
+        [user.id]: {
+            ...(state.publicProfiles[user.id] || {}),
+            ...(savedProfile || {}),
+            id: user.id,
+            nickname: nextProfile.nickname,
+            bio: nextProfile.bio,
+            avatar_url: nextProfile.avatarUrl
+        }
+    };
+    state.pendingKakaoProfile = null;
+    updateAccountUI();
+    renderPublicSurfaces();
+    closeModals();
+    showToast('카카오 프로필을 적용했습니다.');
 }
 
 function normalizeSavedPhoto(photo) {
@@ -4832,11 +4911,13 @@ async function handleSocialLogin(provider) {
         visibility: state.visibility,
         albumId: state.selectedPublicAlbumId
     });
+    setPendingOAuthProvider(window.sessionStorage, provider);
     const { error } = provider === 'google'
         ? await signInWithGoogle()
         : await signInWithKakao();
-    if (error && message) {
-        message.textContent = error.message || '소셜 로그인으로 이동하지 못했습니다.';
+    if (error) {
+        takePendingOAuthProvider(window.sessionStorage);
+        if (message) message.textContent = error.message || '소셜 로그인으로 이동하지 못했습니다.';
     }
 }
 
@@ -5458,6 +5539,10 @@ function bindEvents() {
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
+    $('#btn-apply-kakao-profile')?.addEventListener('click', applyPendingKakaoProfile);
+    $$('[data-kakao-profile-dismiss]').forEach((button) => {
+        button.addEventListener('click', dismissPendingKakaoProfileImport);
+    });
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
@@ -5486,6 +5571,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadPublicProfileNames();
         ensureProfileHeaderShell();
         bindEvents();
+        showPendingKakaoProfileImport();
         startHomeHeroSlider();
         renderStagedPhotos();
         renderSavedPhotoSurfaces();

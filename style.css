@@ -7683,6 +7683,39 @@ body.photo-fullscreen-open {
     font-size: 13px;
 }
 
+.kakao-profile-import-card {
+    width: min(440px, 100%);
+}
+
+.kakao-profile-import-preview {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 8px;
+    background: rgba(249, 247, 242, 0.9);
+}
+
+.kakao-profile-import-avatar {
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+}
+
+.kakao-profile-import-preview strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--teal);
+    font-size: 18px;
+}
+
+.kakao-profile-import-actions {
+    grid-template-columns: 1fr 1fr;
+}
+
 .social-login {
     display: grid;
     gap: 10px;

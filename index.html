@@ -719,6 +719,27 @@
         </div>
     </div>
 
+    <div id="kakao-profile-import-modal" class="modal" aria-hidden="true">
+        <div class="modal-card kakao-profile-import-card" role="dialog" aria-modal="true" aria-labelledby="kakao-profile-import-title">
+            <button class="modal-close" data-kakao-profile-dismiss type="button" aria-label="닫기">&times;</button>
+            <p class="eyebrow">Kakao Profile</p>
+            <h2 id="kakao-profile-import-title">카카오 프로필을 적용할까요?</h2>
+            <p>카카오의 이름과 프로필 사진으로 Ikkyee 프로필을 바꿀 수 있어요.</p>
+            <div class="kakao-profile-import-preview">
+                <div class="avatar large-avatar kakao-profile-import-avatar">
+                    <img id="kakao-profile-import-avatar-image" alt="" hidden>
+                    <span id="kakao-profile-import-avatar-fallback">K</span>
+                </div>
+                <strong id="kakao-profile-import-name">Kakao</strong>
+            </div>
+            <div class="auth-actions kakao-profile-import-actions">
+                <button id="btn-apply-kakao-profile" class="btn-primary" type="button">카카오 프로필 적용</button>
+                <button id="btn-keep-ikkyee-profile" class="btn-secondary" data-kakao-profile-dismiss type="button">현재 프로필 유지</button>
+            </div>
+            <p id="kakao-profile-import-message" class="auth-message" role="status"></p>
+        </div>
+    </div>
+
     <div id="account-profile-modal" class="modal" aria-hidden="true">
         <div class="modal-card account-profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="account-profile-title">
             <button class="modal-close" data-close-modal type="button" aria-label="닫기">&times;</button>
