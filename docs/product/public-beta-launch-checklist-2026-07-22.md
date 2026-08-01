@@ -90,7 +90,7 @@
 
 - [ ] Collect and label feedback as bug, usability issue, or feature request.
 - [ ] Reprioritize weekly using user impact and recurrence rather than feature novelty.
-- [ ] Track storage, image traffic, active users, and service cost thresholds.
+- [x] Track storage, image traffic, active users, and service cost thresholds.
 
 ## Required Verification Scenarios
 
