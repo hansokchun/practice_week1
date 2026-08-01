@@ -7446,6 +7446,30 @@ body.photo-fullscreen-open {
     color: #ffffff;
 }
 
+.publication-review {
+    display: grid;
+    gap: 6px;
+    border-left: 3px solid var(--teal-dark);
+    background: rgba(255, 255, 255, 0.72);
+    padding: 11px 12px;
+}
+
+.publication-review strong,
+.publication-review p {
+    margin: 0;
+}
+
+.publication-review strong {
+    color: var(--ink);
+    font-size: 12px;
+}
+
+.publication-review p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;

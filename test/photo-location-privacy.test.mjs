@@ -8,6 +8,11 @@ import {
 } from '../js/photo-location-privacy.mjs';
 
 const appSource = readFileSync('js/app.js', 'utf8');
+const appMarkup = readFileSync('index.html', 'utf8');
+const policyDocument = readFileSync(
+    'docs/product/public-photo-privacy-policy.md',
+    'utf8'
+);
 const locationQaRecord = readFileSync(
     'docs/qa/public-location-privacy-role-qa-2026-07-26.md',
     'utf8'
@@ -37,6 +42,17 @@ test('location precision labels describe the selected public boundary', () => {
 test('Explore filters hidden locations and the editor persists the selected precision', () => {
     assert.match(appSource, /canShowPhotoOnPublicMap\(photo\)/);
     assert.match(appSource, /location_precision: state\.editingPhotoLocationPrecision/);
+});
+
+test('publication review explains exposed fields and immediate revocation behavior', () => {
+    assert.match(appMarkup, /data-publication-review/);
+    assert.match(appMarkup, /사진, 설명, 촬영일과 선택한 범위의 위치/);
+    assert.match(appMarkup, /Explore와 공개 프로필에서 즉시 사라집니다/);
+    assert.match(policyDocument, /`exact`/);
+    assert.match(policyDocument, /`approximate`/);
+    assert.match(policyDocument, /`hidden`/);
+    assert.match(policyDocument, /촬영 시각의 시·분·초는 공개 화면에 표시하지 않는다/);
+    assert.match(policyDocument, /Explore와 공개 프로필에서 즉시 제외/);
 });
 
 test('location privacy QA records owner, non-owner, and anonymous role evidence', () => {
