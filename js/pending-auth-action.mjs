@@ -31,10 +31,11 @@ export function takePendingAuthAction(state) {
 export function storePendingAuthContext(storage, state, context = {}) {
     const action = getPendingAuthAction(state);
     const pendingRoute = SUPPORTED_PENDING_ROUTES.has(state.pendingAuthRoute) ? state.pendingAuthRoute : null;
-    if (!storage || (!action && !pendingRoute)) return null;
+    const route = typeof context.route === 'string' ? context.route : null;
+    if (!storage || (!action && !pendingRoute && !route)) return null;
     const payload = {
         action,
-        route: context.route || null,
+        route,
         visibility: context.visibility || null,
         albumId: context.albumId || null,
         pendingRoute
@@ -53,12 +54,13 @@ export function restorePendingAuthContext(storage, state) {
         const parsed = JSON.parse(raw);
         const action = SUPPORTED_ACTIONS.has(parsed?.action) ? parsed.action : null;
         const pendingRoute = SUPPORTED_PENDING_ROUTES.has(parsed?.pendingRoute) ? parsed.pendingRoute : null;
-        if (!action && !pendingRoute) return null;
+        const route = typeof parsed?.route === 'string' ? parsed.route : null;
+        if (!action && !pendingRoute && !route) return null;
         state.pendingAuthAction = action;
         state.pendingAuthRoute = pendingRoute;
         return {
             action,
-            route: typeof parsed.route === 'string' ? parsed.route : null,
+            route,
             visibility: ['private', 'link', 'public'].includes(parsed.visibility) ? parsed.visibility : null,
             albumId: typeof parsed.albumId === 'string' ? parsed.albumId : null,
             pendingRoute

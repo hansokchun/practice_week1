@@ -8,11 +8,16 @@ const html = readFileSync('index.html', 'utf8');
 
 test('email auth calls pass Supabase CAPTCHA tokens when available', () => {
     assert.match(authSource, /export async function signUpWithEmail\(email, password, options = \{\}\)/);
-    assert.match(authSource, /sb\.auth\.signUp\(\{\s*email,\s*password,\s*options:\s*getAuthOptions\(options\)/s);
+    assert.match(authSource, /sb\.auth\.signUp\(\{\s*email,\s*password,\s*options:\s*getSignUpAuthOptions\(options\)/s);
     assert.match(authSource, /export async function signInWithEmail\(email, password, options = \{\}\)/);
     assert.match(authSource, /sb\.auth\.signInWithPassword\(\{\s*email,\s*password,\s*options:\s*getAuthOptions\(options\)/s);
     assert.match(authSource, /export async function resetPasswordForEmail\(email, options = \{\}\)/);
     assert.match(authSource, /sb\.auth\.resetPasswordForEmail\(email,\s*getAuthOptions\(options\)\)/s);
+});
+
+test('email verification maps the normalized redirect to Supabase emailRedirectTo', () => {
+    assert.match(authSource, /authOptions\.emailRedirectTo\s*=\s*options\.redirectTo/);
+    assert.match(authSource, /delete authOptions\.redirectTo/);
 });
 
 test('auth modal exposes social choices first, email signup, password reset, and Turnstile mount', () => {

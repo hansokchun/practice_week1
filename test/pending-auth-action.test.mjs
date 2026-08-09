@@ -75,3 +75,24 @@ test('pending auth context preserves an upload route after OAuth redirect', () =
     });
     assert.equal(restored.pendingAuthRoute, 'upload');
 });
+
+test('OAuth login preserves the current public route without a pending action', () => {
+    const state = createPendingAuthState();
+    const storage = new Map();
+    const adapter = {
+        getItem: (key) => storage.get(key) || null,
+        setItem: (key, value) => storage.set(key, value),
+        removeItem: (key) => storage.delete(key)
+    };
+
+    storePendingAuthContext(adapter, state, { route: 'explore' });
+
+    const restored = createPendingAuthState();
+    assert.deepEqual(restorePendingAuthContext(adapter, restored), {
+        action: null,
+        route: 'explore',
+        visibility: null,
+        albumId: null,
+        pendingRoute: null
+    });
+});

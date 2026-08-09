@@ -41,6 +41,13 @@ function getAuthOptions(options = {}) {
     return authOptions;
 }
 
+function getSignUpAuthOptions(options = {}) {
+    const authOptions = getAuthOptions(options);
+    delete authOptions.redirectTo;
+    if (options.redirectTo) authOptions.emailRedirectTo = options.redirectTo;
+    return authOptions;
+}
+
 async function hydrateSignedPhotoUrls(sb, photos = []) {
     const paths = [...new Set(photos.map(getPhotoStoragePath).filter(Boolean))];
     if (!paths.length) return photos;
@@ -108,7 +115,7 @@ export async function signUpWithEmail(email, password, options = {}) {
         const { data, error } = await sb.auth.signUp({
             email,
             password,
-            options: getAuthOptions(options)
+            options: getSignUpAuthOptions(options)
         });
         if (error) throw error;
         return { user: data.user, error: null };
