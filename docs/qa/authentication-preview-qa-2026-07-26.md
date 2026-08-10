@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-26  
 **Environment:** `https://dev.practice-week1-cws.pages.dev`  
-**Status:** Partial pass; first-time Kakao automatic sign-up QA remains
+**Status:** Pass; fresh email, Google, and Kakao sign-up checks completed
 
 ## Scope And Boundary
 
@@ -134,14 +134,25 @@ The browser-verifiable portion passed after the redirect, duplicate-scope, and n
 - A Google account not previously used with Ikkyee completed OAuth on Preview.
 - The OAuth return created and signed in the new Supabase user automatically.
 - The user returned to the application and confirmed the signed-in state.
-- Fresh Kakao sign-up remains the final controlled social-provider check.
+- Fresh Kakao sign-up was completed in the following controlled check.
+
+## 2026-08-10 Fresh Kakao Sign-up Passed
+
+- A Kakao account not previously used with Ikkyee completed OAuth on Preview.
+- The OAuth return created and signed in a Kakao-only Supabase user automatically.
+- Aggregate identity evidence now contains one Kakao-only user, in addition to the previously linked Google-and-Kakao user.
+- The user returned to the application and confirmed the signed-in state.
+- Fresh email, Google, and Kakao sign-up coverage is now complete.
 
 ## 2026-08-10 KakaoTalk Link Handling
 
 - Public Ikkyee links remain readable in embedded browsers without requiring login.
 - Google and Kakao OAuth initiation is blocked inside known embedded app browsers and tells the user to reopen the page in Safari or Chrome.
 - The app shell includes a stable Open Graph preview for copied links shared through KakaoTalk and other messaging services.
-- A dedicated KakaoTalk Share button is a separate post-beta integration that requires the Kakao JavaScript SDK domain and Product Link domain configuration.
+- Kakao Developers app `1477443` now displays the app name `Ikkyee` instead of `Travellog`.
+- Product Link web domains include Production and Preview, with Production selected as the default.
+- The default JavaScript key allows the Production and Preview domains for the Kakao JavaScript SDK.
+- A dedicated KakaoTalk Share button remains a separate client integration; its required Kakao dashboard domains are ready.
 
 ## 2026-08-10 Redirect And Cross-tab Revalidation
 
