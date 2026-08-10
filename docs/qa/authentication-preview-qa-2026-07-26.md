@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-26  
 **Environment:** `https://dev.practice-week1-cws.pages.dev`  
-**Status:** Passing; real-device authentication launch gate completed 2026-08-10
+**Status:** Partial pass; first-time Google and Kakao automatic sign-up QA remains
 
 ## Scope And Boundary
 
@@ -118,7 +118,16 @@ The browser-verifiable portion passed after the redirect, duplicate-scope, and n
 - The confirmation message arrived in the user's inbox.
 - Opening the verification link returned safely to the site.
 - The verified account successfully signed in.
-- Together with the recorded mobile Google, Kakao, logout, and password-recovery checks, the real-device authentication gate is complete.
+- Existing-account Google, Kakao, logout, and password-recovery checks also pass.
+- A separate controlled check with never-used Google and Kakao accounts is still required before the authentication gate is complete.
+
+## 2026-08-10 Fresh Social Sign-up Baseline
+
+- The client uses Supabase `signInWithOAuth` for both login and first-time automatic account creation.
+- Aggregate database evidence contains one Google-only account and one Google-plus-Kakao linked account.
+- There is no Kakao-only account, and the existing records do not prove a controlled first-time sign-up test for both providers.
+- Test accounts must use provider email addresses not already present in Ikkyee; matching existing addresses may exercise account linking instead of new account creation.
+- Keep the created test accounts until Supabase Auth logs and the new empty-profile behavior are verified.
 
 ## 2026-08-10 Redirect And Cross-tab Revalidation
 

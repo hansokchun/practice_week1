@@ -46,9 +46,9 @@ test('authentication QA records the completed dashboard fix and external checks'
     assert.match(source, /Kakao account without an email/i);
 });
 
-test('real-device authentication launch gate is complete', () => {
+test('real-device authentication launch gate tracks fresh social sign-up', () => {
     assert.match(
         checklist(),
-        /- \[x\] Run real-device authentication QA: fresh email sign-up and verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior passed\./
+        /- \[ \] Run real-device authentication QA: existing-account flows passed; first-time automatic sign-up with never-used Google and Kakao accounts remains\./
     );
 });

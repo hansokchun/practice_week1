@@ -4,7 +4,7 @@
 
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
-**P0 progress:** 13 of 14 gates complete; the only remaining gate is a paid-plan deferral.
+**P0 progress:** 12 of 14 gates complete; fresh social sign-up QA and 1 paid-plan deferral remain.
 
 ## How To Use This Checklist
 
@@ -29,7 +29,7 @@
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
-| Authentication QA | Passing | Mobile Kakao, Google, logout, password recovery, fresh email sign-up, inbox verification, and app return passed on a physical device. OAuth return context survives app/tab handoffs for 15 minutes. |
+| Authentication QA | Partial, P0 open | Mobile Kakao and Google login, logout, password recovery, fresh email sign-up, inbox verification, and app return passed. First-time automatic account creation with never-used Google and Kakao accounts remains. |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
 | Database backup/PITR | Manual recovery rehearsed | The encrypted export and data-free schema baseline are verified. On 2026-07-27 the backup restored transactionally in an isolated local Supabase database with 7 tables, 24 policies, 1 trigger, and RLS on all 7 public tables. Storage binaries remain a separate recovery boundary. |
@@ -49,7 +49,7 @@
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
 - [x] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
-- [x] Run real-device authentication QA: fresh email sign-up and verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior passed.
+- [ ] Run real-device authentication QA: existing-account flows passed; first-time automatic sign-up with never-used Google and Kakao accounts remains.
 - [x] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
 - [x] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
 
@@ -130,7 +130,7 @@ Local tests and build
 
 1. [Complete] Deploy the signed-URL-compatible release to `main` and pass Production smoke verification.
 2. [Complete] Keep the compatible disposable samples as QA fixtures, make the shared `photos` bucket private, and pass final access regression.
-3. [Complete] Pass fresh email sign-up, inbox verification, Google, Kakao, logout, password recovery, and redirect QA on a physical mobile device.
+3. Complete first-time automatic sign-up with never-used Google and Kakao accounts; existing-account OAuth and email authentication already pass.
 4. Run the remaining upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
 5. Approve the final support address, retention policy, and legal copy before opening public traffic.
 6. Revisit leaked-password protection only when the Supabase plan is upgraded.
