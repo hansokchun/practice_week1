@@ -19,6 +19,8 @@
 | Supabase Egress | 5 GB | 250 GB 포함 | 현재 플랜의 70% | 현재 플랜의 90% |
 | Cloudflare Pages 빌드 | Free 500회/월 | Pro 5,000회/월 | 70% | 90% |
 | Cloudflare Pages Functions | Workers 할당량 사용 | Workers 할당량 사용 | 70% | 90% |
+| Google Dynamic Maps | 월 10,000회 무료 사용량 기준 | 종량제 | 7,000회 | 9,000회 |
+| Google Places Autocomplete | 월 10,000세션 무료 사용량 기준 | 종량제 | 7,000세션 | 9,000세션 |
 
 Cloudflare Pages 정적 자산 요청은 무료이며 무제한이다. `/api/config`처럼 Pages Functions를 호출하는 요청만 Workers 사용량에 포함한다. 가격과 한도는 변경될 수 있으므로 분기마다 공식 문서를 다시 확인한다.
 
@@ -49,6 +51,8 @@ Cloudflare Pages 정적 자산 요청은 무료이며 무제한이다. `/api/con
 
 DB 샘플과 Storage 파일·빈 폴더 플레이스홀더까지 모두 삭제됐다. Auth 계정과 프로필은 각 3개, `photos` 버킷과 Storage 정책 4개는 보존됐다.
 
+Google Maps Platform은 월 정액 구독 없이 종량제를 유지한다. 2026-08-10 대시보드에서 최근 3개월 사용량은 0이었으며, 승인된 Map ID 활성화 자체에는 고정 비용이 없다. 브라우저 키는 Pages와 로컬 개발 주소로 제한되어 외부 도메인의 무단 사용을 차단한다.
+
 ## 주간 판정
 
 1. 집계 SQL 결과를 이전 주와 비교한다.
@@ -56,6 +60,7 @@ DB 샘플과 Storage 파일·빈 폴더 플레이스홀더까지 모두 삭제�
 3. Storage, MAU, egress 중 하나가 70%를 넘으면 Notion 피드백 DB에 운영 항목을 등록한다.
 4. 90%를 넘거나 월 증가율이 남은 용량보다 크면 업로드 제한 또는 이전 계획을 실행한다.
 5. Cloudflare 배포가 월 한도의 70%를 넘으면 불필요한 자동 배포와 재시도를 줄인다.
+6. Google 지도 로드 또는 자동완성 세션이 무료 사용량의 70%를 넘으면 호출 원인과 비정상 리퍼러를 확인하고, 90%에서는 지도 진입·검색 호출 빈도 또는 API 할당량을 조정한다.
 
 ## 공식 참고
 
@@ -63,3 +68,4 @@ DB 샘플과 Storage 파일·빈 폴더 플레이스홀더까지 모두 삭제�
 - Supabase Billing: https://supabase.com/docs/guides/platform/billing-on-supabase
 - Cloudflare Pages Limits: https://developers.cloudflare.com/pages/platform/limits/
 - Cloudflare Pages Functions Pricing: https://developers.cloudflare.com/pages/functions/pricing/
+- Google Maps Platform Pricing: https://developers.google.com/maps/billing-and-pricing/pricing

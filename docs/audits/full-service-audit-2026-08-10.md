@@ -9,7 +9,7 @@ Scope: tracked repository inventory, product documents, frontend structure, Supa
 
 Ikkyee has a clear and differentiated core: private travel photos become a map-based archive, with controlled public discovery as a secondary experience. The upload, album, privacy, signed-storage, Explore, profile, OAuth, backup, and release foundations are unusually complete for a pre-beta vanilla SPA.
 
-The original code snapshot was not ready for unrestricted public beta. The confirmed code and data blockers below were repaired on 2026-08-10; fresh social sign-up, real-device QA, legal/support approval, and Google Maps legacy API migration remain open.
+The original code snapshot was not ready for unrestricted public beta. The confirmed code and data blockers below were repaired on 2026-08-10; fresh social sign-up, real-device QA, and legal/support approval remain open.
 
 ## Remediation Update
 
@@ -24,7 +24,8 @@ The original code snapshot was not ready for unrestricted public beta. The confi
 - Cloudflare Pages now sends a source-restricted CSP for Supabase, Google Maps, and Turnstile, while fingerprinted `/assets/*` responses use a one-year immutable cache. HTML keeps Cloudflare's revalidation behavior and `/api/config` remains `no-store`.
 - The public Home opening now presents one clear photo-upload action inside the first viewport. Logged-out visitors continue through the existing login handoff, while authenticated visitors continue directly to upload.
 - The disposable sample library was fully reset: 21 photos, 3 albums, all dependent rows, 31 Storage files, and 2 empty-folder placeholders were removed. Auth accounts and profiles remain at 3, the private bucket and its 4 policies remain, and logged-out Production Explore shows the intended empty state.
-- Verification after remediation: 464/464 tests, production build, dependency audit, and performance budget all pass. Desktop 1440x900 and mobile 390x844 browser checks show no horizontal overflow or visible broken images.
+- Google Maps modernization is active in Preview and Production with the approved JavaScript vector Map ID. The deployed browser key remains limited to Maps JavaScript API and Places API and now accepts only the Pages hosts plus the documented local Vite ports.
+- Verification after remediation: 473/473 tests, production build, dependency audit, and performance budget all pass. Desktop 1440x900 and mobile 390x844 browser checks show no horizontal overflow or visible broken images.
 
 ## Confirmed Findings
 
@@ -67,12 +68,12 @@ The original code snapshot was not ready for unrestricted public beta. The confi
    - `account-profile-edit` appears twice ([index.html](../../index.html#L533), [index.html](../../index.html#L785)).
    - `querySelector`/`getElementById`-style access binds only the first match, making behavior dependent on source order. The static account-profile modal also appears to be superseded by the profile page renderer.
 
-8. **Google Maps uses two legacy APIs.**
+8. **Resolved: Google Maps used two legacy APIs.**
    - Runtime warnings identify `google.maps.places.Autocomplete` and `google.maps.Marker` as legacy/deprecated.
    - Current uses start at [app.js](../../js/app.js#L1143) and [app.js](../../js/app.js#L1174).
    - Migrate to `PlaceAutocompleteElement` and `AdvancedMarkerElement` before an API policy change forces a rushed update.
-   - Deferred prerequisite: create a Google Maps Map ID for advanced markers and enable Places API (New), then verify billing restrictions and both Cloudflare domains before changing runtime code.
-   - 2026-08-10 progress: the browser runtime and Cloudflare config endpoint accept an optional Map ID, all four map surfaces receive it when configured, and the marker library is preloaded. Advanced-marker and new Place Autocomplete adapters are implemented and tested behind that Map ID gate. Production keeps its legacy fallback until the Google Cloud prerequisites and Preview QA are complete.
+   - Completed on 2026-08-10: Places API (New) and Maps JavaScript API are enabled, the approved JavaScript vector Map ID is active in Preview and Production, and browser QA confirms the modern Explore map and `PlaceAutocompleteElement` path.
+   - The deployed browser key was matched without recording its value, kept to two required Maps APIs, and restricted to the production Pages host, Pages subdomains, and local Vite development ports. See `docs/qa/google-maps-modernization-qa-2026-08-10.md`.
 
 9. **Development dependencies have three high-severity advisories.**
    - Production dependency audit is clean, but the full audit flags Vite 8.0.10, Nano ID 3.3.12, and PostCSS 8.5.13.

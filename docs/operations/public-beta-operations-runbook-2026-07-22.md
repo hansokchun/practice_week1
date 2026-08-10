@@ -97,6 +97,8 @@ The connected Supabase MCP can retrieve the last 24 hours by service (`api`, `au
 - The unused encrypted `SUPABASE_JWT_SECRET` was removed from both Production and Preview after repository-wide usage checks. Its value was not inspected.
 - Unused R2 binding `MY_BUCKET` was removed from Production. The `my-photos-storage` bucket itself was not changed or deleted.
 - The local Colima/Docker prerequisite check, first encrypted export, live schema baseline, and isolated restore rehearsal are complete.
+- On 2026-08-10 the approved JavaScript vector Map ID was added to Preview and Production under both runtime and Vite-compatible names, both environments were redeployed, and the modern map/search path passed browser QA.
+- The deployed Maps browser key was matched by digest without recording its value. Its application restriction now allows only the production Pages host, Pages subdomains, and local Vite ports `5173` and `4173`; its API restriction remains limited to the two required Maps APIs.
 
 ## Runtime Values
 

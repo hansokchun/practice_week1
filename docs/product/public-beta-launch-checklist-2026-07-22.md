@@ -18,7 +18,7 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 464 passing, 0 failing (2026-08-10) |
+| Automated verification | Passing | `npm test`: 473 passing, 0 failing (2026-08-10) |
 | Production build | Passing | `npm run build` (2026-08-10) |
 | Preview delivery | Verified | The latest verified `dev` release is deployed at `https://dev.practice-week1-cws.pages.dev` (2026-08-10). |
 | Production delivery | Verified | GitHub `main` and `dev` are synchronized; Cloudflare Production serves the same verified release (2026-08-10). |
@@ -29,7 +29,7 @@
 | Storage sample cleanup | Passing | All photo files and empty-folder placeholders were removed through the authenticated Dashboard. 0 objects remain in the private `photos` bucket; the bucket and 4 policies remain. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
-| Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
+| Explore map platform | Modernized, passing | Production and Preview use the approved JavaScript vector Map ID, `AdvancedMarkerElement`, and `PlaceAutocompleteElement`; the browser key is limited to the Pages hosts and local Vite ports. See `docs/qa/google-maps-modernization-qa-2026-08-10.md`. |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
 | Authentication QA | Partial, P0 open | Mobile Kakao and Google login, logout, password recovery, fresh email sign-up, inbox verification, and app return passed. First-time automatic account creation with never-used Google and Kakao accounts remains. |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
@@ -58,6 +58,7 @@
 ### Recently Completed Hardening
 
 - [x] Replace deprecated Google Maps Explore search integration with the supported `Autocomplete` API and async loader.
+- [x] Activate the approved vector Map ID in Preview and Production, verify the modern map/search path, and restrict the deployed browser key to the required Pages and local-development referrers.
 - [x] Add Cloudflare Pages response security headers and verify them against the `dev` Preview deployment.
 - [x] Distinguish saved-library failures from empty states, add retry actions, and replace map/upload backend details with safe user-facing guidance.
 - [x] Add enforceable JS, CSS, and image budgets; remove 8 MB of unused PNG build output; and record mobile route-render timing.
@@ -151,6 +152,7 @@ Local tests and build
 - `docs/qa/authentication-preview-qa-2026-07-26.md`
 - `docs/qa/public-location-privacy-role-qa-2026-07-26.md`
 - `docs/qa/private-storage-cutover-2026-07-28.md`
+- `docs/qa/google-maps-modernization-qa-2026-08-10.md`
 - `docs/performance/mobile-performance-budget-2026-07-26.md`
 - `docs/cloudflare.md`
 - `docs/integrations.md`
