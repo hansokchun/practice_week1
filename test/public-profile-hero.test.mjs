@@ -11,6 +11,6 @@ test('getProfileHeroImage falls back to first profile album cover', () => {
     assert.equal(getProfileHeroImage({}, [{ cover_url: 'album.jpg' }]), 'album.jpg');
 });
 
-test('getProfileHeroImage uses the default image when no cover exists', () => {
-    assert.equal(getProfileHeroImage({}, []), 'images/main_bg4.jpg');
+test('getProfileHeroImage uses the provided default image when no cover exists', () => {
+    assert.equal(getProfileHeroImage({}, [], 'fallback.jpg'), 'fallback.jpg');
 });

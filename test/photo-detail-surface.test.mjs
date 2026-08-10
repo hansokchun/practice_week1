@@ -91,7 +91,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /renderPhotoDetailNearby\(photo, context\)/);
     assert.match(source, /function openPhotoFullscreenFromDetail\(\)/);
     assert.match(source, /sourceImage\?\.dataset\.fallbackApplied === 'true'/);
-    assert.match(source, /const fallbackSource = detailModal\?\.dataset\.photoDetailImageFallbackSrc \|\| renderedSource \|\| 'images\/main_bg2\.jpg'/);
+    assert.match(source, /const fallbackSource = detailModal\?\.dataset\.photoDetailImageFallbackSrc \|\| renderedSource \|\| MAIN_BG_2_URL/);
     assert.match(source, /setImageSourceWithFallback\(fullscreenImage, source, fallbackSource\)/);
     assert.match(source, /setPhotoDetailMoreMenuOpen\(false\)/);
     assert.match(source, /document\.body\.classList\.add\('photo-fullscreen-open'\)/);

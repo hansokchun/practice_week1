@@ -1,9 +1,17 @@
+import {
+    MAIN_BG_1_URL,
+    MAIN_BG_2_URL,
+    MAIN_BG_3_URL,
+    MAIN_BG_4_URL,
+    MAIN_BG_5_URL
+} from './image-assets.mjs';
+
 const sampleAlbum = {
     id: 'sample-public-photos',
     title: 'Public Photo Pin Samples',
     note: 'A temporary public photo sample set for checking Explore map pins.',
     visibility: 'public',
-    cover_url: 'images/main_bg2.jpg',
+    cover_url: MAIN_BG_2_URL,
     owner_id: 'sample',
     photo_count: 8,
     places: 8,
@@ -15,7 +23,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-1',
         name: 'Gyeongbokgung Gate',
-        url: 'images/main_bg1.jpg',
+        url: MAIN_BG_1_URL,
         lat: 37.5796,
         lng: 126.9770,
         date: '2026-05-12T09:20:00.000Z',
@@ -24,7 +32,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-2',
         name: 'Bukchon Alley',
-        url: 'images/main_bg2.jpg',
+        url: MAIN_BG_2_URL,
         lat: 37.5826,
         lng: 126.9830,
         date: '2026-05-12T11:10:00.000Z',
@@ -33,7 +41,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-3',
         name: 'Namsan View',
-        url: 'images/main_bg3.jpg',
+        url: MAIN_BG_3_URL,
         lat: 37.5512,
         lng: 126.9882,
         date: '2026-05-12T16:45:00.000Z',
@@ -42,7 +50,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-4',
         name: 'Seoul Forest',
-        url: 'images/main_bg4.jpg',
+        url: MAIN_BG_4_URL,
         lat: 37.5444,
         lng: 127.0374,
         date: '2026-05-13T10:15:00.000Z',
@@ -51,7 +59,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-5',
         name: 'Busan Harbor',
-        url: 'images/main_bg5.jpg',
+        url: MAIN_BG_5_URL,
         lat: 35.0969,
         lng: 129.0403,
         date: '2026-05-14T14:30:00.000Z',
@@ -60,7 +68,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-6',
         name: 'Jeju Seongsan',
-        url: 'images/main_bg2.jpg',
+        url: MAIN_BG_2_URL,
         lat: 33.4582,
         lng: 126.9425,
         date: '2026-05-15T08:35:00.000Z',
@@ -69,7 +77,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-7',
         name: 'Sokcho Beach',
-        url: 'images/main_bg1.jpg',
+        url: MAIN_BG_1_URL,
         lat: 38.1906,
         lng: 128.6034,
         date: '2026-05-16T17:50:00.000Z',
@@ -78,7 +86,7 @@ const samplePhotos = [
     {
         id: 'sample-public-photo-8',
         name: 'Daejeon Station',
-        url: 'images/main_bg3.jpg',
+        url: MAIN_BG_3_URL,
         lat: 36.3325,
         lng: 127.4348,
         date: '2026-05-17T12:05:00.000Z',

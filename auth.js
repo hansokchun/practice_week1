@@ -377,38 +377,19 @@ export async function updatePhotoInfo(photoId, updates = {}) {
 }
 
 /**
- * 사진 좋아요 증감 (RPC 호출)
- * RLS(본인만 수정 가능)를 우회하여 다른 사람의 사진 좋아요 수를 안전하게 처리합니다.
+ * 좋아요 행과 사진의 합계를 한 DB 트랜잭션에서 동기화합니다.
  */
-function isDuplicateLikeError(error) {
-    const message = String(error?.message || '');
-    const details = String(error?.details || '');
-    return error?.code === '23505'
-        || message.includes('user_likes_pkey')
-        || details.includes('user_likes_pkey')
-        || message.includes('duplicate key value violates unique constraint');
-}
-
-function isLikeCounterPermissionError(error) {
-    const message = String(error?.message || '');
-    return /permission denied for function (increment_like|decrement_like)/i.test(message)
-        || (error?.code === '42501' && /(increment_like|decrement_like)/i.test(message));
-}
-
-export async function toggleLikePhoto(photoId, isLiking) {
+export async function setPhotoLike(photoId, isLiking) {
     try {
         const sb = getSupabase();
-        const rpcName = isLiking ? 'increment_like' : 'decrement_like';
-        const { error } = await sb.rpc(rpcName, { target_photo_id: photoId.toString() });
-        if (error) {
-            if (isLikeCounterPermissionError(error)) {
-                return { error: null, counterSkipped: true };
-            }
-            throw error;
-        }
-        return { error: null, counterSkipped: false };
+        const { data, error } = await sb.rpc('set_photo_like', {
+            target_photo_id: photoId.toString(),
+            should_like: Boolean(isLiking)
+        });
+        if (error) throw error;
+        return { likedCount: Number(data || 0), error: null };
     } catch (error) {
-        return { error };
+        return { likedCount: null, error };
     }
 }
 
@@ -428,45 +409,6 @@ export async function fetchMyLikes(userId) {
         return { data: (data || []).map(row => row.photo_id), error: null };
     } catch (error) {
         return { data: [], error };
-    }
-}
-
-/**
- * 좋아요 추가 (user_likes 테이블에 INSERT)
- */
-export async function insertLike(userId, photoId) {
-    try {
-        const sb = getSupabase();
-        const { error } = await sb
-            .from('user_likes')
-            .insert({ user_id: userId, photo_id: photoId.toString() });
-        if (error) {
-            if (isDuplicateLikeError(error)) {
-                return { error: null, alreadyLiked: true };
-            }
-            throw error;
-        }
-        return { error: null, alreadyLiked: false };
-    } catch (error) {
-        return { error };
-    }
-}
-
-/**
- * 좋아요 해제 (user_likes 테이블에서 DELETE)
- */
-export async function deleteLike(userId, photoId) {
-    try {
-        const sb = getSupabase();
-        const { error } = await sb
-            .from('user_likes')
-            .delete()
-            .eq('user_id', userId)
-            .eq('photo_id', photoId.toString());
-        if (error) throw error;
-        return { error: null };
-    } catch (error) {
-        return { error };
     }
 }
 

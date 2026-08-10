@@ -118,22 +118,11 @@ begin
   values (
     new.id,
     coalesce(
-      nullif(new.raw_user_meta_data ->> 'nickname', ''),
-      nullif(new.raw_user_meta_data ->> 'full_name', ''),
-      nullif(new.raw_user_meta_data ->> 'name', ''),
-      split_part(coalesce(new.email, ''), '@', 1),
+      nullif(split_part(coalesce(new.email, ''), '@', 1), ''),
       'Guest'
     ),
-    coalesce(new.raw_user_meta_data ->> 'bio', ''),
-    regexp_replace(
-      coalesce(
-        nullif(new.raw_user_meta_data ->> 'avatar_url', ''),
-        nullif(new.raw_user_meta_data ->> 'picture', ''),
-        ''
-      ),
-      '^http://',
-      'https://'
-    )
+    '',
+    ''
   )
   on conflict (id) do nothing;
   return new;
@@ -157,6 +146,59 @@ $$;
 
 
 ALTER FUNCTION "public"."increment_like"("target_photo_id" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."set_photo_like"("target_photo_id" "text", "should_like" boolean) RETURNS integer
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public', 'pg_temp'
+    AS $$
+declare
+  current_user_id uuid := auth.uid();
+  new_like_count integer;
+begin
+  if current_user_id is null then
+    raise exception 'Authentication required' using errcode = '42501';
+  end if;
+
+  perform 1
+  from public.photos
+  where id = target_photo_id
+    and (
+      owner_id = current_user_id
+      or visibility in ('public', 'link')
+      or shared is true
+    )
+  for update;
+
+  if not found then
+    raise exception 'Photo is not available' using errcode = '42501';
+  end if;
+
+  if should_like then
+    insert into public.user_likes (user_id, photo_id)
+    values (current_user_id, target_photo_id)
+    on conflict (user_id, photo_id) do nothing;
+  else
+    delete from public.user_likes
+    where photo_id = target_photo_id
+      and user_id = current_user_id;
+  end if;
+
+  select count(*)::integer
+  into new_like_count
+  from public.user_likes
+  where photo_id = target_photo_id;
+
+  update public.photos
+  set liked = new_like_count
+  where id = target_photo_id;
+
+  return new_like_count;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."set_photo_like"("target_photo_id" "text", "should_like" boolean) OWNER TO "postgres";
 
 SET default_tablespace = '';
 
@@ -756,6 +798,11 @@ GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
 
 REVOKE ALL ON FUNCTION "public"."increment_like"("target_photo_id" "text") FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."increment_like"("target_photo_id" "text") TO "service_role";
+
+
+REVOKE ALL ON FUNCTION "public"."set_photo_like"("target_photo_id" "text", "should_like" boolean) FROM PUBLIC;
+REVOKE ALL ON FUNCTION "public"."set_photo_like"("target_photo_id" "text", "should_like" boolean) FROM "anon";
+GRANT ALL ON FUNCTION "public"."set_photo_like"("target_photo_id" "text", "should_like" boolean) TO "authenticated";
 
 
 

@@ -1,68 +1,81 @@
-# Profile Nickname and Sidebar Back Spec
+# Ikkyee 서비스 명세
 
-## Goal
+## 제품 목표
 
-Fix profile nickname updates so they are required, unique, saved reliably, and visible everywhere another user can see profile identity. Also make sidebar Back buttons return to the immediately previous sidebar panel instead of a fixed destination.
+Ikkyee는 여행 사진을 단순한 파일 목록이 아니라 시간과 장소가 연결된 개인 기록으로 보관하고, 사용자가 공개한 기록만 다른 사람에게 발견되도록 돕는다.
 
-## Requirements
+핵심 사용 흐름은 다음과 같다.
 
-- Photo detail must provide a top-action button that copies the photo location.
-- Copied location format must be `lat,lng`, such as `37.566535,126.977969`, so it can be pasted directly into Google Maps.
-- Copied coordinates must use 6 decimal places for better precision.
-- If the photo has no valid location, show `위치정보가 없습니다.`
-- On successful copy, show `위치 정보가 복사되었습니다.`
-- Nicknames are required. Empty or whitespace-only nicknames must not be saved.
-- Nicknames are unique. Duplicate nickname errors from Supabase must show a clear duplicate-name message.
-- Profile updates must continue to save age, gender, and avatar metadata when valid.
-- Public nickname display must use the `profiles` table wherever possible:
-  - photo detail author name
-  - comment author name
-  - user profile page nickname
-- If a nickname lookup fails, the UI must fall back to the current safe label format instead of breaking.
-- The profile save failure currently shown as "닉네임 변경 중 오류가 발생했습니다." must expose better diagnostics in the console and a more precise user-facing message.
-- Sidebar Back should eventually return to the previous sidebar panel, but the first history-stack implementation was rolled back because it was not fully verified in real authenticated panel flows.
-- `package.json` description may be changed to English to avoid terminal encoding confusion.
-- Local changes should be committed to `dev` and pushed to `origin/dev` after verification.
-- `main` must not be updated unless explicitly requested.
+1. 이메일, Google 또는 Kakao로 계정을 만든다.
+2. 사진을 올리면 촬영일과 위치를 읽고, 누락된 위치는 지도에서 지정한다.
+3. 사진을 개인 보관함에서 정리하고 여행 앨범으로 묶는다.
+4. 공개 범위를 선택해 사진 또는 앨범을 공유한다.
+5. Explore에서 공개 사진을 장소 중심으로 발견하고 좋아요·댓글로 반응한다.
 
-## Approach
+## 사용자와 화면
 
-Use a small utility layer rather than a large SPA router rewrite.
+- 비회원: 랜딩, 공개 Home 콘텐츠, Explore의 공개 샘플과 공개 기록, 로그인·가입 진입
+- 회원: 개인 Home, 사진 업로드·관리, 좋아요 모음, 앨범 작성, 프로필 편집
+- Home: 개인 기록과 좋아요 모음의 시작점. 다른 사용자의 탐색은 Explore에 집중한다.
+- Explore: 공개 사진의 지도·목록·상세·좋아요·댓글 화면
+- Profile: 본인과 공개 사용자가 같은 구조를 공유하며, 본인에게만 편집 기능을 제공한다.
 
-1. Add a profile directory helper in `auth.js` for reading display profiles from Supabase.
-2. Add a focused browser-friendly nickname cache module so UI modules can resolve names consistently.
-3. Keep current panel architecture intact: `activatePanel` remains the single DOM switcher.
-4. Add Node built-in tests for profile-name helper behavior before implementation.
+## 계정 정책
 
-## Data Flow
+- 이메일 가입은 확인 메일 인증 후 업로드와 공개 기능을 사용할 수 있다.
+- Google과 Kakao 최초 로그인은 자동으로 계정을 생성한다.
+- 신규 계정은 공통 기본 아바타와 이메일 앞부분 또는 `Guest` 이름으로 시작한다.
+- 공급자 프로필 사진은 자동 적용하지 않는다.
+- Kakao 로그인 후에는 이름과 사진의 미리보기를 보여주고 사용자가 적용 여부를 선택한다.
+- 같은 Supabase 사용자에 연결된 여러 공급자는 사진·앨범·좋아요를 공유하고, 별도 사용자 ID는 데이터를 공유하지 않는다.
 
-Saving a profile:
+## 사진과 위치
 
-1. Validate nickname locally.
-2. Upsert `{ id, nickname }` into `profiles`.
-3. Update Supabase Auth metadata.
-4. Update local `state.currentUser.user_metadata`.
-5. Refresh visible UI labels and profile cache.
+- 허용 이미지 형식과 파일 크기는 업로드 전 검증한다.
+- 브라우저에서 EXIF 촬영일과 GPS를 읽고 업로드 이미지를 최적화한다.
+- 위치가 없으면 지도에서 직접 지정할 수 있다.
+- 위치 공개 정밀도는 `exact`, `approximate`, `hidden`을 지원한다.
+- 비공개 원본 위치는 별도 위치 테이블과 RLS로 보호한다.
+- 현재 사이트의 데모 사진과 샘플 계정 데이터는 삭제 가능한 테스트 자료이며 출시 보존 대상이 아니다.
 
-Displaying a public name:
+## 공개와 소셜
 
-1. Check whether the target user is the current user.
-2. Check cached profile display name.
-3. Fetch from `profiles` if needed.
-4. Fall back to `User abcd` if unavailable.
+- 사진과 앨범 공개 범위는 `private`, `link`, `public`을 사용한다.
+- Explore에는 공개 가능한 사진만 표시한다.
+- 좋아요 상태와 합계는 `set_photo_like` RPC 한 트랜잭션에서 동기화한다.
+- 좋아요 버튼은 사진 상세 맥락에서 하트 아이콘과 상태·합계로 표시한다.
+- 사용자가 좋아요한 사진은 Home 요약과 전체 좋아요 화면에서 확인한다.
+- 댓글 작성·삭제 권한은 RLS와 작성자 식별로 제한한다.
 
-## Testing
+## 데이터와 보안
 
-- Unit-test required nickname validation.
-- Unit-test profile display fallback and cache behavior.
-- Run the Vite build after implementation.
+- 브라우저에는 Supabase publishable/anon 키만 사용한다.
+- 서비스 역할 키, OAuth 비밀 키, Cloudflare 토큰은 저장소와 브라우저 번들에 넣지 않는다.
+- 공개 스키마 테이블은 RLS를 사용하고, 권한 상승 함수는 호출 역할과 대상 행을 함수 내부에서 검증한다.
+- 사진 Storage 경로는 사용자 ID 기준으로 소유권을 구분한다.
+- DB 마이그레이션은 `supabase/migrations`에 추가하고 적용 후 보안 advisor를 확인한다.
 
-## Security Checklist Scope
+## 품질 기준
 
-The requested `G-Stack: CSO` skill is not available in this Codex session. I will perform a local security checklist instead, focused on:
+- 동작 변경은 먼저 `node:test` 계약을 추가하거나 갱신한다.
+- 완료 전 `npm test`, `npm run build`, `npm run perf:budget`을 통과한다.
+- 로그인, OAuth, 업로드, 지도, 공개 범위는 실제 모바일 기기 최종 QA 대상으로 유지한다.
+- 모달은 열릴 때 내부로 초점을 이동하고, Tab 순환·Escape 닫기·초점 복귀를 지원한다.
+- 데스크톱과 모바일에서 텍스트·이미지·패널이 뷰포트를 벗어나지 않아야 한다.
 
-- no service-role keys or secrets added
-- Supabase anon key unchanged
-- no unsafe HTML injection from nicknames
-- duplicate nickname errors handled without leaking sensitive details
-- Back navigation does not expose private photos across users
+## 배포 기준
+
+- 개발 브랜치: `dev`, Cloudflare Pages 개발 배포
+- 운영 브랜치: `main`, Cloudflare Pages 운영 배포
+- 검증된 `dev`만 `main`으로 승격한다.
+- Supabase는 현재 단일 프로젝트를 공유하므로 호환 가능한 마이그레이션을 먼저 적용한다.
+- 유료 플랜 전용 기능과 leaked-password protection은 출시 후 계획으로 분리한다.
+
+## 출시 전 남은 수동 확인
+
+- 사용한 적 없는 Google·Kakao 계정으로 실제 신규 가입
+- iOS Safari와 Android Chrome에서 OAuth 앱 전환·복귀
+- 실제 모바일 사진 업로드, EXIF, 위치 지정, 공개 전환
+- Cloudflare 개발 배포 확인 후 운영 승격 승인
+
+세부 발견 사항과 우선순위는 [전체 서비스 감사](audits/full-service-audit-2026-08-10.md), 반복 실수는 [lessons_learned.md](lessons_learned.md)에 기록한다.

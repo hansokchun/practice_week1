@@ -3,7 +3,6 @@ import {
     createAlbum,
     deleteAlbum,
     detachPhotosFromAlbum,
-    deleteLike,
     fetchAlbums,
     fetchMyLikes,
     fetchPhotos,
@@ -15,8 +14,7 @@ import {
     signUpWithEmail,
     signInWithGoogle,
     signInWithKakao,
-    insertLike,
-    toggleLikePhoto,
+    setPhotoLike,
     updatePassword,
     updateUserMetadata,
     updateProfileInDB,
@@ -89,6 +87,13 @@ import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import defaultProfileAvatarUrl from '../images/default-profile-avatar.png';
+import {
+    MAIN_BG_1_URL,
+    MAIN_BG_2_URL,
+    MAIN_BG_3_URL,
+    MAIN_BG_4_URL,
+    MAIN_BG_5_URL
+} from './image-assets.mjs';
 import {
     getAccountUploadLimitMessage,
     getAccountUploadLimitStatus
@@ -246,6 +251,8 @@ const TURNSTILE_SITE_KEY = window.TRAVELGRAM_TURNSTILE_SITE_KEY || '';
 let turnstileWidgetId = null;
 let turnstileToken = '';
 let turnstileLoadPromise = null;
+let lastModalTrigger = null;
+const MODAL_FOCUSABLE_SELECTOR = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function renderActionableFailure(copy, action = 'data-retry-saved-library') {
     return `
@@ -329,7 +336,7 @@ function getPhotoDescriptionText(photo) {
 }
 
 function getPhotoImageSrc(photo = {}) {
-    return photo?.url || photo?.albumCoverUrl || 'images/main_bg2.jpg';
+    return photo?.url || photo?.albumCoverUrl || MAIN_BG_2_URL;
 }
 
 function renderPhotoImage(photo = {}, fallback = '사진') {
@@ -340,13 +347,13 @@ function renderPhotoImage(photo = {}, fallback = '사진') {
 
 function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
     if (photo?.albumCoverUrl && photo.albumCoverUrl !== primarySrc) return photo.albumCoverUrl;
-    return 'images/main_bg2.jpg';
+    return MAIN_BG_2_URL;
 }
 
-function setImageSourceWithFallback(image, primarySrc, fallbackSrc = 'images/main_bg2.jpg') {
+function setImageSourceWithFallback(image, primarySrc, fallbackSrc = MAIN_BG_2_URL) {
     if (!image) return;
-    const source = primarySrc || fallbackSrc || 'images/main_bg2.jpg';
-    const fallback = fallbackSrc && fallbackSrc !== source ? fallbackSrc : 'images/main_bg2.jpg';
+    const source = primarySrc || fallbackSrc || MAIN_BG_2_URL;
+    const fallback = fallbackSrc && fallbackSrc !== source ? fallbackSrc : MAIN_BG_2_URL;
     image.dataset.fallbackApplied = 'false';
     image.onerror = () => {
         if (image.dataset.fallbackApplied === 'true') return;
@@ -597,12 +604,22 @@ function applyRouteHash(hash, options = {}) {
     if (sharedRoute.albumId || sharedRoute.ownerId) renderPublicSurfaces();
 }
 
+function getModalFocusableElements(modal) {
+    if (!modal) return [];
+    return Array.from(modal.querySelectorAll(MODAL_FOCUSABLE_SELECTOR))
+        .filter((element) => !element.closest('[hidden]') && element.getAttribute('aria-hidden') !== 'true');
+}
+
 function openModal(id) {
     const modal = $(id);
     if (!modal) return;
     if (id === '#auth-modal') resetAuthModal();
+    if (document.activeElement instanceof HTMLElement && !document.activeElement.closest('.modal')) {
+        lastModalTrigger = document.activeElement;
+    }
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
+    window.requestAnimationFrame(() => getModalFocusableElements(modal)[0]?.focus());
 }
 
 function closeModals() {
@@ -611,6 +628,8 @@ function closeModals() {
         modal.setAttribute('aria-hidden', 'true');
     });
     document.body.classList.remove('photo-fullscreen-open');
+    if (lastModalTrigger?.isConnected) lastModalTrigger.focus();
+    lastModalTrigger = null;
 }
 
 function closePhotoFullscreenModal() {
@@ -648,7 +667,7 @@ function getDefaultDetailPhoto() {
     const selectedAlbum = getSelectedPublicAlbum();
     return selectedAlbum?.photos?.[0]
         || getAllDisplayPhotos()[0]
-        || { id: 'empty-detail', name: '여행 사진', url: 'images/main_bg2.jpg', date: new Date().toISOString(), album: selectedAlbum?.title || '여행 앨범', visibility: selectedAlbum?.visibility || 'private' };
+        || { id: 'empty-detail', name: '여행 사진', url: MAIN_BG_2_URL, date: new Date().toISOString(), album: selectedAlbum?.title || '여행 앨범', visibility: selectedAlbum?.visibility || 'private' };
 }
 
 function getHomeReferencePhotoDetail(trigger) {
@@ -657,7 +676,7 @@ function getHomeReferencePhotoDetail(trigger) {
     const lng = Number(trigger?.dataset?.homePhotoLng);
     return {
         id: trigger?.dataset?.homePhotoId || 'home-reference-photo',
-        url: trigger?.dataset?.homePhotoSrc || image?.getAttribute('src') || 'images/main_bg2.jpg',
+        url: image?.currentSrc || image?.src || trigger?.dataset?.homePhotoSrc || MAIN_BG_2_URL,
         description: trigger?.dataset?.homePhotoCopy || trigger?.dataset?.homePhotoTitle || image?.getAttribute('alt') || '여행 사진',
         date: trigger?.dataset?.homePhotoDate || new Date().toISOString(),
         album: 'Ikkyee 소개 사진',
@@ -978,7 +997,7 @@ function updateExploreAlbumPreview(album) {
     const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
     if (image) {
-        image.src = album.cover_url || 'images/main_bg2.jpg';
+        image.src = album.cover_url || MAIN_BG_2_URL;
         image.alt = album.title || 'Public album';
     }
     if (story) {
@@ -1542,8 +1561,8 @@ function openPhotoFullscreenFromDetail() {
     const renderedSource = sourceImage?.currentSrc || sourceImage?.src || '';
     const source = sourceImage?.dataset.fallbackApplied === 'true'
         ? renderedSource
-        : detailModal?.dataset.photoDetailImageSrc || renderedSource || 'images/main_bg2.jpg';
-    const fallbackSource = detailModal?.dataset.photoDetailImageFallbackSrc || renderedSource || 'images/main_bg2.jpg';
+        : detailModal?.dataset.photoDetailImageSrc || renderedSource || MAIN_BG_2_URL;
+    const fallbackSource = detailModal?.dataset.photoDetailImageFallbackSrc || renderedSource || MAIN_BG_2_URL;
     const alt = sourceImage?.alt || detailModal?.dataset.photoDetailImageAlt || '여행 사진 크게보기';
     if (fullscreenImage) {
         setImageSourceWithFallback(fullscreenImage, source, fallbackSource);
@@ -1571,31 +1590,19 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
     const likeButton = eventOrPhotoId?.currentTarget || $('#photo-detail-like');
     if (likeButton) likeButton.disabled = true;
 
-    const likeRowResult = nextLiked
-        ? await insertLike(state.currentUser.id, photo.id)
-        : await deleteLike(state.currentUser.id, photo.id);
-    if (likeRowResult.error) {
+    const { likedCount, error } = await setPhotoLike(photo.id, nextLiked);
+    if (error) {
         if (likeButton) likeButton.disabled = false;
         showToast('좋아요 상태를 저장하지 못했습니다.');
-        return;
-    }
-
-    const countResult = likeRowResult.alreadyLiked
-        ? { error: null, counterSkipped: true }
-        : await toggleLikePhoto(photo.id, nextLiked);
-    if (countResult.error) {
-        if (likeButton) likeButton.disabled = false;
-        showToast('좋아요 수를 반영하지 못했습니다.');
         return;
     }
 
     state.likedPhotoIds = nextLiked
         ? [...likedIds, String(photo.id)]
         : [...likedIds].filter((id) => id !== String(photo.id));
-    const delta = nextLiked && likeRowResult.alreadyLiked ? 0 : (nextLiked ? 1 : -1);
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => (
         String(savedPhoto.id) === String(photo.id)
-            ? { ...savedPhoto, liked: Math.max(0, Number(savedPhoto.liked || 0) + delta) }
+            ? { ...savedPhoto, liked: likedCount }
             : savedPhoto
     ));
     const updatedPhoto = state.savedPhotos.find((candidate) => String(candidate.id) === String(photo.id));
@@ -2191,10 +2198,10 @@ function getAlbumCandidatePhotos() {
 
 function getDemoDraftPhotos() {
     return [
-        { name: 'Cover', url: 'images/main_bg1.jpg' },
-        { name: 'Route', url: 'images/main_bg2.jpg' },
-        { name: 'Public', url: 'images/main_bg3.jpg' },
-        { name: 'Private', url: 'images/main_bg4.jpg' }
+        { name: 'Cover', url: MAIN_BG_1_URL },
+        { name: 'Route', url: MAIN_BG_2_URL },
+        { name: 'Public', url: MAIN_BG_3_URL },
+        { name: 'Private', url: MAIN_BG_4_URL }
     ];
 }
 
@@ -2250,7 +2257,7 @@ function getSavedPublicAlbums() {
                 : null;
             return {
                 ...album,
-                cover_url: album.cover_url || photos[0]?.url || getDraftPhotos()[index % getDraftPhotos().length]?.url || 'images/main_bg2.jpg',
+                cover_url: album.cover_url || photos[0]?.url || getDraftPhotos()[index % getDraftPhotos().length]?.url || MAIN_BG_2_URL,
                 photo_count: Number(album.photo_count || photos.length || 1),
                 places: locatedPhotos.length,
                 lat,
@@ -2325,7 +2332,7 @@ function renderEmptyPublicSurfaces() {
     const previewStory = preview?.querySelector('.pin-preview-story p');
     const previewMeta = preview?.querySelector('.pin-preview-meta');
     if (previewImage) {
-        previewImage.src = 'images/main_bg2.jpg';
+        previewImage.src = MAIN_BG_2_URL;
         previewImage.alt = empty.title;
     }
     if (previewStory) {
@@ -2336,7 +2343,7 @@ function renderEmptyPublicSurfaces() {
 
     const tripHeroImage = $('.public-trip-hero > img');
     if (tripHeroImage) {
-        tripHeroImage.src = 'images/main_bg2.jpg';
+        tripHeroImage.src = MAIN_BG_2_URL;
         tripHeroImage.alt = empty.title;
     }
     $('#trip-title') && ($('#trip-title').textContent = empty.title);
@@ -2387,7 +2394,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     const profileBio = authorDetails.bio;
     const avatarUrl = authorDetails.avatarUrl;
     const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
-    const cover = ownerPhotos[0]?.url || 'images/main_bg4.jpg';
+    const cover = ownerPhotos[0]?.url || MAIN_BG_4_URL;
 
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = authorName;
@@ -2437,7 +2444,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         profileAlbumGrid.innerHTML = ownerAlbums.length
             ? ownerAlbums.slice(0, 12).map((album) => `
                 <article class="${getPublicAlbumCardClass(album.id, state.selectedPublicAlbumId)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                    <img src="${escapeHtml(album.cover_url || 'images/main_bg2.jpg')}" alt="" loading="lazy" decoding="async">
+                    <img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">
                     <strong>${escapeHtml(album.title)}</strong>
                     <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
                 </article>
@@ -2533,7 +2540,7 @@ function renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing) {
             data-photo-id="${escapeHtml(photoId)}"
         >
             ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photoId)}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제"><span class="material-symbols-outlined">close</span></button>` : ''}
-            <img src="${escapeHtml(photo.url || cover || 'images/main_bg2.jpg')}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}" loading="lazy" decoding="async">
+            <img src="${escapeHtml(photo.url || cover || MAIN_BG_2_URL)}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}" loading="lazy" decoding="async">
         </article>
     `;
 }
@@ -2865,7 +2872,7 @@ function renderPublicSurfaces() {
     state.tripReviewMarkers = [];
     state.tripReviewMap = null;
     renderTripReviewShell();
-    const cover = selected.cover_url || 'images/main_bg2.jpg';
+    const cover = selected.cover_url || MAIN_BG_2_URL;
     const note = getAlbumVisibleNote(selected) || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
     const places = Number(selected.places || Math.max(1, Math.ceil(photoCount / 4)));
@@ -3045,7 +3052,7 @@ function renderPublicSurfaces() {
     if (relatedGrid) {
         relatedGrid.innerHTML = getRelatedAlbums(albums, selected).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                <img src="${escapeHtml(album.cover_url || 'images/main_bg2.jpg')}" alt="" loading="lazy" decoding="async">
+                <img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
@@ -3080,7 +3087,7 @@ function renderPublicSurfaces() {
     if (profileAlbumGrid) {
         profileAlbumGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                <img src="${escapeHtml(album.cover_url || 'images/main_bg2.jpg')}" alt="" loading="lazy" decoding="async">
+                <img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
@@ -3089,7 +3096,7 @@ function renderPublicSurfaces() {
 
     const profileHeroImage = $('.profile-cover > img');
     if (profileHeroImage) {
-        profileHeroImage.src = getProfileHeroImage(selected, profileAlbums);
+        profileHeroImage.src = getProfileHeroImage(selected, profileAlbums, MAIN_BG_4_URL);
         profileHeroImage.alt = `${authorName} public profile cover`;
     }
 
@@ -3644,10 +3651,14 @@ function renderAlbumComposePage() {
             <button id="btn-save-album-draft" class="btn-primary" type="button">저장하기</button>
         </div>
         <section class="album-compose-bar" aria-label="앨범 기본 정보">
-            <label for="album-name-input">앨범 이름</label>
-            <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행" value="${escapeHtml(editingAlbum?.title || '')}">
-            <label for="album-note-input">설명</label>
-            <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요.">${escapeHtml(getAlbumVisibleNote(editingAlbum))}</textarea>
+            <label class="album-compose-field" for="album-name-input">
+                <span>앨범 이름</span>
+                <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행" value="${escapeHtml(editingAlbum?.title || '')}">
+            </label>
+            <label class="album-compose-field" for="album-note-input">
+                <span>설명</span>
+                <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요.">${escapeHtml(getAlbumVisibleNote(editingAlbum))}</textarea>
+            </label>
             <div class="album-visibility-toggle" aria-label="공개 여부">
                 <button class="${state.visibility === 'private' ? 'active' : ''}" data-visibility="private" type="button">비공개</button>
                 <button class="${state.visibility === 'public' ? 'active' : ''}" data-visibility="public" type="button">공개</button>
@@ -4243,7 +4254,7 @@ function renderAlbumDrafts() {
     if (!state.albumDrafts.length) {
         list.innerHTML = `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-                ${getAlbumCoverStackMarkup(['images/main_bg2.jpg'], '제주 4박 5일')}
+                ${getAlbumCoverStackMarkup([MAIN_BG_2_URL], '제주 4박 5일')}
                 <div class="album-row-content">
                     <strong>제주 4박 5일</strong>
                     <p>사진을 업로드하거나 앨범 초안을 저장하면 이곳에 실제 앨범이 표시됩니다.</p>
@@ -4251,7 +4262,7 @@ function renderAlbumDrafts() {
                 </div>
             </article>
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-                ${getAlbumCoverStackMarkup(['images/main_bg5.jpg'], '동해 새벽 여행')}
+                ${getAlbumCoverStackMarkup([MAIN_BG_5_URL], '동해 새벽 여행')}
                 <div class="album-row-content">
                     <strong>동해 새벽 여행</strong>
                     <p>공개 전까지는 Home에서만 확인할 수 있는 개인 여행 기록입니다.</p>
@@ -4264,7 +4275,7 @@ function renderAlbumDrafts() {
 
     list.innerHTML = state.albumDrafts.map((album) => `
         <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-            ${getAlbumCoverStackMarkup(['images/main_bg4.jpg'], album.name)}
+            ${getAlbumCoverStackMarkup([MAIN_BG_4_URL], album.name)}
             <div class="album-row-content">
                 <strong>${escapeHtml(album.name)}</strong>
                 <p>${escapeHtml(getAlbumVisibleNote(album) || '비공개 앨범 초안입니다.')}</p>
@@ -5466,6 +5477,33 @@ function bindEvents() {
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && state.isExplorePhotoScopeMenuOpen) {
             setExplorePhotoScopeMenuOpen(false);
+            return;
+        }
+        const activeModal = $$('.modal.is-open').at(-1);
+        if (event.key === 'Escape' && activeModal) {
+            event.preventDefault();
+            if (activeModal.id === 'photo-fullscreen-modal') {
+                returnToPhotoDetailFromFullscreen();
+            } else {
+                closeModals();
+            }
+            return;
+        }
+        if (event.key === 'Tab' && activeModal) {
+            const focusableElements = getModalFocusableElements(activeModal);
+            if (!focusableElements.length) {
+                event.preventDefault();
+                return;
+            }
+            const first = focusableElements[0];
+            const last = focusableElements.at(-1);
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
             return;
         }
         if (!['Enter', ' '].includes(event.key) || !(event.target instanceof Element)) return;

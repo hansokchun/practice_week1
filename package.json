@@ -33,6 +33,6 @@
   },
   "homepage": "https://github.com/hansokchun/practice_week1#readme",
   "devDependencies": {
-    "vite": "^8.0.10"
+    "vite": "^8.2.1"
   }
 }

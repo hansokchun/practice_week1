@@ -39,7 +39,7 @@
                         <div id="account-notification-list" class="account-notification-list"></div>
                     </div>
                 </div>
-                <button id="btn-open-profile" class="account-profile-trigger" type="button" hidden>
+                <button id="btn-open-profile" class="account-profile-trigger" type="button" aria-label="내 프로필 열기" hidden>
                     <span id="account-avatar" class="avatar account-avatar">
                         <img id="account-avatar-image" alt="" hidden>
                         <span id="account-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
@@ -764,55 +764,6 @@
         </div>
     </div>
 
-    <div id="account-profile-modal" class="modal" aria-hidden="true">
-        <div class="modal-card account-profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="account-profile-title">
-            <button class="modal-close" data-close-modal type="button" aria-label="닫기">&times;</button>
-            <div class="account-profile-summary">
-                <div id="account-profile-avatar" class="avatar large-avatar account-profile-avatar">
-                    <img id="account-profile-avatar-image" alt="" hidden>
-                    <span id="account-profile-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
-                </div>
-                <div class="account-profile-copy">
-                    <p class="eyebrow">My Profile</p>
-                    <h2 id="account-profile-title">Ikkyee</h2>
-                    <p class="account-profile-subtitle">Travel map archive</p>
-                    <div class="account-profile-metrics">
-                        <span><strong id="account-profile-photo-count">0</strong> posts</span>
-                        <span><strong id="account-profile-album-count">0</strong> albums</span>
-                        <span><strong id="account-profile-public-count">0</strong> public</span>
-                    </div>
-                    <div class="account-profile-actions">
-                        <button id="account-profile-edit" class="btn-secondary" type="button">수정하기</button>
-                    </div>
-                </div>
-            </div>
-            <div id="account-profile-view" class="account-profile-view">
-                <p id="account-profile-bio" class="account-profile-bio" hidden></p>
-            </div>
-            <form class="account-profile-form profile-edit-form" hidden>
-                <input id="profile-avatar-input-static" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
-                <div class="account-profile-fields">
-                    <div class="account-profile-field profile-edit-name-field">
-                        <label for="profile-nickname-input-static">닉네임</label>
-                        <input id="profile-nickname-input-static" type="text" maxlength="40" placeholder="Ikkyee">
-                    </div>
-                    <div class="account-profile-field profile-edit-photo-field">
-                        <span class="account-profile-field-label">프로필 사진</span>
-                        <label class="profile-avatar-upload-control" for="profile-avatar-input-static">
-                            <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
-                            <span>사진 추가</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="auth-actions">
-                    <button id="account-profile-save" class="btn-primary" type="submit">저장</button>
-                    <button id="account-profile-cancel" class="btn-secondary" type="button">취소</button>
-                </div>
-                <p id="account-profile-message" class="auth-message"></p>
-            </form>
-        </div>
-    </div>
-
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
@@ -826,7 +777,7 @@
         </button>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2/dist/umd/supabase.min.js" defer></script>
     <script type="module" src="/js/app.js"></script>
 </body>
 

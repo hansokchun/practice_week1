@@ -53,7 +53,7 @@ test('Explore photo preview image falls back when the public image URL fails', (
 
     assert.match(helpers, /function getPhotoImageSrc\(photo = \{\}\)/);
     assert.match(helpers, /function getPhotoImageFallbackSrc\(photo = \{\}, primarySrc = ''\)/);
-    assert.match(helpers, /function setImageSourceWithFallback\(image, primarySrc, fallbackSrc = 'images\/main_bg2\.jpg'\)/);
+    assert.match(helpers, /function setImageSourceWithFallback\(image, primarySrc, fallbackSrc = MAIN_BG_2_URL\)/);
     assert.match(helpers, /image\.onerror = \(\) => \{/);
     assert.match(body, /const photoImageSrc = getPhotoImageSrc\(photo\);/);
     assert.match(body, /setImageSourceWithFallback\(image, photoImageSrc, getPhotoImageFallbackSrc\(photo, photoImageSrc\)\)/);

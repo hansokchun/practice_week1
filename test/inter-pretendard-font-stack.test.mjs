@@ -28,6 +28,6 @@ test('brand typography is the only non-icon serif exception', () => {
 
 test('external scripts are deferred without removing route modules', () => {
   assert.doesNotMatch(html, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js/);
-  assert.match(html, /cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\/dist\/umd\/supabase\.min\.js" defer/);
+  assert.match(html, /cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\.112\.2\/dist\/umd\/supabase\.min\.js" defer/);
   assert.match(html, /<script type="module" src="\/js\/app\.js"><\/script>/);
 });

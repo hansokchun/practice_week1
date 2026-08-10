@@ -78,9 +78,10 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     const source = readFileSync('js/app.js', 'utf8');
 
     assert.match(source, /fetchMyLikes/);
-    assert.match(source, /insertLike/);
-    assert.match(source, /deleteLike/);
-    assert.match(source, /toggleLikePhoto/);
+    assert.match(source, /setPhotoLike/);
+    assert.doesNotMatch(source, /insertLike/);
+    assert.doesNotMatch(source, /deleteLike/);
+    assert.doesNotMatch(source, /toggleLikePhoto/);
     assert.match(source, /likedPhotoIds:\s*\[\]/);
     assert.match(source, /function renderLikedPhotoSurfaces/);
     assert.match(source, /async function toggleSelectedPhotoLike/);
@@ -90,21 +91,27 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     assert.doesNotMatch(source, /dataset\.photoDetailContext !== 'explore'/);
 });
 
-test('photo like writes tolerate duplicate rows and counter permission gaps', () => {
+test('photo like writes use one authenticated RPC and trust its exact count', () => {
     const auth = readFileSync('auth.js', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');
+    const migration = readFileSync('supabase/migrations/20260810092619_synchronize_photo_likes.sql', 'utf8');
 
-    assert.match(auth, /function isDuplicateLikeError/);
-    assert.match(auth, /error\?\.code === '23505'/);
-    assert.match(auth, /user_likes_pkey/);
-    assert.match(auth, /return \{ error: null, alreadyLiked: true \}/);
-    assert.match(auth, /function isLikeCounterPermissionError/);
-    assert.match(auth, /permission denied for function \(increment_like\|decrement_like\)/);
-    assert.match(auth, /return \{ error: null, counterSkipped: true \}/);
-    assert.match(app, /const countResult = likeRowResult\.alreadyLiked/);
-    assert.match(app, /const delta = nextLiked && likeRowResult\.alreadyLiked \? 0 : \(nextLiked \? 1 : -1\)/);
-    assert.doesNotMatch(app, /showToast\(likeRowResult\.error\.message/);
-    assert.doesNotMatch(app, /showToast\(countResult\.error\.message/);
+    assert.match(auth, /export async function setPhotoLike\(photoId, isLiking\)/);
+    assert.match(auth, /\.rpc\('set_photo_like', \{/);
+    assert.match(auth, /target_photo_id: photoId/);
+    assert.match(auth, /should_like: Boolean\(isLiking\)/);
+    assert.match(app, /const \{ likedCount, error \} = await setPhotoLike\(photo\.id, nextLiked\)/);
+    assert.match(app, /liked: likedCount/);
+    assert.doesNotMatch(app, /const delta =/);
+
+    assert.match(migration, /CREATE OR REPLACE FUNCTION public\.set_photo_like/);
+    assert.match(migration, /auth\.uid\(\)/);
+    assert.match(migration, /ON CONFLICT \(user_id, photo_id\) DO NOTHING/i);
+    assert.match(migration, /DELETE FROM public\.user_likes[\s\S]*user_id = current_user_id/i);
+    assert.match(migration, /SELECT count\(\*\)::integer/);
+    assert.match(migration, /UPDATE public\.photos[\s\S]*SET liked = new_like_count/i);
+    assert.match(migration, /GRANT EXECUTE ON FUNCTION public\.set_photo_like\(text, boolean\) TO authenticated/i);
+    assert.match(migration, /UPDATE public\.photos AS photo[\s\S]*SELECT count\(\*\)::integer/i);
 });
 
 test('home photo detail like updates do not refresh the Explore preview photo', () => {
