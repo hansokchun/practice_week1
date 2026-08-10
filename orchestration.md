@@ -75,7 +75,7 @@ Ikkyee/
 ├── style.css           # 전역 스타일 (29KB, 반응형 포함)
 ├── auth.js             # Supabase 올인원 모듈 (Auth + DB + Storage API)
 ├── orchestration.md    # 이 문서 (프로젝트 규칙 및 분석)
-├── vite.config.js      # Vite 빌드 설정
+├── vite.config.mjs     # Vite 빌드 설정
 ├── wrangler.toml       # Cloudflare Pages 배포 설정
 ├── package.json        # 의존성 (vite만 devDep)
 │

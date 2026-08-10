@@ -9,11 +9,11 @@ Scope: tracked repository inventory, product documents, frontend structure, Supa
 
 Ikkyee has a clear and differentiated core: private travel photos become a map-based archive, with controlled public discovery as a secondary experience. The upload, album, privacy, signed-storage, Explore, profile, OAuth, backup, and release foundations are unusually complete for a pre-beta vanilla SPA.
 
-The original code snapshot was not ready for unrestricted public beta. The confirmed code and data blockers below were repaired on 2026-08-10; fresh social sign-up, real-device QA, legal/support approval, Google Maps legacy API migration, CSP hardening, cache policy, and launch-content cleanup remain open.
+The original code snapshot was not ready for unrestricted public beta. The confirmed code and data blockers below were repaired on 2026-08-10; fresh social sign-up, real-device QA, legal/support approval, Google Maps legacy API migration, and launch-content cleanup remain open.
 
 ## Remediation Update
 
-- Resolved findings: 1-7, 9-11.
+- Resolved findings: 1-7, 9-13.
 - Like data now has 4 rows, a stored total of 4, and 0 mismatched photos. The authenticated-only `set_photo_like` RPC owns row and count changes atomically.
 - Runtime fallback and demo images now use Vite-tracked `import.meta.url` assets; all five images appear in the production build.
 - New social accounts now start with an empty stored avatar and a neutral name. Provider metadata is applied only through the existing user-confirmed Kakao flow.
@@ -21,7 +21,8 @@ The original code snapshot was not ready for unrestricted public beta. The confi
 - The obsolete profile modal and duplicate ID were removed; the header profile button has an accessible name.
 - Vite is updated to 8.2.1, the Supabase CDN is pinned to 2.112.2, and both full and production-only dependency audits report 0 vulnerabilities.
 - `tmp/` is ignored without deleting user files. README and the current service specification now match the implementation.
-- Verification after remediation: 463/463 tests, production build, and performance budget all pass. Desktop 1440x900 and mobile 390x844 browser checks show no horizontal overflow or visible broken images.
+- Cloudflare Pages now sends a source-restricted CSP for Supabase, Google Maps, and Turnstile, while fingerprinted `/assets/*` responses use a one-year immutable cache. HTML keeps Cloudflare's revalidation behavior and `/api/config` remains `no-store`.
+- Verification after remediation: 464/464 tests, production build, dependency audit, and performance budget all pass. Desktop 1440x900 and mobile 390x844 browser checks show no horizontal overflow or visible broken images.
 
 ## Confirmed Findings
 
@@ -68,6 +69,7 @@ The original code snapshot was not ready for unrestricted public beta. The confi
    - Runtime warnings identify `google.maps.places.Autocomplete` and `google.maps.Marker` as legacy/deprecated.
    - Current uses start at [app.js](../../js/app.js#L1143) and [app.js](../../js/app.js#L1174).
    - Migrate to `PlaceAutocompleteElement` and `AdvancedMarkerElement` before an API policy change forces a rushed update.
+   - Deferred prerequisite: create a Google Maps Map ID for advanced markers and enable Places API (New), then verify billing restrictions and both Cloudflare domains before changing runtime code.
 
 9. **Development dependencies have three high-severity advisories.**
    - Production dependency audit is clean, but the full audit flags Vite 8.0.10, Nano ID 3.3.12, and PostCSS 8.5.13.
@@ -85,11 +87,11 @@ The original code snapshot was not ready for unrestricted public beta. The confi
     - The v2.1 plan requires `Home / Myphoto / Explore`, while the current tested decision intentionally folds Myphoto into Home ([app-sections.mjs](../../js/app-sections.mjs#L13)).
     - The plan also both includes subscriptions in MVP and defers them elsewhere. A single current product spec is needed.
 
-12. **The Content Security Policy is only a partial baseline.**
+12. **Resolved: the Content Security Policy was only a partial baseline.**
     - It protects framing, objects, and base URLs, but has no `default-src`, `script-src`, `connect-src`, `img-src`, or `style-src` restrictions ([public/_headers](../../public/_headers#L1)).
     - This matters because the SPA renders many strings through `innerHTML` and loads a floating `@supabase/supabase-js@2` CDN version without SRI ([index.html](../../index.html#L829)).
 
-13. **Fingerprint assets are not cached long-term.**
+13. **Resolved: fingerprint assets were not cached long-term.**
     - Production `/assets/index-*.js` responds with `Cache-Control: public, max-age=0, must-revalidate`.
     - Hashed assets can safely use a long immutable cache while HTML and `/api/config` remain non-cacheable/revalidated.
 
@@ -103,7 +105,7 @@ The original code snapshot was not ready for unrestricted public beta. The confi
 
 ## What Is Working Well
 
-- 463 of 463 automated tests pass after remediation.
+- 464 of 464 automated tests pass after remediation.
 - Production build and JavaScript/CSS/image performance budgets pass.
 - Supabase is `ACTIVE_HEALTHY`; all seven public tables have RLS enabled.
 - Supabase security advisor reports the intentionally exposed, authenticated-only `set_photo_like` SECURITY DEFINER RPC and the deferred [leaked-password protection setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). The RPC validates `auth.uid()`, photo access, and grants before writing.
@@ -204,6 +206,6 @@ The creation sequence is understandable, but the basic-information grid misplace
 2. Replace every dynamic local image literal with build-safe asset URLs.
 3. Align the social sign-up trigger with the default-avatar decision.
 4. Fix the album form grid and modal/profile accessibility defects.
-5. Update Vite dependencies and migrate Google Maps legacy APIs.
-6. Consolidate product docs and make the release rehearsal ignore approved local temp output.
+5. Update Vite dependencies and prepare the Google Cloud prerequisites for the Maps legacy API migration.
+6. Consolidate product docs, harden CSP/cache behavior, and make the release rehearsal ignore approved local temp output.
 7. Clean sample content, complete fresh OAuth and real-device QA, then approve legal/support/retention copy.
