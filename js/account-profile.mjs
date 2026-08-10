@@ -20,7 +20,7 @@ export function getProviderAccountProfile(user) {
     return {
         nickname,
         bio: normalizeText(metadata.bio),
-        avatarUrl: normalizeAvatarUrl(metadata.avatar_url || metadata.picture)
+        avatarUrl: ''
     };
 }
 

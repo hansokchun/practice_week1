@@ -37,7 +37,7 @@ test('stored Ikkyee profile stays identical across Google and Kakao logins', () 
     );
 });
 
-test('provider profile is used only before an Ikkyee profile exists', () => {
+test('new provider accounts keep the avatar empty until the user chooses one', () => {
     const profile = getProviderAccountProfile({
         email: 'traveler@example.com',
         user_metadata: {
@@ -49,7 +49,7 @@ test('provider profile is used only before an Ikkyee profile exists', () => {
     assert.deepEqual(profile, {
         nickname: 'Kakao Name',
         bio: '',
-        avatarUrl: 'https://kakao.example.com/avatar.jpg'
+        avatarUrl: ''
     });
 });
 
