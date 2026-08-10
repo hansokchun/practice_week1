@@ -72,7 +72,7 @@ The original code snapshot was not ready for unrestricted public beta. The confi
    - Current uses start at [app.js](../../js/app.js#L1143) and [app.js](../../js/app.js#L1174).
    - Migrate to `PlaceAutocompleteElement` and `AdvancedMarkerElement` before an API policy change forces a rushed update.
    - Deferred prerequisite: create a Google Maps Map ID for advanced markers and enable Places API (New), then verify billing restrictions and both Cloudflare domains before changing runtime code.
-   - 2026-08-10 progress: the browser runtime and Cloudflare config endpoint now accept an optional Map ID, all four map surfaces receive it when configured, and the marker library is preloaded. The site keeps its current fallback until the Google Cloud prerequisites are completed; the legacy marker and autocomplete replacements remain open.
+   - 2026-08-10 progress: the browser runtime and Cloudflare config endpoint accept an optional Map ID, all four map surfaces receive it when configured, and the marker library is preloaded. Advanced-marker and new Place Autocomplete adapters are implemented and tested behind that Map ID gate. Production keeps its legacy fallback until the Google Cloud prerequisites and Preview QA are complete.
 
 9. **Development dependencies have three high-severity advisories.**
    - Production dependency audit is clean, but the full audit flags Vite 8.0.10, Nano ID 3.3.12, and PostCSS 8.5.13.

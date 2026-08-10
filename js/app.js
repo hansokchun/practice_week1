@@ -48,6 +48,8 @@ import {
     normalizeGoogleMapsRuntimeConfig,
     withGoogleMapsMapId
 } from './google-maps-runtime-config.mjs';
+import { createGoogleMapsMarker } from './google-maps-marker.mjs';
+import { mountGoogleMapsPlaceAutocomplete } from './google-maps-place-autocomplete.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
@@ -1172,7 +1174,19 @@ async function ensureExploreMap() {
     });
 
     const input = $('#explore-map-search-input');
-    if (input && maps.places?.Autocomplete) {
+    const searchForm = $('#explore-map-search');
+    const newAutocomplete = state.googleMapsMapId
+        ? mountGoogleMapsPlaceAutocomplete({
+            maps,
+            map,
+            input,
+            onError: () => showToast('검색 결과를 찾지 못했습니다.')
+        })
+        : null;
+    if (newAutocomplete) {
+        state.exploreAutocomplete = newAutocomplete;
+        searchForm?.classList.add('uses-place-autocomplete');
+    } else if (input && maps.places?.Autocomplete) {
         state.exploreAutocomplete = new maps.places.Autocomplete(input, { fields: ['geometry', 'name'] });
         state.exploreAutocomplete.addListener('place_changed', () => {
             const place = state.exploreAutocomplete.getPlace();
@@ -1204,28 +1218,28 @@ function mountExploreMapMarkers(renderState) {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
             const selected = Boolean(photo.id && photo.id === state.selectedPhotoId);
-            const marker = new maps.Marker({
+            const marker = createGoogleMapsMarker(maps, {
                 map,
                 position: cluster.position || { lat: Number(photo.lat), lng: Number(photo.lng) },
                 title: getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진'),
                 icon: getExplorePinIcon(maps, { type: 'photo', selected }),
                 label: null,
                 zIndex: selected ? 1000 : 10
-            });
+            }, { mapId: state.googleMapsMapId });
             marker.addListener('click', () => {
                 openExplorePhotoPreview(photo, { focusMap: false });
             });
             return marker;
         }
 
-        const marker = new maps.Marker({
+        const marker = createGoogleMapsMarker(maps, {
             map,
             position: cluster.position,
             title: `이 지역 공개 사진 ${formatPhotoCount(cluster.count)}`,
             icon: getExplorePinIcon(maps, { type: 'cluster' }),
             label: null,
             zIndex: 20 + Math.min(cluster.count, 99)
-        });
+        }, { mapId: state.googleMapsMapId });
         marker.addListener('click', () => {
             state.selectedPublicAlbumId = null;
             state.selectedPhotoId = null;
@@ -1259,14 +1273,14 @@ function mountExploreMapMarkers(renderState) {
         && cluster.photos.some((photo) => photo.id === state.selectedPhotoId)
     ));
     if (selectedPhoto && !selectedPhotoHasVisibleMarker) {
-        const selectedMarker = new maps.Marker({
+        const selectedMarker = createGoogleMapsMarker(maps, {
             map,
             position: { lat: Number(selectedPhoto.lat), lng: Number(selectedPhoto.lng) },
             title: getPhotoFallbackLabel(selectedPhoto, selectedPhoto.albumTitle || '공개 사진'),
             icon: getExplorePinIcon(maps, { type: 'photo', selected: true }),
             label: null,
             zIndex: 1000
-        });
+        }, { mapId: state.googleMapsMapId });
         selectedMarker.addListener('click', () => {
             openExplorePhotoPreview(selectedPhoto, { focusMap: false });
         });
@@ -1390,14 +1404,14 @@ async function renderProfileMap(photos = []) {
     const locatedPhotos = photos.filter(hasPhotoLocation);
     if (!locatedPhotos.length) return;
 
-    state.profileMarkers = locatedPhotos.map((photo) => new maps.Marker({
+    state.profileMarkers = locatedPhotos.map((photo) => createGoogleMapsMarker(maps, {
         map,
         position: { lat: Number(photo.lat), lng: Number(photo.lng) },
         title: getPhotoFallbackLabel(photo, '공개 사진'),
         icon: getExplorePinIcon(maps, { type: 'photo' }),
         label: null,
         zIndex: 10
-    }));
+    }, { mapId: state.googleMapsMapId }));
 
     const bounds = new maps.LatLngBounds();
     locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
@@ -2830,13 +2844,13 @@ async function renderTripReviewMap(albumPhotos) {
     state.tripReviewMarkers.forEach((marker) => marker.setMap(null));
     state.tripReviewMarkers = located.map((photo) => {
         const selected = state.tripReviewFocusPhotoId && getTripReviewPhotoId(photo) === String(state.tripReviewFocusPhotoId);
-        const marker = new maps.Marker({
+        const marker = createGoogleMapsMarker(maps, {
             position: { lat: Number(photo.lat), lng: Number(photo.lng) },
             map: state.tripReviewMap,
             title: getPhotoFallbackLabel(photo, '여행 사진'),
             icon: getExplorePinIcon(maps, { type: 'photo', selected }),
             zIndex: selected ? 20 : 10
-        });
+        }, { mapId: state.googleMapsMapId });
         marker.addListener('click', () => updatePhotoDetailModal(photo, { context: 'album' }));
         return marker;
     });
@@ -4691,11 +4705,11 @@ async function ensureLocationEditorMap(center) {
         state.locationEditorMap = new maps.Map(container, getLocationEditorMapOptions(position, {
             mapId: state.googleMapsMapId
         }));
-        state.locationEditorMarker = new maps.Marker({
+        state.locationEditorMarker = createGoogleMapsMarker(maps, {
             map: state.locationEditorMap,
             position,
             draggable: state.locationEditorPickMode
-        });
+        }, { mapId: state.googleMapsMapId });
         state.locationEditorMarker.addListener('dragend', () => {
             if (!state.locationEditorPickMode) return;
             const next = state.locationEditorMarker.getPosition();
@@ -4834,6 +4848,7 @@ async function saveManualLocation(event) {
 
 async function searchExploreMap(event) {
     event.preventDefault();
+    if (event.currentTarget?.classList.contains('uses-place-autocomplete')) return;
     const input = $('#explore-map-search-input');
     const query = input?.value.trim();
     const map = await ensureExploreMap();

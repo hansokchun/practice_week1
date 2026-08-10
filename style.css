@@ -4932,6 +4932,17 @@ body.is-logged-in .home-workspace .album-row {
     font-weight: 800;
 }
 
+.map-search .explore-place-autocomplete {
+    min-width: 0;
+    flex: 1;
+    color: var(--ink);
+}
+
+.map-search.uses-place-autocomplete > .material-symbols-outlined,
+.map-search.uses-place-autocomplete > button {
+    display: none;
+}
+
 .map-search button {
     min-height: 36px;
     border-radius: 8px;

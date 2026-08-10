@@ -120,8 +120,17 @@ Unused secrets should not remain attached to Pages. Confirm that no deployed Fun
 3. Before the legacy Maps migration, enable Places API (New), create a JavaScript Map ID, and set `GOOGLE_MAPS_MAP_ID` in both Cloudflare environments. Then verify map styling, search, marker selection, and draggable location editing on `dev`.
 4. On the current Supabase Free plan, record leaked-password protection as deferred: it requires a paid plan. After an upgrade, enable it in Supabase Auth and run one email sign-up/reset test.
 5. Confirm the `photos` bucket remains public only until signed-URL Preview QA is complete. Change it to private only after the signed-URL build is on `main`.
-5. Run owner, second signed-in user, and logged-out access checks for private photos, public Explore, likes, and public locations.
-6. Record the tested commit, Preview URL, tester accounts by role (not credentials), and results in Notion.
+6. Run owner, second signed-in user, and logged-out access checks for private photos, public Explore, likes, and public locations.
+7. Record the tested commit, Preview URL, tester accounts by role (not credentials), and results in Notion.
+
+### Google Maps Modernization Activation
+
+The application code is dual-mode: without a Map ID it preserves legacy markers and search; with a Map ID it uses `AdvancedMarkerElement` and `PlaceAutocompleteElement`.
+
+1. In the Google Cloud project already used by the browser key, enable **Places API (New)** and confirm **Maps JavaScript API** remains enabled.
+2. Create a **JavaScript** Map ID. Do not use the demo Map ID for Production.
+3. Add that identifier as `GOOGLE_MAPS_MAP_ID` to Cloudflare Pages **Preview** only, deploy `dev`, and verify Explore search, photo and cluster marker clicks, profile/album maps, and draggable photo-location editing.
+4. After Preview passes, add the same value to **Production** and promote the verified commit. A Map ID is browser-visible and is not a secret; the browser API key still requires origin and API restrictions.
 
 ## Backup And Recovery
 
