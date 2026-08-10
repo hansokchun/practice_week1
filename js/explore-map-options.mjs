@@ -1,3 +1,5 @@
+import { withGoogleMapsMapId } from './google-maps-runtime-config.mjs';
+
 export const EXPLORE_MAP_MIN_ZOOM = 4;
 
 const QUIET_EXPLORE_MAP_STYLES = [
@@ -8,8 +10,8 @@ const QUIET_EXPLORE_MAP_STYLES = [
     { featureType: 'administrative.neighborhood', elementType: 'labels', stylers: [{ visibility: 'off' }] }
 ];
 
-export function getExploreMapOptions({ center = { lat: 36.45, lng: 127.85 }, zoom = 7 } = {}) {
-    return {
+export function getExploreMapOptions({ center = { lat: 36.45, lng: 127.85 }, zoom = 7, mapId = '' } = {}) {
+    return withGoogleMapsMapId({
         center,
         zoom,
         minZoom: EXPLORE_MAP_MIN_ZOOM,
@@ -25,5 +27,5 @@ export function getExploreMapOptions({ center = { lat: 36.45, lng: 127.85 }, zoo
         panControl: false,
         keyboardShortcuts: false,
         gestureHandling: 'greedy'
-    };
+    }, mapId);
 }

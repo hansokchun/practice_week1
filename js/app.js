@@ -44,6 +44,10 @@ import {
     normalizeLocationDraft
 } from './location-workflow.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
+import {
+    normalizeGoogleMapsRuntimeConfig,
+    withGoogleMapsMapId
+} from './google-maps-runtime-config.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
@@ -225,7 +229,8 @@ const state = {
     tripReviewMarkers: [],
     tripReviewMapRenderToken: 0,
     googleMapsApiKey: null,
-    googleMapsApiKeyPromise: null,
+    googleMapsMapId: null,
+    googleMapsConfigPromise: null,
     locationEditorMap: null,
     locationEditorMarker: null,
     locationEditorMapClickListener: null,
@@ -1076,40 +1081,48 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
     }).join('');
 }
 
-async function getGoogleMapsApiKey() {
-    if (window.GOOGLE_MAPS_API_KEY) return window.GOOGLE_MAPS_API_KEY;
-    if (state.googleMapsApiKey !== null) return state.googleMapsApiKey;
-    if (state.googleMapsApiKeyPromise) return state.googleMapsApiKeyPromise;
+async function getGoogleMapsRuntimeConfig() {
+    if (state.googleMapsApiKey !== null && state.googleMapsMapId !== null) {
+        return { apiKey: state.googleMapsApiKey, mapId: state.googleMapsMapId };
+    }
+    if (state.googleMapsConfigPromise) return state.googleMapsConfigPromise;
 
-    const buildTimeKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-    if (buildTimeKey) {
-        state.googleMapsApiKey = buildTimeKey;
-        return state.googleMapsApiKey;
+    const localConfig = normalizeGoogleMapsRuntimeConfig({
+        googleMapsApiKey: window.GOOGLE_MAPS_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        googleMapsMapId: window.GOOGLE_MAPS_MAP_ID || import.meta.env.VITE_GOOGLE_MAPS_MAP_ID
+    });
+    if (localConfig.apiKey) {
+        state.googleMapsApiKey = localConfig.apiKey;
+        state.googleMapsMapId = localConfig.mapId;
+        return localConfig;
     }
 
-    state.googleMapsApiKeyPromise = fetch('/api/config', { cache: 'no-store' })
+    state.googleMapsConfigPromise = fetch('/api/config', { cache: 'no-store' })
         .then((response) => (response.ok ? response.json() : null))
         .then((config) => {
-            state.googleMapsApiKey = config?.googleMapsApiKey || '';
-            return state.googleMapsApiKey;
+            const normalizedConfig = normalizeGoogleMapsRuntimeConfig(config);
+            state.googleMapsApiKey = normalizedConfig.apiKey;
+            state.googleMapsMapId = normalizedConfig.mapId;
+            return normalizedConfig;
         })
         .catch(() => {
             state.googleMapsApiKey = '';
-            return '';
+            state.googleMapsMapId = '';
+            return { apiKey: '', mapId: '' };
         })
         .finally(() => {
-            state.googleMapsApiKeyPromise = null;
+            state.googleMapsConfigPromise = null;
         });
 
-    return state.googleMapsApiKeyPromise;
+    return state.googleMapsConfigPromise;
 }
 
 function loadGoogleMapsApi() {
     if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
     if (state.exploreMapLoadPromise) return state.exploreMapLoadPromise;
 
-    state.exploreMapLoadPromise = getGoogleMapsApiKey().then((key) => {
-        if (!key) return null;
+    state.exploreMapLoadPromise = getGoogleMapsRuntimeConfig().then(({ apiKey }) => {
+        if (!apiKey) return null;
 
         return new Promise((resolve, reject) => {
             const callbackName = `initIkkyeeGoogleMap${Date.now()}`;
@@ -1118,7 +1131,7 @@ function loadGoogleMapsApi() {
                 delete window[callbackName];
             };
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&loading=async&callback=${callbackName}`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places,marker&loading=async&callback=${callbackName}`;
             script.async = true;
             script.defer = true;
             script.onerror = () => reject(new Error('Google Maps API failed to load'));
@@ -1144,7 +1157,8 @@ async function ensureExploreMap() {
 
     state.exploreMap = new maps.Map(container, getExploreMapOptions({
         center: { lat: 36.45, lng: 127.85 },
-        zoom: state.exploreZoom
+        zoom: state.exploreZoom,
+        mapId: state.googleMapsMapId
     }));
     const map = state.exploreMap;
     map.addListener('click', () => clearExplorePinSelection());
@@ -1358,7 +1372,8 @@ async function ensureProfileMap() {
 
     state.profileMap = new maps.Map(container, getExploreMapOptions({
         center: { lat: 36.45, lng: 127.85 },
-        zoom: 7
+        zoom: 7,
+        mapId: state.googleMapsMapId
     }));
     return state.profileMap;
 }
@@ -2795,7 +2810,7 @@ async function renderTripReviewMap(albumPhotos) {
 
     const center = { lat: Number(located[0].lat), lng: Number(located[0].lng) };
     if (!state.tripReviewMap) {
-        state.tripReviewMap = new maps.Map(container, {
+        state.tripReviewMap = new maps.Map(container, withGoogleMapsMapId({
             center,
             zoom: located.length > 1 ? 11 : 13,
             disableDefaultUI: true,
@@ -2809,7 +2824,7 @@ async function renderTripReviewMap(albumPhotos) {
             panControl: false,
             keyboardShortcuts: false,
             gestureHandling: 'greedy'
-        });
+        }, state.googleMapsMapId));
     }
 
     state.tripReviewMarkers.forEach((marker) => marker.setMap(null));
@@ -4673,7 +4688,9 @@ async function ensureLocationEditorMap(center) {
     }
     const position = { lat: Number(center.lat), lng: Number(center.lng) };
     if (!state.locationEditorMap) {
-        state.locationEditorMap = new maps.Map(container, getLocationEditorMapOptions(position));
+        state.locationEditorMap = new maps.Map(container, getLocationEditorMapOptions(position, {
+            mapId: state.googleMapsMapId
+        }));
         state.locationEditorMarker = new maps.Marker({
             map: state.locationEditorMap,
             position,

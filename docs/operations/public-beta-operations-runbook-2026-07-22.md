@@ -105,6 +105,7 @@ Never commit secret values to this repository or Notion.
 | Value | Location | Classification | Required control |
 | --- | --- | --- | --- |
 | `GOOGLE_MAPS_API_KEY` or `VITE_GOOGLE_MAPS_API_KEY` | Cloudflare Pages environment | Browser-visible API key | Restrict in Google Cloud to the Pages origins and only required Maps/Places APIs. `functions/api/config.js` returns it to the browser. |
+| `GOOGLE_MAPS_MAP_ID` or `VITE_GOOGLE_MAPS_MAP_ID` | Cloudflare Pages environment | Browser-visible Map ID | Add the same approved Map ID to Preview and Production before enabling advanced markers. The runtime safely omits it when unset. |
 | Supabase publishable key | `auth.js` | Browser-visible publishable key | Keep RLS enabled; this key is not a service-role secret. |
 | Supabase service-role key | Supabase dashboard only, if ever needed | Secret | Do not add to browser code, GitHub, Cloudflare Pages client variables, or Notion. Use a server-side Worker/Function only. |
 | Turnstile site key | Browser runtime configuration, if enabled | Browser-visible site key | Pair with a server-side Turnstile secret verification flow before treating CAPTCHA as an enforcement control. |
@@ -116,8 +117,9 @@ Unused secrets should not remain attached to Pages. Confirm that no deployed Fun
 
 1. Confirm the `dev` Preview serves the commit being reviewed and run `npm test` plus `npm run build` locally.
 2. Verify Google Maps browser-key referrer restrictions include the production and Preview Pages origins.
-3. On the current Supabase Free plan, record leaked-password protection as deferred: it requires a paid plan. After an upgrade, enable it in Supabase Auth and run one email sign-up/reset test.
-4. Confirm the `photos` bucket remains public only until signed-URL Preview QA is complete. Change it to private only after the signed-URL build is on `main`.
+3. Before the legacy Maps migration, enable Places API (New), create a JavaScript Map ID, and set `GOOGLE_MAPS_MAP_ID` in both Cloudflare environments. Then verify map styling, search, marker selection, and draggable location editing on `dev`.
+4. On the current Supabase Free plan, record leaked-password protection as deferred: it requires a paid plan. After an upgrade, enable it in Supabase Auth and run one email sign-up/reset test.
+5. Confirm the `photos` bucket remains public only until signed-URL Preview QA is complete. Change it to private only after the signed-URL build is on `main`.
 5. Run owner, second signed-in user, and logged-out access checks for private photos, public Explore, likes, and public locations.
 6. Record the tested commit, Preview URL, tester accounts by role (not credentials), and results in Notion.
 

@@ -16,13 +16,14 @@ functions/
 
 | Task | Location | Notes |
 | --- | --- | --- |
-| Google Maps runtime key | `api/config.js` | Reads `VITE_GOOGLE_MAPS_API_KEY` or `GOOGLE_MAPS_API_KEY` from Cloudflare env. |
+| Google Maps runtime config | `api/config.js` | Reads the browser API key and optional Map ID from Cloudflare env. |
 | Pages deployment | `package.json`, `wrangler.toml` | Build to `dist`, deploy via Cloudflare Pages commands. |
 | Integration notes | `docs/integrations.md` | Current Cloudflare project and env context. |
 
 ## CONVENTIONS
 
 - Return only values that are safe for the browser.
+- Google Maps API keys and Map IDs are browser-visible identifiers; API key restrictions remain mandatory.
 - Use `Cache-Control: no-store` for runtime config responses unless a later requirement says otherwise.
 - Keep provider secrets in Cloudflare dashboard/env settings, not repo files.
 - Pages deploy scripts use project `practice-week1` and branches `dev` or `main`.

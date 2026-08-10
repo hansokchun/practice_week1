@@ -191,7 +191,7 @@ test('Explore expanded own-photo preview edits description, visibility, and a sa
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
     const saveStart = source.indexOf('async function saveExplorePreviewEdits');
-    const saveEnd = source.indexOf('async function getGoogleMapsApiKey', saveStart);
+    const saveEnd = source.indexOf('async function getGoogleMapsRuntimeConfig', saveStart);
     const saveBody = source.slice(saveStart, saveEnd);
 
     assert.match(preview, /id="btn-edit-pin-preview"/);

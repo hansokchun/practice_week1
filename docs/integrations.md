@@ -1,6 +1,6 @@
 # Project Integrations
 
-Last checked: 2026-05-26
+Last checked: 2026-08-10
 
 This document is for Codex/operator context. It describes which connected
 services are available through the Codex plugins and which external resources
@@ -73,6 +73,7 @@ No Cloudflare D1 database is currently referenced by the local code or
 - `wrangler.toml` only configures Cloudflare Pages output:
   - `name = "ikkyee"`
   - `pages_build_output_dir = "dist"`
+- `functions/api/config.js` exposes the browser-visible Google Maps API key and optional Map ID. Cloudflare Preview and Production may use `GOOGLE_MAPS_MAP_ID` (or the Vite-prefixed equivalent); no private Google credential belongs in the repository.
 
 ## Operational notes
 

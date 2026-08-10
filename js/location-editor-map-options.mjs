@@ -1,5 +1,10 @@
-export function getLocationEditorMapOptions(center = { lat: 33.450701, lng: 126.570667 }) {
-    return {
+import { withGoogleMapsMapId } from './google-maps-runtime-config.mjs';
+
+export function getLocationEditorMapOptions(
+    center = { lat: 33.450701, lng: 126.570667 },
+    { mapId = '' } = {}
+) {
+    return withGoogleMapsMapId({
         center: {
             lat: Number(center.lat),
             lng: Number(center.lng)
@@ -15,5 +20,5 @@ export function getLocationEditorMapOptions(center = { lat: 33.450701, lng: 126.
         keyboardShortcuts: false,
         clickableIcons: false,
         gestureHandling: 'greedy'
-    };
+    }, mapId);
 }
