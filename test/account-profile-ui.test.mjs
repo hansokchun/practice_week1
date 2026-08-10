@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const html = readFileSync('index.html', 'utf8');
@@ -17,6 +17,7 @@ test('brand logo routes to the landing home page', () => {
 });
 
 test('logged-in header exposes an image-only profile trigger', () => {
+    assert.equal(existsSync('images/default-profile-avatar.png'), true);
     assert.match(html, /id="btn-open-profile"/);
     assert.match(html, /id="account-avatar"/);
     assert.match(html, /id="account-avatar-image"/);
@@ -37,8 +38,11 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.doesNotMatch(app, /const label = \$\('#account-label'\)/);
     assert.doesNotMatch(app, /account-guest-label/);
     assert.doesNotMatch(app, /label\.textContent = profile\.nickname/);
-    assert.match(app, /fallbackNode\.textContent = 'person';/);
-    assert.doesNotMatch(app, /fallbackNode\.textContent = initials;/);
+    assert.match(app, /import defaultProfileAvatarUrl from '\.\.\/images\/default-profile-avatar\.png';/);
+    assert.match(app, /const resolvedAvatarUrl = avatarUrl \|\| defaultProfileAvatarUrl;/);
+    assert.match(app, /imageNode\.src = resolvedAvatarUrl;/);
+    assert.match(app, /imageNode\.onerror = \(\) => \{\s*imageNode\.onerror = null;\s*imageNode\.src = defaultProfileAvatarUrl;\s*\};/s);
+    assert.match(app, /fallbackNode\.hidden = true;/);
     assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = 'Login';\s*\}/s);
     assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
 });

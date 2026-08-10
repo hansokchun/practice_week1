@@ -88,6 +88,7 @@ import {
 import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
+import defaultProfileAvatarUrl from '../images/default-profile-avatar.png';
 import {
     getAccountUploadLimitMessage,
     getAccountUploadLimitStatus
@@ -1699,18 +1700,17 @@ function ensureProfileHeaderShell() {
 
 function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
     if (!imageNode || !fallbackNode) return;
+    const resolvedAvatarUrl = avatarUrl || defaultProfileAvatarUrl;
     fallbackNode.classList.add('material-symbols-outlined', 'avatar-fallback-icon');
     fallbackNode.setAttribute('aria-hidden', 'true');
     fallbackNode.textContent = 'person';
-    if (avatarUrl) {
-        imageNode.src = avatarUrl;
-        imageNode.hidden = false;
-        fallbackNode.hidden = true;
-        return;
-    }
-    imageNode.hidden = true;
-    imageNode.removeAttribute('src');
-    fallbackNode.hidden = false;
+    imageNode.onerror = () => {
+        imageNode.onerror = null;
+        imageNode.src = defaultProfileAvatarUrl;
+    };
+    imageNode.src = resolvedAvatarUrl;
+    imageNode.hidden = false;
+    fallbackNode.hidden = true;
 }
 
 function clearAccountProfileAvatarPreview() {
