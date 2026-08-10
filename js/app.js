@@ -1651,7 +1651,7 @@ function ensureProfileHeaderShell() {
                 <div class="profile-title-row">
                     <label id="profile-avatar" class="avatar large-avatar account-profile-avatar profile-avatar-pick" for="profile-avatar-input" aria-label="프로필 이미지 변경">
                         <img id="profile-avatar-image" alt="" hidden>
-                        <span id="profile-avatar-fallback">IK</span>
+                        <span id="profile-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
                     </label>
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
@@ -1680,7 +1680,7 @@ function ensureProfileHeaderShell() {
                         <label class="profile-avatar-upload-control" for="profile-avatar-input">
                             <span class="profile-avatar-upload-preview" aria-hidden="true">
                                 <img id="profile-avatar-upload-preview-image" alt="" hidden>
-                                <span id="profile-avatar-upload-preview-fallback">IK</span>
+                                <span id="profile-avatar-upload-preview-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
                             </span>
                             <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
                             <span data-profile-avatar-upload-label>사진 추가</span>
@@ -1699,18 +1699,18 @@ function ensureProfileHeaderShell() {
 
 function setAvatarDisplay(imageNode, fallbackNode, avatarUrl, name) {
     if (!imageNode || !fallbackNode) return;
-    const initials = getAuthorInitials(name || 'Guest');
+    fallbackNode.classList.add('material-symbols-outlined', 'avatar-fallback-icon');
+    fallbackNode.setAttribute('aria-hidden', 'true');
+    fallbackNode.textContent = 'person';
     if (avatarUrl) {
         imageNode.src = avatarUrl;
         imageNode.hidden = false;
         fallbackNode.hidden = true;
-        fallbackNode.textContent = initials;
         return;
     }
     imageNode.hidden = true;
     imageNode.removeAttribute('src');
     fallbackNode.hidden = false;
-    fallbackNode.textContent = initials;
 }
 
 function clearAccountProfileAvatarPreview() {

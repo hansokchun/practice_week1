@@ -30,7 +30,7 @@ test('authentication QA record distinguishes browser checks from real-device com
     assert.match(source, /accounts\.kakao\.com/);
 });
 
-test('authentication QA records the completed dashboard fix and remaining external checks', () => {
+test('authentication QA records the completed dashboard fix and external checks', () => {
     const source = qaRecord();
 
     assert.match(source, /Site URL.*https:\/\/practice-week1-cws\.pages\.dev/i);
@@ -46,9 +46,9 @@ test('authentication QA records the completed dashboard fix and remaining extern
     assert.match(source, /Kakao account without an email/i);
 });
 
-test('real-device authentication launch gate remains open', () => {
+test('real-device authentication launch gate is complete', () => {
     assert.match(
         checklist(),
-        /- \[ \] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior\./
+        /- \[x\] Run real-device authentication QA: fresh email sign-up and verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior passed\./
     );
 });

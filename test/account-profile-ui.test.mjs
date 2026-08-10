@@ -21,11 +21,14 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.match(html, /id="account-avatar"/);
     assert.match(html, /id="account-avatar-image"/);
     assert.match(html, /id="account-avatar-fallback"/);
+    assert.match(html, /id="account-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person<\/span>/);
     assert.doesNotMatch(html, /id="account-label"/);
     assert.doesNotMatch(html, /id="account-guest-label"/);
     assert.match(css, /\.account-profile-trigger\s*\{/);
     assert.match(css, /\.account-profile-trigger\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
     assert.match(css, /\.account-avatar\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.16\);[^}]*border-radius:\s*999px;[^}]*background:\s*var\(--surface\);/s);
+    assert.match(css, /\.avatar\.account-avatar\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;/s);
+    assert.match(css, /\.avatar-fallback-icon\s*\{[^}]*font-size:\s*20px;[^}]*line-height:\s*1;[^}]*font-weight:\s*400;/s);
     assert.doesNotMatch(css, /\.account-label\s*\{/);
     assert.doesNotMatch(css, /\.account-profile-name\s*\{/);
     assert.match(css, /\.account-profile-trigger:hover\s*\{[^}]*transform:\s*translateY\(-1px\);/s);
@@ -34,6 +37,8 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.doesNotMatch(app, /const label = \$\('#account-label'\)/);
     assert.doesNotMatch(app, /account-guest-label/);
     assert.doesNotMatch(app, /label\.textContent = profile\.nickname/);
+    assert.match(app, /fallbackNode\.textContent = 'person';/);
+    assert.doesNotMatch(app, /fallbackNode\.textContent = initials;/);
     assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = 'Login';\s*\}/s);
     assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
 });

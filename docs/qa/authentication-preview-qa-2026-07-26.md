@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-26  
 **Environment:** `https://dev.practice-week1-cws.pages.dev`  
-**Status:** Partial pass; real-device launch gate remains open
+**Status:** Passing; real-device authentication launch gate completed 2026-08-10
 
 ## Scope And Boundary
 
@@ -110,7 +110,15 @@ Physical-device testing found that choosing KakaoTalk app login could return to 
 
 ## Launch Decision
 
-The browser-verifiable portion passes after the redirect, duplicate-scope, and no-email Kakao account fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.
+The browser-verifiable portion passed after the redirect, duplicate-scope, and no-email Kakao account fixes. The remaining physical-device, email-delivery, recovery-link, and final provider-consent checks were subsequently completed.
+
+## 2026-08-10 Fresh Email Verification Passed
+
+- A fresh email account completed sign-up on the deployed site.
+- The confirmation message arrived in the user's inbox.
+- Opening the verification link returned safely to the site.
+- The verified account successfully signed in.
+- Together with the recorded mobile Google, Kakao, logout, and password-recovery checks, the real-device authentication gate is complete.
 
 ## 2026-08-10 Redirect And Cross-tab Revalidation
 
@@ -121,7 +129,7 @@ The browser-verifiable portion passes after the redirect, duplicate-scope, and n
 - Pending navigation and follow-up context now use local storage with a 15-minute expiry, so a Kakao app or new-tab return can restore the intended page without reviving stale login actions.
 - Stored context contains only route, visibility, album ID, and supported follow-up action values. It does not contain credentials, access tokens, refresh tokens, or profile data.
 
-The browser-owned account login and consent step was not submitted during this check. A final physical-device Kakao consent and callback completion remains a manual release check.
+The browser-owned account login and consent step was not submitted during this particular automated check. It was subsequently completed on a physical mobile device.
 
 ## 2026-07-31 Password Recovery Finding
 
@@ -132,4 +140,4 @@ Production successfully sent a password recovery email and returned the user to 
 - A dedicated modal requires an eight-character password and matching confirmation before calling `updateUser({ password })`.
 - Successful changes sign the recovery session out and return the user to the login entry.
 - The callback helper, UI contract, validation wiring, 450-test suite, build, and local callback-modal behavior pass.
-- A fresh Production recovery email and physical-device callback retest remain required after deployment.
+- A fresh Production recovery email and physical-device callback retest subsequently passed.
