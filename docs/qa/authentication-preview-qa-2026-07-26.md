@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-26  
 **Environment:** `https://dev.practice-week1-cws.pages.dev`  
-**Status:** Partial pass; first-time Google and Kakao automatic sign-up QA remains
+**Status:** Partial pass; first-time Kakao automatic sign-up QA remains
 
 ## Scope And Boundary
 
@@ -128,6 +128,20 @@ The browser-verifiable portion passed after the redirect, duplicate-scope, and n
 - There is no Kakao-only account, and the existing records do not prove a controlled first-time sign-up test for both providers.
 - Test accounts must use provider email addresses not already present in Ikkyee; matching existing addresses may exercise account linking instead of new account creation.
 - Keep the created test accounts until Supabase Auth logs and the new empty-profile behavior are verified.
+
+## 2026-08-10 Fresh Google Sign-up Passed
+
+- A Google account not previously used with Ikkyee completed OAuth on Preview.
+- The OAuth return created and signed in the new Supabase user automatically.
+- The user returned to the application and confirmed the signed-in state.
+- Fresh Kakao sign-up remains the final controlled social-provider check.
+
+## 2026-08-10 KakaoTalk Link Handling
+
+- Public Ikkyee links remain readable in embedded browsers without requiring login.
+- Google and Kakao OAuth initiation is blocked inside known embedded app browsers and tells the user to reopen the page in Safari or Chrome.
+- The app shell includes a stable Open Graph preview for copied links shared through KakaoTalk and other messaging services.
+- A dedicated KakaoTalk Share button is a separate post-beta integration that requires the Kakao JavaScript SDK domain and Product Link domain configuration.
 
 ## 2026-08-10 Redirect And Cross-tab Revalidation
 

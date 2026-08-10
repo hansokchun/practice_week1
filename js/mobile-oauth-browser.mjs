@@ -24,6 +24,6 @@ export function isLikelyEmbeddedOAuthBrowser(userAgent = '') {
 }
 
 export function getEmbeddedOAuthBrowserMessage(provider = 'google') {
-    const providerName = provider === 'google' ? 'Google' : '소셜';
+    const providerName = provider === 'google' ? 'Google' : provider === 'kakao' ? 'Kakao' : '소셜';
     return `${providerName} 로그인은 일부 앱 내부 브라우저에서 차단될 수 있습니다. Safari 또는 Chrome으로 열어서 다시 시도해주세요.`;
 }

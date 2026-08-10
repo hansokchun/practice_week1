@@ -52,13 +52,13 @@ test('auth modal exposes Google, Kakao, and email start choices', () => {
     assert.doesNotMatch(html, /auth-divider/);
 });
 
-test('Google login warns before redirecting from embedded mobile browsers', () => {
+test('social login warns before redirecting from embedded mobile browsers', () => {
     const source = readFileSync('js/app.js', 'utf8');
     const start = source.indexOf('async function handleSocialLogin');
     const end = source.indexOf('async function runPendingAuthAction', start);
     const body = source.slice(start, end);
 
-    assert.match(body, /provider === 'google' && isLikelyEmbeddedOAuthBrowser\(window\.navigator\?\.userAgent\)/);
+    assert.match(body, /isLikelyEmbeddedOAuthBrowser\(window\.navigator\?\.userAgent\)/);
     assert.match(body, /getEmbeddedOAuthBrowserMessage\(provider\)/);
     assert.match(body, /showToast\(browserMessage\)/);
     assert.match(body, /return;/);

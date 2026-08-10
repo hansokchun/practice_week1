@@ -4975,7 +4975,7 @@ async function handlePasswordRecoverySubmit(event) {
 
 async function handleSocialLogin(provider) {
     const message = $('#auth-message');
-    if (provider === 'google' && isLikelyEmbeddedOAuthBrowser(window.navigator?.userAgent)) {
+    if (isLikelyEmbeddedOAuthBrowser(window.navigator?.userAgent)) {
         const browserMessage = getEmbeddedOAuthBrowserMessage(provider);
         if (message) message.textContent = browserMessage;
         showToast(browserMessage);

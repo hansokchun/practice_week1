@@ -6,7 +6,7 @@ import {
     isLikelyEmbeddedOAuthBrowser
 } from '../js/mobile-oauth-browser.mjs';
 
-test('embedded mobile app browsers are treated as unsafe for Google OAuth redirects', () => {
+test('embedded mobile app browsers are treated as unsafe for social OAuth redirects', () => {
     assert.equal(isLikelyEmbeddedOAuthBrowser('Mozilla/5.0 KAKAOTALK 10.0.0'), true);
     assert.equal(isLikelyEmbeddedOAuthBrowser('Mozilla/5.0 Instagram 312.0.0 Android'), true);
     assert.equal(isLikelyEmbeddedOAuthBrowser('Mozilla/5.0 FBAN/FBIOS FBAV/450.0'), true);
@@ -21,8 +21,11 @@ test('normal mobile browsers remain allowed for Google OAuth redirects', () => {
 });
 
 test('embedded OAuth browser message tells the user to switch to Safari or Chrome', () => {
-    const message = getEmbeddedOAuthBrowserMessage('google');
+    const googleMessage = getEmbeddedOAuthBrowserMessage('google');
+    const kakaoMessage = getEmbeddedOAuthBrowserMessage('kakao');
 
-    assert.match(message, /Google 로그인/);
-    assert.match(message, /Safari 또는 Chrome/);
+    assert.match(googleMessage, /Google 로그인/);
+    assert.match(googleMessage, /Safari 또는 Chrome/);
+    assert.match(kakaoMessage, /Kakao 로그인/);
+    assert.match(kakaoMessage, /Safari 또는 Chrome/);
 });
