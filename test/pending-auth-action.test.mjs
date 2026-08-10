@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
     createPendingAuthState,
@@ -40,10 +41,10 @@ test('pending auth context can be stored and restored after OAuth redirect', () 
     };
 
     setPendingAuthAction(state, 'save-share');
-    storePendingAuthContext(adapter, state, { route: 'share', visibility: 'public', albumId: 'album-1' });
+    storePendingAuthContext(adapter, state, { route: 'share', visibility: 'public', albumId: 'album-1' }, 1_000);
 
     const restored = createPendingAuthState();
-    assert.deepEqual(restorePendingAuthContext(adapter, restored), {
+    assert.deepEqual(restorePendingAuthContext(adapter, restored, 2_000), {
         action: 'save-share',
         route: 'share',
         visibility: 'public',
@@ -95,4 +96,26 @@ test('OAuth login preserves the current public route without a pending action', 
         albumId: null,
         pendingRoute: null
     });
+});
+
+test('stale OAuth context is discarded after the mobile handoff window', () => {
+    const state = createPendingAuthState();
+    const storage = new Map();
+    const adapter = {
+        getItem: (key) => storage.get(key) || null,
+        setItem: (key, value) => storage.set(key, value),
+        removeItem: (key) => storage.delete(key)
+    };
+
+    storePendingAuthContext(adapter, state, { route: 'explore' }, 1_000);
+
+    const restored = createPendingAuthState();
+    assert.equal(restorePendingAuthContext(adapter, restored, 16 * 60 * 1000 + 1_000), null);
+    assert.equal(adapter.getItem('ikkyee.pendingAuth'), null);
+});
+
+test('app stores pending OAuth navigation in local storage for cross-tab returns', () => {
+    const app = readFileSync('js/app.js', 'utf8');
+    assert.match(app, /storePendingAuthContext\(window\.localStorage/);
+    assert.match(app, /restorePendingAuthContext\(window\.localStorage/);
 });

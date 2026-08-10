@@ -4940,7 +4940,7 @@ async function handleSocialLogin(provider) {
     }
 
     if (message) message.textContent = `${provider === 'google' ? 'Google' : 'Kakao'} 로그인으로 이동합니다...`;
-    storePendingAuthContext(window.sessionStorage, state, {
+    storePendingAuthContext(window.localStorage, state, {
         route: getCurrentRoute(),
         visibility: state.visibility,
         albumId: state.selectedPublicAlbumId
@@ -5594,7 +5594,7 @@ function bindEvents() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const restoredAuthContext = restorePendingAuthContext(window.sessionStorage, state);
+        const restoredAuthContext = restorePendingAuthContext(window.localStorage, state);
         if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
         if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
         const sharedAlbumId = parseSharedAlbumId(window.location.hash);

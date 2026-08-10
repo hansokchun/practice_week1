@@ -112,6 +112,17 @@ Physical-device testing found that choosing KakaoTalk app login could return to 
 
 The browser-verifiable portion passes after the redirect, duplicate-scope, and no-email Kakao account fixes. The checklist item **Run real-device authentication QA** remains open until physical-device, email-delivery, recovery-link, and final provider-consent checks are recorded.
 
+## 2026-08-10 Redirect And Cross-tab Revalidation
+
+- Supabase's current JavaScript API requires `emailRedirectTo` inside email signup options. The client now maps the normalized Ikkyee redirect to that field instead of passing the OAuth-only `redirectTo` field.
+- A fresh Preview Kakao request reached `accounts.kakao.com` with the Supabase project callback at `/auth/v1/callback` and returned to `https://dev.practice-week1-cws.pages.dev/`.
+- The request contained `account_email`, `profile_image`, and `profile_nickname` once each; no duplicate client scopes were present.
+- Supabase Auth logs showed successful Kakao `/authorize` redirects with HTTP 302 and no provider-configuration error during the check.
+- Pending navigation and follow-up context now use local storage with a 15-minute expiry, so a Kakao app or new-tab return can restore the intended page without reviving stale login actions.
+- Stored context contains only route, visibility, album ID, and supported follow-up action values. It does not contain credentials, access tokens, refresh tokens, or profile data.
+
+The browser-owned account login and consent step was not submitted during this check. A final physical-device Kakao consent and callback completion remains a manual release check.
+
 ## 2026-07-31 Password Recovery Finding
 
 Production successfully sent a password recovery email and returned the user to the site, but the application did not expose a new-password form because it had no recovery callback UI.

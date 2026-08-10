@@ -1,6 +1,7 @@
 const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album']);
 const SUPPORTED_PENDING_ROUTES = new Set(['upload']);
 const STORAGE_KEY = 'ikkyee.pendingAuth';
+const PENDING_AUTH_TTL_MS = 15 * 60 * 1000;
 
 export function createPendingAuthState() {
     return {
@@ -28,7 +29,7 @@ export function takePendingAuthAction(state) {
     return action;
 }
 
-export function storePendingAuthContext(storage, state, context = {}) {
+export function storePendingAuthContext(storage, state, context = {}, now = Date.now()) {
     const action = getPendingAuthAction(state);
     const pendingRoute = SUPPORTED_PENDING_ROUTES.has(state.pendingAuthRoute) ? state.pendingAuthRoute : null;
     const route = typeof context.route === 'string' ? context.route : null;
@@ -38,13 +39,14 @@ export function storePendingAuthContext(storage, state, context = {}) {
         route,
         visibility: context.visibility || null,
         albumId: context.albumId || null,
-        pendingRoute
+        pendingRoute,
+        createdAt: now
     };
     storage.setItem(STORAGE_KEY, JSON.stringify(payload));
     return payload;
 }
 
-export function restorePendingAuthContext(storage, state) {
+export function restorePendingAuthContext(storage, state, now = Date.now()) {
     if (!storage) return null;
     const raw = storage.getItem(STORAGE_KEY);
     storage.removeItem(STORAGE_KEY);
@@ -52,6 +54,10 @@ export function restorePendingAuthContext(storage, state) {
 
     try {
         const parsed = JSON.parse(raw);
+        const isFresh = Number.isFinite(parsed?.createdAt)
+            && now - parsed.createdAt >= 0
+            && now - parsed.createdAt <= PENDING_AUTH_TTL_MS;
+        if (!isFresh) return null;
         const action = SUPPORTED_ACTIONS.has(parsed?.action) ? parsed.action : null;
         const pendingRoute = SUPPORTED_PENDING_ROUTES.has(parsed?.pendingRoute) ? parsed.pendingRoute : null;
         const route = typeof parsed?.route === 'string' ? parsed.route : null;
