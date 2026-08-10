@@ -11,8 +11,8 @@ test('Cloudflare Pages static responses use baseline security headers', () => {
     assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
     assert.match(headers, /Permissions-Policy: camera=\(\), microphone=\(\), geolocation=\(\), payment=\(\), usb=\(\)/);
     assert.match(headers, /Content-Security-Policy: default-src 'self';/);
-    assert.match(headers, /script-src 'self' 'unsafe-inline' 'unsafe-eval' https:\/\/cdn\.jsdelivr\.net https:\/\/challenges\.cloudflare\.com https:\/\/\*\.googleapis\.com https:\/\/\*\.gstatic\.com \*\.google\.com blob:;/);
-    assert.match(headers, /connect-src 'self' https:\/\/\*\.supabase\.co wss:\/\/\*\.supabase\.co https:\/\/challenges\.cloudflare\.com/);
+    assert.match(headers, /script-src 'self' 'unsafe-inline' 'unsafe-eval' https:\/\/cdn\.jsdelivr\.net https:\/\/t1\.kakaocdn\.net https:\/\/challenges\.cloudflare\.com https:\/\/\*\.googleapis\.com https:\/\/\*\.gstatic\.com \*\.google\.com blob:;/);
+    assert.match(headers, /connect-src 'self' https:\/\/\*\.supabase\.co wss:\/\/\*\.supabase\.co https:\/\/\*\.kakao\.com https:\/\/\*\.kakaocdn\.net https:\/\/challenges\.cloudflare\.com/);
     assert.match(headers, /frame-src https:\/\/challenges\.cloudflare\.com \*\.google\.com;/);
     assert.match(headers, /object-src 'none';/);
     assert.match(headers, /base-uri 'self';/);

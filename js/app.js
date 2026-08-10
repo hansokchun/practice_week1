@@ -44,6 +44,7 @@ import {
     normalizeLocationDraft
 } from './location-workflow.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
+import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
 import {
     normalizeGoogleMapsRuntimeConfig,
     withGoogleMapsMapId
@@ -2351,6 +2352,19 @@ async function copyCurrentShareLink() {
     return url;
 }
 
+async function shareCurrentTripWithKakao() {
+    const url = getCurrentShareUrl();
+    try {
+        const kakao = await loadKakaoShareSdk();
+        await sendKakaoShare(kakao, url);
+        showToast('카카오톡 공유창을 열었습니다.');
+        return url;
+    } catch {
+        await copyCurrentShareLink();
+        return url;
+    }
+}
+
 function renderEmptyPublicSurfaces() {
     const empty = getPublicAlbumEmptyState();
     const shareOutput = $('#share-link-output');
@@ -2503,7 +2517,7 @@ function renderTripReviewShell() {
                     <div id="trip-review-meta" class="trip-review-meta"></div>
                 </div>
                 <div class="trip-actions">
-                    <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="공유하기" data-tooltip="공유하기">
+                    <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="카카오톡으로 공유" data-tooltip="카카오톡으로 공유">
                         <span class="material-symbols-outlined">ios_share</span>
                     </button>
                 </div>
@@ -2985,7 +2999,7 @@ function renderPublicSurfaces() {
                 </button>
             ` : ''}
             ${!state.albumDetailEditMode ? `
-                <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="공유하기" data-tooltip="공유하기">
+                <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="카카오톡으로 공유" data-tooltip="카카오톡으로 공유">
                     <span class="material-symbols-outlined">ios_share</span>
                 </button>
             ` : ''}
@@ -5406,7 +5420,7 @@ function bindEvents() {
 
         const copyTripLinkButton = event.target.closest('#btn-copy-trip-link');
         if (copyTripLinkButton) {
-            copyCurrentShareLink();
+            await shareCurrentTripWithKakao();
             return;
         }
 

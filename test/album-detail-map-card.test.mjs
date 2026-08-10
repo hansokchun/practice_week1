@@ -32,7 +32,7 @@ test('album detail uses a Google Photos style title header without a cover backg
 
 test('album detail exposes icon actions and a three-dot album menu', () => {
     assert.match(appSource, /class="album-icon-button"[^>]*aria-label="사진 추가"[^>]*data-tooltip="사진 추가"/);
-    assert.match(appSource, /class="album-icon-button"[^>]*aria-label="공유하기"[^>]*data-tooltip="공유하기"/);
+    assert.match(appSource, /class="album-icon-button"[^>]*aria-label="카카오톡으로 공유"[^>]*data-tooltip="카카오톡으로 공유"/);
     assert.doesNotMatch(appSource, /data-go-profile type="button" aria-label="작성자 프로필"/);
     assert.match(appSource, /tripReviewMapAuthor\.dataset\.publicOwnerId = selected\.owner_id \|\| ''/);
     assert.match(appSource, /class="album-more-menu"/);

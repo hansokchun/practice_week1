@@ -152,7 +152,9 @@ The browser-verifiable portion passed after the redirect, duplicate-scope, and n
 - Kakao Developers app `1477443` now displays the app name `Ikkyee` instead of `Travellog`.
 - Product Link web domains include Production and Preview, with Production selected as the default.
 - The default JavaScript key allows the Production and Preview domains for the Kakao JavaScript SDK.
-- A dedicated KakaoTalk Share button remains a separate client integration; its required Kakao dashboard domains are ready.
+- Album share actions now lazy-load the pinned Kakao JavaScript SDK and open the KakaoTalk share picker with the current public album URL.
+- The browser JavaScript key is intentionally public and is restricted by the registered Production and Preview SDK domains.
+- If the SDK or share picker is unavailable, the action falls back to copying the same album URL.
 
 ## 2026-08-10 Redirect And Cross-tab Revalidation
 
