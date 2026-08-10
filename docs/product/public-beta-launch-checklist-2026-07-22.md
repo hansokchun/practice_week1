@@ -18,10 +18,10 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 458 passing, 0 failing (2026-08-10) |
+| Automated verification | Passing | `npm test`: 464 passing, 0 failing (2026-08-10) |
 | Production build | Passing | `npm run build` (2026-08-10) |
-| Preview delivery | Verified | Authentication redirect hardening `4694029` is deployed at `https://dev.practice-week1-cws.pages.dev` (2026-08-10). |
-| Production delivery | Verified | GitHub `main` and `dev` are synchronized at `4694029`; Cloudflare Production serves the corresponding build (2026-08-10). |
+| Preview delivery | Verified | The latest verified `dev` release is deployed at `https://dev.practice-week1-cws.pages.dev` (2026-08-10). |
+| Production delivery | Verified | GitHub `main` and `dev` are synchronized; Cloudflare Production serves the same verified release (2026-08-10). |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Private, passing | The `photos` bucket is private. Owner, non-owner, anonymous, signed-URL, legacy public-URL, and logged-out Production Explore checks passed. |
 | Storage cutover verification | Passing | Live aggregate check: 0 photo rows missing `storage_path`, 4 Storage policies, 2 Auth accounts preserved. Disposable samples were retained because they were already compatible and useful as QA fixtures. |
@@ -76,6 +76,7 @@
 - [x] Ask after Kakao OAuth whether to apply the Kakao name and avatar, with an explicit option to keep the current Ikkyee profile.
 - [x] Keep mobile Kakao OAuth in the browser and preserve the one-time profile choice across app or tab handoffs.
 - [x] Show a dedicated new-password form after a Supabase recovery callback and safely end the recovery session after success.
+- [x] Add a first-viewport photo-upload action to the public Home opening and preserve the login-to-upload handoff.
 
 ### P1: Public Beta Readiness
 

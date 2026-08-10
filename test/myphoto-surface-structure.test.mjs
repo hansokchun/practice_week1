@@ -146,9 +146,10 @@ test('home starts the landing flow with the Ikkyee collage and feature stories',
     assert.match(markup, /class="home-houses-reference__word"[^>]*>Ikkyee</);
     assert.match(markup, /이 사진은 어디서 찍은 거지\?/);
     assert.match(markup, /Ikkyee에서 취향에 맞는 사진과 장소를 알아가세요\./);
-    assert.doesNotMatch(markup, /class="home-houses-reference__action"/);
+    assert.match(markup, /class="home-houses-reference__actions"[\s\S]*class="home-houses-reference__action btn-primary"[\s\S]*data-route="upload"[\s\S]*>upload<[\s\S]*사진 올리고 시작하기/);
     assert.doesNotMatch(markup, /공개 장소 둘러보기/);
-    assert.doesNotMatch(styles, /\.home-houses-reference__action\s*\{/);
+    assert.match(styles, /\.home-houses-reference__actions\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*center;/s);
+    assert.match(styles, /\.home-houses-reference__action\s*\{[^}]*min-height:\s*48px;[^}]*border-radius:\s*8px;/s);
     assert.match(markup, /class="home-houses-reference__collage"[\s\S]*home-houses-reference__photo--a[\s\S]*home-houses-reference__photo--e/);
     assert.doesNotMatch(markup, /home-houses-reference__divider/);
     assert.match(markup, /class="home-section-divider"[\s\S]*images\/home-section-divider\.jpg[\s\S]*width="2172"[\s\S]*height="724"/);

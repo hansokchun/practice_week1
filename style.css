@@ -827,6 +827,25 @@ body.is-logged-in[data-page="landing"] .home-feature-stories {
     line-height: 1.56;
 }
 
+.home-houses-reference__actions {
+    display: flex;
+    justify-content: center;
+}
+
+.home-houses-reference__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    border-radius: 8px;
+    padding: 0 20px;
+}
+
+.home-houses-reference__action .material-symbols-outlined {
+    font-size: 19px;
+}
+
 .home-houses-reference__collage {
     position: relative;
     height: 560px;
