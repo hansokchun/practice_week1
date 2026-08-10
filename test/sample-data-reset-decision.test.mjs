@@ -31,7 +31,9 @@ test('private Storage cutover history and later sample cleanup remain explicit',
   assert.match(decision, /21 photo rows/i);
   assert.match(decision, /3 album rows/i);
   assert.match(decision, /Auth accounts and profiles remained at 3/i);
-  assert.match(decision, /31 unlinked Storage objects remain/i);
+  assert.match(decision, /all 31 Storage files and 2 empty-folder placeholders were removed/i);
+  assert.match(decision, /Storage object count is 0/i);
   assert.match(checklist, /Database sample cleanup \| Passing/i);
-  assert.match(checklist, /31 unlinked objects remain in the private `photos` bucket/i);
+  assert.match(checklist, /Storage sample cleanup \| Passing/i);
+  assert.match(checklist, /0 objects remain in the private `photos` bucket/i);
 });

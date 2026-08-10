@@ -25,7 +25,8 @@
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Private, passing | The `photos` bucket is private. Owner, non-owner, anonymous, signed-URL, legacy public-URL, and logged-out Production Explore checks passed. |
 | Storage cutover verification | Passing | The private-bucket and signed-URL access regression passed before sample cleanup. Storage policies and the bucket remain unchanged. |
-| Database sample cleanup | Passing | All 21 photo rows, 3 albums, and dependent content rows were removed on 2026-08-10. Auth accounts and profiles remain; 31 unlinked objects remain in the private `photos` bucket for authenticated Dashboard/API cleanup. |
+| Database sample cleanup | Passing | All 21 photo rows, 3 albums, and dependent content rows were removed on 2026-08-10. Auth accounts and profiles remain at 3 each. |
+| Storage sample cleanup | Passing | All photo files and empty-folder placeholders were removed through the authenticated Dashboard. 0 objects remain in the private `photos` bucket; the bucket and 4 policies remain. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |

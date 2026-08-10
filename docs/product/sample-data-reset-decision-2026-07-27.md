@@ -44,6 +44,6 @@ The approved database cleanup was executed in one transaction after the private 
 - Cascaded to zero: album-photo relationships, comments, likes, and private location rows.
 - Protected: Auth accounts and profiles remained at 3 each.
 - Verified: logged-out Production Explore renders the public empty state without the former test titles or images.
-- Pending Storage follow-up: 31 unlinked Storage objects remain in the private `photos` bucket. They were not deleted through SQL because that would orphan the underlying files; empty the bucket through the Supabase Storage API or Dashboard after an authenticated administrator session is available.
+- Storage cleanup complete: all 31 Storage files and 2 empty-folder placeholders were removed through the authenticated Dashboard. The final Storage object count is 0.
 
-The remaining private objects have no database records and are not discoverable through Home, Explore, profiles, or normal signed-URL generation. This cleanup does not authorize deleting the bucket, policies, Auth accounts, or profiles.
+The private `photos` bucket and its four object policies remain in place. This cleanup did not delete the bucket, policies, Auth accounts, or profiles.

@@ -23,7 +23,7 @@ The original code snapshot was not ready for unrestricted public beta. The confi
 - `tmp/` is ignored without deleting user files. README and the current service specification now match the implementation.
 - Cloudflare Pages now sends a source-restricted CSP for Supabase, Google Maps, and Turnstile, while fingerprinted `/assets/*` responses use a one-year immutable cache. HTML keeps Cloudflare's revalidation behavior and `/api/config` remains `no-store`.
 - The public Home opening now presents one clear photo-upload action inside the first viewport. Logged-out visitors continue through the existing login handoff, while authenticated visitors continue directly to upload.
-- The disposable database sample library was reset: 21 photos, 3 albums, and all dependent content rows are now zero. Auth accounts and profiles remain at 3, and logged-out Production Explore shows the intended empty state. The 31 now-unlinked private Storage objects remain queued for authenticated Storage API/Dashboard cleanup.
+- The disposable sample library was fully reset: 21 photos, 3 albums, all dependent rows, 31 Storage files, and 2 empty-folder placeholders were removed. Auth accounts and profiles remain at 3, the private bucket and its 4 policies remain, and logged-out Production Explore shows the intended empty state.
 - Verification after remediation: 464/464 tests, production build, dependency audit, and performance budget all pass. Desktop 1440x900 and mobile 390x844 browser checks show no horizontal overflow or visible broken images.
 
 ## Confirmed Findings

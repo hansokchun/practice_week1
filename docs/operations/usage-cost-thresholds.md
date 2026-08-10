@@ -45,9 +45,9 @@ Cloudflare Pages 정적 자산 요청은 무료이며 무제한이다. `/api/con
 | 사진 | 0 |
 | 앨범 | 0 |
 | 좋아요·댓글·비공개 위치 | 0 |
-| 연결 해제된 비공개 Storage 객체 | 31 |
+| 비공개 Storage 객체 | 0 |
 
-DB 샘플은 삭제됐고 Auth 계정과 프로필은 보존됐다. Storage 객체는 SQL로 지우지 않고, 관리자 인증 후 Supabase Storage API 또는 Dashboard로 비운다.
+DB 샘플과 Storage 파일·빈 폴더 플레이스홀더까지 모두 삭제됐다. Auth 계정과 프로필은 각 3개, `photos` 버킷과 Storage 정책 4개는 보존됐다.
 
 ## 주간 판정
 
