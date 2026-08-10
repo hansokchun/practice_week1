@@ -1,6 +1,6 @@
 # Ikkyee Public Beta Launch Checklist
 
-**Updated:** 2026-07-31
+**Updated:** 2026-08-10
 
 **Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
 **Product promise:** Choose photos, and a travel map is created.
@@ -18,10 +18,10 @@
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 444 passing, 0 failing (2026-07-31) |
-| Production build | Passing | `npm run build` (2026-07-31) |
-| Preview delivery | Verified | Release candidate `ed19c3582b05` passed the repeatable shell, asset, config, and security-header rehearsal at `https://dev.practice-week1-cws.pages.dev`; `main` remains unchanged |
-| Production delivery | Verified | GitHub `main` and `dev` synchronized at application release `a3030727e97f`; Cloudflare Production deployment and smoke verification passed on 2026-07-27 |
+| Automated verification | Passing | `npm test`: 458 passing, 0 failing (2026-08-10) |
+| Production build | Passing | `npm run build` (2026-08-10) |
+| Preview delivery | Verified | Authentication redirect hardening `4694029` is deployed at `https://dev.practice-week1-cws.pages.dev` (2026-08-10). |
+| Production delivery | Verified | GitHub `main` and `dev` are synchronized at `4694029`; Cloudflare Production serves the corresponding build (2026-08-10). |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Private, passing | The `photos` bucket is private. Owner, non-owner, anonymous, signed-URL, legacy public-URL, and logged-out Production Explore checks passed. |
 | Storage cutover verification | Passing | Live aggregate check: 0 photo rows missing `storage_path`, 4 Storage policies, 2 Auth accounts preserved. Disposable samples were retained because they were already compatible and useful as QA fixtures. |
@@ -29,7 +29,7 @@
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
 | Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
-| Authentication QA | Partial, P0 open | Physical mobile testing found an unreliable KakaoTalk app handoff. Mobile Kakao now stays in the browser, and the profile-choice marker survives cross-tab returns for 15 minutes. A device retest plus email links and remaining OAuth checks are still required. |
+| Authentication QA | Partial, P0 open | Mobile Kakao, Google, logout, password-recovery return, and the new-password UI passed on a physical device. OAuth return context now survives app/tab handoffs for 15 minutes. Only a fresh email sign-up and inbox verification-link round trip remains. |
 | Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
 | Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
 | Database backup/PITR | Manual recovery rehearsed | The encrypted export and data-free schema baseline are verified. On 2026-07-27 the backup restored transactionally in an isolated local Supabase database with 7 tables, 24 policies, 1 trigger, and RLS on all 7 public tables. Storage binaries remain a separate recovery boundary. |
@@ -49,7 +49,7 @@
 - [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
 - [x] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard.
 - [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
-- [ ] Run real-device authentication QA: email verification, reset, Google OAuth, Kakao OAuth, logout, and redirect behavior.
+- [ ] Run real-device authentication QA: reset, Google OAuth, Kakao OAuth, logout, and redirect behavior passed; only fresh email sign-up and inbox verification remain.
 - [x] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
 - [x] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
 
@@ -130,7 +130,7 @@ Local tests and build
 
 1. [Complete] Deploy the signed-URL-compatible release to `main` and pass Production smoke verification.
 2. [Complete] Keep the compatible disposable samples as QA fixtures, make the shared `photos` bucket private, and pass final access regression.
-3. Run real-device email, Google, Kakao, upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
+3. Complete fresh email sign-up and inbox verification, then run the remaining upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
 4. Approve the final support address, retention policy, and legal copy before opening public traffic.
 5. Revisit leaked-password protection only when the Supabase plan is upgraded.
 
