@@ -24,7 +24,8 @@
 | Production delivery | Verified | GitHub `main` and `dev` are synchronized; Cloudflare Production serves the same verified release (2026-08-10). |
 | Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | Photo storage privacy | Private, passing | The `photos` bucket is private. Owner, non-owner, anonymous, signed-URL, legacy public-URL, and logged-out Production Explore checks passed. |
-| Storage cutover verification | Passing | Live aggregate check: 0 photo rows missing `storage_path`, 4 Storage policies, 2 Auth accounts preserved. Disposable samples were retained because they were already compatible and useful as QA fixtures. |
+| Storage cutover verification | Passing | The private-bucket and signed-URL access regression passed before sample cleanup. Storage policies and the bucket remain unchanged. |
+| Database sample cleanup | Passing | All 21 photo rows, 3 albums, and dependent content rows were removed on 2026-08-10. Auth accounts and profiles remain; 31 unlinked objects remain in the private `photos` bucket for authenticated Dashboard/API cleanup. |
 | Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
 | Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
 | Explore map search | Modernized | Deprecated `SearchBox` replaced with async Google Places `Autocomplete` integration |
@@ -77,6 +78,7 @@
 - [x] Keep mobile Kakao OAuth in the browser and preserve the one-time profile choice across app or tab handoffs.
 - [x] Show a dedicated new-password form after a Supabase recovery callback and safely end the recovery session after success.
 - [x] Add a first-viewport photo-upload action to the public Home opening and preserve the login-to-upload handoff.
+- [x] Remove disposable public database samples and verify the logged-out Production Explore empty state without deleting Auth accounts or profiles.
 
 ### P1: Public Beta Readiness
 
@@ -130,7 +132,7 @@ Local tests and build
 ## First Execution Order
 
 1. [Complete] Deploy the signed-URL-compatible release to `main` and pass Production smoke verification.
-2. [Complete] Keep the compatible disposable samples as QA fixtures, make the shared `photos` bucket private, and pass final access regression.
+2. [Complete] Use the compatible disposable samples for private-bucket access QA, then remove their database records and verify the Production Explore empty state.
 3. Complete first-time automatic sign-up with never-used Google and Kakao accounts; existing-account OAuth and email authentication already pass.
 4. Run the remaining upload, map, navigation, and modal QA on iOS Safari and Android Chrome.
 5. Approve the final support address, retention policy, and legal copy before opening public traffic.

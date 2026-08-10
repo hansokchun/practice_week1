@@ -35,3 +35,15 @@ If a future step needs to remove an Auth account or change a security configurat
 - No additional backup is required solely to preserve sample content; the existing encrypted backup remains the recovery-procedure evidence.
 - Safe aggregate counts may change after cleanup and should not be treated as product data-loss alerts until real beta users are admitted.
 - Once public beta users create content, this exception ends. User-created production content must follow the normal backup, migration, retention, and incident safeguards.
+
+## 2026-08-10 Cleanup Execution
+
+The approved database cleanup was executed in one transaction after the private Storage and access-control rehearsals were complete.
+
+- Deleted: 21 photo rows and 3 album rows.
+- Cascaded to zero: album-photo relationships, comments, likes, and private location rows.
+- Protected: Auth accounts and profiles remained at 3 each.
+- Verified: logged-out Production Explore renders the public empty state without the former test titles or images.
+- Pending Storage follow-up: 31 unlinked Storage objects remain in the private `photos` bucket. They were not deleted through SQL because that would orphan the underlying files; empty the bucket through the Supabase Storage API or Dashboard after an authenticated administrator session is available.
+
+The remaining private objects have no database records and are not discoverable through Home, Explore, profiles, or normal signed-URL generation. This cleanup does not authorize deleting the bucket, policies, Auth accounts, or profiles.

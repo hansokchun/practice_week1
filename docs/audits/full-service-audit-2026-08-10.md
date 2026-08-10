@@ -9,11 +9,11 @@ Scope: tracked repository inventory, product documents, frontend structure, Supa
 
 Ikkyee has a clear and differentiated core: private travel photos become a map-based archive, with controlled public discovery as a secondary experience. The upload, album, privacy, signed-storage, Explore, profile, OAuth, backup, and release foundations are unusually complete for a pre-beta vanilla SPA.
 
-The original code snapshot was not ready for unrestricted public beta. The confirmed code and data blockers below were repaired on 2026-08-10; fresh social sign-up, real-device QA, legal/support approval, Google Maps legacy API migration, and launch-content cleanup remain open.
+The original code snapshot was not ready for unrestricted public beta. The confirmed code and data blockers below were repaired on 2026-08-10; fresh social sign-up, real-device QA, legal/support approval, and Google Maps legacy API migration remain open.
 
 ## Remediation Update
 
-- Resolved findings: 1-7, 9-14.
+- Resolved findings: 1-7, 9-15.
 - Like data now has 4 rows, a stored total of 4, and 0 mismatched photos. The authenticated-only `set_photo_like` RPC owns row and count changes atomically.
 - Runtime fallback and demo images now use Vite-tracked `import.meta.url` assets; all five images appear in the production build.
 - New social accounts now start with an empty stored avatar and a neutral name. Provider metadata is applied only through the existing user-confirmed Kakao flow.
@@ -23,6 +23,7 @@ The original code snapshot was not ready for unrestricted public beta. The confi
 - `tmp/` is ignored without deleting user files. README and the current service specification now match the implementation.
 - Cloudflare Pages now sends a source-restricted CSP for Supabase, Google Maps, and Turnstile, while fingerprinted `/assets/*` responses use a one-year immutable cache. HTML keeps Cloudflare's revalidation behavior and `/api/config` remains `no-store`.
 - The public Home opening now presents one clear photo-upload action inside the first viewport. Logged-out visitors continue through the existing login handoff, while authenticated visitors continue directly to upload.
+- The disposable database sample library was reset: 21 photos, 3 albums, and all dependent content rows are now zero. Auth accounts and profiles remain at 3, and logged-out Production Explore shows the intended empty state. The 31 now-unlinked private Storage objects remain queued for authenticated Storage API/Dashboard cleanup.
 - Verification after remediation: 464/464 tests, production build, dependency audit, and performance budget all pass. Desktop 1440x900 and mobile 390x844 browser checks show no horizontal overflow or visible broken images.
 
 ## Confirmed Findings
@@ -100,7 +101,7 @@ The original code snapshot was not ready for unrestricted public beta. The confi
     - Step 1 communicates mood and brand, but the primary promise and upload action are below the first viewport.
     - A concise primary action near the opening copy would reduce the distance from understanding to first upload.
 
-15. **Current public sample content lowers launch credibility.**
+15. **Resolved: public sample content lowered launch credibility.**
     - Step 2 and Step 7 expose test titles, very long strings, and low-quality/private-looking sample imagery.
     - The existing decision permits deleting all pre-launch sample content; use a small curated starter set or a polished empty state before launch.
 
@@ -128,13 +129,13 @@ Use this as the current MVP definition unless the owner decides otherwise:
 
 ## Browser Audit Steps
 
-### 1. Logged-out Home desktop - Needs improvement
+### 1. Logged-out Home desktop - Resolved after audit
 
 ![Logged-out Home desktop](assets/2026-08-10/01-home-desktop.png)
 
 Strong identity and stable layout. The first viewport lacks a direct upload/start action.
 
-### 2. Logged-out Explore desktop - Needs content cleanup
+### 2. Logged-out Explore desktop - Resolved after audit
 
 ![Logged-out Explore desktop](assets/2026-08-10/02-explore-desktop.png)
 
@@ -164,7 +165,7 @@ Search and scope controls are reachable. A loading/empty distinction should rema
 
 The bottom sheet fits the viewport. The same focus-management limitation applies.
 
-### 7. Explore photo panel - Functionally clear, content cleanup needed
+### 7. Explore photo panel - Historical sample removed
 
 ![Explore selected photo](assets/2026-08-10/07-explore-photo-desktop.png)
 
