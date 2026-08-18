@@ -54,7 +54,7 @@ test('private Storage cutover evidence and launch gates stay recorded', () => {
   assert.match(cutoverQa, /Anonymous private signed URL:\s*HTTP 400/i);
   assert.match(cutoverQa, /Other authenticated user[\s\S]*private rows:\s*0/i);
   assert.match(cutoverQa, /Logged-out Production Explore[\s\S]*public photos visible/i);
-  assert.match(launchChecklist, /\*\*P0 progress:\*\* 12 of 14 gates complete/);
+  assert.match(launchChecklist, /\*\*P0 progress:\*\* All active technical gates complete/);
   assert.match(launchChecklist, /- \[x\] Verify private files fail for logged-out and non-owner accounts/);
   assert.match(launchChecklist, /- \[x\] Run three-account RLS and Storage QA/);
 });
