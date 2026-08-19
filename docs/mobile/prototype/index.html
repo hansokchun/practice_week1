@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231a4d4e' d='M8 1a5 5 0 0 0-5 5c0 3.6 5 9 5 9s5-5.4 5-9a5 5 0 0 0-5-5Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z'/%3E%3C/svg%3E">
+  <title>Ikkyee Mobile Explore Prototype</title>
+  <style>
+    :root {
+      --paper: #f9f7f2;
+      --surface: #ffffff;
+      --mist: #edf1eb;
+      --ink: #191c1c;
+      --muted: #687478;
+      --pine: #1a4d4e;
+      --pine-deep: #003637;
+      --water: #9ed8e2;
+      --land: #e1eadb;
+      --coral: #f48c71;
+      --gold: #c9a050;
+      --line: rgba(26, 77, 78, .16);
+      --float-shadow: 0 12px 30px rgba(0, 54, 55, .16);
+      --radius-media: 8px;
+      --radius-surface: 12px;
+      --radius-pill: 999px;
+      --nav-height: 72px;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body {
+      background: #dce5dd;
+      color: var(--ink);
+      font-family: SUIT, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+    svg { display: block; width: 20px; height: 20px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    .app {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      min-height: 100svh;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: 0 0 0 1px rgba(0, 54, 55, .05), 0 0 42px rgba(0, 54, 55, .12);
+    }
+    .topbar {
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: calc(64px + env(safe-area-inset-top));
+      padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+      background: rgba(249, 247, 242, .96);
+      border-bottom: 1px solid var(--line);
+    }
+    .wordmark {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border: 0;
+      color: var(--ink);
+      background: transparent;
+      padding: 2px 0;
+      font-family: Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .wordmark svg { width: 21px; height: 21px; color: var(--pine); }
+    .profile-thumb {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      overflow: hidden;
+      border: 2px solid var(--paper);
+      border-radius: 50%;
+      background: var(--pine-deep);
+      box-shadow: 0 0 0 1px var(--line);
+    }
+    .profile-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-thumb.guest { color: var(--pine-deep); background: var(--mist); }
+
+    main { min-height: 100svh; padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom)); }
+    .view { display: none; min-height: 100svh; }
+    .view.active { display: block; }
+    .map-view { position: relative; overflow: hidden; background: var(--water); }
+    .map-canvas {
+      position: absolute;
+      inset: 0;
+      background-color: var(--water);
+      background-image:
+        linear-gradient(rgba(255,255,255,.23) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.23) 1px, transparent 1px),
+        url("../../../images/home-world-map.png");
+      background-size: 34px 34px, 34px 34px, 740px auto;
+      background-position: 0 0, 0 0, 52% 54%;
+      background-repeat: repeat, repeat, no-repeat;
+      background-blend-mode: soft-light, soft-light, multiply;
+    }
+    .map-canvas::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(158,216,226,.08), rgba(158,216,226,.46));
+      pointer-events: none;
+    }
+    .map-label { position: absolute; z-index: 1; color: rgba(0,54,55,.75); font-size: 12px; font-weight: 800; text-shadow: 0 1px rgba(255,255,255,.8); }
+    .label-seoul { top: 32%; left: 68%; }
+    .label-osaka { top: 45%; left: 61%; }
+    .label-tokyo { top: 39%; left: 76%; }
+    .label-jeju { top: 55%; left: 47%; }
+    .map-credit { position: absolute; z-index: 1; bottom: calc(var(--nav-height) + 6px); left: 10px; color: rgba(0,54,55,.66); font-size: 10px; font-weight: 700; }
+
+    .explore-controls { position: absolute; z-index: 3; top: calc(76px + env(safe-area-inset-top)); left: 16px; right: 16px; display: grid; gap: 8px; }
+    .searchbar { display: flex; min-height: 48px; overflow: hidden; border: 1px solid rgba(0,54,55,.09); border-radius: var(--radius-surface); background: var(--surface); box-shadow: var(--float-shadow); }
+    .searchbar svg { flex: 0 0 auto; margin: 14px 8px 14px 14px; color: var(--pine); }
+    .searchbar input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 15px; }
+    .searchbar button { width: 54px; margin: 4px; border: 0; border-radius: 8px; color: white; background: var(--pine-deep); font-size: 13px; font-weight: 800; }
+    .control-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .scope-wrap { position: relative; }
+    .scope-button, .status-button, .round-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border: 1px solid rgba(0,54,55,.11);
+      background: var(--surface);
+      color: var(--pine-deep);
+      box-shadow: 0 5px 14px rgba(0,54,55,.12);
+    }
+    .scope-button { gap: 7px; border-radius: var(--radius-pill); padding: 0 14px; font-size: 13px; font-weight: 800; }
+    .scope-button svg { width: 16px; height: 16px; }
+    .status-button { width: 44px; border-radius: 50%; }
+    .scope-menu { display: none; position: absolute; top: 50px; left: 0; width: 178px; padding: 6px; border: 1px solid var(--line); border-radius: var(--radius-surface); background: var(--surface); box-shadow: var(--float-shadow); }
+    .scope-menu.open { display: grid; gap: 2px; }
+    .scope-option { min-height: 40px; border: 0; border-radius: 7px; padding: 0 10px; text-align: left; color: var(--ink); background: transparent; font-size: 13px; font-weight: 700; }
+    .scope-option[aria-pressed="true"] { color: white; background: var(--pine); }
+    .marker {
+      position: absolute;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 43px;
+      height: 43px;
+      padding: 0;
+      border: 3px solid var(--surface);
+      border-radius: 50% 50% 50% 8px;
+      color: white;
+      background: var(--pine);
+      box-shadow: 0 4px 10px rgba(0,54,55,.32);
+      transform: rotate(-45deg);
+      transition: transform 180ms var(--ease), background 180ms var(--ease);
+    }
+    .marker svg { width: 17px; height: 17px; transform: rotate(45deg); }
+    .marker:hover, .marker:focus-visible, .marker.selected { background: var(--coral); transform: rotate(-45deg) translate(-3px,-3px); }
+    .marker-a { top: 41%; left: 60%; }
+    .marker-b { top: 55%; left: 73%; }
+    .marker-c { top: 60%; left: 39%; }
+    .marker-d { top: 32%; left: 79%; }
+    .marker-published { top: 49%; left: 52%; background: var(--coral); }
+
+    .bottom-nav { position: fixed; z-index: 20; bottom: 0; left: 50%; width: min(100%, 430px); height: calc(var(--nav-height) + env(safe-area-inset-bottom)); padding: 7px 10px calc(7px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border-top: 1px solid var(--line); background: rgba(249,247,242,.98); }
+    .tab { display: grid; place-items: center; align-content: center; gap: 3px; min-height: 52px; border: 0; border-radius: var(--radius-surface); color: var(--muted); background: transparent; font-size: 11px; font-weight: 800; }
+    .tab svg { width: 19px; height: 19px; }
+    .tab.active { color: white; background: var(--pine-deep); }
+
+    .sheet { position: absolute; z-index: 7; right: 0; bottom: calc(var(--nav-height) + env(safe-area-inset-bottom)); left: 0; display: none; padding: 10px 16px 16px; border-radius: 16px 16px 0 0; background: var(--paper); box-shadow: 0 -8px 28px rgba(0,54,55,.18); }
+    .sheet.open { display: block; animation: rise 180ms var(--ease); }
+    .sheet-handle { width: 34px; height: 4px; margin: 0 auto 10px; border-radius: var(--radius-pill); background: rgba(0,54,55,.25); }
+    .sheet-close { float: right; width: 38px; height: 38px; margin-top: -4px; border: 0; border-radius: 50%; color: var(--pine-deep); background: var(--mist); }
+    .preview-row { display: grid; grid-template-columns: 104px 1fr; gap: 12px; align-items: center; padding-right: 40px; }
+    .preview-row img { width: 104px; height: 88px; object-fit: cover; border-radius: var(--radius-media); }
+    .eyebrow { margin: 0 0 4px; color: var(--coral); font-size: 12px; font-weight: 900; }
+    .preview-row h2, .detail-copy h2 { margin: 0; font-size: 19px; line-height: 1.3; }
+    .preview-row p, .detail-copy p { margin: 5px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .primary-action { width: 100%; min-height: 48px; margin-top: 14px; border: 0; border-radius: 8px; color: white; background: var(--pine-deep); font-weight: 900; }
+
+    .content-view { padding: calc(80px + env(safe-area-inset-top)) 16px calc(94px + env(safe-area-inset-bottom)); background: var(--paper); }
+    .page-heading { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 18px; }
+    .page-heading h1 { margin: 0; font-size: 28px; line-height: 1.18; }
+    .page-heading p { margin: 5px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .view-toggle { display: inline-flex; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .view-toggle button { min-width: 39px; min-height: 39px; border: 0; color: var(--muted); background: transparent; }
+    .view-toggle button.active { color: white; background: var(--pine); }
+    .notice { display: flex; gap: 10px; align-items: center; margin: 0 0 16px; padding: 12px; border-left: 3px solid var(--coral); background: #fff4ef; color: var(--ink); font-size: 13px; line-height: 1.45; }
+    .notice button { margin-left: auto; min-width: 72px; min-height: 36px; border: 1px solid var(--coral); border-radius: 7px; color: var(--pine-deep); background: var(--surface); font-size: 12px; font-weight: 800; }
+    .photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .photo-tile { position: relative; overflow: hidden; min-width: 0; padding: 0; border: 0; border-radius: var(--radius-media); background: var(--surface); text-align: left; }
+    .photo-tile img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+    .photo-tile strong, .photo-tile span { display: block; padding: 0 8px; }
+    .photo-tile strong { margin-top: 8px; font-size: 14px; }
+    .photo-tile span { padding-bottom: 10px; color: var(--muted); font-size: 12px; }
+    .missing-dot { position: absolute; top: 8px; right: 8px; display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 0 7px; border-radius: var(--radius-pill); color: var(--pine-deep); background: #fff2ed; font-size: 10px; font-weight: 900; }
+    .personal-map { display: none; min-height: 420px; border: 1px solid var(--line); background: var(--water); }
+    .personal-map.active { display: block; }
+    .photo-grid.hidden { display: none; }
+    .liked-note { margin: -7px 0 16px; color: var(--muted); font-size: 13px; }
+
+    .overlay { position: absolute; z-index: 30; inset: 0; display: none; overflow-y: auto; padding: calc(16px + env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom)); background: var(--paper); }
+    .overlay.open { display: block; animation: fade 180ms var(--ease); }
+    .overlay-head { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-bottom: 18px; }
+    .overlay-head h2 { margin: 0; font-size: 20px; }
+    .icon-button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 50%; color: var(--pine-deep); background: var(--surface); }
+    .detail-photo { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-media); background: var(--mist); }
+    .detail-copy { padding: 18px 0 0; }
+    .author-line { display: flex; align-items: center; gap: 9px; margin: 14px 0; color: var(--ink); font-size: 13px; font-weight: 800; }
+    .author-line img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+    .social-row { display: flex; gap: 8px; padding: 15px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .social-button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 11px; border: 0; border-radius: 7px; color: var(--pine-deep); background: var(--mist); font-size: 13px; font-weight: 800; }
+    .social-button.liked { color: white; background: var(--coral); }
+    .comment-box { display: flex; gap: 8px; margin-top: 15px; }
+    .comment-box input { min-width: 0; flex: 1; min-height: 44px; border: 1px solid var(--line); border-radius: 7px; padding: 0 10px; background: var(--surface); }
+    .comment-box button { min-width: 54px; border: 0; border-radius: 7px; color: white; background: var(--pine); font-size: 12px; font-weight: 800; }
+
+    .auth-intro { padding: 22px 0 16px; }
+    .auth-intro h1 { margin: 0; font-size: 28px; line-height: 1.22; }
+    .auth-intro p { color: var(--muted); line-height: 1.6; }
+    .login-options { display: grid; gap: 10px; }
+    .login-option { display: flex; align-items: center; justify-content: center; min-height: 50px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface); font-weight: 800; }
+    .login-option.primary { color: white; background: var(--pine-deep); border-color: var(--pine-deep); }
+    .profile-hero { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: center; padding: 18px 0 22px; border-bottom: 1px solid var(--line); }
+    .profile-hero img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
+    .profile-hero h1 { margin: 0; font-size: 23px; }
+    .profile-hero p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .settings-list { margin: 18px 0; border-top: 1px solid var(--line); }
+    .settings-list button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; border: 0; border-bottom: 1px solid var(--line); padding: 0; color: var(--ink); background: transparent; text-align: left; font-size: 15px; font-weight: 800; }
+    .signout { width: 100%; min-height: 48px; border: 1px solid var(--coral); border-radius: 8px; color: #9d3e2c; background: #fff4ef; font-weight: 800; }
+    .setting-field { margin-bottom: 14px; }
+    .setting-field label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 800; }
+    .setting-field input { width: 100%; min-height: 46px; border: 1px solid var(--line); border-radius: 8px; padding: 0 11px; background: var(--surface); }
+
+    .location-map { position: relative; height: 380px; overflow: hidden; background: var(--water); border: 1px solid var(--line); }
+    .location-map::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px); background-size: 28px 28px; }
+    .location-pin { position: absolute; top: 48%; left: 48%; width: 30px; height: 30px; border: 3px solid white; border-radius: 50% 50% 50% 8px; background: var(--coral); transform: rotate(-45deg); box-shadow: 0 5px 12px rgba(0,54,55,.25); }
+    .location-info { margin: 14px 0; padding: 14px; border-left: 3px solid var(--pine); background: var(--mist); }
+    .location-info strong, .location-info span { display: block; }
+    .location-info span { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .confirmation { padding: 16px; border: 1px solid var(--line); background: var(--surface); }
+    .confirmation h2 { margin: 0; font-size: 21px; }
+    .confirmation p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .confirmation img { width: 96px; height: 120px; float: right; margin: 0 0 10px 14px; object-fit: cover; border-radius: var(--radius-media); }
+
+    .status-panel { position: absolute; z-index: 8; top: calc(188px + env(safe-area-inset-top)); right: 16px; display: none; width: 172px; padding: 6px; border: 1px solid var(--line); border-radius: var(--radius-surface); background: var(--surface); box-shadow: var(--float-shadow); }
+    .status-panel.open { display: grid; gap: 2px; }
+    .status-option { min-height: 39px; border: 0; border-radius: 7px; padding: 0 9px; text-align: left; color: var(--ink); background: transparent; font-size: 12px; font-weight: 800; }
+    .state-preview { position: absolute; z-index: 6; top: 52%; left: 16px; right: 16px; display: none; padding: 18px; transform: translateY(-50%); border: 1px solid var(--line); border-radius: var(--radius-surface); background: var(--paper); box-shadow: var(--float-shadow); text-align: center; }
+    .state-preview.open { display: block; }
+    .state-preview svg { width: 28px; height: 28px; margin: 0 auto 8px; color: var(--pine); }
+    .state-preview h2 { margin: 0; font-size: 18px; }
+    .state-preview p { margin: 7px 0 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .state-preview button { min-height: 42px; padding: 0 16px; border: 0; border-radius: 7px; color: white; background: var(--pine-deep); font-size: 13px; font-weight: 800; }
+    .loader { width: 26px; height: 26px; margin: 0 auto 10px; border: 3px solid rgba(26,77,78,.18); border-top-color: var(--pine); border-radius: 50%; animation: spin 700ms linear infinite; }
+    .toast { position: fixed; z-index: 50; bottom: calc(var(--nav-height) + 15px + env(safe-area-inset-bottom)); left: 50%; display: none; width: max-content; max-width: calc(100% - 32px); padding: 11px 14px; transform: translateX(-50%); border-radius: var(--radius-pill); color: white; background: var(--pine-deep); box-shadow: var(--float-shadow); font-size: 13px; font-weight: 800; }
+    .toast.open { display: block; animation: rise 180ms var(--ease); }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 370px) {
+      .topbar { padding-right: 12px; padding-left: 12px; }
+      .explore-controls, .content-view { right: 12px; left: 12px; }
+      .explore-controls { left: 12px; right: 12px; }
+      .content-view { padding-right: 12px; padding-left: 12px; }
+      .sheet { padding-right: 12px; padding-left: 12px; }
+      .preview-row { grid-template-columns: 88px 1fr; }
+      .preview-row img { width: 88px; height: 80px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="sr-only" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.1 7 13 7 13s7-7.9 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="m15.7 8.3-2.1 5.3-5.3 2.1 2.1-5.3 5.3-2.1Z"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 6l-1.1-1.2a5.5 5.5 0 0 0-7.8 7.8L12 21l8.9-8.4a5.5 5.5 0 0 0-.1-7.8Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="2" d="M4 21c.7-4 3.2-6 8-6s7.3 2 8 6"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16M8 4v4m8-4v4M11 10v4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 16V3m0 0L7 8m5-5 5 5M5 13v7h14v-7"/></symbol>
+    <symbol id="i-comment" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M20 11.5A7.5 7.5 0 0 1 12.5 19H6l-2 2v-6.5A7.5 7.5 0 1 1 20 11.5Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m8 10 4 4 4-4"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3 2.5 20h19L12 3Z"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 9v4m0 3h.01"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.6A3.4 3.4 0 0 0 7 18Z"/></symbol>
+  </svg>
+
+  <div class="app" id="app">
+    <header class="topbar">
+      <button class="wordmark" type="button" data-action="go-explore" aria-label="Ikkyee Explore로 이동"><svg><use href="#i-compass"/></svg>Ikkyee</button>
+      <button class="profile-thumb guest" id="account-button" type="button" data-action="open-account" aria-label="로그인 열기"></button>
+    </header>
+
+    <main>
+      <section class="view map-view active" id="explore-view" aria-labelledby="explore-title">
+        <h1 id="explore-title" class="sr-only">Explore</h1>
+        <div class="map-canvas" aria-hidden="true">
+          <span class="map-label label-seoul">서울</span><span class="map-label label-osaka">오사카</span><span class="map-label label-tokyo">도쿄</span><span class="map-label label-jeju">제주</span>
+          <span class="map-credit">Ikkyee place archive</span>
+        </div>
+        <div class="explore-controls">
+          <form class="searchbar" id="search-form">
+            <svg aria-hidden="true"><use href="#i-search"/></svg><label class="sr-only" for="place-search">장소 검색</label><input id="place-search" placeholder="장소 검색" autocomplete="off"><button type="submit">검색</button>
+          </form>
+          <div class="control-row">
+            <div class="scope-wrap"><button class="scope-button" id="scope-trigger" type="button" aria-expanded="false"><svg aria-hidden="true"><use href="#i-user"/></svg><span id="scope-label">다른 사람 사진</span><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><div class="scope-menu" id="scope-menu"><button class="scope-option" type="button" data-scope="다른 사람 사진" aria-pressed="true">다른 사람 사진</button><button class="scope-option" type="button" data-scope="내 주변 공개 사진" aria-pressed="false">내 주변 공개 사진</button><button class="scope-option" type="button" data-scope="최근 공개 사진" aria-pressed="false">최근 공개 사진</button></div></div>
+            <button class="status-button" type="button" data-action="toggle-status" aria-label="상태 미리보기 열기"><svg aria-hidden="true"><use href="#i-sliders"/></svg></button>
+          </div>
+        </div>
+        <button class="marker marker-a" type="button" data-action="open-sheet" data-photo="street" aria-label="서울 성수동 오후 사진 열기"><svg aria-hidden="true"><use href="#i-pin"/></svg></button>
+        <button class="marker marker-b" type="button" data-action="open-sheet" data-photo="coast" aria-label="오사카 바닷가 아침 사진 열기"><svg aria-hidden="true"><use href="#i-pin"/></svg></button>
+        <button class="marker marker-c" type="button" data-action="open-sheet" data-photo="market" aria-label="제주 시장 사진 열기"><svg aria-hidden="true"><use href="#i-pin"/></svg></button>
+        <button class="marker marker-d" type="button" data-action="open-sheet" data-photo="night" aria-label="도쿄 밤 산책 사진 열기"><svg aria-hidden="true"><use href="#i-pin"/></svg></button>
+        <button class="marker marker-published" id="published-marker" type="button" data-action="open-sheet" data-photo="forest" aria-label="서울 북촌한옥마을 비 온 뒤 숲 사진 열기" hidden><svg aria-hidden="true"><use href="#i-pin"/></svg></button>
+        <div class="sheet" id="photo-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+          <div class="sheet-handle"></div><button class="sheet-close" type="button" data-action="close-sheet" aria-label="사진 미리보기 닫기"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+          <div class="preview-row"><img id="sheet-image" src="../../../images/main_bg1.jpg" alt=""><div><p class="eyebrow" id="sheet-place">서울 · 성수동</p><h2 id="sheet-title">낮게 내려온 오후</h2><p id="sheet-meta">mina · 12분 전</p></div></div>
+          <button class="primary-action" type="button" data-action="open-detail">사진 자세히 보기</button>
+        </div>
+        <div class="status-panel" id="status-panel" aria-label="상태 미리보기"><button class="status-option" type="button" data-state="loading">불러오는 중</button><button class="status-option" type="button" data-state="empty">사진 없음</button><button class="status-option" type="button" data-state="error">불러오기 오류</button><button class="status-option" type="button" data-state="offline">오프라인</button></div>
+        <div class="state-preview" id="state-preview" role="status"><div id="state-icon"></div><h2 id="state-title"></h2><p id="state-copy"></p><button type="button" data-action="reset-state">지도 계속 보기</button></div>
+      </section>
+
+      <section class="view content-view" id="photos-view" aria-labelledby="photos-title">
+        <div class="page-heading"><div><h1 id="photos-title">내 사진</h1><p>기기에 남긴 장소 기록</p></div><div class="view-toggle" aria-label="사진 보기 방식"><button class="active" type="button" data-action="grid-mode" aria-label="사진 격자 보기"><svg aria-hidden="true"><use href="#i-grid"/></svg></button><button type="button" data-action="map-mode" aria-label="내 사진 지도 보기"><svg aria-hidden="true"><use href="#i-compass"/></svg></button></div></div>
+        <div class="notice"><svg aria-hidden="true"><use href="#i-warning"/></svg><span><strong>위치가 필요한 사진 1장</strong><br>장소를 지정하면 지도에서 다시 찾을 수 있어요.</span><button type="button" data-action="correct-location">위치 지정</button></div>
+        <div class="photo-grid" id="personal-grid"><button class="photo-tile" type="button" data-action="open-detail" data-photo="street"><img src="../../../images/main_bg1.jpg" alt="성수동 거리 사진"><strong>낮게 내려온 오후</strong><span>서울 · 성수동</span></button><button class="photo-tile" type="button" data-action="correct-location"><img src="../../../images/main_bg5.jpg" alt="위치가 필요한 숲 사진"><span class="missing-dot">위치 필요</span><strong>비 온 뒤 숲</strong><span>장소 미정</span></button><button class="photo-tile" type="button" data-action="open-detail" data-photo="market"><img src="../../../images/main_bg3.jpg" alt="제주 시장 사진"><strong>시장 끝의 빛</strong><span>제주 · 동문시장</span></button><button class="photo-tile" type="button" data-action="open-detail" data-photo="coast"><img src="../../../images/main_bg4.jpg" alt="바닷가 사진"><strong>느린 오전</strong><span>오사카 · 나카노시마</span></button></div>
+        <div class="personal-map" id="personal-map" aria-label="내 사진 지도 미리보기"></div>
+      </section>
+
+      <section class="view content-view" id="likes-view" aria-labelledby="likes-title">
+        <div class="page-heading"><div><h1 id="likes-title">좋아요</h1><p>다시 보고 싶은 공개 사진</p></div></div><p class="liked-note">2장의 장소 기록을 저장했어요.</p>
+        <div class="photo-grid"><button class="photo-tile" type="button" data-action="open-detail" data-photo="night"><img src="../../../images/main_bg2.jpg" alt="도쿄 밤 산책 사진"><strong>비가 그친 골목</strong><span>도쿄 · 시모키타자와</span></button><button class="photo-tile" type="button" data-action="open-detail" data-photo="coast"><img src="../../../images/main_bg4.jpg" alt="오사카 바닷가 사진"><strong>느린 오전</strong><span>오사카 · 나카노시마</span></button></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="주요 탐색"><button class="tab active" type="button" data-tab="explore"><svg aria-hidden="true"><use href="#i-compass"/></svg><span>Explore</span></button><button class="tab" type="button" data-tab="photos"><svg aria-hidden="true"><use href="#i-grid"/></svg><span>내 사진</span></button><button class="tab" type="button" data-tab="likes"><svg aria-hidden="true"><use href="#i-heart"/></svg><span>좋아요</span></button></nav>
+
+    <section class="overlay" id="detail-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-title" hidden><div class="overlay-head"><button class="icon-button" type="button" data-action="close-overlay" aria-label="사진 상세 닫기"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button><button class="icon-button" type="button" data-action="share" aria-label="사진 공유"><svg aria-hidden="true"><use href="#i-share"/></svg></button></div><img class="detail-photo" id="detail-image" src="../../../images/main_bg1.jpg" alt=""><div class="detail-copy"><p class="eyebrow" id="detail-place">서울 · 성수동</p><h2 id="detail-title">낮게 내려온 오후</h2><p id="detail-description">여행의 방향은 천천히 걷던 발끝에서 시작되었다.</p><div class="author-line"><img src="../../../images/default-profile-avatar.png" alt=""><span id="detail-author">mina의 공개 사진</span></div><div class="social-row"><button class="social-button" type="button" data-action="like"><svg aria-hidden="true"><use href="#i-heart"/></svg><span id="like-count">128</span></button><button class="social-button" type="button" data-action="comment"><svg aria-hidden="true"><use href="#i-comment"/></svg>댓글 7</button></div><div class="comment-box"><label class="sr-only" for="comment-input">댓글</label><input id="comment-input" placeholder="댓글을 남겨보세요"><button type="button" data-action="comment">등록</button></div></div></section>
+
+    <section class="overlay" id="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-title" hidden><div class="overlay-head"><button class="icon-button" type="button" data-action="close-overlay" aria-label="로그인 닫기"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="auth-intro"><p class="eyebrow">나의 장소 기록</p><h1 id="auth-title">사진을 저장하고<br>좋아하는 장소를 남겨요.</h1><p>Explore는 계속 둘러볼 수 있고, 로그인하면 내 기록과 반응을 이어갈 수 있어요.</p></div><div class="login-options"><button class="login-option primary" type="button" data-action="login">이메일로 계속하기</button><button class="login-option" type="button" data-action="login">Google로 계속하기</button><button class="login-option" type="button" data-action="login">Kakao로 계속하기</button></div></section>
+
+    <section class="overlay" id="profile-overlay" role="dialog" aria-modal="true" aria-labelledby="profile-title" hidden><div class="overlay-head"><button class="icon-button" type="button" data-action="close-overlay" aria-label="프로필 닫기"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button><button class="icon-button" type="button" data-action="go-explore" aria-label="Explore로 이동"><svg aria-hidden="true"><use href="#i-compass"/></svg></button></div><div class="profile-hero"><img src="../../../images/default-profile-avatar.png" alt="나의 프로필 사진"><div><h1 id="profile-title">지은</h1><p>나의 장소 기록 14장</p></div></div><div class="settings-list"><button type="button" data-action="open-settings"><span>프로필 설정</span><span>›</span></button><button type="button" data-action="open-settings"><span>공개 범위</span><span>›</span></button><button type="button" data-action="open-settings"><span>알림</span><span>›</span></button></div><button class="signout" type="button" data-action="signout">로그아웃</button></section>
+
+    <section class="overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden><div class="overlay-head"><button class="icon-button" type="button" data-action="back-profile" aria-label="프로필로 돌아가기"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button><h2 id="settings-title">프로필 설정</h2><span style="width:44px"></span></div><div class="setting-field"><label for="name-field">이름</label><input id="name-field" value="지은"></div><div class="setting-field"><label for="bio-field">소개</label><input id="bio-field" value="여행의 방향을 사진으로 기록합니다."></div><button class="primary-action" type="button" data-action="save-settings">저장하기</button></section>
+
+    <section class="overlay" id="location-overlay" role="dialog" aria-modal="true" aria-labelledby="location-title" hidden><div class="overlay-head"><button class="icon-button" type="button" data-action="close-overlay" aria-label="위치 지정 닫기"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button><h2 id="location-title">사진 위치 지정</h2><span style="width:44px"></span></div><div class="location-map" aria-label="서울 북촌 지도 선택 영역"><span class="location-pin" aria-hidden="true"></span></div><div class="location-info"><strong>서울 · 북촌한옥마을</strong><span>37.5826, 126.9835 · 사진의 위치가 맞나요?</span></div><button class="primary-action" type="button" data-action="confirm-location">이 위치로 저장</button></section>
+
+    <section class="overlay" id="publish-overlay" role="dialog" aria-modal="true" aria-labelledby="publish-title" hidden><div class="overlay-head"><button class="icon-button" type="button" data-action="close-overlay" aria-label="공개 확인 닫기"><svg aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="confirmation"><img src="../../../images/main_bg5.jpg" alt="비 온 뒤 숲 사진"><p class="eyebrow">공개 전 확인</p><h2 id="publish-title">이 사진을 Explore에 공개할까요?</h2><p>서울 · 북촌한옥마을 위치와 함께 다른 사람들이 지도에서 발견할 수 있어요.</p><button class="primary-action" type="button" data-action="publish">공개로 게시하기</button></div></section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const photoData = {
+      street: { title: '낮게 내려온 오후', place: '서울 · 성수동', meta: 'mina · 12분 전', author: 'mina의 공개 사진', description: '골목 끝의 빛이 멈춘 자리. 걷다가 우연히 발견한 오후를 남겼어요.', image: '../../../images/main_bg1.jpg', likes: 128 },
+      coast: { title: '느린 오전', place: '오사카 · 나카노시마', meta: 'yu · 1시간 전', author: 'yu의 공개 사진', description: '바람을 따라 천천히 걷던 강가의 오전입니다.', image: '../../../images/main_bg4.jpg', likes: 84 },
+      market: { title: '시장 끝의 빛', place: '제주 · 동문시장', meta: 'soyeon · 어제', author: 'soyeon의 공개 사진', description: '시장 바깥으로 나올 때마다 햇빛이 방향을 알려줬어요.', image: '../../../images/main_bg3.jpg', likes: 207 },
+      night: { title: '비가 그친 골목', place: '도쿄 · 시모키타자와', meta: 'hana · 2일 전', author: 'hana의 공개 사진', description: '비가 지나간 뒤의 골목은 조금 더 천천히 보입니다.', image: '../../../images/main_bg2.jpg', likes: 156 },
+      forest: { title: '비 온 뒤 숲', place: '서울 · 북촌한옥마을', meta: '지은 · 방금 전', author: '지은의 공개 사진', description: '비가 멈춘 뒤의 숲길을 다시 찾을 수 있도록 남겼어요.', image: '../../../images/main_bg5.jpg', likes: 0 }
+    };
+    const stateData = {
+      loading: { title: '공개 사진을 찾는 중', copy: '지도의 장소 기록을 불러오고 있어요.', icon: 'loader' },
+      empty: { title: '아직 공개 사진이 없어요', copy: '다른 장소를 검색하거나 잠시 뒤 다시 확인해보세요.', icon: 'cloud' },
+      error: { title: '사진을 불러오지 못했어요', copy: '연결을 확인한 뒤 다시 시도해보세요.', icon: 'warning' },
+      offline: { title: '오프라인 상태예요', copy: '저장한 좋아요는 연결되면 다시 확인할 수 있어요.', icon: 'cloud' }
+    };
+    const prototypeStorageKey = 'ikkyee-mobile-prototype-state';
+    const savedPrototypeState = (() => {
+      try { return JSON.parse(window.localStorage.getItem(prototypeStorageKey)) || {}; } catch { return {}; }
+    })();
+    let selectedPhoto = 'street';
+    let signedIn = savedPrototypeState.signedIn === true;
+    let publishedPhoto = savedPrototypeState.publishedPhoto === true;
+    let previousOverlay = null;
+    let lastTrigger = null;
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+    function savePrototypeState() {
+      window.localStorage.setItem(prototypeStorageKey, JSON.stringify({ signedIn, publishedPhoto }));
+    }
+    function renderAccount() {
+      const account = $('#account-button');
+      account.classList.toggle('guest', !signedIn);
+      account.setAttribute('aria-label', signedIn ? '지은 프로필 열기' : '로그인 열기');
+      account.innerHTML = signedIn
+        ? '<img src="../../../images/default-profile-avatar.png" alt="지은 프로필 사진">'
+        : '<svg aria-hidden="true"><use href="#i-user"/></svg>';
+    }
+    function renderPublishedPhoto() {
+      $('#published-marker').hidden = !publishedPhoto;
+      const localPhotoTile = $('#personal-grid .photo-tile:nth-child(2)');
+      const missingLocation = localPhotoTile.querySelector('.missing-dot');
+      const localPlace = localPhotoTile.querySelectorAll('span')[1];
+      if (publishedPhoto) {
+        localPhotoTile.dataset.action = 'open-detail';
+        localPhotoTile.dataset.photo = 'forest';
+        missingLocation.hidden = true;
+        localPlace.textContent = photoData.forest.place;
+      }
+    }
+
+    function showToast(message) {
+      const toast = $('#toast');
+      toast.textContent = message;
+      toast.classList.add('open');
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove('open'), 2400);
+    }
+    function hideToast() {
+      window.clearTimeout(showToast.timer);
+      $('#toast').classList.remove('open');
+    }
+    function closeTransient() {
+      $('#scope-menu').classList.remove('open');
+      $('#scope-trigger').setAttribute('aria-expanded', 'false');
+      $('#status-panel').classList.remove('open');
+      $('#state-preview').classList.remove('open');
+      closeSheet();
+    }
+    function setTab(tab) {
+      closeTransient();
+      hideToast();
+      $$('.view').forEach((view) => view.classList.toggle('active', view.id === `${tab}-view`));
+      $$('.tab').forEach((button) => button.classList.toggle('active', button.dataset.tab === tab));
+      window.scrollTo(0, 0);
+    }
+    function fillPhoto(key) {
+      selectedPhoto = key;
+      const photo = photoData[key];
+      $('#sheet-image').src = photo.image; $('#sheet-image').alt = `${photo.place} ${photo.title}`; $('#sheet-place').textContent = photo.place; $('#sheet-title').textContent = photo.title; $('#sheet-meta').textContent = photo.meta;
+      $('#detail-image').src = photo.image; $('#detail-image').alt = `${photo.place} ${photo.title}`; $('#detail-place').textContent = photo.place; $('#detail-title').textContent = photo.title; $('#detail-description').textContent = photo.description; $('#detail-author').textContent = photo.author; $('#like-count').textContent = photo.likes;
+    }
+    function openSheet(trigger, key) {
+      closeTransient();
+      lastTrigger = trigger;
+      fillPhoto(key);
+      $$('.marker').forEach((marker) => marker.classList.toggle('selected', marker.dataset.photo === key));
+      const sheet = $('#photo-sheet');
+      sheet.hidden = false; sheet.classList.add('open');
+      sheet.querySelector('.primary-action').focus();
+    }
+    function closeSheet() {
+      const sheet = $('#photo-sheet');
+      sheet.classList.remove('open'); sheet.hidden = true;
+      $$('.marker').forEach((marker) => marker.classList.remove('selected'));
+      if (lastTrigger) lastTrigger.focus();
+    }
+    function openOverlay(id, trigger) {
+      closeTransient();
+      hideToast();
+      lastTrigger = trigger || document.activeElement;
+      $$('.overlay').forEach((overlay) => { overlay.classList.remove('open'); overlay.hidden = true; });
+      const overlay = $(id); overlay.hidden = false; overlay.classList.add('open');
+      overlay.querySelector('button, input')?.focus();
+    }
+    function closeOverlay() {
+      $$('.overlay').forEach((overlay) => { overlay.classList.remove('open'); overlay.hidden = true; });
+      if (lastTrigger instanceof HTMLElement) lastTrigger.focus();
+    }
+    function showState(kind) {
+      const item = stateData[kind];
+      $('#status-panel').classList.remove('open');
+      $('#state-title').textContent = item.title; $('#state-copy').textContent = item.copy;
+      $('#state-icon').innerHTML = item.icon === 'loader' ? '<div class="loader" aria-hidden="true"></div>' : `<svg aria-hidden="true"><use href="#i-${item.icon}"/></svg>`;
+      $('#state-preview').classList.add('open');
+    }
+    function accountFlow(trigger) { openOverlay(signedIn ? '#profile-overlay' : '#auth-overlay', trigger); }
+
+    document.addEventListener('click', (event) => {
+      const control = event.target.closest('[data-action], [data-tab], [data-scope], [data-state]');
+      if (!control) return;
+      if (control.dataset.tab) { setTab(control.dataset.tab); return; }
+      if (control.dataset.scope) {
+        $('#scope-label').textContent = control.dataset.scope;
+        $$('.scope-option').forEach((option) => option.setAttribute('aria-pressed', String(option === control)));
+        $('#scope-menu').classList.remove('open'); $('#scope-trigger').setAttribute('aria-expanded', 'false'); showToast(`${control.dataset.scope}으로 지도 범위를 바꿨어요.`); return;
+      }
+      if (control.dataset.state) { showState(control.dataset.state); return; }
+      switch (control.dataset.action) {
+        case 'go-explore': closeOverlay(); setTab('explore'); break;
+        case 'open-account': accountFlow(control); break;
+        case 'toggle-status': $('#status-panel').classList.toggle('open'); break;
+        case 'open-sheet': openSheet(control, control.dataset.photo); break;
+        case 'close-sheet': closeSheet(); break;
+        case 'open-detail': fillPhoto(control.dataset.photo || selectedPhoto); openOverlay('#detail-overlay', control); break;
+        case 'close-overlay': closeOverlay(); break;
+        case 'like': if (!signedIn) openOverlay('#auth-overlay', control); else { control.classList.toggle('liked'); showToast(control.classList.contains('liked') ? '좋아요에 저장했어요.' : '좋아요를 취소했어요.'); } break;
+        case 'comment': if (!signedIn) openOverlay('#auth-overlay', control); else showToast('댓글을 남겼어요.'); break;
+        case 'share': showToast('공유 링크를 준비했어요.'); break;
+        case 'login': signedIn = true; savePrototypeState(); renderAccount(); closeOverlay(); openOverlay('#profile-overlay', control); showToast('지은으로 로그인한 상태를 미리봤어요.'); break;
+        case 'signout': signedIn = false; savePrototypeState(); renderAccount(); closeOverlay(); showToast('로그아웃 상태로 전환했어요.'); break;
+        case 'open-settings': previousOverlay = '#profile-overlay'; openOverlay('#settings-overlay', control); break;
+        case 'back-profile': openOverlay(previousOverlay || '#profile-overlay', control); break;
+        case 'save-settings': showToast('프로필 설정을 저장했어요.'); break;
+        case 'correct-location': openOverlay('#location-overlay', control); break;
+        case 'confirm-location': openOverlay('#publish-overlay', control); break;
+        case 'publish': publishedPhoto = true; savePrototypeState(); renderPublishedPhoto(); closeOverlay(); setTab('explore'); openSheet($('#published-marker'), 'forest'); showToast('사진을 공개하고 지도에 표시했어요.'); break;
+        case 'grid-mode': $('#personal-grid').classList.remove('hidden'); $('#personal-map').classList.remove('active'); $$('.view-toggle button').forEach((button, index) => button.classList.toggle('active', index === 0)); break;
+        case 'map-mode': $('#personal-grid').classList.add('hidden'); $('#personal-map').classList.add('active'); $$('.view-toggle button').forEach((button, index) => button.classList.toggle('active', index === 1)); break;
+        case 'reset-state': $('#state-preview').classList.remove('open'); break;
+      }
+    });
+    $('#scope-trigger').addEventListener('click', () => { const menu = $('#scope-menu'); menu.classList.toggle('open'); $('#scope-trigger').setAttribute('aria-expanded', String(menu.classList.contains('open'))); });
+    $('#search-form').addEventListener('submit', (event) => { event.preventDefault(); const query = $('#place-search').value.trim(); if (query) showToast(`“${query}” 주변의 공개 사진을 찾았어요.`); else $('#place-search').focus(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if ($('#photo-sheet').classList.contains('open')) closeSheet(); else closeOverlay(); } });
+    renderAccount();
+    renderPublishedPhoto();
+    fillPhoto(selectedPhoto);
+  </script>
+</body>
+</html>

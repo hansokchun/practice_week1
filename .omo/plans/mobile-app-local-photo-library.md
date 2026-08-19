@@ -93,7 +93,7 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
 ## Todos
 > Implementation + Test = ONE todo. Never separate.
 <!-- APPEND TASK BATCHES BELOW THIS LINE WITH edit/apply_patch - never rewrite the headers above. -->
-- [ ] 1. Explore 중심 제품 구조와 클릭 프로토타입 승인
+- [x] 1. Explore 중심 제품 구조와 클릭 프로토타입 승인
   What to do / Must NOT do: 하단 `Explore · 내 사진 · 좋아요`, 각 주요 화면 상단 오른쪽의 원형 프로필 썸네일, Explore 기본 진입, 지도 중심 탐색, 사진 상세·소셜 흐름, 보조 내 사진 흐름을 `docs/mobile/product-definition.md`와 배포에서 제외되는 `docs/mobile/prototype/index.html` 클릭 프로토타입으로 만든다. 프로필 썸네일은 약 36px이며 로그인 사용자는 프로필·설정 stack, 게스트는 로그인 화면을 연다. 390x844과 360x800 화면, 핵심 상태와 흐름을 포함하고 앨범 화면·탭·카드·행동을 넣거나 기존 웹 UI를 수정하지 않는다.
   Parallelization: Wave 1 | Blocked by: - | Blocks: 2, 5, 11, 21
   References: `.omo/plans/mobile-app-local-photo-library-simple-ko.md`; `index.html:117-579`; `style.css`; `js/app-sections.mjs:1-35`; `docs/spec.md:15-21`.
