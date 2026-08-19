@@ -40,7 +40,7 @@ approach: React Native + Expo Development Build 기반 앱을 Explore 중심으�
 | 클라우드 범위 | 기존 private/link/public 클라우드 사진은 앱에서 관리; 새 로컬 사진은 명시적 클라우드 저장에서만 private/link/public 중 선택 | 웹 기능 동등성과 서버 자동 저장 금지를 함께 만족 | yes |
 | 앨범 경계 | 모바일은 로컬·클라우드·공개 앨범을 조회하거나 변경하지 않으며 웹의 기존 앨범은 그대로 유지 | 앱 범위만 줄이고 웹 기능과 데이터 호환성을 보호 | no |
 | 삭제 의미 | 기기 원본 삭제와 클라우드 사본 삭제를 별도 명령으로 표시; 기기 삭제는 이미 공개된 사본을 삭제하지 않음 | 데이터 손실과 사용자 오해 방지 | no |
-| 기본 정보 구조 | `Explore · 내 사진 · 좋아요 · 프로필`; 앱 실행 시 Explore 진입 | Explore를 주 기능, 내 사진 정리를 보조 기능으로 두고 웹의 좋아요 목록을 유지 | yes, early only |
+| 기본 정보 구조 | 하단 `Explore · 내 사진 · 좋아요`; 앱 실행 시 Explore 진입; 프로필은 상단 오른쪽 원형 썸네일로 진입 | Explore를 주 기능으로 유지하면서 프로필 탭이 차지하던 하단 공간을 줄임 | yes, early only |
 | 미디어 범위 | v1은 정지 사진 JPEG/PNG/WebP/HEIC; HEIC는 공개 시 호환 포맷 파생본 생성, Live Photo는 대표 정지 이미지, RAW/동영상 제외 | 일반 휴대폰 사진을 지원하면서 첫 출시 범위 통제 | yes |
 
 ## Findings (cited - path:lines)
@@ -49,12 +49,12 @@ approach: React Native + Expo Development Build 기반 앱을 Explore 중심으�
 - 웹은 단일 Supabase 사용자에 연결된 공급자들이 사진·앨범·좋아요를 공유한다 (`docs/spec.md:23-30`). 앱도 동일 프로젝트와 user id를 쓰되 `albums`와 `album_photos`에는 접근하지 않는다.
 - 현재 데이터 경계에는 `albums`, `album_photos`도 존재하지만 모바일 구현 범위는 `profiles`, `photos`, `comments`, `user_likes`와 Storage로 제한한다 (`auth.js:18-24`, `auth.js:224-716`).
 - 클라우드 사진은 15분 signed URL로 hydration되고 소유자 원본 위치는 별도 조회된다 (`auth.js:51-105`). 기기 사진은 이 URL 모델과 섞지 말고 `source=device|cloud` 어댑터 뒤에서 통합해야 한다.
-- Home/Myphoto는 하나의 Home 해시를 공유하고 Explore만 독립 상위 섹션이다 (`js/app-sections.mjs:1-35`). 모바일은 Explore를 첫 탭으로 두고 `Explore · 내 사진 · 좋아요 · 프로필`로 재구성한다.
+- Home/Myphoto는 하나의 Home 해시를 공유하고 Explore만 독립 상위 섹션이다 (`js/app-sections.mjs:1-35`). 모바일은 Explore를 첫 탭으로 두고 하단을 `Explore · 내 사진 · 좋아요`로 재구성하며, 프로필은 각 주요 화면 상단 오른쪽 썸네일에서 연다.
 - 기존 웹 품질 게이트는 동작 계약 테스트, 빌드, 성능 예산과 실제 모바일 OAuth/업로드/지도/공개 범위 QA를 요구한다 (`docs/spec.md:58-79`).
 - 플랫폼 제약상 iOS 제한 사진 접근에서는 일부 자산만 보이며 사용자 앨범 접근도 제한될 수 있다. Android에서는 광범위 사진 권한이 Play 정책 심사 대상이고, MediaStore 변경 알림이 항상 증분 ID를 주지는 않는다.
 
 ## Decisions (with rationale)
-- 사용자는 2026-08-19에 모바일 앱만 Explore 중심으로 만들고, 내 사진 정리는 보조 기능으로 두며, 여행 앨범 기능은 완전히 제외하기로 범위를 수정했다. 기존 웹은 변경하지 않는다.
+- 사용자는 2026-08-19에 모바일 앱만 Explore 중심으로 만들고, 내 사진 정리는 보조 기능으로 두며, 여행 앨범 기능은 완전히 제외하기로 범위를 수정했다. 이후 프로필은 하단 탭이 아니라 상단 프로필 썸네일로 열도록 결정했다. 기존 웹은 변경하지 않는다.
 - 공통 클라우드 데이터와 기기 전용 데이터를 하나의 레코드로 억지로 합치지 않고, UI 도메인 모델에서 `source`로 통합한다. 로컬 asset ID는 기기 밖에서 유효하지 않기 때문이다.
 - 로컬 사진의 서버 자동 업로드는 금지한다. 공개/공유를 누른 시점에만 용량 최적화, 메타데이터 검토, 위치 공개 정밀도 확인을 거쳐 클라우드 사진으로 생성한다.
 - 기기에서 원본이 삭제되거나 접근 권한이 사라져도 앱이 크래시하지 않도록 `available|missing|permission-limited|cloud` 상태를 명시한다.
@@ -90,7 +90,7 @@ approach: React Native + Expo Development Build 기반 앱을 Explore 중심으�
 ## Approval gate
 status: scope-approved
 scope_approved_at: 2026-08-19
-approved_scope: Explore-first mobile app, personal photos as secondary, no mobile album features, protected browser-app paths unchanged
+approved_scope: Explore-first mobile app, three bottom tabs, profile opened from top thumbnail, personal photos as secondary, no mobile album features, protected browser-app paths unchanged
 prototype_approval: pending task 1 clickable prototype
 <!-- When exploration is exhausted and unknowns are answered, set status: awaiting-approval. -->
 <!-- That durable record is the loop guard: on a later turn read it and resume at the gate instead of re-running exploration. -->

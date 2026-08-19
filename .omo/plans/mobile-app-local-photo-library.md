@@ -12,7 +12,7 @@
 
 **Effort:** XL
 **Risk:** High - 사진 권한과 변경 감지가 iOS·Android에서 다르고, 공개 업로드·OAuth·스토어 심사를 함께 맞춰야 합니다.
-**Decisions to sanity-check:** `Explore · 내 사진 · 좋아요 · 프로필` 하단 구조, Explore 기본 진입, React Native + Expo Development Build, iOS/Android 동시 지원, 정지 사진 중심의 첫 출시 범위입니다.
+**Decisions to sanity-check:** 하단 `Explore · 내 사진 · 좋아요`, 상단 프로필 썸네일 진입, Explore 기본 화면, React Native + Expo Development Build, iOS/Android 동시 지원, 정지 사진 중심의 첫 출시 범위입니다.
 
 Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획을 고정밀 이중 검토합니다. Full execution detail follows below.
 
@@ -94,11 +94,11 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
 > Implementation + Test = ONE todo. Never separate.
 <!-- APPEND TASK BATCHES BELOW THIS LINE WITH edit/apply_patch - never rewrite the headers above. -->
 - [ ] 1. Explore 중심 제품 구조와 클릭 프로토타입 승인
-  What to do / Must NOT do: `Explore · 내 사진 · 좋아요 · 프로필` 구조, Explore 기본 진입, 지도 중심 탐색, 사진 상세·소셜 흐름, 보조 내 사진 흐름을 `docs/mobile/product-definition.md`와 배포에서 제외되는 `docs/mobile/prototype/index.html` 클릭 프로토타입으로 만든다. 390x844과 360x800 화면, 핵심 상태와 흐름을 포함하고 앨범 화면·탭·카드·행동을 넣거나 기존 웹 UI를 수정하지 않는다.
+  What to do / Must NOT do: 하단 `Explore · 내 사진 · 좋아요`, 각 주요 화면 상단 오른쪽의 원형 프로필 썸네일, Explore 기본 진입, 지도 중심 탐색, 사진 상세·소셜 흐름, 보조 내 사진 흐름을 `docs/mobile/product-definition.md`와 배포에서 제외되는 `docs/mobile/prototype/index.html` 클릭 프로토타입으로 만든다. 프로필 썸네일은 약 36px이며 로그인 사용자는 프로필·설정 stack, 게스트는 로그인 화면을 연다. 390x844과 360x800 화면, 핵심 상태와 흐름을 포함하고 앨범 화면·탭·카드·행동을 넣거나 기존 웹 UI를 수정하지 않는다.
   Parallelization: Wave 1 | Blocked by: - | Blocks: 2, 5, 11, 21
   References: `.omo/plans/mobile-app-local-photo-library-simple-ko.md`; `index.html:117-579`; `style.css`; `js/app-sections.mjs:1-35`; `docs/spec.md:15-21`.
-  Acceptance criteria: 시작 시 `git rev-parse HEAD` 결과를 `docs/mobile/web-baseline.txt`에 기록한다. 프로토타입은 Vite/Cloudflare build 입력에 포함되지 않고 기본 진입, 네 탭, empty/loading/error/offline, 핵심 흐름을 클릭할 수 있으며 앨범 UI가 0개다. 사용자 승인 날짜와 승인한 화면 버전을 `docs/mobile/product-definition.md`에 기록.
-  QA scenarios: 새 사용자 앱 실행→Explore 지도→사진 상세→좋아요 로그인→복귀와 Explore→내 사진→위치 수정→공개 흐름을 클릭 프로토타입으로 완주 + 웹 Home/앨범 화면은 변경되지 않음. Evidence `<attemptDir>/task-1-mobile-app-local-photo-library.mp4`.
+  Acceptance criteria: 시작 시 `git rev-parse HEAD` 결과를 `docs/mobile/web-baseline.txt`에 기록한다. 프로토타입은 Vite/Cloudflare build 입력에 포함되지 않고 기본 진입, 세 하단 탭, 상단 프로필 진입, empty/loading/error/offline, 핵심 흐름을 클릭할 수 있으며 앨범 UI가 0개다. 사용자 승인 날짜와 승인한 화면 버전을 `docs/mobile/product-definition.md`에 기록.
+  QA scenarios: 새 사용자 앱 실행→Explore 지도→상단 기본 사용자 아이콘→로그인→프로필 썸네일 갱신→프로필·설정과 Explore→사진 상세→좋아요→내 사진→위치 수정→공개 흐름을 클릭 프로토타입으로 완주 + 웹 Home/앨범 화면은 변경되지 않음. Evidence `<attemptDir>/task-1-mobile-app-local-photo-library.mp4`.
   Commit: Y | `docs(mobile): approve explore first product`
 
 - [ ] 2. 독립 Expo 모바일 워크스페이스와 품질 게이트 구성
@@ -174,11 +174,11 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
   Commit: Y | `feat(mobile-publish): add durable publication outbox`
 
 - [ ] 11. 앱 내비게이션·디자인 시스템·게스트/로그인 경계 구현
-  What to do / Must NOT do: `Explore · 내 사진 · 좋아요 · 프로필` 탭, photo/profile detail stack, 웹 딥그린·크림 토큰, safe area, skeleton/empty/error/offline 상태를 구현하고 Explore를 기본 진입으로 둔다. 앨범 route/tab/component를 만들지 않으며 내 사진은 비로그인 사용 가능하고 cloud action만 인증을 요구한다.
+  What to do / Must NOT do: 하단 `Explore · 내 사진 · 좋아요` 탭, 각 top-level 화면 상단 오른쪽의 약 36px 원형 프로필 썸네일, photo/profile/settings detail stack, 웹 딥그린·크림 토큰, safe area, skeleton/empty/error/offline 상태를 구현하고 Explore를 기본 진입으로 둔다. 썸네일은 프로필 이미지 또는 기본 사용자 아이콘을 표시하고 로그인 상태에 따라 프로필·설정 또는 로그인 화면을 연다. 프로필 하단 탭과 앨범 route/tab/component를 만들지 않는다.
   Parallelization: Wave 3 | Blocked by: 1, 2, 8, 9 | Blocks: 12-19, 21
   References: `index.html:117-579`; `style.css`; `js/app-sections.mjs:1-35`; `docs/spec.md:15-21`.
-  Acceptance criteria: `npm --prefix mobile test -- navigation --runInBand` 통과; 모든 핵심 화면이 320px 폭, 큰 글자, light/dark OS 설정에서 overflow 없음.
-  QA scenarios: 앱 실행→Explore 기본 진입→내 사진 탭 + 게스트 Explore의 좋아요 로그인→성공 후 원래 사진 복귀 + 전 route 목록에 album 문자열 0건. Evidence `<attemptDir>/task-11-mobile-app-local-photo-library.mp4`.
+  Acceptance criteria: `npm --prefix mobile test -- navigation --runInBand` 통과; 하단 탭은 정확히 3개이고 프로필 tab route는 없으며 모든 핵심 화면이 320px 폭, 큰 글자, light/dark OS 설정에서 overflow 없음.
+  QA scenarios: 앱 실행→Explore 기본 진입→상단 프로필 썸네일→프로필·설정→복귀와 게스트 기본 아이콘→로그인→원래 화면 복귀 + 하단 Explore/내 사진/좋아요 전환 + 전 route 목록에 album 문자열 0건. Evidence `<attemptDir>/task-11-mobile-app-local-photo-library.mp4`.
   Commit: Y | `feat(mobile-ui): add navigation and app shell`
 
 - [ ] 12. Explore 공개 지도·목록·사진 상세 구현
@@ -266,7 +266,7 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
 - [ ] F1. Plan compliance audit: 모든 Must have, guardrail, 21개 acceptance와 evidence를 대조하고 누락 0을 증명.
 - [ ] F2. Code quality review: mobile/backend/docs diff의 타입, 보안, RLS, 개인정보, migration, 테스트 품질을 독립 검토하고 protected browser-app path diff 0, P0/P1 0을 증명.
 - [ ] F3. Real manual QA: 연결된 iOS/Android 실제 기기와 배포된 web preview에서 task 21 happy/failure matrix 재실행.
-- [ ] F4. Scope fidelity: Explore 기본 진입, 내 사진 보조 구조, 모바일 앨범 route/component/repository/query 0개, 모든 protected browser-app path diff 0개, 웹 앨범 행/동작 변화 0개, 원본 자동 업로드·비밀 키 번들 0개를 정적/런타임 감사.
+- [ ] F4. Scope fidelity: Explore 기본 진입, 하단 탭 3개, 프로필 하단 탭 0개, 상단 프로필 썸네일 진입, 내 사진 보조 구조, 모바일 앨범 route/component/repository/query 0개, 모든 protected browser-app path diff 0개, 웹 앨범 행/동작 변화 0개, 원본 자동 업로드·비밀 키 번들 0개를 정적/런타임 감사.
 
 ## Commit strategy
 - 각 todo는 테스트와 구현을 한 원자 커밋으로 묶고 위 Commit 문구를 기본으로 사용한다.
