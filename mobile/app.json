@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Ikkyee",
+    "slug": "ikkyee-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "ikkyee",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ikkyee.mobile"
+    },
+    "android": {
+      "package": "com.ikkyee.mobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "output": "static"
+    },
+    "plugins": ["expo-router", "expo-dev-client"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

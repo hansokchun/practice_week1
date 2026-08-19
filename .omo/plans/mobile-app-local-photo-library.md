@@ -101,12 +101,12 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
   QA scenarios: 새 사용자 앱 실행→Explore 지도→상단 기본 사용자 아이콘→로그인→프로필 썸네일 갱신→프로필·설정과 Explore→사진 상세→좋아요→내 사진→위치 수정→공개 흐름을 클릭 프로토타입으로 완주 + 웹 Home/앨범 화면은 변경되지 않음. Evidence `<attemptDir>/task-1-mobile-app-local-photo-library.mp4`.
   Commit: Y | `docs(mobile): approve explore first product`
 
-- [ ] 2. 독립 Expo 모바일 워크스페이스와 품질 게이트 구성
+- [x] 2. 독립 Expo 모바일 워크스페이스와 품질 게이트 구성
   What to do / Must NOT do: `mobile/`에 Expo TypeScript + Expo Router Development Build를 만들고 자체 `package-lock.json`, lint/typecheck/Jest/export/Maestro scripts, EAS preview config, `.env.example`을 둔다. 모바일 devDependency로 Supabase CLI 버전을 고정하고 `supabase/config.toml`, Docker 사전 점검, local start/reset/stop 스크립트와 Node 기반 Edge Function 통합 테스트 harness를 준비한다. 루트 웹 의존성이나 브라우저 `auth.js`를 import하지 않는다. `ios/`, `android/` 생성물은 커스텀 네이티브 모듈이 필요하다고 스파이크에서 판정되기 전에는 추적하지 않는다.
   Parallelization: Wave 1 | Blocked by: 1 | Blocks: 3, 4, 5, 8, 11
   References: `package.json:1-35`; `docs/spec.md:58-72`; Supabase Expo quickstart; Supabase native deep-linking docs.
-  Acceptance criteria: `npm --prefix mobile ci && npm --prefix mobile exec supabase -- --version && npm --prefix mobile run supabase:check && npm --prefix mobile run lint && npm --prefix mobile run typecheck && npm --prefix mobile test -- --runInBand && npm --prefix mobile run export:all` 모두 0 종료; `supabase:check`는 Docker/CLI/config 누락을 구체적으로 보고한다.
-  QA scenarios: Expo Router 기본 Home이 Development Build에서 열림 + `npm --prefix mobile run supabase:start` 후 health endpoint 200과 clean `supabase:stop` + Docker 미실행/환경변수 누락 시 비밀값 없는 설정 오류. Evidence `<attemptDir>/task-2-mobile-app-local-photo-library.png`.
+  Acceptance criteria: `npm --prefix mobile ci`, `npm --prefix mobile exec supabase -- --version`, `npm --prefix mobile run lint`, `npm --prefix mobile run typecheck`, `npm --prefix mobile test -- --runInBand`, `npm --prefix mobile run export:all`이 모두 0 종료한다. `supabase:check`는 CLI/config 누락을 구체적으로 보고하며 Docker가 없는 개발 환경에서는 비밀값 없이 명확한 비정상 종료를 제공한다. 사용자가 Docker 설치를 명시적으로 연기했으므로 실제 local start/reset/health/stop은 Task 2 완료를 막지 않는 보류 Owner gate로 기록하되, Docker 의존 백엔드 통합 Task 17, 18, 20, 21 중 첫 작업을 시작하기 전 반드시 통과한다.
+  QA scenarios: Expo Router 기본 Home이 Development Build 또는 브라우저 Expo surface에서 열림 + Docker 미실행/환경변수 누락 시 비밀값 없는 설정 오류 + 보류 Owner gate에서 `npm --prefix mobile run supabase:start` 후 health endpoint 200과 clean `supabase:stop`. Evidence `<attemptDir>/task-2-mobile-app-local-photo-library.png`.
   Commit: Y | `chore(mobile): scaffold expo application`
 
 - [ ] 3. iOS/Android 기기 사진 접근 기술 스파이크 통과

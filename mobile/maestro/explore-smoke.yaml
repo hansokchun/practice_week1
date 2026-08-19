@@ -1,0 +1,5 @@
+appId: com.ikkyee.mobile
+---
+- launchApp
+- assertVisible: "Explore"
+- assertVisible: "장소를 검색하세요"
