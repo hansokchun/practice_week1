@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "expoSdk": 57,
+  "packageName": "expo-media-library",
+  "packageVersion": "57.0.4",
+  "realDeviceVerified": false,
+  "permissionStates": {
+    "full": {
+      "access": "all",
+      "canEnumerate": true,
+      "requiresReconciliation": false
+    },
+    "limited": {
+      "access": "limited",
+      "canEnumerate": true,
+      "requiresReconciliation": true
+    },
+    "denied": {
+      "access": "none",
+      "canEnumerate": false,
+      "requiresReconciliation": false
+    },
+    "revoked": {
+      "access": "none",
+      "canEnumerate": false,
+      "requiresReconciliation": true
+    }
+  },
+  "enumeration": {
+    "maximumAssetsPerRun": 10000,
+    "pageSize": 250,
+    "expoPagination": "offset",
+    "offsetCanDrift": true,
+    "resumeReconciliationRequired": true,
+    "checkpoint": {
+      "resumable": true,
+      "fields": ["offset", "lastAssetId", "processedAssetCount"]
+    }
+  },
+  "platforms": {
+    "ios": {
+      "minimumOsVersion": "16.4",
+      "permissions": {
+        "read": "NSPhotoLibraryUsageDescription",
+        "write": "NSPhotoLibraryAddUsageDescription"
+      },
+      "expo": {
+        "limitedAccess": true,
+        "exif": true,
+        "gps": true,
+        "livePhotoDetection": true,
+        "livePhotoPairedVideo": true,
+        "foregroundChangeListener": true
+      },
+      "livePhotos": {
+        "detection": "expo",
+        "pairedVideo": "expo",
+        "completeResourceEnumeration": "native"
+      },
+      "changeObservation": {
+        "foregroundListenerSupported": true,
+        "terminatedProcessGuarantee": false,
+        "resumeReconciliationRequired": true
+      },
+      "unresolvedDeviceProbes": [
+        "heic-decoding",
+        "icloud-original-availability"
+      ],
+      "nativeGaps": {
+        "completeLivePhotoResourceEnumeration": true,
+        "requiredApi": "PHAssetResourceManager"
+      }
+    },
+    "android": {
+      "minimumApiLevel": 24,
+      "permissions": {
+        "api24To32Read": "READ_EXTERNAL_STORAGE",
+        "api33PlusImages": "READ_MEDIA_IMAGES",
+        "api33PlusVideo": "READ_MEDIA_VIDEO",
+        "originalLocation": "ACCESS_MEDIA_LOCATION"
+      },
+      "expo": {
+        "limitedAccess": true,
+        "exif": true,
+        "gps": true,
+        "originalLocationRequiresAccessMediaLocation": true,
+        "foregroundChangeListener": true,
+        "incrementalChangeDetails": false
+      },
+      "changeObservation": {
+        "foregroundListenerSupported": true,
+        "terminatedProcessGuarantee": false,
+        "resumeReconciliationRequired": true
+      },
+      "unresolvedDeviceProbes": [
+        "heic-decoding",
+        "gps-original-location"
+      ],
+      "nativeGaps": {
+        "mediaStoreSignals": ["volume", "version", "generation"]
+      }
+    }
+  }
+}

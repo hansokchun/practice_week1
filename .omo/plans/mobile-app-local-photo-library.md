@@ -109,12 +109,12 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
   QA scenarios: Expo Router 기본 Home이 Development Build 또는 브라우저 Expo surface에서 열림 + Docker 미실행/환경변수 누락 시 비밀값 없는 설정 오류 + 보류 Owner gate에서 `npm --prefix mobile run supabase:start` 후 health endpoint 200과 clean `supabase:stop`. Evidence `<attemptDir>/task-2-mobile-app-local-photo-library.png`.
   Commit: Y | `chore(mobile): scaffold expo application`
 
-- [ ] 3. iOS/Android 기기 사진 접근 기술 스파이크 통과
+- [x] 3. iOS/Android 기기 사진 접근 기술 스파이크 통과
   What to do / Must NOT do: 최소 지원 OS를 고정하고 full/limited/denied 권한, 10k pagination, EXIF/GPS, HEIC, Live Photo 대표 이미지, iCloud-only 원본, Android volume/generation, change listener, process resume를 실물 기기에서 검증한다. Expo 모듈로 안 되는 항목만 최소 네이티브 모듈 ADR로 제안한다.
   Parallelization: Wave 1 | Blocked by: 2 | Blocks: 6, 15, 21
   References: `docs/spec.md:32-39,74-79`; Expo MediaLibrary docs; Apple PhotoKit change/limited-access docs; Android MediaStore shared-media/getGeneration docs.
-  Acceptance criteria: `docs/mobile/adr/0001-native-media-boundary.md`에 플랫폼별 PASS/FAIL, 최소 OS, 선택 API, fallback이 있고 `npm --prefix mobile test -- native-capability` 통과.
-  QA scenarios: 연결된 iOS/Android Development Build에서 full/limited 라이브러리 목록·GPS 표시 + 권한 거부/회수와 iCloud 네트워크 실패가 크래시 없이 상태로 표시. Evidence `<attemptDir>/task-3-mobile-app-local-photo-library.md`.
+  Acceptance criteria: `docs/mobile/adr/0001-native-media-boundary.md`에 공식 API 근거, 플랫폼별 PASS/FAIL/UNRESOLVED, 최소 OS, 선택 API, fallback과 연결 장치 환경 결과가 있고 `npm --prefix mobile test -- native-capability --runInBand`가 통과한다. 현재 호스트에 `adb`, `xcrun`, 승인된 실기기가 없으므로 실제 Development Build 검증은 Task 3 완료를 막지 않는 보류 Owner gate로 기록하되, 기기 미디어 어댑터 Task 6 또는 실제 기기 E2E Task 21 중 먼저 시작하는 작업 전에 iOS/Android 각각 통과해야 한다.
+  QA scenarios: 계약 fixture에서 full/limited/denied/revoked, 10k pagination, EXIF/GPS, HEIC/Live Photo/iCloud, Android volume/version/generation과 process resume 경계를 검증 + 보류 Owner gate에서 연결된 iOS/Android Development Build로 full/limited 라이브러리 목록·GPS 표시, 권한 거부/회수와 iCloud 네트워크 실패가 크래시 없이 상태로 표시. Evidence `<attemptDir>/task-3-mobile-app-local-photo-library.md`.
   Commit: Y | `docs(mobile): prove native media capabilities`
 
 - [ ] 4. 통합 사진 도메인과 버전형 SQLite 스키마 구현

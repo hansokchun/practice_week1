@@ -19,7 +19,20 @@
       "favicon": "./assets/favicon.png",
       "output": "static"
     },
-    "plugins": ["expo-router", "expo-dev-client"],
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Ikkyee to read your travel photos.",
+          "savePhotosPermission": "Allow Ikkyee to save travel photos.",
+          "isAccessMediaLocationEnabled": true,
+          "preventAutomaticLimitedAccessAlert": true,
+          "granularPermissions": ["photo", "video"]
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
