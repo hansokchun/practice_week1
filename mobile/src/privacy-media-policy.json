@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "contractSourceDate": "2026-08-21",
+  "policyVersion": "task-5-v1",
+  "media": {
+    "stillPhotosOnly": true,
+    "acceptedFormats": ["jpeg", "png", "webp", "heic"],
+    "heic": {
+      "supported": true,
+      "convertBeforeCloudPublication": true,
+      "publicationDerivativeFormat": "jpeg"
+    },
+    "raw": {
+      "supported": false,
+      "unsupportedUserCopyKey": "unsupported-raw-photo"
+    },
+    "video": {
+      "supported": false,
+      "unsupportedUserCopyKey": "unsupported-video"
+    }
+  },
+  "originals": {
+    "authoritativeLocation": "PhotoKit-or-MediaStore",
+    "serverUploadedAutomatically": false,
+    "durableAppStorageClone": false,
+    "offlineOriginalTransfer": false,
+    "osDeletionHandling": "mark-local-reference-missing-and-remove-derivatives",
+    "permissionRevocationHandling": "stop-access-remove-derivatives-and-reconcile"
+  },
+  "publication": {
+    "requiresExplicitUserAction": true,
+    "visibilities": ["private", "link", "public"],
+    "privateBoundary": "owner-authorized-Supabase-RLS",
+    "linkBoundary": "unlisted-tokenized-link",
+    "publicBoundary": "explicit-public-selection",
+    "serverRecipients": ["Supabase Storage", "Supabase Postgres"],
+    "retention": "until-user-deletes-photo-or-account",
+    "deletionTrigger": "photo-delete-or-account-delete"
+  },
+  "derivatives": {
+    "location": "FileSystem.cacheDirectory/ikkyee-derivatives",
+    "maximumLifetimeMinutes": 60,
+    "durableStorage": false,
+    "backupExcluded": true,
+    "deletionTriggers": [
+      "publication-complete",
+      "cancelled",
+      "permission-revoked",
+      "os-original-deleted",
+      "account-deleted",
+      "expiry",
+      "startup-crash-recovery"
+    ],
+    "retry": {
+      "maximumAttempts": 3,
+      "requiresOriginalReacquisition": true,
+      "doesNotRetainFailedDerivative": true
+    },
+    "crashRestartFixture": {
+      "before": {
+        "processState": "terminated",
+        "ageMinutes": 61,
+        "hasTemporaryDerivative": true
+      },
+      "event": "app-start",
+      "expected": {
+        "deleteDerivative": true,
+        "publicationState": "rebuild-from-original"
+      }
+    }
+  },
+  "thumbnailCache": {
+    "location": "FileSystem.cacheDirectory/ikkyee-thumbnails",
+    "maximumMiB": 512,
+    "eviction": "least-recently-used-before-write",
+    "backupExcluded": true,
+    "deletionTriggers": ["eviction", "photo-delete", "account-delete", "app-storage-clear"]
+  },
+  "localPersistence": {
+    "databaseLocation": "platform-backup-excluded-ikkyee-local",
+    "databaseBackupExcluded": true,
+    "cacheBackupExcluded": true,
+    "databaseDeletionTrigger": "account-delete-or-app-data-clear"
+  },
+  "permissions": {
+    "full": {
+      "canReadOriginals": true,
+      "requiresReconciliation": false,
+      "ux": "show-all-authorized-photos"
+    },
+    "limited": {
+      "canReadOriginals": true,
+      "requiresReconciliation": true,
+      "ux": "show-selected-photos-and-manage-access"
+    },
+    "denied": {
+      "canReadOriginals": false,
+      "requiresReconciliation": false,
+      "ux": "explain-photo-access-and-offer-settings"
+    },
+    "revoked": {
+      "canReadOriginals": false,
+      "requiresReconciliation": true,
+      "ux": "stop-library-access-clear-temporary-data-and-offer-settings"
+    }
+  },
+  "gps": {
+    "exactSource": "photo-EXIF-or-OS-media-library",
+    "defaultDisclosure": "local-only",
+    "publicDisclosure": "approximate-or-hidden-only",
+    "allowedTransferRecipients": ["Supabase Postgres"],
+    "transferPurpose": "user-requested-photo-publication-and-map-display",
+    "retention": "until-user-deletes-photo-or-account",
+    "deletionTrigger": "photo-delete-or-account-delete",
+    "backupStatus": "local-exact-GPS-backup-excluded"
+  },
+  "offline": {
+    "automaticServerUpload": false,
+    "queueState": "local-pending-user-confirmed-publication",
+    "networkFailure": "retain-metadata-only-and-show-retry",
+    "onDemandOriginalFailure": "show-retry-without-cloning-original",
+    "icloudOrCloudMediaFailure": "show-on-demand-unavailable-and-retry-after-download",
+    "resume": "recheck-permission-and-original-availability-before-explicit-retry"
+  },
+  "accountDeletion": {
+    "clearsLocalCacheAndDatabase": true,
+    "removesPendingPublicationJobs": true,
+    "removesServerPublications": true,
+    "doesNotDeleteOSOriginals": true
+  },
+  "albumFeatures": 0,
+  "dataMap": [
+    {
+      "datum": "OS-original-reference",
+      "source": "PhotoKit-or-MediaStore",
+      "localDestination": "backup-excluded-local-database",
+      "serverDestination": "none",
+      "recipient": "none",
+      "purpose": "identify-user-selected-original-without-copying-bytes",
+      "retention": "until-OS-deletion-permission-revocation-or-account-delete",
+      "deletionTrigger": "OS-delete-permission-revocation-or-account-delete",
+      "backupStatus": "backup-excluded"
+    },
+    {
+      "datum": "temporary-publication-derivative",
+      "source": "explicit-user-selected-still-photo",
+      "localDestination": "FileSystem.cacheDirectory/ikkyee-derivatives",
+      "serverDestination": "Supabase Storage-after-explicit-publication",
+      "recipient": "Supabase Storage",
+      "purpose": "convert-and-upload-user-requested-still-photo-publication",
+      "retention": "maximum-60-minutes-locally; server-until-user-deletes-photo-or-account",
+      "deletionTrigger": "publication-complete-cancel-permission-revocation-OS-delete-expiry-or-account-delete",
+      "backupStatus": "local-backup-excluded"
+    },
+    {
+      "datum": "thumbnail-cache",
+      "source": "OS-authorized-photo-or-server-publication",
+      "localDestination": "FileSystem.cacheDirectory/ikkyee-thumbnails",
+      "serverDestination": "none",
+      "recipient": "none",
+      "purpose": "bounded-local-list-rendering",
+      "retention": "until-least-recently-used-eviction-within-512-MiB",
+      "deletionTrigger": "eviction-photo-delete-account-delete-or-app-storage-clear",
+      "backupStatus": "backup-excluded"
+    },
+    {
+      "datum": "exact-gps",
+      "source": "photo-EXIF-or-OS-media-library",
+      "localDestination": "backup-excluded-local-database",
+      "serverDestination": "none-by-default; Supabase Postgres-after-explicit-location-publication",
+      "recipient": "Supabase Postgres",
+      "purpose": "user-requested-photo-publication-and-map-display",
+      "retention": "until-user-deletes-photo-or-account",
+      "deletionTrigger": "photo-delete-or-account-delete",
+      "backupStatus": "local-exact-GPS-backup-excluded"
+    },
+    {
+      "datum": "publication-visibility-and-link-token",
+      "source": "explicit-user-publication-choice",
+      "localDestination": "backup-excluded-local-database",
+      "serverDestination": "Supabase Postgres",
+      "recipient": "Supabase Postgres",
+      "purpose": "enforce-private-link-or-public-boundary",
+      "retention": "until-user-unpublishes-deletes-photo-or-deletes-account",
+      "deletionTrigger": "unpublish-photo-delete-or-account-delete",
+      "backupStatus": "backup-excluded"
+    }
+  ],
+  "sourceSnapshot": {
+    "accessDate": "2026-08-21",
+    "officialSources": [
+      "https://developer.apple.com/documentation/photokit/delivering-an-enhanced-privacy-experience-in-your-photos-app",
+      "https://support.google.com/googleplay/android-developer/answer/14115180?hl=en",
+      "https://docs.expo.dev/versions/latest/sdk/media-library/",
+      "https://docs.expo.dev/versions/latest/sdk/image-manipulator/",
+      "https://docs.expo.dev/versions/latest/sdk/filesystem/",
+      "https://supabase.com/docs/guides/storage/security/access-control",
+      "https://supabase.com/docs/guides/storage/serving/downloads",
+      "https://github.com/supabase/supabase-js/blob/master/packages/core/supabase-js/CHANGELOG.md"
+    ]
+  }
+}

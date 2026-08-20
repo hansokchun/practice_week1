@@ -125,7 +125,7 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
   QA scenarios: fixture DB upgrade 후 사진 좌표·동기화 상태 유지 + 손상 DB는 원본을 건드리지 않고 재인덱싱 안내 + schema에 album relation이 없음을 확인. Evidence `<attemptDir>/task-4-mobile-app-local-photo-library.txt`.
   Commit: Y | `feat(mobile-data): add local photo schema`
 
-- [ ] 5. 공유 백엔드·개인정보·미디어 정책 계약 작성
+- [x] 5. 공유 백엔드·개인정보·미디어 정책 계약 작성
   What to do / Must NOT do: live Supabase의 `profiles/photos/photo_private_locations/comments/user_likes`, 함수, RLS, Storage, OAuth를 읽기 전용으로 조사하고 모바일 허용 테이블을 문서화한다. 동시에 v1 정지 사진 범위, 사진 권한 UX, 임시 파생본 수명, 512MB 캐시, backup exclusion, GPS 전송, offline 정책을 고정한다. `albums`와 `album_photos`는 웹 보존 대상으로만 기록하고 모바일 repository 범위에 넣지 않으며 live 데이터를 변경하지 않는다.
   Parallelization: Wave 1 | Blocked by: 1, 2 | Blocks: 6, 8-10, 17-20
   References: `js/photo-file-validation.mjs:1-31`; `js/photo-upload-optimizer.mjs:1-117`; `docs/spec.md:32-56`; Apple App Privacy; Google Play Photo/Video Permissions and Data Safety docs.

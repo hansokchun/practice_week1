@@ -1,0 +1,255 @@
+{
+  "contractVersion": 1,
+  "projectRef": "pqczcponriukilrtpbdl",
+  "inspectedAt": "2026-08-20T17:57:30.044Z",
+  "liveMetadataReadOnly": true,
+  "mobileAllowedTables": [
+    "profiles",
+    "photos",
+    "photo_private_locations",
+    "comments",
+    "user_likes"
+  ],
+  "webOnlyTables": ["albums", "album_photos"],
+  "mobileRepositories": [
+    {"name":"profileRepository","table":"profiles","queries":["select"],"mutations":["insert","update"]},
+    {"name":"photoRepository","table":"photos","queries":["select"],"mutations":["insert","update","delete"]},
+    {"name":"privateLocationRepository","table":"photo_private_locations","queries":["select"],"mutations":["insert","update","delete"]},
+    {"name":"commentRepository","table":"comments","queries":["select"],"mutations":["insert"]},
+    {"name":"likeRepository","table":"user_likes","queries":["select"],"mutations":["set_photo_like rpc"]}
+  ],
+  "tables": {
+    "profiles": {
+      "columns": ["id", "nickname", "bio", "avatar_url"],
+      "operations": ["select", "insert", "update", "delete"],
+      "policies": [
+        {"name":"Profiles are viewable by everyone","operation":"SELECT","roles":["public"]},
+        {"name":"Users can insert own profile","operation":"INSERT","roles":["authenticated"]},
+        {"name":"Users can update own profile","operation":"UPDATE","roles":["authenticated"]}
+      ],
+      "roleMatrix": {
+        "select": {
+          "owner":{"allowed":true,"scope":"All profile rows are public."},
+          "nonOwner":{"allowed":true,"scope":"All profile rows are public."},
+          "anonymous":{"allowed":true,"scope":"All profile rows are public."}
+        },
+        "insert": {
+          "owner":{"allowed":true,"scope":"Authenticated actor may insert only a row whose id equals auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"A profile id different from auth.uid() is rejected."},
+          "anonymous":{"allowed":false,"scope":"The insert policy targets authenticated requests only."}
+        },
+        "update": {
+          "owner":{"allowed":true,"scope":"Existing and resulting id must both equal auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Rows with another id are hidden from update."},
+          "anonymous":{"allowed":false,"scope":"The update policy targets authenticated requests only."}
+        },
+        "delete": {
+          "owner":{"allowed":false,"scope":"No delete policy exists."},
+          "nonOwner":{"allowed":false,"scope":"No delete policy exists."},
+          "anonymous":{"allowed":false,"scope":"No delete policy exists."}
+        }
+      }
+    },
+    "photos": {
+      "columns": ["id", "url", "date", "title", "description", "lat", "lng", "liked", "shared", "owner_id", "created_at", "album", "album_id", "visibility", "geo_source", "storage_path", "location_precision"],
+      "operations": ["select", "insert", "update", "delete"],
+      "policies": [
+        {"name":"photos_delete_owner","operation":"DELETE","roles":["authenticated"]},
+        {"name":"photos_insert_owner","operation":"INSERT","roles":["authenticated"]},
+        {"name":"photos_select_owner_or_visible","operation":"SELECT","roles":["public"]},
+        {"name":"photos_update_owner","operation":"UPDATE","roles":["authenticated"]}
+      ],
+      "roleMatrix": {
+        "select": {
+          "owner":{"allowed":true,"scope":"All rows whose owner_id equals auth.uid()."},
+          "nonOwner":{"allowed":true,"scope":"Only public or link visibility, or shared=true; private unshared rows are denied."},
+          "anonymous":{"allowed":true,"scope":"Only public or link visibility, or shared=true; private unshared rows are denied."}
+        },
+        "insert": {
+          "owner":{"allowed":true,"scope":"Authenticated insert requires owner_id equal to auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another owner_id fails WITH CHECK."},
+          "anonymous":{"allowed":false,"scope":"The insert policy targets authenticated requests only."}
+        },
+        "update": {
+          "owner":{"allowed":true,"scope":"Existing and resulting owner_id must equal auth.uid(); SELECT visibility is also required."},
+          "nonOwner":{"allowed":false,"scope":"Another owner's row fails USING and WITH CHECK."},
+          "anonymous":{"allowed":false,"scope":"The update policy targets authenticated requests only."}
+        },
+        "delete": {
+          "owner":{"allowed":true,"scope":"Authenticated delete requires owner_id equal to auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another owner's row fails USING."},
+          "anonymous":{"allowed":false,"scope":"The delete policy targets authenticated requests only."}
+        }
+      }
+    },
+    "photo_private_locations": {
+      "columns": ["photo_id", "owner_id", "lat", "lng", "created_at", "updated_at"],
+      "operations": ["select", "insert", "update", "delete"],
+      "policies": [
+        {"name":"photo_private_locations_delete_owner","operation":"DELETE","roles":["authenticated"]},
+        {"name":"photo_private_locations_insert_owner","operation":"INSERT","roles":["authenticated"]},
+        {"name":"photo_private_locations_select_owner","operation":"SELECT","roles":["authenticated"]},
+        {"name":"photo_private_locations_update_owner","operation":"UPDATE","roles":["authenticated"]}
+      ],
+      "roleMatrix": {
+        "select": {
+          "owner":{"allowed":true,"scope":"Only rows whose owner_id equals auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Exact source coordinates are owner-only."},
+          "anonymous":{"allowed":false,"scope":"No anonymous policy exposes exact source coordinates."}
+        },
+        "insert": {
+          "owner":{"allowed":true,"scope":"Authenticated insert requires owner_id equal to auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another owner_id fails WITH CHECK."},
+          "anonymous":{"allowed":false,"scope":"The insert policy targets authenticated requests only."}
+        },
+        "update": {
+          "owner":{"allowed":true,"scope":"Existing and resulting owner_id must equal auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another owner's row fails USING and WITH CHECK."},
+          "anonymous":{"allowed":false,"scope":"The update policy targets authenticated requests only."}
+        },
+        "delete": {
+          "owner":{"allowed":true,"scope":"Authenticated delete requires owner_id equal to auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another owner's row fails USING."},
+          "anonymous":{"allowed":false,"scope":"The delete policy targets authenticated requests only."}
+        }
+      }
+    },
+    "comments": {
+      "columns": ["id", "photo_id", "text", "date", "author_id"],
+      "operations": ["select", "insert", "update", "delete"],
+      "policies": [
+        {"name":"comments_insert_visible_photo","operation":"INSERT","roles":["authenticated"]},
+        {"name":"comments_select_visible_photo","operation":"SELECT","roles":["public"]}
+      ],
+      "roleMatrix": {
+        "select": {
+          "owner":{"allowed":true,"scope":"Comments are readable when auth.uid() owns the target photo."},
+          "nonOwner":{"allowed":true,"scope":"Only comments on public, link, or shared photos; private unshared targets are denied."},
+          "anonymous":{"allowed":true,"scope":"Only comments on public, link, or shared photos; private unshared targets are denied."}
+        },
+        "insert": {
+          "owner":{"allowed":true,"scope":"Authenticated author_id must equal auth.uid() and the actor may see the target photo."},
+          "nonOwner":{"allowed":true,"scope":"Authenticated actor may author a comment on another user's public, link, or shared photo."},
+          "anonymous":{"allowed":false,"scope":"The insert policy targets authenticated requests only."}
+        },
+        "update": {
+          "owner":{"allowed":false,"scope":"No update policy exists, including for the author."},
+          "nonOwner":{"allowed":false,"scope":"No update policy exists."},
+          "anonymous":{"allowed":false,"scope":"No update policy exists."}
+        },
+        "delete": {
+          "owner":{"allowed":false,"scope":"No delete policy exists, including for the author."},
+          "nonOwner":{"allowed":false,"scope":"No delete policy exists."},
+          "anonymous":{"allowed":false,"scope":"No delete policy exists."}
+        }
+      }
+    },
+    "user_likes": {
+      "columns": ["user_id", "photo_id", "created_at"],
+      "operations": ["select", "insert", "update", "delete"],
+      "policies": [
+        {"name":"user_likes_delete_own","operation":"DELETE","roles":["authenticated"]},
+        {"name":"user_likes_insert_own","operation":"INSERT","roles":["authenticated"]},
+        {"name":"user_likes_select_own","operation":"SELECT","roles":["authenticated"]}
+      ],
+      "roleMatrix": {
+        "select": {
+          "owner":{"allowed":true,"scope":"Only rows whose user_id equals auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another user's like rows are hidden."},
+          "anonymous":{"allowed":false,"scope":"The select policy targets authenticated requests only."}
+        },
+        "insert": {
+          "owner":{"allowed":true,"scope":"Authenticated insert requires user_id equal to auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another user_id fails WITH CHECK."},
+          "anonymous":{"allowed":false,"scope":"The insert policy targets authenticated requests only."}
+        },
+        "update": {
+          "owner":{"allowed":false,"scope":"No update policy exists."},
+          "nonOwner":{"allowed":false,"scope":"No update policy exists."},
+          "anonymous":{"allowed":false,"scope":"No update policy exists."}
+        },
+        "delete": {
+          "owner":{"allowed":true,"scope":"Authenticated delete requires user_id equal to auth.uid()."},
+          "nonOwner":{"allowed":false,"scope":"Another user's row fails USING."},
+          "anonymous":{"allowed":false,"scope":"The delete policy targets authenticated requests only."}
+        }
+      }
+    }
+  },
+  "functions": [
+    {"name":"apply_photo_location_privacy","arguments":[],"securityMode":"definer","mobileRequired":true,"authenticatedExecute":false},
+    {"name":"decrement_like","arguments":["target_photo_id text"],"securityMode":"definer","mobileRequired":false,"authenticatedExecute":false},
+    {"name":"handle_new_user","arguments":[],"securityMode":"definer","mobileRequired":true,"authenticatedExecute":false},
+    {"name":"increment_like","arguments":["target_photo_id text"],"securityMode":"definer","mobileRequired":false,"authenticatedExecute":false},
+    {"name":"set_photo_like","arguments":["target_photo_id text","should_like boolean"],"securityMode":"definer","mobileRequired":true,"authenticatedExecute":true}
+  ],
+  "storageBoundary": {
+    "bucket": "photos",
+    "public": false,
+    "ownerPathPrefix": "<auth.uid()>/<object-name>",
+    "signedReadsRequired": true,
+    "upsertRequires": ["SELECT", "INSERT", "UPDATE"],
+    "policies": [
+      {"name":"photos_bucket_delete_own_object","operation":"DELETE"},
+      {"name":"photos_bucket_insert_own_folder","operation":"INSERT"},
+      {"name":"photos_bucket_select_owned_or_public_photo","operation":"SELECT"},
+      {"name":"photos_bucket_update_own_object","operation":"UPDATE"}
+    ],
+    "readRule": "Owner objects are readable; non-owner and anonymous reads require a matching public or shared photo row.",
+    "writeRule": "Authenticated ownership and first path segment equal to auth.uid() are required; deletes require ownership."
+  },
+  "oauth": {
+    "providers": ["google", "kakao"],
+    "nativeRedirect": "ikkyee://auth/callback",
+    "localRedirects": ["exp://127.0.0.1:8081", "http://localhost:8081"],
+    "webRedirectAssumption": "The existing web client computes a deployment-safe redirect and passes provider-specific options.",
+    "nativeClientAssumption": "Register the custom scheme redirect and provider application identifiers in each provider console before release.",
+    "liveProviderEnablement": "unknown: the permitted read-only project metadata does not expose provider enablement or provider console configuration"
+  },
+  "authBoundary": {
+    "clientCredential": "publishable client credential only",
+    "sessionRoleSource": "Supabase Auth JWT",
+    "profileBootstrap": "handle_new_user trigger function",
+    "edgeFunctionsRequired": false,
+    "deployedEdgeFunctionCount": 0
+  },
+  "policyDrift": {
+    "status": "matched",
+    "basis": "Live policy names, commands, roles, RLS flags, function security modes, and Storage policies match the checked-in schema baseline for the contracted surfaces.",
+    "localHistory": "Live migration history has 12 entries while only four later migration files are checked in; schema.sql is the local baseline.",
+    "configUnknown": "Local native redirect settings were observed, but live OAuth provider and redirect allow-list settings were not exposed by the read-only tools."
+  },
+  "roleProbe": {
+    "mode": "catalog-plus-fixture",
+    "liveImpersonation": false,
+    "limitation": "The authorized MCP SQL scope was SELECT-only, so transaction-local SET ROLE and claims were not attempted. Executable fixtures validate policy decisions without claiming a live role probe."
+  },
+  "observedRisks": [
+    "Launch follow-up: authenticated callers can execute public set_photo_like while it runs with definer privileges.",
+    "Launch follow-up: leaked-password protection is disabled."
+  ],
+  "unknowns": [
+    "Live Google and Kakao provider enablement and provider-console redirect registration were not visible.",
+    "No authenticated runtime role impersonation was performed under the SELECT-only inspection constraint.",
+    "Bucket MIME and size limits are null live; mobile validation must not assume server-side restrictions beyond policy checks."
+  ],
+  "officialSources": [
+    {"url":"https://supabase.com/changelog.md","checkedAt":"2026-08-20T17:55:45.325Z","finding":"No current changelog item directly changed this hosted RLS or Storage contract."},
+    {"url":"https://supabase.com/docs/guides/database/postgres/row-level-security","checkedAt":"2026-08-20T17:56:30.000Z","finding":"RLS is required for exposed schemas and policies combine with role grants."},
+    {"url":"https://supabase.com/docs/guides/storage/security/access-control","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Storage access is enforced through storage.objects RLS; upsert requires SELECT, INSERT, and UPDATE."},
+    {"url":"https://supabase.com/docs/guides/auth/native-mobile-deep-linking","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Native OAuth callbacks require an allowed application deep-link redirect."},
+    {"url":"https://supabase.com/docs/guides/auth/social-login/auth-google","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Provider console and Supabase redirect configuration are both required."},
+    {"url":"https://supabase.com/docs/guides/api/securing-your-api","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Data API table privileges and RLS are separate security layers."}
+  ],
+  "liveEvidence": {
+    "catalogPath": ".omo/evidence/task-5/backend/live/catalog-sanitized.json",
+    "catalogSha256": "d83c3fbb96264041647f99928589b5189213018215b6297e6fd27761212ff86d",
+    "queryShapes": [
+      "SELECT pg_policies metadata for allowlisted tables",
+      "SELECT pg_proc security metadata for allowlisted functions",
+      "SELECT information_schema role grants for allowlisted tables",
+      "SELECT storage bucket metadata without object rows",
+      "SELECT aggregate migration/function/bucket/policy counts"
+    ]
+  }
+}
