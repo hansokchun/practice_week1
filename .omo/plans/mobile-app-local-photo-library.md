@@ -117,7 +117,7 @@ Your next move: 계획대로 개발을 시작하거나, 구현 전에 이 계획
   QA scenarios: 계약 fixture에서 full/limited/denied/revoked, 10k pagination, EXIF/GPS, HEIC/Live Photo/iCloud, Android volume/version/generation과 process resume 경계를 검증 + 보류 Owner gate에서 연결된 iOS/Android Development Build로 full/limited 라이브러리 목록·GPS 표시, 권한 거부/회수와 iCloud 네트워크 실패가 크래시 없이 상태로 표시. Evidence `<attemptDir>/task-3-mobile-app-local-photo-library.md`.
   Commit: Y | `docs(mobile): prove native media capabilities`
 
-- [ ] 4. 통합 사진 도메인과 버전형 SQLite 스키마 구현
+- [x] 4. 통합 사진 도메인과 버전형 SQLite 스키마 구현
   What to do / Must NOT do: `source=device|cloud`, availability, visibility, asset fingerprint를 정의하고 `device_assets`, `sync_checkpoints`, `publication_jobs`, `tombstones` 테이블·FK·인덱스·트랜잭션 migration·corruption rebuild를 구현한다. 로컬 앨범 테이블은 만들지 않고 exact 좌표는 OS 백업에서 제외되는 DB에 보관하며 로그에 출력하지 않는다.
   Parallelization: Wave 1 | Blocked by: 2 | Blocks: 6, 7, 10, 15, 16, 19
   References: `auth.js:21-24,283-329`; `js/photo-location-privacy.mjs:1-20`; `supabase/schema.sql:208-326`; draft decisions.

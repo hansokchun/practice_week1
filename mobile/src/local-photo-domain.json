@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sources": ["device", "cloud"],
+  "availability": ["available", "missing", "restricted"],
+  "cloudPublicationVisibility": ["private", "link", "public"],
+  "fingerprint": {
+    "algorithm": "sha-256",
+    "format": "normalized-lowercase-hex",
+    "length": 64,
+    "opaque": true
+  },
+  "device": {
+    "localOnly": true,
+    "accountIndependent": true
+  },
+  "privacy": {
+    "exactLocationLogging": false,
+    "exactLocationSerialization": false
+  }
+}

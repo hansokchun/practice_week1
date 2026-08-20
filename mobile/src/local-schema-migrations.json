@@ -1,0 +1,26 @@
+[
+  {
+    "version": 1,
+    "name": "device-assets-and-checkpoints",
+    "statements": [
+      "CREATE TABLE device_assets (asset_id TEXT PRIMARY KEY NOT NULL, uri TEXT NOT NULL UNIQUE, media_type TEXT NOT NULL CHECK (media_type IN ('photo', 'video', 'live_photo')), width INTEGER CHECK (width IS NULL OR width >= 0), height INTEGER CHECK (height IS NULL OR height >= 0), created_at TEXT, modified_at TEXT, latitude REAL CHECK (latitude IS NULL OR (latitude >= -90 AND latitude <= 90)), longitude REAL CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180)), exif_json TEXT, indexed_at TEXT NOT NULL)",
+      "CREATE TABLE sync_checkpoints (checkpoint_key TEXT PRIMARY KEY NOT NULL, cursor TEXT, last_asset_id TEXT, processed_asset_count INTEGER NOT NULL DEFAULT 0 CHECK (processed_asset_count >= 0), updated_at TEXT NOT NULL, FOREIGN KEY (last_asset_id) REFERENCES device_assets(asset_id) ON DELETE SET NULL)",
+      "CREATE INDEX idx_device_assets_modified_at ON device_assets(modified_at)",
+      "CREATE INDEX idx_device_assets_indexed_at ON device_assets(indexed_at)",
+      "CREATE INDEX idx_sync_checkpoints_updated_at ON sync_checkpoints(updated_at)",
+      "CREATE INDEX idx_sync_checkpoints_last_asset_id ON sync_checkpoints(last_asset_id)"
+    ]
+  },
+  {
+    "version": 2,
+    "name": "publication-jobs-and-tombstones",
+    "statements": [
+      "CREATE TABLE publication_jobs (job_id TEXT PRIMARY KEY NOT NULL, device_asset_id TEXT, status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'succeeded', 'failed')), payload_json TEXT NOT NULL DEFAULT '{}', attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0), next_attempt_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, FOREIGN KEY (device_asset_id) REFERENCES device_assets(asset_id) ON DELETE SET NULL)",
+      "CREATE TABLE tombstones (asset_id TEXT PRIMARY KEY NOT NULL, removed_at TEXT NOT NULL, sync_state TEXT NOT NULL DEFAULT 'pending' CHECK (sync_state IN ('pending', 'synced')), reason TEXT)",
+      "CREATE INDEX idx_publication_jobs_status_next_attempt ON publication_jobs(status, next_attempt_at)",
+      "CREATE INDEX idx_publication_jobs_device_asset_id ON publication_jobs(device_asset_id)",
+      "CREATE INDEX idx_tombstones_removed_at ON tombstones(removed_at)",
+      "CREATE INDEX idx_tombstones_sync_state ON tombstones(sync_state)"
+    ]
+  }
+]

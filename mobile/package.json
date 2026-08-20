@@ -10,6 +10,7 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest --config jest.config.cjs",
+    "schema:verify": "node ./scripts/verify-local-schema.mjs",
     "export:all": "expo export --platform all --output-dir dist",
     "maestro": "node ./scripts/run-maestro.mjs",
     "supabase:check": "node ./scripts/check-supabase.mjs",
@@ -26,6 +27,7 @@
     "expo-linking": "~57.0.6",
     "expo-media-library": "~57.0.4",
     "expo-router": "~57.0.14",
+    "expo-sqlite": "~57.0.1",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -41,10 +43,12 @@
     "@testing-library/react-native": "14.0.1",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
+    "@types/sql.js": "^1.4.11",
     "eslint": "9.39.2",
     "eslint-config-expo": "~57.0.1",
     "jest": "29.7.0",
     "jest-expo": "~57.0.4",
+    "sql.js": "^1.14.2",
     "supabase": "2.115.0",
     "typescript": "~6.0.3"
   }
