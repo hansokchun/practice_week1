@@ -46,6 +46,27 @@ test('entering Explore resets the old viewport so current own pins are fitted', 
     assert.match(routeBody, /state\.explorePhotoScope = 'mine'/);
     assert.match(routeBody, /state\.exploreLastBoundsKey = null/);
     assert.match(routeBody, /state\.explorePreserveViewportOnce = false/);
+    assert.match(routeBody, /requestAnimationFrame\(\(\) => refreshExploreMapAfterRouteEntry\(\)\)/);
+});
+
+test('Explore refreshes marker rendering only after its visible map has been resized', () => {
+    const refreshStart = source.indexOf('async function refreshExploreMapAfterRouteEntry()');
+    const refreshEnd = source.indexOf('function routeToPublic', refreshStart);
+    const refreshBody = source.slice(refreshStart, refreshEnd);
+
+    assert.match(refreshBody, /document\.body\.dataset\.page !== APP_SECTIONS\.EXPLORE/);
+    assert.match(refreshBody, /maps\.event\.trigger\(map, 'resize'\)/);
+    assert.match(refreshBody, /state\.exploreLastBoundsKey = null/);
+    assert.match(refreshBody, /const photos = getExplorePhotoMapItems\(\)/);
+    assert.match(refreshBody, /if \(photos\.length\) renderExploreMapMarkers\(photos, state\.exploreSelectedAlbumId\)/);
+});
+
+test('non-Explore public surfaces do not pre-render hidden Explore map markers', () => {
+    const renderStart = source.indexOf('function renderPublicSurfaces()');
+    const renderEnd = source.indexOf('function loadSavedPhotos()', renderStart);
+    const renderBody = source.slice(renderStart, renderEnd);
+
+    assert.match(renderBody, /if \(document\.body\.dataset\.page === APP_SECTIONS\.EXPLORE\) \{\s*renderExploreMapMarkers\(locatedPhotos, selected\.id\);\s*\}/s);
 });
 
 test('Explore map shows a lightweight pin loading state while markers wait for map idle', () => {

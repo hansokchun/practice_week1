@@ -622,10 +622,22 @@ function renderRoute(section) {
     if (renderedRoute === APP_SECTIONS.HOME) renderSavedPhotoSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
-        ensureExploreMap();
+        requestAnimationFrame(() => refreshExploreMapAfterRouteEntry());
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.body.dataset.routeRenderMs = (window.performance.now() - routeRenderStartedAt).toFixed(2);
+}
+
+async function refreshExploreMapAfterRouteEntry() {
+    if (document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
+    const map = await ensureExploreMap();
+    const maps = window.google?.maps;
+    if (!map || !maps || document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
+    maps.event.trigger(map, 'resize');
+    state.exploreLastBoundsKey = null;
+    state.explorePreserveViewportOnce = false;
+    const photos = getExplorePhotoMapItems();
+    if (photos.length) renderExploreMapMarkers(photos, state.exploreSelectedAlbumId);
 }
 
 function applyRouteHash(hash, options = {}) {
@@ -3138,7 +3150,9 @@ function renderPublicSurfaces() {
 
     const locatedPhotos = explorePhotos;
     renderTripReviewMap(tripPhotos);
-    renderExploreMapMarkers(locatedPhotos, selected.id);
+    if (document.body.dataset.page === APP_SECTIONS.EXPLORE) {
+        renderExploreMapMarkers(locatedPhotos, selected.id);
+    }
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
     if (selectedPhoto) updateExplorePhotoPreview(selectedPhoto);
 
