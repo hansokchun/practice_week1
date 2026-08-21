@@ -4,6 +4,7 @@ import { test } from 'node:test';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 
 test('photo info editor no longer shows a selected-photo picker block', () => {
     assert.equal(html.includes('class="location-photo-picker"'), false);
@@ -43,4 +44,13 @@ test('photo info editor uses a real map container instead of an iframe embed', (
     assert.match(html, /<div id="location-editor-map-canvas" class="location-editor-map-canvas"/);
     assert.match(html, /id="btn-pick-photo-location"[^>]*>지도에서 위치수정<\/button>/);
     assert.equal(html.includes('id="location-editor-map-frame"'), false);
+});
+
+test('photo info editor stays inside the viewport and scrolls without moving the page behind it', () => {
+    assert.match(styles, /body\.modal-open\s*\{[^}]*overflow:\s*hidden;/s);
+    assert.match(styles, /#location-editor-modal \.modal-card\s*\{[^}]*max-height:\s*calc\(100dvh - 48px\);[^}]*overflow-y:\s*auto;[^}]*overscroll-behavior:\s*contain;/s);
+    assert.match(app, /function syncModalScrollLock\(\)/);
+    assert.match(app, /document\.body\.classList\.toggle\('modal-open'/);
+    assert.match(app, /modal\.classList\.add\('is-open'\);[\s\S]*syncModalScrollLock\(\)/);
+    assert.match(app, /modal\.classList\.remove\('is-open'\);[\s\S]*syncModalScrollLock\(\)/);
 });

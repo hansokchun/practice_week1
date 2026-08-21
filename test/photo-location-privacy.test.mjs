@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
     canShowPhotoOnPublicMap,
+    canShowPhotoInExploreScope,
     getLocationPrecisionLabel,
     normalizeLocationPrecision
 } from '../js/photo-location-privacy.mjs';
@@ -31,6 +32,24 @@ test('location precision defaults to hidden until an owner chooses a public prec
 test('hidden photo locations never produce public map pins', () => {
     assert.equal(canShowPhotoOnPublicMap({ lat: 37.5665, lng: 126.978, location_precision: 'hidden' }), false);
     assert.equal(canShowPhotoOnPublicMap({ lat: 37.5665, lng: 126.978, location_precision: 'approximate' }), true);
+});
+
+test('Explore mine scope includes every owned located photo regardless of visibility', () => {
+    const options = { scope: 'mine', currentUserId: 'owner-1' };
+
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-1', lat: 37.5, lng: 127, visibility: 'private', location_precision: 'hidden' }, options), true);
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-1', lat: 37.5, lng: 127, visibility: 'public', location_precision: 'exact' }, options), true);
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-2', lat: 37.5, lng: 127, visibility: 'public', location_precision: 'exact' }, options), false);
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-1', lat: null, lng: 127, visibility: 'private', location_precision: 'hidden' }, options), false);
+});
+
+test('Explore others scope keeps public location privacy rules', () => {
+    const options = { scope: 'others', currentUserId: 'owner-1' };
+
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-2', lat: 37.5, lng: 127, visibility: 'public', location_precision: 'exact' }, options), true);
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-2', lat: 37.5, lng: 127, visibility: 'private', location_precision: 'exact' }, options), false);
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-2', lat: 37.5, lng: 127, visibility: 'public', location_precision: 'hidden' }, options), false);
+    assert.equal(canShowPhotoInExploreScope({ owner_id: 'owner-1', lat: 37.5, lng: 127, visibility: 'public', location_precision: 'exact' }, options), false);
 });
 
 test('location precision labels describe the selected public boundary', () => {

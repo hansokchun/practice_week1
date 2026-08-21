@@ -155,6 +155,7 @@ import { getPublicDemoAlbumEntries, getPublicDemoAlbums, getPublicDemoPhotos } f
 import { combinePublicAlbumsWithDemoEntries } from './public-album-entries.mjs';
 import { getPublicSurfaceAlbums } from './public-surface-albums.mjs';
 import {
+    canShowPhotoInExploreScope,
     canShowPhotoOnPublicMap,
     normalizeLocationPrecision
 } from './photo-location-privacy.mjs';
@@ -631,7 +632,12 @@ function openModal(id) {
     }
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
+    syncModalScrollLock();
     window.requestAnimationFrame(() => getModalFocusableElements(modal)[0]?.focus());
+}
+
+function syncModalScrollLock() {
+    document.body.classList.toggle('modal-open', Boolean($('.modal.is-open')));
 }
 
 function closeModals() {
@@ -640,6 +646,7 @@ function closeModals() {
         modal.setAttribute('aria-hidden', 'true');
     });
     document.body.classList.remove('photo-fullscreen-open');
+    syncModalScrollLock();
     if (lastModalTrigger?.isConnected) lastModalTrigger.focus();
     lastModalTrigger = null;
 }
@@ -650,6 +657,7 @@ function closePhotoFullscreenModal() {
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('photo-fullscreen-open');
+    syncModalScrollLock();
 }
 
 function returnToPhotoDetailFromFullscreen() {
@@ -725,29 +733,35 @@ function formatPhotoDateInput(value) {
     return offsetDate.toISOString().slice(0, 16);
 }
 
+function normalizePhotoMapItem(photo) {
+    const album = photo.album_id
+        ? state.savedAlbums.find((candidate) => candidate.id === photo.album_id)
+        : null;
+    return {
+        ...photo,
+        album_id: photo.album_id || null,
+        album: photo.album || album?.title || '개별 사진',
+        albumTitle: album?.title || '개별 사진',
+        albumNote: album?.note || photo.description || '',
+        albumVisibility: photo.visibility,
+        albumCoverUrl: album?.cover_url || photo.url,
+        albumOwnerId: photo.owner_id
+    };
+}
+
 function getPublicPhotoMapItems() {
     return state.savedPhotos
         .filter((photo) => canShowPhotoOnPublicMap(photo) && (photo.shared || ['public', 'link'].includes(photo.visibility)))
-        .filter((photo) => {
-            if (!state.currentUser) return state.explorePhotoScope === 'others';
-            const isMine = photo.owner_id === state.currentUser.id;
-            return state.explorePhotoScope === 'mine' ? isMine : !isMine;
-        })
-        .map((photo) => {
-            const album = photo.album_id
-                ? state.savedAlbums.find((candidate) => candidate.id === photo.album_id)
-                : null;
-            return {
-                ...photo,
-                album_id: photo.album_id || null,
-                album: photo.album || album?.title || '개별 사진',
-                albumTitle: album?.title || '개별 사진',
-                albumNote: album?.note || photo.description || '',
-                albumVisibility: photo.visibility,
-                albumCoverUrl: album?.cover_url || photo.url,
-                albumOwnerId: photo.owner_id
-            };
-        });
+        .map(normalizePhotoMapItem);
+}
+
+function getExplorePhotoMapItems() {
+    return state.savedPhotos
+        .filter((photo) => canShowPhotoInExploreScope(photo, {
+            scope: state.explorePhotoScope,
+            currentUserId: state.currentUser?.id || ''
+        }))
+        .map(normalizePhotoMapItem);
 }
 
 function renderExplorePhotoScopeControls() {
@@ -783,7 +797,7 @@ function setExplorePhotoScope(scope) {
     state.explorePhotoScope = scope;
     state.isExplorePhotoScopeMenuOpen = false;
     state.explorePreserveViewportOnce = shouldPreserveExploreViewport(
-        getPublicPhotoMapItems(),
+        getExplorePhotoMapItems(),
         getExploreCurrentBounds()
     );
     resetExploreSelectionState();
@@ -1425,7 +1439,7 @@ async function renderProfileMap(photos = []) {
 
 function getPhotoDetailSourcePhotos(context) {
     if (context === 'album') return state.albumDetailPhotos;
-    if (context === 'explore') return state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getPublicPhotoMapItems();
+    if (context === 'explore') return state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getExplorePhotoMapItems();
     if (context === 'liked') {
         const likedIds = new Set(state.likedPhotoIds.map(String));
         return getAllDisplayPhotos().filter((photo) => likedIds.has(String(photo.id)));
@@ -2889,9 +2903,10 @@ function renderPublicSurfaces() {
     ensureProfileHeaderShell();
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     renderExplorePhotoScopeControls();
-    const explorePhotos = getPublicPhotoMapItems();
+    const publicPhotos = getPublicPhotoMapItems();
+    const explorePhotos = getExplorePhotoMapItems();
     if (document.body.dataset.page === 'profile' && state.selectedPublicOwnerId) {
-        renderPublicOwnerProfile(state.selectedPublicOwnerId, explorePhotos);
+        renderPublicOwnerProfile(state.selectedPublicOwnerId, publicPhotos);
         return;
     }
     const selected = document.body.dataset.page === APP_SECTIONS.EXPLORE
@@ -3089,7 +3104,7 @@ function renderPublicSurfaces() {
         });
     }
 
-    const locatedPhotos = getPublicPhotoMapItems();
+    const locatedPhotos = explorePhotos;
     renderTripReviewMap(tripPhotos);
     renderExploreMapMarkers(locatedPhotos, selected.id);
     const selectedPhoto = locatedPhotos.find((photo) => photo.album_id === selected.id) || locatedPhotos[0];
@@ -3108,7 +3123,7 @@ function renderPublicSurfaces() {
 
     const profileAlbums = getProfileAlbums(albums, selected);
 
-    const profilePhotos = getPublicPhotoMapItems().filter((photo) => photo.owner_id === selected.owner_id || photo.albumOwnerId === selected.owner_id);
+    const profilePhotos = publicPhotos.filter((photo) => photo.owner_id === selected.owner_id || photo.albumOwnerId === selected.owner_id);
     renderProfileMap(profilePhotos);
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
@@ -5295,7 +5310,7 @@ function bindEvents() {
         const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');
         if (discoveryPhotoButton) {
             const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto)
-                || getPublicPhotoMapItems().find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto);
+                || getExplorePhotoMapItems().find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto);
             openExplorePhotoPreview(photo, { focusMap: true });
             return;
         }
@@ -5573,7 +5588,7 @@ function bindEvents() {
 
         const explorePhotoPin = event.target.closest('[data-explore-photo-pin]');
         if (explorePhotoPin) {
-            const photo = getPublicPhotoMapItems().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
+            const photo = getExplorePhotoMapItems().find((candidate) => candidate.id === explorePhotoPin.dataset.explorePhotoPin);
             openExplorePhotoPreview(photo, { focusMap: true });
             return;
         }
@@ -5628,7 +5643,7 @@ function bindEvents() {
         const discoveryPhotoButton = event.target.closest('[data-explore-discovery-photo]');
         if (discoveryPhotoButton) {
             const photo = state.exploreMarkerPhotos.find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto)
-                || getPublicPhotoMapItems().find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto);
+                || getExplorePhotoMapItems().find((candidate) => candidate.id === discoveryPhotoButton.dataset.exploreDiscoveryPhoto);
             if (!photo) return;
             event.preventDefault();
             openExplorePhotoPreview(photo, { focusMap: true });

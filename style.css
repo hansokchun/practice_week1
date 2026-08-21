@@ -7618,6 +7618,8 @@ body.photo-fullscreen-open {
     justify-content: center;
     background: rgba(12, 22, 22, 0.42);
     padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .modal.is-open {
@@ -7638,6 +7640,18 @@ body.photo-fullscreen-open {
     display: grid;
     gap: 14px;
     padding: 28px;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+#location-editor-modal .modal-card {
+    width: min(620px, 100%);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .modal-card h2 {

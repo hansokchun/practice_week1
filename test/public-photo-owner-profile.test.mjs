@@ -27,7 +27,8 @@ test('profile route prefers the selected owner even when a public album is curre
     const fnEnd = source.indexOf('state.selectedPublicOwnerId = selected.owner_id || state.selectedPublicOwnerId;', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.match(body, /if \(document\.body\.dataset\.page === 'profile' && state\.selectedPublicOwnerId\) \{\s*renderPublicOwnerProfile\(state\.selectedPublicOwnerId, explorePhotos\);\s*return;\s*\}/s);
+    assert.match(body, /const publicPhotos = getPublicPhotoMapItems\(\)/);
+    assert.match(body, /if \(document\.body\.dataset\.page === 'profile' && state\.selectedPublicOwnerId\) \{\s*renderPublicOwnerProfile\(state\.selectedPublicOwnerId, publicPhotos\);\s*return;\s*\}/s);
 });
 
 test('public profile actions pass the clicked owner id through the route handler', () => {
@@ -57,5 +58,5 @@ test('Explore restores a selected public photo preview only when that photo stil
     assert.match(body, /const selectedPhoto = explorePhotos\.find\(\(photo\) => photo\.id === state\.selectedPhotoId\)/);
     assert.doesNotMatch(body, /\|\| explorePhotos\[0\]/);
     assert.match(body, /updateExplorePhotoPreview\(selectedPhoto\)/);
-    assert.match(body, /renderPublicOwnerProfile\(state\.selectedPublicOwnerId, explorePhotos\)/);
+    assert.match(body, /renderPublicOwnerProfile\(state\.selectedPublicOwnerId, publicPhotos\)/);
 });

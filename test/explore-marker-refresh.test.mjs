@@ -9,7 +9,7 @@ test('logged-out Explore resolves the public photo scope before collecting marke
     const renderEnd = source.indexOf('function loadSavedPhotos()', renderStart);
     const body = source.slice(renderStart, renderEnd);
 
-    assert.ok(body.indexOf('renderExplorePhotoScopeControls();') < body.indexOf('const explorePhotos = getPublicPhotoMapItems();'));
+    assert.ok(body.indexOf('renderExplorePhotoScopeControls();') < body.indexOf('const explorePhotos = getExplorePhotoMapItems();'));
 });
 
 test('Explore map marker rendering ignores stale async renders', () => {

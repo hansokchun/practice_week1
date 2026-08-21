@@ -36,11 +36,12 @@ test('Explore exposes the photo owner scope as a compact dropdown control', () =
     assert.match(source, /event\.target\.closest\('\[data-explore-scope\]'\)/);
 });
 
-test('Explore map markers are driven by public photos in the selected owner scope', () => {
+test('Explore map markers use an owner-aware scope without changing public surfaces', () => {
     assert.match(source, /function getPublicPhotoMapItems\(\)/);
-    assert.match(source, /photo\.shared \|\| \['public', 'link'\]\.includes\(photo\.visibility\)/);
-    assert.match(source, /state\.explorePhotoScope === 'mine' \? isMine : !isMine/);
-    assert.match(source, /const locatedPhotos = getPublicPhotoMapItems\(\);/);
+    assert.match(source, /function getExplorePhotoMapItems\(\)/);
+    assert.match(source, /canShowPhotoInExploreScope\(photo,/);
+    assert.match(source, /const explorePhotos = getExplorePhotoMapItems\(\);/);
+    assert.match(source, /const locatedPhotos = explorePhotos;/);
     assert.match(source, /if \(!locatedPhotos\.length\) \{/);
 });
 
