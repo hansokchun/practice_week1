@@ -24,7 +24,7 @@ test('Explore renders cluster pins that expand without opening the preview panel
     assert.match(body, /getExploreMarkerExpansionZoom/);
     assert.match(body, /maxZoom: 21/);
     assert.match(body, /map\.panTo\(cluster\.position\)/);
-    assert.match(body, /maxStep:\s*2/);
+    assert.doesNotMatch(body, /maxStep:/);
     assert.doesNotMatch(body, /map\.fitBounds\(bounds, 96\)/);
     assert.match(body, /map\.setZoom\(expansionZoom\)/);
     assert.match(body, /scheduleExploreMarkerRefreshAfterIdle\(maps, map\)/);

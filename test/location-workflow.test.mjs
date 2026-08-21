@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    hasCompleteLocation,
     getLocationEditorPhoto,
     getMissingLocationPhotos,
     normalizeLocationDraft
@@ -17,6 +18,15 @@ const photos = [
 
 test('getMissingLocationPhotos returns photos missing either coordinate', () => {
     assert.deepEqual(getMissingLocationPhotos(photos).map((photo) => photo.id), ['a', 'c', 'd', 'e']);
+});
+
+test('Gyeongbokgung editor defaults do not turn a missing location into saved coordinates', () => {
+    const photo = { id: 'missing', lat: null, lng: null };
+    const draft = normalizeLocationDraft(photo);
+
+    assert.deepEqual(draft, { lat: '37.579617', lng: '126.977041' });
+    assert.equal(hasCompleteLocation(photo), false);
+    assert.deepEqual(photo, { id: 'missing', lat: null, lng: null });
 });
 
 test('getLocationEditorPhoto prefers the selected missing-location photo', () => {

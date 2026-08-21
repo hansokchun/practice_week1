@@ -53,16 +53,16 @@ test('getExploreMarkerClusters spreads photos with identical coordinates at maxi
     assert.equal(new Set(clusters.map((cluster) => `${cluster.position.lat},${cluster.position.lng}`)).size, 3);
 });
 
-test('getExploreMarkerExpansionZoom moves toward the next split without over-zooming', () => {
+test('getExploreMarkerExpansionZoom jumps to the first zoom where every pin separates', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },
         { id: 'b', lat: 37.58, lng: 127.0 }
     ];
 
-    assert.equal(getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 }), 9);
+    assert.equal(getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 }), 12);
 });
 
-test('getExploreMarkerExpansionZoom limits a multi-photo cluster to two zoom levels per click', () => {
+test('getExploreMarkerExpansionZoom uses the zoom needed to fully split a multi-photo cluster', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },
         { id: 'b', lat: 37.5667, lng: 126.9782 },
@@ -70,11 +70,14 @@ test('getExploreMarkerExpansionZoom limits a multi-photo cluster to two zoom lev
     ];
 
     const expansionZoom = getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 });
-    assert.equal(expansionZoom, 9);
-    assert.ok(expansionZoom <= 7 + 2);
+    const clustersAtZoom = getExploreMarkerClusters(photos, expansionZoom, 54);
+    const clustersBeforeZoom = getExploreMarkerClusters(photos, expansionZoom - 1, 54);
+
+    assert.equal(clustersAtZoom.length, photos.length);
+    assert.ok(clustersBeforeZoom.length < photos.length);
 });
 
-test('cluster expansion advances gradually when pins need a much closer zoom', () => {
+test('cluster expansion reaches maximum spread for nearly identical pins in one click', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },
         { id: 'b', lat: 37.5665001, lng: 126.9780001 }
@@ -82,9 +85,8 @@ test('cluster expansion advances gradually when pins need a much closer zoom', (
 
     assert.equal(getExploreMarkerExpansionZoom(photos, 7, {
         radiusPx: 54,
-        maxZoom: 21,
-        maxStep: 2
-    }), 9);
+        maxZoom: 21
+    }), 20);
 });
 
 test('cluster pins do not show numeric count labels', () => {

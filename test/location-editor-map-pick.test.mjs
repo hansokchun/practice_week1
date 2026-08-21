@@ -24,4 +24,5 @@ test('photo info editor map writes picked coordinates into read-only fields', ()
 
 test('missing-location photos open over Korea with a Gyeongbokgung default pin', () => {
     assert.match(app, /updateLocationEditorMap\(Number\(draft\.lat\), Number\(draft\.lng\), \{ zoom: hasSavedLocation \? 13 : 7 \}\)/);
+    assert.match(app, /async function saveManualLocation\(event\)[\s\S]*updatePhotoInfo\(photo\.id/);
 });

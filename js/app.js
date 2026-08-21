@@ -1302,8 +1302,7 @@ function mountExploreMapMarkers(renderState) {
             $('#explore-pin-preview')?.setAttribute('hidden', '');
             const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, {
                 radiusPx: 54,
-                maxZoom: 21,
-                maxStep: 2
+                maxZoom: 21
             });
             setExploreMarkerLoading(true);
             map.panTo(cluster.position);

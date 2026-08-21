@@ -69,18 +69,13 @@ export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
 
 export function getExploreMarkerExpansionZoom(photos = [], currentZoom = 7, {
     radiusPx = 54,
-    maxZoom = 18,
-    maxStep = 2
+    maxZoom = 18
 } = {}) {
     const startZoom = Math.max(0, Math.floor(Number(currentZoom) || 0));
-    const currentClusterCount = getExploreMarkerClusters(photos, startZoom, radiusPx).length;
-    const stepLimit = Math.min(maxZoom, startZoom + Math.max(1, Number(maxStep) || 1));
     for (let zoom = startZoom + 1; zoom <= maxZoom; zoom += 1) {
-        if (getExploreMarkerClusters(photos, zoom, radiusPx).length > currentClusterCount) {
-            return Math.min(zoom, stepLimit);
-        }
+        if (getExploreMarkerClusters(photos, zoom, radiusPx).length >= photos.length) return zoom;
     }
-    return stepLimit;
+    return maxZoom;
 }
 
 export function getExploreMarkerClusterBounds(photos = []) {
