@@ -273,12 +273,34 @@ function runInvalid(SQL, migrations) {
   throw new TypeError("INVALID_MIGRATION_ACCEPTED");
 }
 
+function verifyInvalidMigrationRejection(SQL, migrations) {
+  try {
+    runInvalid(SQL, migrations);
+  } catch (error) {
+    if (error instanceof Error && error.message === "INJECTED_MIGRATION_REJECTED") {
+      return { scenario: "invalid", rejected: true };
+    }
+    throw error;
+  }
+  throw new TypeError("INVALID_MIGRATION_ACCEPTED");
+}
+
 async function main() {
   const scenarioIndex = process.argv.indexOf("--scenario");
   const scenario = scenarioIndex >= 0 ? process.argv[scenarioIndex + 1] : undefined;
   const migrations = parseMigrations(JSON.parse(await readFile(migrationUrl, "utf8")));
   const SQL = await initSqlJs();
   switch (scenario) {
+    case "all":
+      return {
+        status: "ok",
+        scenarios: [
+          runFresh(SQL, migrations),
+          runUpgrade(SQL, migrations),
+          runCorruption(SQL, migrations),
+          verifyInvalidMigrationRejection(SQL, migrations)
+        ]
+      };
     case "fresh":
       return runFresh(SQL, migrations);
     case "upgrade":
@@ -286,7 +308,7 @@ async function main() {
     case "corruption":
       return runCorruption(SQL, migrations);
     case "invalid":
-      return runInvalid(SQL, migrations);
+      return verifyInvalidMigrationRejection(SQL, migrations);
     default:
       throw new TypeError("INVALID_SCENARIO");
   }

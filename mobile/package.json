@@ -10,7 +10,7 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest --config jest.config.cjs",
-    "schema:verify": "node ./scripts/verify-local-schema.mjs",
+    "schema:verify": "node ./scripts/verify-local-schema.mjs --scenario all",
     "export:all": "expo export --platform all --output-dir dist",
     "maestro": "node ./scripts/run-maestro.mjs",
     "supabase:check": "node ./scripts/check-supabase.mjs",

@@ -4203,6 +4203,46 @@ body.is-logged-in .home-workspace .album-row {
     font-size: 42px;
 }
 
+.ai-album-planning-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    margin-top: 20px;
+    border-block: 1px solid var(--line);
+    padding: 14px 0;
+}
+
+.ai-album-planning-row > .material-symbols-outlined {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface-soft);
+    color: var(--teal);
+}
+
+.ai-album-planning-row h2 {
+    margin: 0;
+    color: var(--teal);
+    font-family: var(--headline);
+    font-size: 18px;
+}
+
+.ai-album-status {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ai-album-planning-row button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
 .album-compose-bar {
     display: grid;
     grid-template-columns: minmax(180px, 0.9fr) minmax(260px, 1.5fr) auto;
@@ -8861,6 +8901,16 @@ body.photo-fullscreen-open {
     .flow-hero p {
         font-size: 15px;
         line-height: 1.58;
+    }
+
+    .ai-album-planning-row {
+        grid-template-columns: 44px minmax(0, 1fr);
+    }
+
+    .ai-album-planning-row button {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-height: 44px;
     }
 
     .recent-photo-grid {

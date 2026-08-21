@@ -33,6 +33,7 @@ import {
     resolveAccountProfile
 } from './account-profile.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
+import { getAiAlbumAnalysisAvailability } from './ai-album-analysis.mjs';
 import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
@@ -3681,6 +3682,7 @@ function renderAlbumComposePage() {
     const editingAlbum = state.editingAlbumId
         ? state.savedAlbums.find((album) => album.id === state.editingAlbumId)
         : null;
+    const aiAnalysis = getAiAlbumAnalysisAvailability();
     page.innerHTML = `
         <button class="back-link" data-go-myphoto type="button">
             <span class="material-symbols-outlined">arrow_back</span>
@@ -3693,6 +3695,14 @@ function renderAlbumComposePage() {
             </div>
             <button id="btn-save-album-draft" class="btn-primary" type="button">저장하기</button>
         </div>
+        <section class="ai-album-planning-row" data-ai-album-status="${aiAnalysis.status}" aria-labelledby="ai-album-planning-title">
+            <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
+            <div>
+                <h2 id="ai-album-planning-title">AI 앨범 초안</h2>
+                <span class="ai-album-status">${aiAnalysis.label}</span>
+            </div>
+            <button id="btn-ai-album-analysis" class="btn-secondary" type="button" disabled>AI로 구성</button>
+        </section>
         <section class="album-compose-bar" aria-label="앨범 기본 정보">
             <label class="album-compose-field" for="album-name-input">
                 <span>앨범 이름</span>
