@@ -629,7 +629,7 @@
                     <span id="photo-detail-like-count">0</span>
                 </div>
                 <div class="detail-actions">
-                    <button class="btn-primary" data-show-photo-on-map type="button" hidden>지도에서 보기</button>
+                    <button class="btn-primary" data-show-photo-on-map type="button" hidden>지도에서 위치 확인</button>
                 </div>
                 <div id="photo-detail-map" class="photo-detail-map" hidden>
                     <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -659,6 +659,7 @@
             <div id="location-editor-map" class="location-editor-map">
                 <div id="location-editor-map-canvas" class="location-editor-map-canvas" role="img" aria-label="수정할 사진 위치 지도"></div>
                 <button id="btn-pick-photo-location" class="map-pick-button" type="button">지도에서 위치수정</button>
+                <button class="map-location-save-button btn-primary" type="submit" form="location-editor-form">이 위치로 저장</button>
             </div>
             <form id="location-editor-form" class="location-form">
                 <label for="photo-description-input">설명</label>

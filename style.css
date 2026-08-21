@@ -7360,6 +7360,14 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     color: #fff;
 }
 
+.map-location-save-button {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 3;
+    display: none;
+}
+
 .location-form input[readonly] {
     background: var(--surface-muted);
     color: var(--muted);
@@ -7661,6 +7669,36 @@ body.modal-open {
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
+}
+
+#location-editor-modal.is-map-picking .modal-card {
+    width: min(1120px, calc(100vw - 32px));
+    height: calc(100dvh - 32px);
+    max-height: none;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    padding: 20px;
+}
+
+#location-editor-modal.is-map-picking .location-editor-map {
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+}
+
+#location-editor-modal.is-map-picking .location-form,
+#location-editor-modal.is-map-picking #location-editor-message {
+    display: none;
+}
+
+#location-editor-modal.is-map-picking .map-pick-button {
+    right: auto;
+    left: 12px;
+}
+
+#location-editor-modal.is-map-picking .map-location-save-button {
+    display: inline-flex;
+    align-items: center;
 }
 
 .modal-card h2 {

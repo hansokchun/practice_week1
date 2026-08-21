@@ -73,12 +73,11 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.equal(source.includes('btn-expand-photo-map'), false);
     assert.match(source, /function updatePhotoDetailModal\(photo = getDefaultDetailPhoto\(\), \{ context = 'photo' \} = \{\}\)/);
     assert.match(source, /modal\.dataset\.photoDetailContext = context/);
-    assert.match(source, /context === 'album'/);
     assert.match(source, /if \(map && mapFrame\)/);
-    assert.match(source, /context === 'photo' \? getPhotoMapUrl\(photo\) : ''/);
+    assert.match(source, /const mapUrl = getPhotoMapUrl\(photo\)/);
     assert.match(source, /photo-detail-visibility/);
     assert.match(source, /visibilityValue\.innerHTML = `<span class="material-symbols-outlined">\$\{isPublicPhoto \? 'public' : 'lock'\}<\/span> \$\{isPublicPhoto \? '공개' : '비공개'\}`/);
-    assert.match(source, /showOnMapButton\.hidden = !canShowOnTripMap/);
+    assert.match(source, /showOnMapButton\.hidden = !canShowOnExploreMap/);
     assert.match(source, /const photoImageSrc = getPhotoImageSrc\(photo\)/);
     assert.match(source, /modal\.dataset\.photoDetailImageSrc = photoImageSrc/);
     assert.match(source, /modal\.dataset\.photoDetailImageFallbackSrc = getPhotoImageFallbackSrc\(photo, photoImageSrc\)/);

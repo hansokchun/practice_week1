@@ -54,3 +54,9 @@ test('photo info editor stays inside the viewport and scrolls without moving the
     assert.match(app, /modal\.classList\.add\('is-open'\);[\s\S]*syncModalScrollLock\(\)/);
     assert.match(app, /modal\.classList\.remove\('is-open'\);[\s\S]*syncModalScrollLock\(\)/);
 });
+
+test('map editing expands to a large picker with an in-map save action', () => {
+    assert.match(html, /class="map-location-save-button btn-primary"[^>]*form="location-editor-form"[^>]*>이 위치로 저장<\/button>/);
+    assert.match(styles, /#location-editor-modal\.is-map-picking \.modal-card\s*\{[^}]*width:\s*min\(1120px,[^}]*height:\s*calc\(100dvh - 32px\);/s);
+    assert.match(styles, /#location-editor-modal\.is-map-picking \.location-editor-map\s*\{[^}]*height:\s*100%;/s);
+});

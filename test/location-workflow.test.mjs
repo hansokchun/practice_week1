@@ -29,7 +29,7 @@ test('getLocationEditorPhoto falls back to first missing photo before located ph
 });
 
 test('normalizeLocationDraft keeps valid coordinates and defaults missing values', () => {
-    assert.deepEqual(normalizeLocationDraft({ lat: 33.3, lng: null }), { lat: '33.3', lng: '126.570667' });
-    assert.deepEqual(normalizeLocationDraft({ lat: 0, lng: 0 }), { lat: '33.450701', lng: '126.570667' });
-    assert.deepEqual(normalizeLocationDraft(null), { lat: '33.450701', lng: '126.570667' });
+    assert.deepEqual(normalizeLocationDraft({ lat: 33.3, lng: null }), { lat: '37.579617', lng: '126.977041' });
+    assert.deepEqual(normalizeLocationDraft({ lat: 0, lng: 0 }), { lat: '37.579617', lng: '126.977041' });
+    assert.deepEqual(normalizeLocationDraft(null), { lat: '37.579617', lng: '126.977041' });
 });

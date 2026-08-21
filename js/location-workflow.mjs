@@ -1,8 +1,8 @@
 import { hasUsableCoordinates } from './photo-location.mjs';
 
 const DEFAULT_LOCATION = {
-    lat: '33.450701',
-    lng: '126.570667'
+    lat: '37.579617',
+    lng: '126.977041'
 };
 
 export function hasCompleteLocation(photo) {
@@ -28,12 +28,9 @@ export function normalizeLocationDraft(photo) {
         && !isZeroPair && Number.isFinite(latitude) && latitude >= -90 && latitude <= 90;
     const hasLng = photo?.lng !== null && photo?.lng !== undefined
         && !isZeroPair && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
+    if (!hasLat || !hasLng) return { ...DEFAULT_LOCATION };
     return {
-        lat: hasLat
-            ? String(photo.lat)
-            : DEFAULT_LOCATION.lat,
-        lng: hasLng
-            ? String(photo.lng)
-            : DEFAULT_LOCATION.lng
+        lat: String(photo.lat),
+        lng: String(photo.lng)
     };
 }
