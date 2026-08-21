@@ -45,3 +45,30 @@ test('camera animation reaches the requested center and fully split zoom', async
     assert.ok(calls.length >= 3);
     assert.deepEqual(calls.at(-1), { center: { lat: 38, lng: 128 }, zoom: 12 });
 });
+
+test('camera animation settles at the final view when a browser frame is delayed', async () => {
+    const calls = [];
+    const timers = [];
+    const map = {
+        getCenter: () => ({ lat: () => 37, lng: () => 126 }),
+        getZoom: () => 8,
+        moveCamera: (camera) => calls.push(camera)
+    };
+    const animation = animateExploreMapCamera(map, {
+        center: { lat: 38, lng: 128 },
+        zoom: 12
+    }, {
+        requestFrame: () => 1,
+        cancelFrame: () => {},
+        setTimer: (callback) => {
+            timers.push(callback);
+            return timers.length;
+        },
+        clearTimer: () => {}
+    });
+
+    timers.shift()();
+    await animation;
+
+    assert.deepEqual(calls, [{ center: { lat: 38, lng: 128 }, zoom: 12 }]);
+});

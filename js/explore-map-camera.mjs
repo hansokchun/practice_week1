@@ -35,8 +35,16 @@ export function getExploreMapCameraFrame({
 export function animateExploreMapCamera(map, { center, zoom }, {
     duration = 420,
     now = () => performance.now(),
-    requestFrame = (callback) => window.requestAnimationFrame(callback)
+    requestFrame,
+    cancelFrame,
+    setTimer,
+    clearTimer
 } = {}) {
+    const runtime = typeof window === 'undefined' ? globalThis : window;
+    const requestFrameCallback = requestFrame || ((callback) => runtime.requestAnimationFrame(callback));
+    const cancelFrameCallback = cancelFrame || ((frameId) => runtime.cancelAnimationFrame?.(frameId));
+    const setTimerCallback = setTimer || ((callback, delay) => runtime.setTimeout(callback, delay));
+    const clearTimerCallback = clearTimer || ((timerId) => runtime.clearTimeout(timerId));
     const startCenter = readMapCenter(map);
     const startZoom = Number(map?.getZoom?.());
     const targetCenter = { lat: Number(center?.lat), lng: Number(center?.lng) };
@@ -58,7 +66,24 @@ export function animateExploreMapCamera(map, { center, zoom }, {
 
     return new Promise((resolve) => {
         const startTime = now();
+        let frameId = null;
+        let fallbackTimer = null;
+        let settled = false;
+        const settle = () => {
+            if (settled) return;
+            settled = true;
+            if (frameId !== null) cancelFrameCallback(frameId);
+            if (fallbackTimer !== null) clearTimerCallback(fallbackTimer);
+            const finalCamera = { center: targetCenter, zoom: targetZoom };
+            if (typeof map.moveCamera === 'function') map.moveCamera(finalCamera);
+            else {
+                map.setCenter?.(finalCamera.center);
+                map.setZoom?.(finalCamera.zoom);
+            }
+            resolve();
+        };
         const renderFrame = (timestamp) => {
+            if (settled) return;
             const progress = Math.min(1, Math.max(0, (Number(timestamp) - startTime) / duration));
             const camera = getExploreMapCameraFrame({
                 startCenter,
@@ -72,9 +97,10 @@ export function animateExploreMapCamera(map, { center, zoom }, {
                 map.setCenter?.(camera.center);
                 map.setZoom?.(camera.zoom);
             }
-            if (progress < 1) requestFrame(renderFrame);
-            else resolve();
+            if (progress < 1) frameId = requestFrameCallback(renderFrame);
+            else settle();
         };
-        requestFrame(renderFrame);
+        frameId = requestFrameCallback(renderFrame);
+        fallbackTimer = setTimerCallback(settle, duration + 180);
     });
 }
