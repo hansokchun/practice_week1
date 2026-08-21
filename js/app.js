@@ -127,6 +127,7 @@ import {
     getExploreMarkerExpansionZoom,
     getExploreViewportAction
 } from './explore-marker-clusters.mjs';
+import { animateExploreMapCamera } from './explore-map-camera.mjs';
 import {
     getEmbeddedOAuthBrowserMessage,
     isLikelyEmbeddedOAuthBrowser
@@ -222,6 +223,7 @@ const state = {
     exploreMarkerIdleListener: null,
     exploreZoomIdleListener: null,
     exploreMarkerRefreshTimer: null,
+    isExploreMapCameraAnimating: false,
     isExploreMarkerLoading: false,
     explorePhotoScope: 'mine',
     exploreInitializedUserId: null,
@@ -1314,15 +1316,18 @@ function mountExploreMapMarkers(renderState) {
             $('#explore-pin-preview')?.setAttribute('hidden', '');
             const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, {
                 radiusPx: 54,
+                paddingPx: 28,
                 maxZoom: 21
             });
             setExploreMarkerLoading(true);
-            map.panTo(cluster.position);
-            if ((map.getZoom?.() || currentZoom) !== expansionZoom) {
-                map.setZoom(expansionZoom);
-            } else {
+            state.isExploreMapCameraAnimating = true;
+            animateExploreMapCamera(map, {
+                center: cluster.position,
+                zoom: expansionZoom
+            }).finally(() => {
+                state.isExploreMapCameraAnimating = false;
                 scheduleExploreMarkerRefreshAfterIdle(maps, map);
-            }
+            });
         });
         return marker;
     });
@@ -1391,6 +1396,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     const currentZoom = map.getZoom?.() || state.exploreZoom;
     if (!state.exploreClusterListener) {
         state.exploreClusterListener = map.addListener('zoom_changed', () => {
+            if (state.isExploreMapCameraAnimating) return;
             scheduleExploreMarkerRefreshAfterIdle(maps, map);
         });
     }

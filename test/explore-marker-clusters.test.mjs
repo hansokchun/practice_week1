@@ -77,6 +77,25 @@ test('getExploreMarkerExpansionZoom uses the zoom needed to fully split a multi-
     assert.ok(clustersBeforeZoom.length < photos.length);
 });
 
+test('getExploreMarkerExpansionZoom can leave visual breathing room between split pins', () => {
+    const photos = [
+        { id: 'a', lat: 37.5665, lng: 126.9780 },
+        { id: 'b', lat: 37.5667, lng: 126.9782 }
+    ];
+    const compactZoom = getExploreMarkerExpansionZoom(photos, 7, {
+        radiusPx: 54,
+        maxZoom: 21
+    });
+    const spaciousZoom = getExploreMarkerExpansionZoom(photos, 7, {
+        radiusPx: 54,
+        paddingPx: 28,
+        maxZoom: 21
+    });
+
+    assert.ok(spaciousZoom >= compactZoom);
+    assert.equal(getExploreMarkerClusters(photos, spaciousZoom, 82).length, photos.length);
+});
+
 test('cluster expansion reaches maximum spread for nearly identical pins in one click', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },
