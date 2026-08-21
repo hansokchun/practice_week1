@@ -21,12 +21,15 @@ test('Explore renders cluster pins that expand without opening the preview panel
     assert.match(body, /const nextMarkers = clusters\.map/);
     assert.match(body, /if \(cluster\.count === 1\)/);
     assert.match(body, /position: cluster\.position/);
-    assert.match(body, /getExploreMarkerExpansionZoom/);
-    assert.match(body, /paddingPx: 28/);
+    assert.match(body, /getExploreMarkerExpansionViewport/);
+    assert.match(body, /separationPaddingPx: 28/);
+    assert.match(body, /edgePaddingPx: 112/);
     assert.match(body, /maxZoom: 21/);
     assert.match(body, /animateExploreMapCamera\(map/);
     assert.match(body, /isExploreMapCameraAnimating = true/);
     assert.match(body, /isExploreMapCameraAnimating = false/);
+    assert.match(body, /shouldPreserveExploreViewport\(cluster\.photos, normalizeExploreBounds\(map\.getBounds\?\.\(\)\)\)/);
+    assert.match(body, /map\.fitBounds\(photoBounds, 112\)/);
     assert.doesNotMatch(body, /maxStep:/);
     assert.doesNotMatch(body, /map\.fitBounds\(bounds, 96\)/);
     assert.doesNotMatch(body, /map\.setZoom\(expansionZoom\)/);

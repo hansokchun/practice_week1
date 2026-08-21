@@ -124,7 +124,7 @@ import {
 } from './album-detail-edit-state.mjs';
 import {
     getExploreMarkerClusters,
-    getExploreMarkerExpansionZoom,
+    getExploreMarkerExpansionViewport,
     getExploreViewportAction
 } from './explore-marker-clusters.mjs';
 import { animateExploreMapCamera } from './explore-map-camera.mjs';
@@ -1314,18 +1314,29 @@ function mountExploreMapMarkers(renderState) {
             setExplorePreviewExpanded(false);
             document.body.classList.remove('explore-pin-selected');
             $('#explore-pin-preview')?.setAttribute('hidden', '');
-            const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, {
+            const mapRect = map.getDiv?.().getBoundingClientRect?.();
+            const targetViewport = getExploreMarkerExpansionViewport(cluster.photos, map.getZoom?.() || currentZoom, {
                 radiusPx: 54,
-                paddingPx: 28,
+                separationPaddingPx: 28,
+                edgePaddingPx: 112,
+                width: mapRect?.width,
+                height: mapRect?.height,
                 maxZoom: 21
             });
             setExploreMarkerLoading(true);
             state.isExploreMapCameraAnimating = true;
             animateExploreMapCamera(map, {
-                center: cluster.position,
-                zoom: expansionZoom
+                center: targetViewport.center || cluster.position,
+                zoom: targetViewport.zoom
             }).finally(() => {
                 state.isExploreMapCameraAnimating = false;
+                if (!shouldPreserveExploreViewport(cluster.photos, normalizeExploreBounds(map.getBounds?.()))) {
+                    const photoBounds = new maps.LatLngBounds();
+                    cluster.photos.forEach((photo) => {
+                        photoBounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) });
+                    });
+                    map.fitBounds(photoBounds, 112);
+                }
                 scheduleExploreMarkerRefreshAfterIdle(maps, map);
             });
         });

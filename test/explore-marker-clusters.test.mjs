@@ -5,6 +5,7 @@ import {
     getExploreMarkerClusters,
     getExploreMarkerClusterBounds,
     getExploreMarkerExpansionZoom,
+    getExploreMarkerExpansionViewport,
     getExploreViewportAction,
     shouldRerenderExploreMarkersAfterPinClick,
     shouldShowExploreClusterLabel
@@ -94,6 +95,32 @@ test('getExploreMarkerExpansionZoom can leave visual breathing room between spli
 
     assert.ok(spaciousZoom >= compactZoom);
     assert.equal(getExploreMarkerClusters(photos, spaciousZoom, 82).length, photos.length);
+});
+
+test('cluster expansion keeps widely spread real photo pins inside the map viewport', () => {
+    const photos = [
+        { id: 'a', lat: 34.35, lng: 133.7 },
+        { id: 'b', lat: 34.45, lng: 134.1 },
+        { id: 'c', lat: 34.55, lng: 134.3 }
+    ];
+    const fullSplitZoom = getExploreMarkerExpansionZoom(photos, 7, {
+        radiusPx: 54,
+        paddingPx: 28,
+        maxZoom: 21
+    });
+    const viewport = getExploreMarkerExpansionViewport(photos, 7, {
+        radiusPx: 54,
+        separationPaddingPx: 28,
+        edgePaddingPx: 112,
+        width: 1200,
+        height: 700,
+        maxZoom: 21
+    });
+
+    assert.ok(viewport.zoom <= fullSplitZoom);
+    assert.ok(viewport.zoom <= 21);
+    assert.ok(viewport.center.lat > 34.35 && viewport.center.lat < 34.55);
+    assert.ok(viewport.center.lng > 133.7 && viewport.center.lng < 134.3);
 });
 
 test('cluster expansion reaches maximum spread for nearly identical pins in one click', () => {

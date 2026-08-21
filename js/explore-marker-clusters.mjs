@@ -80,6 +80,65 @@ export function getExploreMarkerExpansionZoom(photos = [], currentZoom = 7, {
     return maxZoom;
 }
 
+function getViewportMaximumZoom(photos, {
+    width,
+    height,
+    edgePaddingPx,
+    minZoom,
+    maxZoom
+}) {
+    const availableWidth = Math.max(1, Number(width) - (Number(edgePaddingPx) * 2));
+    const availableHeight = Math.max(1, Number(height) - (Number(edgePaddingPx) * 2));
+    const points = photos.map((photo) => toWorldPixel(photo.lat, photo.lng, 0));
+    const spanX = Math.max(...points.map((point) => point.x)) - Math.min(...points.map((point) => point.x));
+    const spanY = Math.max(...points.map((point) => point.y)) - Math.min(...points.map((point) => point.y));
+    const horizontalZoom = spanX > 0 ? Math.log2(availableWidth / spanX) : maxZoom;
+    const verticalZoom = spanY > 0 ? Math.log2(availableHeight / spanY) : maxZoom;
+    return Math.max(minZoom, Math.min(maxZoom, Math.floor(Math.min(horizontalZoom, verticalZoom))));
+}
+
+export function getExploreMarkerExpansionViewport(photos = [], currentZoom = 7, {
+    radiusPx = 54,
+    separationPaddingPx = 0,
+    edgePaddingPx = 96,
+    width = 0,
+    height = 0,
+    minZoom = 3,
+    maxZoom = 18
+} = {}) {
+    const locatedPhotos = photos.filter((photo) => (
+        Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng))
+    ));
+    const fullSplitZoom = getExploreMarkerExpansionZoom(locatedPhotos, currentZoom, {
+        radiusPx,
+        paddingPx: separationPaddingPx,
+        maxZoom
+    });
+    const bounds = getExploreMarkerClusterBounds(locatedPhotos);
+    if (!bounds || Number(width) <= 0 || Number(height) <= 0) {
+        return {
+            center: bounds ? {
+                lat: (bounds.north + bounds.south) / 2,
+                lng: (bounds.east + bounds.west) / 2
+            } : null,
+            zoom: fullSplitZoom
+        };
+    }
+    return {
+        center: {
+            lat: (bounds.north + bounds.south) / 2,
+            lng: (bounds.east + bounds.west) / 2
+        },
+        zoom: Math.min(fullSplitZoom, getViewportMaximumZoom(locatedPhotos, {
+            width,
+            height,
+            edgePaddingPx,
+            minZoom,
+            maxZoom
+        }))
+    };
+}
+
 export function getExploreMarkerClusterBounds(photos = []) {
     const located = photos.filter((photo) => Number.isFinite(Number(photo.lat)) && Number.isFinite(Number(photo.lng)));
     if (!located.length) return null;
