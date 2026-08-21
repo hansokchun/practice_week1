@@ -220,6 +220,8 @@ const state = {
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
     exploreMarkerIdleListener: null,
+    exploreZoomIdleListener: null,
+    exploreMarkerRefreshTimer: null,
     isExploreMarkerLoading: false,
     explorePhotoScope: 'mine',
     exploreInitializedUserId: null,
@@ -1264,7 +1266,8 @@ function clearExploreMapMarkers() {
 
 function mountExploreMapMarkers(renderState) {
     const { maps, map, clusters, locatedPhotos, currentZoom } = renderState;
-    state.exploreMarkers = clusters.map((cluster) => {
+    const previousMarkers = state.exploreMarkers;
+    const nextMarkers = clusters.map((cluster) => {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
             const selected = Boolean(photo.id && photo.id === state.selectedPhotoId);
@@ -1303,7 +1306,6 @@ function mountExploreMapMarkers(renderState) {
                 maxStep: 2
             });
             setExploreMarkerLoading(true);
-            clearExploreMapMarkers();
             map.panTo(cluster.position);
             if ((map.getZoom?.() || currentZoom) !== expansionZoom) {
                 map.setZoom(expansionZoom);
@@ -1331,21 +1333,29 @@ function mountExploreMapMarkers(renderState) {
         selectedMarker.addListener('click', () => {
             openExplorePhotoPreview(selectedPhoto, { focusMap: false });
         });
-        state.exploreMarkers.push(selectedMarker);
+        nextMarkers.push(selectedMarker);
     }
+    state.exploreMarkers = nextMarkers;
+    previousMarkers.forEach((marker) => marker.setMap(null));
 }
 
 function scheduleExploreMarkerRefreshAfterIdle(maps, map) {
     if (!state.exploreMarkerPhotos.length) return;
     setExploreMarkerLoading(true);
-    clearExploreMapMarkers();
-    state.exploreMarkerIdleListener?.remove?.();
-    const refreshToken = ++state.exploreMarkerRenderToken;
-    state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', () => {
-        state.exploreMarkerIdleListener = null;
-        if (refreshToken !== state.exploreMarkerRenderToken) return;
+    state.exploreZoomIdleListener?.remove?.();
+    if (state.exploreMarkerRefreshTimer) window.clearTimeout(state.exploreMarkerRefreshTimer);
+    let refreshed = false;
+    const refresh = () => {
+        if (refreshed) return;
+        refreshed = true;
+        state.exploreZoomIdleListener?.remove?.();
+        state.exploreZoomIdleListener = null;
+        if (state.exploreMarkerRefreshTimer) window.clearTimeout(state.exploreMarkerRefreshTimer);
+        state.exploreMarkerRefreshTimer = null;
         renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
-    });
+    };
+    state.exploreZoomIdleListener = maps.event.addListenerOnce(map, 'idle', refresh);
+    state.exploreMarkerRefreshTimer = window.setTimeout(refresh, 320);
 }
 
 async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
@@ -1357,8 +1367,8 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
 
     state.exploreMarkerPhotos = locatedPhotos;
     state.exploreSelectedAlbumId = selectedAlbumId;
-    clearExploreMapMarkers();
     if (!locatedPhotos.length) {
+        clearExploreMapMarkers();
         setExploreMarkerLoading(false);
         document.body.classList.remove('explore-pin-selected');
         setExplorePreviewExpanded(false);

@@ -56,6 +56,10 @@ test('Explore map shows a lightweight pin loading state while markers wait for m
     assert.match(source, /function setExploreMarkerLoading\(isLoading\)/);
     assert.match(source, /\.explore-map-canvas'\)\?\.classList\.toggle\('is-loading-pins'/);
     assert.match(source, /function scheduleExploreMarkerRefreshAfterIdle\(maps, map\)/);
+    assert.match(source, /state\.exploreMarkerRefreshTimer = window\.setTimeout\(refresh, 320\)/);
+    assert.match(source, /state\.exploreZoomIdleListener = maps\.event\.addListenerOnce\(map, 'idle', refresh\)/);
+    assert.match(source, /const previousMarkers = state\.exploreMarkers/);
+    assert.match(source, /state\.exploreMarkers = nextMarkers;[\s\S]*previousMarkers\.forEach/);
     assert.match(html, /class="explore-map-pin-loading" aria-live="polite"/);
     assert.match(css, /\.explore-map-pin-loading\s*\{[^}]*z-index:\s*3;[^}]*opacity:\s*0;[^}]*border-radius:\s*10px;/s);
     assert.match(css, /\.explore-map-canvas\.is-loading-pins \.explore-map-pin-loading\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*translate\(-50%, 0\);/s);

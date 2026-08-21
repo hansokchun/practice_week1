@@ -19,6 +19,17 @@ function averagePosition(photos) {
     };
 }
 
+function getSpreadPosition(center, index, count, zoom) {
+    const angle = ((Math.PI * 2) / Math.max(1, count)) * index - (Math.PI / 2);
+    const degreesPerPixel = 360 / (256 * (2 ** Math.max(0, Number(zoom) || 0)));
+    const radiusPx = Math.min(42, 24 + count * 2);
+    const latitudeScale = Math.max(0.2, Math.cos((Number(center.lat) * Math.PI) / 180));
+    return {
+        lat: Number(center.lat) - (Math.sin(angle) * radiusPx * degreesPerPixel * latitudeScale),
+        lng: Number(center.lng) + (Math.cos(angle) * radiusPx * degreesPerPixel)
+    };
+}
+
 export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
     const clusters = [];
     photos.forEach((photo) => {
@@ -37,12 +48,23 @@ export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
         clusters.push({ point, photos: [photo] });
     });
 
-    return clusters.map(({ photos: items }) => ({
+    const normalizedClusters = clusters.map(({ photos: items }) => ({
         id: items.map((photo) => photo.id || `${photo.lat},${photo.lng}`).join('|'),
         count: items.length,
         photos: items,
         position: averagePosition(items)
     }));
+
+    if (Number(zoom) < 20) return normalizedClusters;
+    return normalizedClusters.flatMap((cluster) => {
+        if (cluster.count === 1) return cluster;
+        return cluster.photos.map((photo, index) => ({
+            id: String(photo.id || `${photo.lat},${photo.lng}:${index}`),
+            count: 1,
+            photos: [photo],
+            position: getSpreadPosition(cluster.position, index, cluster.count, zoom)
+        }));
+    });
 }
 
 export function getExploreMarkerExpansionZoom(photos = [], currentZoom = 7, {

@@ -40,6 +40,19 @@ test('getExploreMarkerClusters separates nearby photos after zooming in', () => 
     assert.equal(clusters.length, 2);
 });
 
+test('getExploreMarkerClusters spreads photos with identical coordinates at maximum zoom', () => {
+    const photos = [
+        { id: 'same-a', lat: 37.5796, lng: 126.9770 },
+        { id: 'same-b', lat: 37.5796, lng: 126.9770 },
+        { id: 'same-c', lat: 37.5796, lng: 126.9770 }
+    ];
+    const clusters = getExploreMarkerClusters(photos, 20, 54);
+
+    assert.equal(clusters.length, 3);
+    assert.deepEqual(clusters.map((cluster) => cluster.count), [1, 1, 1]);
+    assert.equal(new Set(clusters.map((cluster) => `${cluster.position.lat},${cluster.position.lng}`)).size, 3);
+});
+
 test('getExploreMarkerExpansionZoom moves toward the next split without over-zooming', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },

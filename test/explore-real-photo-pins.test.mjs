@@ -18,7 +18,7 @@ test('Explore renders cluster pins that expand without opening the preview panel
 
     assert.match(renderBody, /const clusters = getExploreMarkerClusters/);
     assert.match(source, /function mountExploreMapMarkers\(renderState\)/);
-    assert.match(body, /state\.exploreMarkers = clusters\.map/);
+    assert.match(body, /const nextMarkers = clusters\.map/);
     assert.match(body, /if \(cluster\.count === 1\)/);
     assert.match(body, /position: cluster\.position/);
     assert.match(body, /getExploreMarkerExpansionZoom/);
@@ -28,7 +28,9 @@ test('Explore renders cluster pins that expand without opening the preview panel
     assert.doesNotMatch(body, /map\.fitBounds\(bounds, 96\)/);
     assert.match(body, /map\.setZoom\(expansionZoom\)/);
     assert.match(body, /scheduleExploreMarkerRefreshAfterIdle\(maps, map\)/);
-    assert.match(body, /clearExploreMapMarkers\(\)/);
+    assert.doesNotMatch(body, /clearExploreMapMarkers\(\)/);
+    assert.match(body, /state\.exploreMarkers = nextMarkers/);
+    assert.match(body, /previousMarkers\.forEach\(\(marker\) => marker\.setMap\(null\)\)/);
     assert.match(body, /\$\('#explore-pin-preview'\)\?\.setAttribute\('hidden', ''\)/);
     assert.doesNotMatch(body, /updateExploreClusterPreview/);
     assert.doesNotMatch(body, /shouldShowExploreClusterLabel\(cluster\)/);
@@ -44,7 +46,7 @@ test('Explore renders a selected photo overlay when the photo is hidden in a clu
     assert.match(body, /if \(selectedPhoto && !selectedPhotoHasVisibleMarker\)/);
     assert.match(body, /type: 'photo', selected: true/);
     assert.match(body, /zIndex: 1000/);
-    assert.match(body, /state\.exploreMarkers\.push\(selectedMarker\)/);
+    assert.match(body, /nextMarkers\.push\(selectedMarker\)/);
 });
 
 test('Explore marks a normal pin selected only when the photo itself is selected', () => {
