@@ -358,6 +358,30 @@ function renderPhotoImage(photo = {}, fallback = '사진') {
     return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`;
 }
 
+function revealPhotoThumbnailGridWhenReady(container) {
+    if (!container) return;
+    const images = [...container.querySelectorAll('img')];
+    if (!images.length) {
+        container.classList.remove('is-loading-thumbnails');
+        return;
+    }
+
+    const loadId = String(Date.now() + Math.random());
+    container.dataset.thumbnailLoadId = loadId;
+    container.classList.add('is-loading-thumbnails');
+    Promise.all(images.map((image) => {
+        image.loading = 'eager';
+        if (image.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+            image.addEventListener('load', resolve, { once: true });
+            image.addEventListener('error', resolve, { once: true });
+        });
+    })).then(() => {
+        if (container.dataset.thumbnailLoadId !== loadId) return;
+        container.classList.remove('is-loading-thumbnails');
+    });
+}
+
 function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
     if (photo?.albumCoverUrl && photo.albumCoverUrl !== primarySrc) return photo.albumCoverUrl;
     return MAIN_BG_2_URL;
@@ -3359,6 +3383,7 @@ function renderSavedPhotoSurfaces() {
                 <button class="btn-secondary" data-route="upload" type="button">사진 업로드</button>
             </article>
         `;
+        revealPhotoThumbnailGridWhenReady(recentGrid);
     }
 
     if (state.savedAlbumsLoadError && albumList) {
@@ -3422,6 +3447,7 @@ function renderLikedPhotoSurfaces() {
             </article>
         `).join('')
             : emptyMarkup;
+        revealPhotoThumbnailGridWhenReady(compactGrid);
     }
 
     if (!fullGrid) {
@@ -3454,6 +3480,7 @@ function renderLikedPhotoSurfaces() {
                 ${renderPhotoImage(photo)}
             </article>
         `).join('');
+    revealPhotoThumbnailGridWhenReady(fullGrid);
     renderPhotoPagination(pagination, likedPage, 'liked');
     renderAccountNotifications();
 }
@@ -3522,6 +3549,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
             </article>
         `;
     }).join('');
+    revealPhotoThumbnailGridWhenReady(grid);
     renderPhotoPagination(pagination, personalPage, 'personal');
     state.lastToggledPersonalPhotoId = null;
 }

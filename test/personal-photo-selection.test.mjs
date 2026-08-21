@@ -42,7 +42,7 @@ test('recent photo selection controls use Google Photos style hover and selected
     assert.doesNotMatch(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*animation:/s);
     assert.match(styles, /\.personal-photo-card\.is-selection-animated\s+img\s*\{[^}]*animation:\s*selectedPhotoSettle 220ms cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\);/s);
     assert.match(styles, /@keyframes selectedPhotoSettle\s*\{[\s\S]*58%\s*\{[\s\S]*transform:\s*scale\(0\.84\);[\s\S]*100%\s*\{[\s\S]*transform:\s*scale\(0\.88\);/s);
-    assert.match(styles, /\.personal-photo-card\.is-selected\s*\{[^}]*background:\s*rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
+    assert.match(styles, /\.personal-photo-card\.is-selected\s*\{[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
 });
 
 test('getSelectedPersonalPhotos returns selected photos in page order', () => {
