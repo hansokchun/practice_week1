@@ -19,7 +19,7 @@ test('missing location banner has direct assign and dismiss actions only', () =>
 
     assert.doesNotMatch(home, /class="attention-banner"/);
     assert.ok(bannerStart > -1);
-    assert.match(html, /<section class="attention-banner" hidden>/);
+    assert.match(html, /<section class="attention-banner" role="status" hidden>/);
     assert.match(css, /\.attention-banner\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
     assert.match(banner, /id="btn-direct-missing-location"/);
     assert.match(banner, /id="btn-dismiss-missing-location"/);
@@ -41,7 +41,7 @@ test('missing location banner only appears when there are unresolved missing-loc
     assert.doesNotMatch(body, /else \{[\s\S]*attentionTitle\.textContent/);
 });
 
-test('missing location banner uses a full-size alert treatment without helper copy', () => {
+test('missing location banner uses a conventional alert treatment without status label or crossed-location icon', () => {
     const photosPageStart = html.indexOf('id="page-photos"');
     const photosPageEnd = html.indexOf('id="page-liked"', photosPageStart);
     const photosPage = html.slice(photosPageStart, photosPageEnd);
@@ -50,9 +50,9 @@ test('missing location banner uses a full-size alert treatment without helper co
     const banner = photosPage.slice(bannerStart, bannerEnd);
 
     assert.doesNotMatch(banner, /<p>/);
-    assert.match(css, /\.attention-banner\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin:\s*0 0 24px;[^}]*border-left:\s*6px solid #99452f;[^}]*border-radius:\s*16px;[^}]*padding:\s*16px 18px;/s);
-    assert.match(css, /\.attention-banner::before\s*\{[^}]*content:\s*"처리필요";[^}]*background:\s*#99452f;/s);
-    assert.match(css, /\.attention-banner > span\s*\{[^}]*width:\s*40px;[^}]*height:\s*40px;/s);
+    assert.doesNotMatch(banner, /wrong_location/);
+    assert.doesNotMatch(css, /content:\s*"처리필요"/);
+    assert.match(css, /\.attention-banner\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) auto auto;[^}]*border:\s*1px solid #e8d7ad;[^}]*border-radius:\s*8px;[^}]*background:\s*#fffaf0;[^}]*padding:\s*14px 16px;/s);
     assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*16px;/s);
 });
 

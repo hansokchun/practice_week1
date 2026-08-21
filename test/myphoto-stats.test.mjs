@@ -41,4 +41,5 @@ test('getMyphotoStats falls back to grouped photo albums when no saved albums ex
 test('formatMissingLocationSummary reflects the current missing-location count', () => {
     assert.equal(formatMissingLocationSummary(0), '');
     assert.match(formatMissingLocationSummary(3), /3/);
+    assert.doesNotMatch(formatMissingLocationSummary(3), /처리 필요/);
 });

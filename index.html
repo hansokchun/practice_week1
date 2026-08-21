@@ -239,8 +239,7 @@
                 <div class="page-intro">
                     <h1 id="photos-title">최근사진</h1>
                 </div>
-                <section class="attention-banner" hidden>
-                    <span class="material-symbols-outlined">wrong_location</span>
+                <section class="attention-banner" role="status" hidden>
                     <div>
                         <strong></strong>
                     </div>
@@ -259,6 +258,7 @@
                         </div>
                     </div>
                     <div id="personal-photo-grid" class="personal-photo-grid"></div>
+                    <nav id="personal-photo-pagination" class="photo-pagination" aria-label="내 사진 페이지" hidden></nav>
                 </section>
             </div>
         </section>
@@ -279,6 +279,7 @@
                         </div>
                     </div>
                     <div id="liked-photo-full-grid" class="personal-photo-grid liked-photo-full-grid"></div>
+                    <nav id="liked-photo-pagination" class="photo-pagination" aria-label="좋아요한 사진 페이지" hidden></nav>
                 </section>
             </div>
         </section>

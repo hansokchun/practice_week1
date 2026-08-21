@@ -2946,76 +2946,54 @@ body[data-page="explore"] .site-footer {
 }
 
 .attention-banner {
-    position: relative;
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
     width: 100%;
     max-width: none;
     gap: 12px;
     margin: 0 0 24px;
-    border: 1px solid rgba(153, 69, 47, 0.18);
-    border-left: 6px solid #99452f;
-    border-radius: 16px;
-    background: #ffdbd2;
-    color: #7b2e1a;
-    padding: 16px 18px;
-    box-shadow: 0 18px 42px rgba(153, 69, 47, 0.16);
-}
-
-.attention-banner::before {
-    content: "처리필요";
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
-    border-radius: 6px;
-    background: #99452f;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 900;
-    line-height: 1;
-    padding: 0 8px;
+    border: 1px solid #e8d7ad;
+    border-radius: 8px;
+    background: #fffaf0;
+    color: var(--ink);
+    padding: 14px 16px;
 }
 
 .attention-banner[hidden] {
     display: none;
 }
 
-.attention-banner > span {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.48);
-    color: #99452f;
-    font-size: 22px;
-}
-
 .attention-banner strong {
-    color: #3c0800;
-    font-family: var(--headline);
+    color: var(--ink);
+    font-family: var(--body);
     font-size: 16px;
     line-height: 1.35;
 }
 
 .attention-banner button {
     min-height: 34px;
-    border: 0;
+    border: 1px solid var(--line);
     border-radius: 8px;
     background: #ffffff;
-    color: #99452f;
+    color: var(--teal);
     font-weight: 800;
     padding: 0 12px;
 }
 
 .attention-banner button.solid {
-    background: #99452f;
+    border-color: var(--teal-dark);
+    background: var(--teal-dark);
     color: #ffffff;
 }
 
+.attention-banner button:focus-visible {
+    outline: 3px solid rgba(201, 160, 80, 0.32);
+    outline-offset: 2px;
+}
+
 .missing-location-list {
-    grid-column: 3 / -1;
+    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(auto-fill, 64px);
     gap: 10px;
@@ -3155,6 +3133,54 @@ body[data-page="explore"] .site-footer {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
+    width: 100%;
+    max-width: 1040px;
+    margin-inline: auto;
+}
+
+.photo-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1040px;
+    min-height: 44px;
+    gap: 12px;
+    margin: 24px auto 0;
+}
+
+.photo-pagination[hidden] {
+    display: none;
+}
+
+.photo-pagination button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--teal);
+}
+
+.photo-pagination button:disabled {
+    cursor: default;
+    opacity: 0.34;
+}
+
+.photo-pagination button:not(:disabled):hover,
+.photo-pagination button:not(:disabled):focus-visible {
+    border-color: var(--teal);
+    background: var(--surface-soft);
+}
+
+.photo-pagination > span {
+    min-width: 64px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
 }
 
 .panel-actions {

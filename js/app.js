@@ -34,6 +34,7 @@ import {
 } from './account-profile.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { getAiAlbumAnalysisAvailability } from './ai-album-analysis.mjs';
+import { getPhotoPage } from './photo-pagination.mjs';
 import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
@@ -190,6 +191,8 @@ const state = {
     selectedPublicOwnerId: null,
     selectedPhotoId: null,
     selectedPersonalPhotoIds: [],
+    personalPhotoPage: 1,
+    likedPhotoPage: 1,
     lastToggledPersonalPhotoId: null,
     albumBuilderPhotoIds: [],
     albumPhotoPickerIds: [],
@@ -1968,8 +1971,8 @@ function getAccountNotificationItems() {
 
     if (myMissingLocationPhotos.length && !state.isMissingLocationBannerDismissed) {
         items.push({
-            icon: 'wrong_location',
-            title: `처리 필요: 위치 정보 없는 사진 ${myMissingLocationPhotos.length}장`,
+            icon: 'location_on',
+            title: `위치 정보 없는 사진 ${myMissingLocationPhotos.length}장`,
             body: '지도에 표시하려면 위치를 지정하세요.',
             route: 'photos'
         });
@@ -3368,6 +3371,7 @@ function renderLikedPhotoSurfaces() {
     const isLikedPhotoLoading = Boolean(state.currentUser && (!state.hasLoadedSavedPhotos || !state.hasLoadedMyLikes));
     const compactGrid = $('#liked-photo-grid');
     const fullGrid = $('#liked-photo-full-grid');
+    const pagination = $('#liked-photo-pagination');
     const summary = $('#liked-photo-summary');
     if (summary) summary.textContent = formatPhotoCount(likedPhotos.length);
 
@@ -3411,6 +3415,7 @@ function renderLikedPhotoSurfaces() {
     }
     if (state.myLikesLoadError) {
         fullGrid.innerHTML = failureMarkup;
+        if (pagination) pagination.hidden = true;
         renderAccountNotifications();
         return;
     }
@@ -3422,22 +3427,46 @@ function renderLikedPhotoSurfaces() {
                 <button class="btn-secondary" data-route="explore" type="button">Explore 열기</button>
             </article>
         `;
+        if (pagination) pagination.hidden = true;
         renderAccountNotifications();
         return;
     }
 
-    fullGrid.innerHTML = likedPhotos.map((photo) => `
+    const likedPage = getPhotoPage(likedPhotos, state.likedPhotoPage);
+    state.likedPhotoPage = likedPage.currentPage;
+    fullGrid.innerHTML = likedPage.items.map((photo) => `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 ${renderPhotoImage(photo)}
             </article>
         `).join('');
+    renderPhotoPagination(pagination, likedPage, 'liked');
     renderAccountNotifications();
+}
+
+function renderPhotoPagination(container, page, pageKey) {
+    if (!container) return;
+    container.hidden = !page.shouldPaginate;
+    if (!page.shouldPaginate) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = `
+        <button type="button" data-photo-page="${pageKey}" data-page-direction="previous" aria-label="이전 사진 페이지" ${page.hasPrevious ? '' : 'disabled'}>
+            <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+        </button>
+        <span aria-current="page">${page.currentPage} / ${page.totalPages}</span>
+        <button type="button" data-photo-page="${pageKey}" data-page-direction="next" aria-label="다음 사진 페이지" ${page.hasNext ? '' : 'disabled'}>
+            <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+    `;
 }
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const grid = $('#personal-photo-grid');
     const summary = $('#personal-photo-summary');
     const deleteButton = $('#btn-delete-selected-photos');
+    const pagination = $('#personal-photo-pagination');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
     if (summary) summary.textContent = formatPhotoCount(photos.length);
@@ -3451,6 +3480,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         grid.innerHTML = renderActionableFailure(
             getLibraryFailureState('photos', { online: navigator.onLine })
         );
+        if (pagination) pagination.hidden = true;
         return;
     }
 
@@ -3461,10 +3491,13 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
                 <span>마이포토에서 사진 올리기를 누르면 이곳에 개인 사진이 쌓입니다.</span>
             </article>
         `;
+        if (pagination) pagination.hidden = true;
         return;
     }
 
-    grid.innerHTML = photos.map((photo) => {
+    const personalPage = getPhotoPage(photos, state.personalPhotoPage);
+    state.personalPhotoPage = personalPage.currentPage;
+    grid.innerHTML = personalPage.items.map((photo) => {
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
         const shouldAnimateSelection = isSelected && state.lastToggledPersonalPhotoId === photo.id;
         return `
@@ -3474,6 +3507,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
             </article>
         `;
     }).join('');
+    renderPhotoPagination(pagination, personalPage, 'personal');
     state.lastToggledPersonalPhotoId = null;
 }
 
@@ -5161,6 +5195,21 @@ function bindEvents() {
             event.preventDefault();
             setAccountNotificationsOpen(false);
             routeTo(routeButton.dataset.route);
+            return;
+        }
+
+        const photoPageButton = event.target.closest('[data-photo-page][data-page-direction]');
+        if (photoPageButton) {
+            const pageOffset = photoPageButton.dataset.pageDirection === 'next' ? 1 : -1;
+            if (photoPageButton.dataset.photoPage === 'liked') {
+                state.likedPhotoPage += pageOffset;
+                renderLikedPhotoSurfaces();
+                $('#liked-photo-full-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                state.personalPhotoPage += pageOffset;
+                renderPersonalPhotosPage();
+                $('#personal-photo-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
             return;
         }
 
