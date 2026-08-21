@@ -40,16 +40,16 @@ test('getExploreMarkerClusters separates nearby photos after zooming in', () => 
     assert.equal(clusters.length, 2);
 });
 
-test('getExploreMarkerExpansionZoom finds the next zoom level that separates a cluster', () => {
+test('getExploreMarkerExpansionZoom moves toward the next split without over-zooming', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },
         { id: 'b', lat: 37.58, lng: 127.0 }
     ];
 
-    assert.equal(getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 }), 12);
+    assert.equal(getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 }), 9);
 });
 
-test('getExploreMarkerExpansionZoom uses the highest zoom needed to fully split the cluster', () => {
+test('getExploreMarkerExpansionZoom limits a multi-photo cluster to two zoom levels per click', () => {
     const photos = [
         { id: 'a', lat: 37.5665, lng: 126.9780 },
         { id: 'b', lat: 37.5667, lng: 126.9782 },
@@ -57,11 +57,21 @@ test('getExploreMarkerExpansionZoom uses the highest zoom needed to fully split 
     ];
 
     const expansionZoom = getExploreMarkerExpansionZoom(photos, 7, { radiusPx: 54, maxZoom: 18 });
-    const clustersAtZoom = getExploreMarkerClusters(photos, expansionZoom, 54);
-    const clustersBeforeZoom = getExploreMarkerClusters(photos, expansionZoom - 1, 54);
+    assert.equal(expansionZoom, 9);
+    assert.ok(expansionZoom <= 7 + 2);
+});
 
-    assert.equal(clustersAtZoom.length, photos.length);
-    assert.ok(clustersBeforeZoom.length < photos.length);
+test('cluster expansion advances gradually when pins need a much closer zoom', () => {
+    const photos = [
+        { id: 'a', lat: 37.5665, lng: 126.9780 },
+        { id: 'b', lat: 37.5665001, lng: 126.9780001 }
+    ];
+
+    assert.equal(getExploreMarkerExpansionZoom(photos, 7, {
+        radiusPx: 54,
+        maxZoom: 21,
+        maxStep: 2
+    }), 9);
 });
 
 test('cluster pins do not show numeric count labels', () => {

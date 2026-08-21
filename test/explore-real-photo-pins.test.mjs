@@ -23,11 +23,11 @@ test('Explore renders cluster pins that expand without opening the preview panel
     assert.match(body, /position: cluster\.position/);
     assert.match(body, /getExploreMarkerExpansionZoom/);
     assert.match(body, /maxZoom: 21/);
-    assert.match(body, /new maps\.LatLngBounds\(\)/);
-    assert.match(body, /cluster\.photos\.forEach/);
-    assert.match(body, /map\.fitBounds\(bounds, 96\)/);
-    assert.match(body, /maps\.event\.addListenerOnce\(map, 'idle'/);
+    assert.match(body, /map\.panTo\(cluster\.position\)/);
+    assert.match(body, /maxStep:\s*2/);
+    assert.doesNotMatch(body, /map\.fitBounds\(bounds, 96\)/);
     assert.match(body, /map\.setZoom\(expansionZoom\)/);
+    assert.match(body, /scheduleExploreMarkerRefreshAfterIdle\(maps, map\)/);
     assert.match(body, /clearExploreMapMarkers\(\)/);
     assert.match(body, /\$\('#explore-pin-preview'\)\?\.setAttribute\('hidden', ''\)/);
     assert.doesNotMatch(body, /updateExploreClusterPreview/);

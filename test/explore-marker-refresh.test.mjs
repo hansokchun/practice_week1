@@ -36,6 +36,18 @@ test('Explore map refreshes markers after the map settles on first load', () => 
     assert.match(markerBody, /mountExploreMapMarkers\(\{ maps, map, clusters, locatedPhotos, currentZoom: settledZoom \}\)/);
 });
 
+test('entering Explore resets the old viewport so current own pins are fitted', () => {
+    const routeStart = source.indexOf('function renderRoute(section)');
+    const routeEnd = source.indexOf('function renderAuthMode', routeStart);
+    const routeBody = source.slice(routeStart, routeEnd);
+
+    assert.match(routeBody, /previousRoute !== APP_SECTIONS\.EXPLORE/);
+    assert.match(routeBody, /state\.exploreInitializedUserId !== state\.currentUser\.id/);
+    assert.match(routeBody, /state\.explorePhotoScope = 'mine'/);
+    assert.match(routeBody, /state\.exploreLastBoundsKey = null/);
+    assert.match(routeBody, /state\.explorePreserveViewportOnce = false/);
+});
+
 test('Explore map shows a lightweight pin loading state while markers wait for map idle', () => {
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');

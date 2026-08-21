@@ -222,6 +222,7 @@ const state = {
     exploreMarkerIdleListener: null,
     isExploreMarkerLoading: false,
     explorePhotoScope: 'mine',
+    exploreInitializedUserId: null,
     isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
     isExploreDiscoveryCollapsed: false,
@@ -594,6 +595,12 @@ function renderRoute(section) {
     }
     if (normalized === APP_SECTIONS.EXPLORE && previousRoute !== APP_SECTIONS.EXPLORE && !routeSharedState.albumId) {
         resetExploreSelectionState();
+        if (state.currentUser?.id && state.exploreInitializedUserId !== state.currentUser.id) {
+            state.explorePhotoScope = 'mine';
+            state.exploreInitializedUserId = state.currentUser.id;
+        }
+        state.exploreLastBoundsKey = null;
+        state.explorePreserveViewportOnce = false;
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
     const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip'].includes(normalized)
@@ -1292,20 +1299,17 @@ function mountExploreMapMarkers(renderState) {
             $('#explore-pin-preview')?.setAttribute('hidden', '');
             const expansionZoom = getExploreMarkerExpansionZoom(cluster.photos, map.getZoom?.() || currentZoom, {
                 radiusPx: 54,
-                maxZoom: 21
+                maxZoom: 21,
+                maxStep: 2
             });
-            const bounds = new maps.LatLngBounds();
-            cluster.photos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
             setExploreMarkerLoading(true);
-            maps.event.addListenerOnce(map, 'idle', () => {
-                if ((map.getZoom?.() || 0) < expansionZoom) {
-                    map.setZoom(expansionZoom);
-                } else {
-                    renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
-                }
-            });
             clearExploreMapMarkers();
-            map.fitBounds(bounds, 96);
+            map.panTo(cluster.position);
+            if ((map.getZoom?.() || currentZoom) !== expansionZoom) {
+                map.setZoom(expansionZoom);
+            } else {
+                scheduleExploreMarkerRefreshAfterIdle(maps, map);
+            }
         });
         return marker;
     });
