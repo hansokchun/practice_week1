@@ -34,7 +34,7 @@
 
 - [ ] iOS Safari와 Android Chrome 실기기에서 가로 스와이프, 상세 왼쪽 스크롤, 지도·거리뷰 안전 영역을 확인한다.
 
-> 2026-08-27: `dev`와 `main`을 `59350ba`로 동기화하고 Cloudflare 운영 배포를 완료했다. 고정 배포 주소는 `https://77752ae6.practice-week1-cws.pages.dev`이며 운영 주소에서 깨끗한 출시 후보 테스트 520개, 빌드, 앱 셸·설정 API·자산·보안 헤더 기본 점검과 되돌리기 연습을 통과했다. Supabase 관리자 저장과 iPhone 16 시뮬레이터 Safari 확인도 완료했다. 실제 iPhone이 오프라인이고 Android 기기·ADB가 없어 실기기 확인 1건은 남겨 두었다.
+> 2026-08-27: 주변 사진 제거 기능 커밋 `e0a6799`를 `dev`와 `main`에 반영하고 Cloudflare 운영에 배포했다. 고정 배포 주소는 `https://aafda5c3.practice-week1-cws.pages.dev`이며 운영 주소에서 깨끗한 출시 후보 테스트 519개, 빌드, 앱 셸·설정 API·자산·보안 헤더 기본 점검과 되돌리기 연습을 통과했다. Supabase 관리자 저장과 iPhone 16 시뮬레이터 Safari 확인도 완료했다. 실제 iPhone이 오프라인이고 Android 기기·ADB가 없어 실기기 확인 1건은 남겨 두었다.
 
 ## 1. 이번 개편의 목표
 
