@@ -80,7 +80,7 @@
 | 웹 랜딩 개편 | 로컬 구현 완료 | 큰 검색창, 가로 사진 섹션, 계정 메뉴, 내 사진 안의 앨범, 관리자 편집, 거리뷰 지연 로딩. 운영 연결 확인 4개 남음 |
 | 자동 검증 | 통과 | 웹 테스트만 `test/*.test.mjs`에서 찾도록 분리했으며 `npm test` 593개 통과, 실패 0개 (2026-08-26) |
 | 운영 빌드 | 통과 | `npm run build` 재검증 (2026-08-26) |
-| 미리보기 배포 | 검증 완료 | KakaoTalk 앨범 공유를 포함한 최신 `dev` 출시가 `https://dev.practice-week1-cws.pages.dev`에 배포됨 |
+| 미리보기 배포 | 새 랜딩 배포 대기 | 기존 미리보기는 정상이나 새 랜딩 `dev` 커밋 `c8e98be`는 Cloudflare 로그인 승인 대기 중이며, 현재 주소는 이전 자산을 제공함 (2026-08-26) |
 | 운영 배포 | 새 웹 커밋 미반영 | 2026-08-24 로컬 관찰 기준 `origin/dev`가 `origin/main`보다 27커밋 앞섬. 이번 점검에서는 배포·푸시하지 않음 |
 | Supabase RLS | 활성화 | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
 | 사진 Storage 개인정보 | 비공개·통과 | `photos` 버킷 비공개. 소유자·타 사용자·익명·서명 URL·과거 공개 URL·로그아웃 운영 Explore 점검 통과 |
