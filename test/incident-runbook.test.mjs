@@ -49,6 +49,6 @@ test('runbook protects privacy and records incident closeout evidence', () => {
 test('public beta checklist marks the single incident runbook complete', () => {
     assert.match(
         checklist(),
-        /- \[x\] Write a single incident runbook with Cloudflare\/Supabase log paths, support contact, and rollback procedure\./
+        /- \[x\] Cloudflare·Supabase 로그 경로, 지원 연락처, 되돌리기가 포함된 단일 장애 대응 지침을 작성한다\./
     );
 });

@@ -22,5 +22,5 @@ test('aggregate report measures storage and product counts only', () => {
 });
 
 test('launch checklist records usage threshold operations as ready', () => {
-    assert.match(checklist, /- \[x\] Track storage, image traffic, active users, and service cost thresholds\./);
+    assert.match(checklist, /- \[x\] Storage, 이미지 트래픽, 활성 사용자, 서비스 비용 기준을 추적한다\./);
 });

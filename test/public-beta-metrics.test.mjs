@@ -52,6 +52,6 @@ test('operator query emits aggregate cohort metrics from existing tables', () =>
 test('public beta checklist marks privacy-conscious metrics complete', () => {
     assert.match(
         checklist(),
-        /- \[x\] Define privacy-conscious beta metrics: sign-up, first upload, first album, first publish, and Explore engagement\./
+        /- \[x\] 가입, 첫 업로드, 첫 앨범, 첫 게시, Explore 참여의 개인정보 보호 베타 지표를 정의한다\./
     );
 });

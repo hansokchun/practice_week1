@@ -65,7 +65,7 @@ test('release record preserves blockers and checklist marks rehearsal complete',
     assert.match(source, /private-bucket cutover/i);
     assert.match(
         checklist(),
-        /- \[x\] Rehearse the production deployment, smoke test, and rollback path before public traffic\./
+        /- \[x\] 공개 트래픽 전에 운영 배포, 기본 점검, 되돌리기 경로를 연습한다\./
     );
 });
 

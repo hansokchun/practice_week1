@@ -49,6 +49,6 @@ test('authentication QA records the completed dashboard fix and external checks'
 test('real-device authentication launch gate records completed social sign-up', () => {
     assert.match(
         checklist(),
-        /- \[x\] Run real-device authentication QA, including fresh email, Google, and Kakao account creation and mobile Kakao return behavior\./
+        /- \[x\] 새 이메일·Google·Kakao 계정 생성과 모바일 Kakao 복귀를 포함한 실기기 인증 QA를 실행한다\./
     );
 });

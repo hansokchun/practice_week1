@@ -81,5 +81,5 @@ test('location privacy QA records owner, non-owner, and anonymous role evidence'
     assert.match(locationQaRecord, /0 approximate rows matched their private source coordinates exactly/i);
     assert.match(locationQaRecord, /full baseline is captured in `supabase\/schema\.sql`/i);
     assert.match(locationQaRecord, /2026-07-27 isolated restore rehearsal confirmed/i);
-    assert.match(launchChecklist, /\| Public location privacy \| Passing \|/);
+    assert.match(launchChecklist, /\| 공개 위치 개인정보 \| 통과 \|/);
 });

@@ -33,7 +33,7 @@ test('private Storage cutover history and later sample cleanup remain explicit',
   assert.match(decision, /Auth accounts and profiles remained at 3/i);
   assert.match(decision, /all 31 Storage files and 2 empty-folder placeholders were removed/i);
   assert.match(decision, /Storage object count is 0/i);
-  assert.match(checklist, /Database sample cleanup \| Passing/i);
-  assert.match(checklist, /Storage sample cleanup \| Passing/i);
-  assert.match(checklist, /0 objects remain in the private `photos` bucket/i);
+  assert.match(checklist, /DB 예시 데이터 정리 \| 통과/);
+  assert.match(checklist, /Storage 예시 정리 \| 통과/);
+  assert.match(checklist, /비공개 `photos` 버킷 객체 0개/);
 });

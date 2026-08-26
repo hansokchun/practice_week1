@@ -54,7 +54,7 @@ test('private Storage cutover evidence and launch gates stay recorded', () => {
   assert.match(cutoverQa, /Anonymous private signed URL:\s*HTTP 400/i);
   assert.match(cutoverQa, /Other authenticated user[\s\S]*private rows:\s*0/i);
   assert.match(cutoverQa, /Logged-out Production Explore[\s\S]*public photos visible/i);
-  assert.match(launchChecklist, /\*\*P0 progress:\*\* All active technical gates complete/);
-  assert.match(launchChecklist, /- \[x\] Verify private files fail for logged-out and non-owner accounts/);
-  assert.match(launchChecklist, /- \[x\] Run three-account RLS and Storage QA/);
+  assert.match(launchChecklist, /\*\*P0 상태:\*\* 활성 기술 관문은 모두 완료/);
+  assert.match(launchChecklist, /- \[x\] 로그아웃 사용자와 소유자가 아닌 계정의 비공개 파일 접근은 실패/);
+  assert.match(launchChecklist, /- \[x\] 소유자·다른 로그인 사용자·로그아웃 사용자의 3계정 RLS·Storage QA/);
 });

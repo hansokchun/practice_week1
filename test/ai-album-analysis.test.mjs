@@ -39,9 +39,9 @@ test('AI album analysis request contains metadata only and no browser URLs or bi
     assert.doesNotMatch(JSON.stringify(request), /blob:|private-photo|file/);
 });
 
-test('album builder exposes a disabled planned AI entry point', () => {
+test('album builder keeps the future AI service out of the current product UI', () => {
     const app = readFileSync('js/app.js', 'utf8');
-    assert.match(app, /data-ai-album-status="\$\{aiAnalysis\.status\}"/);
-    assert.match(app, /id="btn-ai-album-analysis"[^>]*disabled/);
-    assert.match(app, /AI 앨범 초안/);
+    assert.doesNotMatch(app, /data-ai-album-status/);
+    assert.doesNotMatch(app, /id="btn-ai-album-analysis"/);
+    assert.doesNotMatch(app, /AI 앨범 초안/);
 });
