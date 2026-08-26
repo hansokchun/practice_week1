@@ -85,6 +85,11 @@ test('getSharedRouteState returns normalized route and optional album id', () =>
         albumId: null,
         ownerId: null
     });
+    assert.deepEqual(getSharedRouteState('#/admin-landing'), {
+        route: 'admin-landing',
+        albumId: null,
+        ownerId: null
+    });
     assert.deepEqual(getSharedRouteState('#/myphoto'), {
         route: 'home',
         albumId: null,
