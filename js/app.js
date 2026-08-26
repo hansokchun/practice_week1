@@ -1212,7 +1212,6 @@ function updateExplorePhotoPreview(photo) {
         likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
     }
     if (likeCount) likeCount.textContent = String(likeTotal);
-    renderExplorePreviewNearby(photo);
     if (ownerActions) ownerActions.hidden = !isOwnPhoto;
     if (descriptionInput) descriptionInput.value = description;
     setExplorePreviewVisibility(visibilityValue);
@@ -1764,80 +1763,6 @@ async function renderProfileMap(photos = []) {
     map.fitBounds(bounds, 96);
 }
 
-function getPhotoDetailSourcePhotos(context) {
-    if (context === 'album') return state.albumDetailPhotos;
-    if (context === 'explore') return state.exploreMarkerPhotos.length ? state.exploreMarkerPhotos : getExplorePhotoMapItems();
-    if (context === 'liked') {
-        const likedIds = new Set(state.likedPhotoIds.map(String));
-        return getAllDisplayPhotos().filter((photo) => likedIds.has(String(photo.id)));
-    }
-    return getAllDisplayPhotos();
-}
-
-function getPhotoDetailDistanceScore(photo, candidate) {
-    if (!hasPhotoLocation(photo) || !hasPhotoLocation(candidate)) return Number.MAX_SAFE_INTEGER;
-    const latDelta = Number(photo.lat) - Number(candidate.lat);
-    const lngDelta = Number(photo.lng) - Number(candidate.lng);
-    return (latDelta * latDelta) + (lngDelta * lngDelta);
-}
-
-function getNearbyDetailPhotos(photo, context) {
-    const currentId = String(photo?.id || photo?.localId || '');
-    const seen = new Set([currentId]);
-    return getPhotoDetailSourcePhotos(context)
-        .filter((candidate) => {
-            const candidateId = String(candidate?.id || candidate?.localId || '');
-            if (!candidateId || seen.has(candidateId)) return false;
-            seen.add(candidateId);
-            return Boolean(getPhotoImageSrc(candidate));
-        })
-        .sort((left, right) => {
-            const distanceDelta = getPhotoDetailDistanceScore(photo, left) - getPhotoDetailDistanceScore(photo, right);
-            if (distanceDelta !== 0) return distanceDelta;
-            return new Date(right.created_at || right.uploaded_at || right.date || 0) - new Date(left.created_at || left.uploaded_at || left.date || 0);
-        })
-        .slice(0, 6);
-}
-
-function renderPhotoDetailNearby(photo, context) {
-    const nearbySection = $('[data-photo-detail-nearby]');
-    const nearbyList = $('[data-photo-detail-nearby-list]');
-    if (!nearbySection || !nearbyList) return;
-    if (context !== 'explore') {
-        nearbySection.hidden = true;
-        nearbyList.innerHTML = '';
-        return;
-    }
-    const nearbyPhotos = getNearbyDetailPhotos(photo, context);
-    nearbySection.hidden = nearbyPhotos.length === 0;
-    nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
-        const label = getPhotoDescriptionText(nearbyPhoto) || getPhotoFallbackLabel(nearbyPhoto, '주변사진');
-        const imageSrc = getPhotoImageSrc(nearbyPhoto);
-        return `
-            <button class="photo-detail-nearby__item" data-photo-detail-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
-            </button>
-        `;
-    }).join('');
-}
-
-function renderExplorePreviewNearby(photo) {
-    const nearbySection = $('[data-pin-preview-nearby]');
-    const nearbyList = $('[data-pin-preview-nearby-list]');
-    if (!nearbySection || !nearbyList) return;
-    const nearbyPhotos = getNearbyDetailPhotos(photo, 'explore');
-    nearbySection.hidden = nearbyPhotos.length === 0;
-    nearbyList.innerHTML = nearbyPhotos.map((nearbyPhoto) => {
-        const label = getPhotoDescriptionText(nearbyPhoto) || getPhotoFallbackLabel(nearbyPhoto, '주변사진');
-        const imageSrc = getPhotoImageSrc(nearbyPhoto);
-        return `
-            <button class="pin-preview-nearby__item" data-pin-preview-nearby-photo="${escapeHtml(nearbyPhoto.id || nearbyPhoto.localId || '')}" type="button" aria-label="${escapeHtml(label)} 보기">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
-            </button>
-        `;
-    }).join('');
-}
-
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'photo' } = {}) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
@@ -1934,7 +1859,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         showOnMapButton.dataset.photoId = canShowOnExploreMap ? String(photo.id || photo.localId) : '';
     }
     if (reportButton) reportButton.dataset.photoId = photo.id || '';
-    renderPhotoDetailNearby(photo, context);
     setPhotoDetailMoreMenuOpen(false);
 }
 
@@ -5725,18 +5649,6 @@ function bindEvents() {
             return;
         }
 
-        const pinPreviewNearbyButton = event.target.closest('[data-pin-preview-nearby-photo]');
-        if (pinPreviewNearbyButton) {
-            event.preventDefault();
-            const wasExpanded = Boolean($('#explore-pin-preview')?.classList.contains('is-expanded'));
-            const nearbyPhoto = getPhotoDetailSourcePhotos('explore')
-                .find((candidate) => String(candidate.id || candidate.localId) === String(pinPreviewNearbyButton.dataset.pinPreviewNearbyPhoto));
-            if (!nearbyPhoto) return;
-            openExplorePhotoPreview(nearbyPhoto, { focusMap: true });
-            setExplorePreviewExpanded(wasExpanded);
-            return;
-        }
-
         const routeButton = event.target.closest('[data-route]');
         if (routeButton) {
             event.preventDefault();
@@ -5795,21 +5707,6 @@ function bindEvents() {
             event.preventDefault();
             setPhotoDetailMoreMenuOpen(false);
             showToast('신고가 접수되었습니다. 검토 후 조치하겠습니다.');
-            return;
-        }
-
-        const nearbyPhotoButton = event.target.closest('[data-photo-detail-nearby-photo]');
-        if (nearbyPhotoButton) {
-            event.preventDefault();
-            const detailContext = $('#photo-detail-modal')?.dataset.photoDetailContext || 'photo';
-            const nearbyPhoto = getPhotoDetailSourcePhotos(detailContext)
-                .find((candidate) => String(candidate.id || candidate.localId) === String(nearbyPhotoButton.dataset.photoDetailNearbyPhoto));
-            if (!nearbyPhoto) return;
-            if (detailContext === 'explore') {
-                updateExplorePhotoPreview(nearbyPhoto);
-            } else {
-                updatePhotoDetailModal(nearbyPhoto, { context: detailContext });
-            }
             return;
         }
 

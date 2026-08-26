@@ -145,7 +145,7 @@ test('Explore photo preview hides the story block when no description exists', (
     assert.doesNotMatch(body, /사진에 대한 글이 아직 없습니다/);
 });
 
-test('Explore photo preview renders nearby photo thumbnails inside the Explore panel', () => {
+test('Explore photo preview does not render nearby photo thumbnails', () => {
     const previewStart = html.indexOf('id="explore-pin-preview"');
     const previewEnd = html.indexOf('id="explore-list"', previewStart);
     const preview = html.slice(previewStart, previewEnd);
@@ -153,27 +153,13 @@ test('Explore photo preview renders nearby photo thumbnails inside the Explore p
     const fnEnd = source.indexOf('function setExplorePreviewExpanded', fnStart);
     const body = source.slice(fnStart, fnEnd);
 
-    assert.match(preview, /data-pin-preview-nearby/);
-    assert.match(preview, /data-pin-preview-nearby-list/);
-    assert.match(preview, />주변사진</);
-    assert.doesNotMatch(preview, />Nearby</);
-    assert.match(body, /renderExplorePreviewNearby\(photo\)/);
-    assert.match(source, /function renderExplorePreviewNearby\(photo\)/);
-    assert.match(source, /const nearbyPhotos = getNearbyDetailPhotos\(photo, 'explore'\)/);
-    assert.match(source, /data-pin-preview-nearby-photo="\$\{escapeHtml\(nearbyPhoto\.id \|\| nearbyPhoto\.localId \|\| ''\)\}"/);
-    assert.match(css, /\.pin-preview-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
-});
-
-test('Explore preview nearby thumbnails switch the Explore panel photo', () => {
-    const clickStart = source.indexOf("const pinPreviewNearbyButton = event.target.closest('[data-pin-preview-nearby-photo]');");
-    const clickEnd = source.indexOf("const routeButton = event.target.closest('[data-route]');", clickStart);
-    const clickBody = source.slice(clickStart, clickEnd);
-
-    assert.match(clickBody, /getPhotoDetailSourcePhotos\('explore'\)/);
-    assert.match(clickBody, /pinPreviewNearbyButton\.dataset\.pinPreviewNearbyPhoto/);
-    assert.match(clickBody, /openExplorePhotoPreview\(nearbyPhoto, \{ focusMap: true \}\)/);
-    assert.match(clickBody, /setExplorePreviewExpanded\(wasExpanded\)/);
-    assert.doesNotMatch(clickBody, /updatePhotoDetailModal\(nearbyPhoto/);
+    assert.doesNotMatch(preview, /data-pin-preview-nearby/);
+    assert.doesNotMatch(preview, /data-pin-preview-nearby-list/);
+    assert.doesNotMatch(preview, />주변사진</);
+    assert.doesNotMatch(body, /renderExplorePreviewNearby\(photo\)/);
+    assert.doesNotMatch(source, /function renderExplorePreviewNearby\(/);
+    assert.doesNotMatch(source, /data-pin-preview-nearby-photo/);
+    assert.doesNotMatch(css, /\.pin-preview-nearby/);
 });
 
 test('Explore photo preview keeps capture info as compact chips below the story', () => {

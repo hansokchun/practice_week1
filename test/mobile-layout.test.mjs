@@ -27,7 +27,7 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
     assert.match(mobile, /\.explore-pin-preview\.is-expanded\s*\{[^}]*bottom:\s*0;[^}]*height:\s*100svh;[^}]*max-height:\s*100svh;[^}]*border-radius:\s*0;/s);
     assert.match(mobile, /\.explore-pin-preview\.is-expanded \.pin-preview-photo-button img\s*\{[^}]*height:\s*min\(50svh,\s*420px\);[^}]*object-fit:\s*contain;/s);
-    assert.match(mobile, /\.pin-preview-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.doesNotMatch(mobile, /\.pin-preview-nearby/);
     assert.match(mobile, /\.pin-preview-visibility\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
@@ -77,7 +77,7 @@ test('mobile album and photo detail views avoid side-by-side desktop layouts', (
     assert.match(mobile, /\.photo-detail-card section\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*height:\s*48svh;[^}]*overflow-y:\s*auto;/s);
     assert.match(mobile, /\.photo-detail-section-head\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*justify-content:\s*flex-end;/s);
     assert.match(mobile, /\.photo-detail-meta span,\s*\.photo-detail-visibility,\s*\.photo-detail-like-panel\s*\{[^}]*width:\s*100%;/s);
-    assert.match(mobile, /\.photo-detail-nearby__grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.doesNotMatch(mobile, /\.photo-detail-nearby/);
     assert.match(mobile, /\.photo-fullscreen-modal\s*\{[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(mobile, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;/s);
 });
