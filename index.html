@@ -37,11 +37,11 @@
                 <img src="images/logo.png" alt="">
                 <span>Ikkyee</span>
             </a>
-            <nav class="top-nav" aria-label="Main navigation">
-                <a href="#/" data-route="home" class="active">Home</a>
-                <a href="#/explore" data-route="explore">Explore</a>
-            </nav>
             <div class="account-area">
+                <button id="btn-header-upload" class="nav-action nav-create" data-route="upload" type="button">
+                    <span class="material-symbols-outlined" aria-hidden="true">add_a_photo</span>
+                    <span>사진 추가</span>
+                </button>
                 <button id="btn-open-auth" class="nav-action" type="button">Login</button>
                 <div class="account-notification-shell">
                     <button id="btn-open-notifications" class="account-notification-trigger" type="button" aria-label="알림" aria-expanded="false" aria-controls="account-notification-popover" hidden>
@@ -53,18 +53,70 @@
                         <div id="account-notification-list" class="account-notification-list"></div>
                     </div>
                 </div>
-                <button id="btn-open-profile" class="account-profile-trigger" type="button" aria-label="내 프로필 열기" hidden>
-                    <span id="account-avatar" class="avatar account-avatar">
-                        <img id="account-avatar-image" alt="" hidden>
-                        <span id="account-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
-                    </span>
-                </button>
+                <div class="account-menu-shell">
+                    <button id="btn-open-profile" class="account-profile-trigger" type="button" aria-label="내 프로필 열기" aria-expanded="false" aria-controls="account-menu-popover" hidden>
+                        <span id="account-avatar" class="avatar account-avatar">
+                            <img id="account-avatar-image" alt="" hidden>
+                            <span id="account-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
+                        </span>
+                        <span class="material-symbols-outlined account-menu-chevron" aria-hidden="true">expand_more</span>
+                    </button>
+                    <div id="account-menu-popover" class="account-menu-popover" hidden>
+                        <button data-account-route="profile" type="button"><span class="material-symbols-outlined" aria-hidden="true">person</span>내 프로필</button>
+                        <button data-account-route="photos" type="button"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>내 사진</button>
+                        <button data-account-route="liked" type="button"><span class="material-symbols-outlined" aria-hidden="true">favorite</span>좋아요한 사진</button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
     <main id="site-main">
         <section id="page-home" class="page page-home active" aria-labelledby="home-title">
+            <section class="landing-discovery" aria-labelledby="home-title">
+                <div class="landing-search-hero">
+                    <h1 id="home-title">당신의 장소를 찾아보세요</h1>
+                    <form id="landing-search" class="landing-search" role="search">
+                        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                        <label class="sr-only" for="landing-search-input">여행 사진 검색</label>
+                        <input id="landing-search-input" type="search" autocomplete="off" placeholder="도시, 장소, 여행 분위기를 검색해 보세요">
+                        <button type="submit">검색</button>
+                    </form>
+                    <div class="landing-search-suggestions" aria-label="추천 검색어">
+                        <span>지금 둘러보기</span>
+                        <button type="button" data-landing-query="제주 바다">제주 바다</button>
+                        <button type="button" data-landing-query="서울 야경">서울 야경</button>
+                        <button type="button" data-landing-query="부산">부산</button>
+                        <button type="button" data-landing-query="도쿄 골목">도쿄 골목</button>
+                        <button type="button" data-landing-query="벚꽃">벚꽃 여행</button>
+                    </div>
+                    <button id="landing-map-primary" class="landing-map-link" data-route="explore" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                        <span>지도에서 둘러보기</span>
+                    </button>
+                </div>
+                <div class="landing-section-toolbar page-container">
+                    <p id="landing-search-result-copy" class="sr-only" aria-live="polite">공개 사진을 주제별로 둘러보세요.</p>
+                    <button id="btn-edit-landing" class="btn-secondary" data-route="admin-landing" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>랜딩 구성 편집
+                    </button>
+                </div>
+                <div id="landing-sections" class="landing-sections page-container">
+                    <section class="landing-photo-section" aria-labelledby="landing-loading-title">
+                        <div class="landing-section-heading">
+                            <div><h2 id="landing-loading-title">여행 사진을 불러오는 중입니다</h2></div>
+                        </div>
+                        <div class="landing-photo-row" data-landing-scroll tabindex="0" aria-label="공개 여행 사진"></div>
+                    </section>
+                </div>
+                <section class="landing-map-footer page-container" aria-labelledby="landing-map-footer-title">
+                    <h2 id="landing-map-footer-title">지도에서 확인하세요</h2>
+                    <button id="landing-map-footer" class="btn-primary" data-route="explore" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+                        <span>지도에서 둘러보기</span>
+                    </button>
+                </section>
+            </section>
             <section class="white-band home-houses-reference" aria-labelledby="home-houses-reference-title">
                 <div class="home-houses-reference__word" aria-hidden="true">Ikkyee</div>
                 <div class="home-houses-reference__content">
@@ -237,7 +289,11 @@
                     Home
                 </button>
                 <div class="page-intro">
-                    <h1 id="photos-title">최근사진</h1>
+                    <h1 id="photos-title">내 사진</h1>
+                </div>
+                <div class="my-library-tabs" role="tablist" aria-label="내 사진 보기">
+                    <button class="active" data-my-library-tab="photos" type="button" role="tab" aria-selected="true">사진</button>
+                    <button data-my-library-tab="albums" type="button" role="tab" aria-selected="false">앨범</button>
                 </div>
                 <section class="attention-banner" role="status" hidden>
                     <div>
@@ -247,7 +303,7 @@
                     <button id="btn-direct-missing-location" type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
                     <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
                 </section>
-                <section class="dashboard-panel full-panel">
+                <section class="dashboard-panel full-panel" data-my-library-panel="photos">
                     <div class="panel-topline">
                         <div>
                             <p id="personal-photo-summary">0장</p>
@@ -260,6 +316,32 @@
                     <div id="personal-photo-grid" class="personal-photo-grid"></div>
                     <nav id="personal-photo-pagination" class="photo-pagination" aria-label="내 사진 페이지" hidden></nav>
                 </section>
+                <section class="dashboard-panel full-panel my-library-albums" data-my-library-panel="albums" hidden>
+                    <div class="panel-topline">
+                        <div><p>사진을 여행별 앨범으로 묶어 볼 수 있습니다.</p></div>
+                        <button id="btn-open-album-from-photos" class="btn-primary compact-action-button" type="button">앨범 만들기</button>
+                    </div>
+                    <div id="photos-album-list" class="album-list"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="page-admin-landing" class="page page-admin-landing" aria-labelledby="admin-landing-title">
+            <div class="page-container admin-landing-container">
+                <button class="back-link" data-route="landing" type="button"><span class="material-symbols-outlined">arrow_back</span>랜딩으로 돌아가기</button>
+                <div class="page-intro">
+                    <p class="eyebrow">관리자 전용</p>
+                    <h1 id="admin-landing-title">랜딩 사진 섹션 구성</h1>
+                    <p>소제목과 설명을 수정하고, 공개 사진 ID를 원하는 순서대로 입력하세요.</p>
+                </div>
+                <form id="landing-admin-form" class="admin-landing-form">
+                    <div id="landing-admin-sections"></div>
+                    <div class="admin-landing-actions">
+                        <button id="btn-add-landing-section" class="btn-secondary" type="button">섹션 추가</button>
+                        <button class="btn-primary" type="submit">랜딩 구성 저장</button>
+                    </div>
+                    <p id="landing-admin-message" aria-live="polite"></p>
+                </form>
             </div>
         </section>
 
@@ -600,7 +682,17 @@
 
     <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
         <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">
-            <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image data-open-photo-fullscreen role="button" tabindex="0">
+            <div class="photo-detail-media-column">
+                <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image data-open-photo-fullscreen role="button" tabindex="0">
+                <section id="photo-detail-street-view" class="photo-detail-street-view" hidden>
+                    <div class="photo-detail-street-view__heading">
+                        <div><h3>거리뷰</h3><p>정확한 위치가 공개된 사진에서만 사용할 수 있습니다.</p></div>
+                        <button id="btn-load-street-view" class="btn-secondary" type="button">거리뷰 보기</button>
+                    </div>
+                    <div id="photo-detail-street-view-canvas" class="photo-detail-street-view__canvas" hidden></div>
+                    <p id="photo-detail-street-view-message" aria-live="polite"></p>
+                </section>
+            </div>
             <section>
                 <div class="photo-detail-section-head">
                     <div class="photo-detail-more">
@@ -787,17 +879,6 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
-        <button type="button" data-mobile-route="home">
-            <span class="material-symbols-outlined">home</span>
-            홈
-        </button>
-        <button type="button" data-mobile-route="explore">
-            <span class="material-symbols-outlined">explore</span>
-            탐색
-        </button>
-    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2/dist/umd/supabase.min.js" defer></script>
     <script type="module" src="/js/app.js"></script>

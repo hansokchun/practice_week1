@@ -224,15 +224,14 @@ test('logged-in home hides the houses reference with the other public intro band
     assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-houses-reference\s*\{[^}]*display:\s*block;/s);
 });
 
-test('logo landing route keeps the public introduction visible for signed-in users', () => {
+test('logo landing route uses the same redesigned landing for signed-in users', () => {
     const styles = css();
     const app = source();
 
     assert.match(app, /const LANDING_ROUTE = 'landing';/);
     assert.match(app, /document\.body\.dataset\.page = normalized === LANDING_ROUTE \? LANDING_ROUTE : renderedRoute;/);
-    assert.match(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.home-workspace\s*\{[^}]*display:\s*none;/s);
-    assert.match(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.home-houses-reference,[\s\S]*body\.is-logged-in\[data-page="landing"\]\s+\.white-band\s*\{[^}]*display:\s*block;/s);
-    assert.match(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.home-feature-stories\s*\{[^}]*display:\s*grid;/s);
+    assert.match(styles, /\.page-home\s*>\s*\.home-workspace\s*\{[^}]*display:\s*none\s*!important;/s);
+    assert.doesNotMatch(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.(?:home-workspace|home-houses-reference|home-feature-stories|white-band)[\s\S]*display:\s*(?:block|grid);/s);
 });
 
 test('logged-in home panels and thumbnails follow the explore visual language', () => {
@@ -309,14 +308,17 @@ test('home album thumbnails do not expose Supabase storage copy', () => {
     assert.match(albumRenderers, /<small><span class="album-count-icon" aria-hidden="true"><\/span>\$\{formatPhotoCount\(albumPhotos\.length\)\}<\/small>/);
 });
 
-test('recent photos full view uses recent-photo naming without intro copy', () => {
+test('my photos combines photo and album views without the old intro copy', () => {
     const markup = html();
     const styles = css();
     const photosStart = markup.indexOf('id="page-photos"');
     const likedStart = markup.indexOf('id="page-liked"', photosStart);
     const photosPage = markup.slice(photosStart, likedStart);
 
-    assert.match(photosPage, /<h1 id="photos-title">최근사진<\/h1>/);
+    assert.match(photosPage, /<h1 id="photos-title">내 사진<\/h1>/);
+    assert.match(photosPage, /data-my-library-tab="photos"/);
+    assert.match(photosPage, /data-my-library-tab="albums"/);
+    assert.match(photosPage, /id="photos-album-list"/);
     assert.doesNotMatch(photosPage, /Personal Photos/);
     assert.doesNotMatch(photosPage, /개별사진/);
     assert.doesNotMatch(photosPage, /앨범으로 묶지 않은 개인 사진을 확인하고/);
@@ -357,22 +359,23 @@ test('home no longer renders the bottom Korean editorial section', () => {
     assert.doesNotMatch(markup, /class="intro-image-section"/);
 });
 
-test('home private workspace is only visible after login', () => {
+test('legacy home workspace stays hidden after the account menu replaces it', () => {
     const markup = html();
     const styles = css();
     const app = source();
 
     assert.match(markup, /<body[^>]*class="[^"]*is-logged-out/);
     assert.match(styles, /body\.is-logged-out\s+\.home-workspace\s*\{[^}]*display:\s*none;/s);
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.match(styles, /\.page-home\s*>\s*\.home-workspace\s*\{[^}]*display:\s*none\s*!important;/s);
     assert.match(app, /document\.body\.classList\.toggle\('is-logged-in', Boolean\(state\.currentUser\)\)/);
     assert.match(app, /document\.body\.classList\.toggle\('is-logged-out', !state\.currentUser\)/);
 });
 
-test('logged-in home hides public intro sections and shows only the private workspace', () => {
+test('logged-in home hides legacy intro sections and the private workspace', () => {
     const styles = css();
 
-    assert.match(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.doesNotMatch(styles, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
     assert.match(styles, /body\.is-logged-in\s+\.hero,[\s\S]*body\.is-logged-in\s+\.home-feature-stories,[\s\S]*body\.is-logged-in\s+\.editorial-feature[\s\S]*\{[^}]*display:\s*none;/s);
 });
 

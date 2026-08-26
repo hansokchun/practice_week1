@@ -1,0 +1,157 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import {
+    getDefaultLandingSections,
+    getLandingSearchResults,
+    getLandingSectionPhotos,
+    getLandingVisiblePhotos,
+    isLandingAdmin,
+    normalizeLandingSections
+} from '../js/landing-sections.mjs';
+
+const root = new URL('../', import.meta.url);
+
+test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    assert.match(html, /id="landing-search"/);
+    assert.match(html, /id="landing-search-input"/);
+    assert.match(html, /class="landing-search-suggestions"/);
+    assert.match(html, /id="landing-sections"/);
+    assert.match(html, /data-landing-scroll/);
+});
+
+test('검색창 위에는 지정한 제목만 표시한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const heroStart = html.indexOf('class="landing-search-hero"');
+    const searchStart = html.indexOf('id="landing-search"', heroStart);
+    const beforeSearch = html.slice(heroStart, searchStart);
+    assert.match(beforeSearch, />당신의 장소를 찾아보세요</);
+    assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
+});
+
+test('기본 랜딩 소제목은 추천, 한국, 일본, 풍경, 도시 순서로만 구성한다', () => {
+    const sections = getDefaultLandingSections();
+    assert.deepEqual(sections.map(({ title }) => title), ['추천', '한국', '일본', '풍경', '도시']);
+    assert.equal(sections.every(({ description }) => description === ''), true);
+
+    const photos = Array.from({ length: 5 }, (_, index) => ({ id: String(index), visibility: 'public' }));
+    assert.equal(getLandingSectionPhotos(sections[0], photos, 0).length, 5);
+    assert.equal(getLandingSectionPhotos(sections[4], photos, 4).length, 5);
+});
+
+test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이를 두지 않는다', async () => {
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    const cardStart = app.indexOf('function renderLandingPhotoCard');
+    const cardEnd = app.indexOf('function renderLandingSections', cardStart);
+    const cardRenderer = app.slice(cardStart, cardEnd);
+    assert.match(cardRenderer, /<img /);
+    assert.doesNotMatch(cardRenderer, /<span>/);
+    assert.doesNotMatch(css, /\.landing-photo-card span\s*\{/);
+    assert.match(css, /\.landing-photo-section\s*\{[^}]*min-width:\s*0;/s);
+    assert.match(css, /\.landing-photo-row\s*\{[^}]*min-width:\s*0;[^}]*width:\s*100%;/s);
+});
+
+test('하단 지도 CTA는 글자가 겹치지 않는 반응형 그리드를 사용한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    assert.match(html, /id="landing-map-footer-title">지도에서 확인하세요<\/h2>/);
+    assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-footer\.page-container\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+});
+
+test('랜딩 소제목은 중앙에 놓이고 섹션 사이에는 충분한 여백을 둔다', async () => {
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    assert.match(css, /\.landing-section-heading\s*\{[^}]*position:\s*relative;[^}]*display:\s*grid;[^}]*place-items:\s*center;/s);
+    assert.match(css, /\.landing-section-heading\s*\{[^}]*margin-bottom:\s*36px;/s);
+    assert.match(css, /\.landing-section-heading h2\s*\{[^}]*text-align:\s*center;/s);
+    assert.match(css, /\.landing-scroll-actions\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
+    assert.match(css, /\.landing-sections\s*\{[^}]*gap:\s*128px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-sections\.page-container\s*\{[^}]*gap:\s*104px;/s);
+});
+
+test('로그인 여부와 관계없이 기본 홈은 새 랜딩만 표시한다', async () => {
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    assert.match(css, /\.page-home\s*>\s*\.home-workspace\s*\{[^}]*display:\s*none\s*!important;/s);
+    assert.match(css, /body\.is-logged-in\[data-page="home"\]\s+\.page-home\s*>\s*\.landing-discovery,[\s\S]*body\.is-logged-in\[data-page="landing"\]\s+\.page-home\s*>\s*\.landing-discovery\s*\{[^}]*display:\s*block;/s);
+    assert.doesNotMatch(css, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*display:\s*block;/s);
+    assert.doesNotMatch(css, /body\.is-logged-in\[data-page="landing"\]\s+\.(?:home-workspace|home-houses-reference|home-feature-stories|white-band)[\s\S]*display:\s*(?:block|grid);/s);
+});
+
+test('랜딩은 상단·고정 하단 메뉴 대신 두 곳에서 지도 둘러보기를 제공한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    assert.doesNotMatch(html, /class="top-nav"/);
+    assert.doesNotMatch(html, /class="mobile-bottom-nav"/);
+    assert.match(html, /id="landing-map-primary"[^>]*data-route="explore"/);
+    assert.match(html, /id="landing-map-footer"[^>]*data-route="explore"/);
+});
+
+test('헤더 사진 추가와 계정 메뉴는 승인된 세 가지 개인 메뉴만 노출한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const accountMenuStart = html.indexOf('id="account-menu-popover"');
+    const accountMenuEnd = html.indexOf('</div>', accountMenuStart);
+    const accountMenu = html.slice(accountMenuStart, accountMenuEnd);
+    assert.match(html, /id="btn-header-upload"[^>]*data-route="upload"/);
+    assert.match(accountMenu, /내 프로필/);
+    assert.match(accountMenu, /내 사진/);
+    assert.match(accountMenu, /좋아요한 사진/);
+    assert.doesNotMatch(accountMenu, /여행요약|여행 요약/);
+});
+
+test('내 사진 페이지 안에서 사진과 앨범을 전환한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const pageStart = html.indexOf('id="page-photos"');
+    const pageEnd = html.indexOf('id="page-liked"');
+    const page = html.slice(pageStart, pageEnd);
+    assert.match(page, /data-my-library-tab="photos"/);
+    assert.match(page, /data-my-library-tab="albums"/);
+    assert.match(page, /id="photos-album-list"/);
+});
+
+test('사진 상세는 정확 위치에서만 지연 로딩하는 거리뷰 영역을 제공한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
+    assert.match(html, /id="photo-detail-street-view"/);
+    assert.match(html, /id="btn-load-street-view"/);
+    assert.match(app, /normalizeLocationPrecision\(photo\.location_precision\) === 'exact'/);
+    assert.match(app, /new maps\.StreetViewService\(\)/);
+    assert.match(app, /preference:\s*maps\.StreetViewPreference\.NEAREST/);
+    assert.match(app, /new maps\.StreetViewPanorama\(canvas/);
+});
+
+test('랜딩 관리자 저장소는 app_metadata 관리자만 변경할 수 있다', async () => {
+    const migration = await readFile(new URL('supabase/migrations/20260826090519_add_landing_curation.sql', root), 'utf8');
+    assert.match(migration, /create table if not exists public\.landing_sections/i);
+    assert.match(migration, /create table if not exists public\.landing_section_photos/i);
+    assert.match(migration, /enable row level security/i);
+    assert.match(migration, /auth\.jwt\(\) -> 'app_metadata' ->> 'role'/);
+    assert.doesNotMatch(migration, /user_metadata/);
+    assert.match(migration, /revoke all on table public\.landing_sections from anon, authenticated/i);
+});
+
+test('관리자 판별은 수정 가능한 app_metadata만 사용한다', () => {
+    assert.equal(isLandingAdmin({ app_metadata: { role: 'admin' } }), true);
+    assert.equal(isLandingAdmin({ user_metadata: { role: 'admin' } }), false);
+});
+
+test('랜딩 섹션과 검색, 추가 로딩 규칙을 정규화한다', () => {
+    const sections = normalizeLandingSections([
+        { id: 2, title: '도시', sort_order: 2, is_visible: true },
+        { id: 1, title: '바다', sort_order: 1, is_visible: true },
+        { id: 3, title: '숨김', sort_order: 0, is_visible: false }
+    ], [
+        { section_id: 1, photo_id: 'b', sort_order: 2 },
+        { section_id: 1, photo_id: 'a', sort_order: 1 }
+    ]);
+    assert.deepEqual(sections.map((section) => section.title), ['바다', '도시']);
+    assert.deepEqual(sections[0].photo_ids, ['a', 'b']);
+
+    const photos = [
+        { id: 'a', visibility: 'public', description: '제주 바다' },
+        { id: 'b', visibility: 'private', description: '제주 바다' },
+        { id: 'c', shared: true, placeName: '서울 야경' }
+    ];
+    assert.deepEqual(getLandingSearchResults(photos, '제주').map(({ id }) => id), ['a']);
+    assert.equal(getLandingVisiblePhotos(Array.from({ length: 30 }), 20).length, 20);
+});

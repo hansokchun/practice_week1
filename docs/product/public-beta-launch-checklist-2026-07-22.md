@@ -1,149 +1,209 @@
-# Ikkyee Public Beta Launch Checklist
+# Ikkyee 웹 공개 베타 출시 체크리스트
 
-**Updated:** 2026-08-18
+**최종 갱신:** 2026-08-26
+**출시 목표:** 누구나 가입할 수 있는 제한된 범위의 공개 베타
+**제품 약속:** 사진을 고르면 여행 지도가 만들어진다.
+**P0 상태:** 활성 기술 관문은 모두 완료했다. 유료 요금제 안전 기능 1개는 보류 중이며 최종 지원·개인정보 문구는 사람의 승인이 필요하다.
 
-**Target:** Public beta (anyone can sign up, with a deliberately limited scope)  
-**Product promise:** Choose photos, and a travel map is created.
-**P0 progress:** All active technical gates complete. One paid-plan safeguard is deferred, and final support/privacy approval remains a human launch gate.
+## 현재 진행 상황
 
-## How To Use This Checklist
+**전체 48개 중 44개 완료(91.7%), 4개 남음 — 2026-08-24 기준**
 
-- The detailed working board lives in the Notion page **공개 베타 출시 작업**.
-- This document is the version-controlled launch standard. Update it when a launch decision, risk, or gate changes.
-- Every implementation task starts on `dev`, passes local verification, then is pushed to GitHub for the Cloudflare Preview deployment.
-- Only explicitly approved, fully gated releases move from `dev` to `main`.
+### 지금까지 완료한 것
 
-## Current Baseline
+- 홈, 사진 업로드, EXIF·위치 지정, 앨범, Explore, 공개 프로필, 좋아요의 핵심 흐름을 구현했다.
+- 이메일·Google·Kakao 인증과 비밀번호 복구를 실제 환경에서 검증했다.
+- 사진 Storage를 비공개로 전환하고 15분 서명 URL, RLS, 소유자·타 사용자·익명 접근을 검증했다.
+- 공개 위치의 정확·근사·숨김 정책과 게시 취소 동작을 구현하고 역할별로 검증했다.
+- Google 지도 검색·마커를 최신 API로 바꾸고 키 제한과 Map ID를 운영·미리보기에 적용했다.
+- Cloudflare 보안 헤더, 성능 예산, 장애 대응, 백업·복구 연습, 운영 비용 기준을 마련했다.
+- 웹 랜딩을 공개 사진 발견형으로 개편하고 검색, 가로 사진 섹션, 사진 상세, 내 사진·앨범 통합 구조를 구현했다.
+- 웹 테스트 593개와 운영 빌드가 통과한다.
 
-| Area | Status | Evidence |
+### 웹 랜딩 개편 진행 상황
+
+**개편 확인 항목 21개 중 17개 완료(81%), 4개 남음**
+
+완료한 범위:
+
+- `당신의 장소를 찾아보세요` 제목과 큰 검색창, 추천 검색어
+- `추천 → 한국 → 일본 → 풍경 → 도시` 기본 소제목, 글 없는 사진 썸네일, 가로 목록·점진 로딩
+- 헤더 `사진 추가`, 계정 메뉴 3개 항목, `내 사진` 안의 앨범 탭
+- 사진 상세의 큰 사진·정보·지도와 왼쪽 스크롤 아래 거리뷰 지연 로딩
+- 관리자 섹션·사진 선택·정렬 화면과 `app_metadata` 관리자 RLS 마이그레이션
+- 데스크톱·390px 모바일 로컬 브라우저 확인, 자동 테스트 593개, 운영 빌드
+- 소제목·사진 간격 36px와 섹션 간격 데스크톱 128px·모바일 104px 적용, 로그인 전후 동일한 새 랜딩 표시
+- 상단·모바일 고정 탐색 메뉴 제거, 검색 아래·사진 목록 끝의 지도 진입, 하단 CTA 글자 겹침 수정
+- 거리뷰를 상세 열기 시 자동 생성하지 않는 비용 안전장치와 가장 가까운 실외 파노라마 선택
+
+남은 범위:
+
+1. Supabase 미리보기에 새 랜딩 테이블·RLS 마이그레이션을 적용한다.
+2. Cloudflare 미리보기에서 관리자 저장과 실제 Google Street View를 확인한다.
+3. 로그인 상태 계정 메뉴를 미리보기에서 확인한다.
+4. iOS Safari·Android Chrome 실기기에서 새 랜딩과 상세 스크롤을 확인한다.
+
+### 남은 4개 체크 항목
+
+1. **요금제 보류:** Supabase 유료 요금제로 전환한 뒤 유출 비밀번호 차단과 이메일 가입을 확인한다.
+2. **실기기 브라우저 QA:** iOS Safari·Android Chrome에서 업로드, 지도, 화면 이동, 모달, 안전 영역, Kakao 공유를 최종 점검한다.
+3. **출시 후 운영:** 사용자 의견을 버그·사용성·기능 요청으로 분류한다.
+4. **출시 후 운영:** 사용자 영향과 반복 빈도를 기준으로 매주 우선순위를 다시 정한다.
+
+### 체크 항목 외 최종 사람 승인
+
+- 공개 지원 이메일과 답변 시간
+- 계정 삭제 확인 방식과 데이터 보존 기간
+- 서비스 공급자 고지 및 개인정보 문구
+- 필요한 경우 법률 검토와 운영 공개 승인
+
+### 바로 다음 작업
+
+1. iOS Safari·Android Chrome 실기기 QA를 완료한다.
+2. 최종 지원·삭제·보존·개인정보 문구를 승인한다.
+3. `dev`와 `main` 사이의 웹 변경을 검토하고 명시적 승인 뒤 운영 배포한다.
+4. 공개 베타를 연 뒤 피드백 분류와 주간 우선순위 운영을 시작한다.
+
+## 체크리스트 사용 원칙
+
+- 상세 작업판은 Notion의 **공개 베타 출시 작업** 페이지에 있다.
+- 이 문서는 버전 관리되는 출시 기준이다. 출시 결정, 위험, 관문이 바뀌면 함께 갱신한다.
+- 구현은 `dev`에서 시작해 로컬 검증을 통과한 뒤 GitHub에 올리고 Cloudflare 미리보기에서 확인한다.
+- 명시적으로 승인되고 모든 관문을 통과한 출시만 `dev`에서 `main`으로 이동한다.
+- 앞으로 새 항목과 진행 기록은 한글로 작성한다. 파일명, 명령어, API·서비스 고유명사는 원문을 유지한다.
+
+## 현재 기준 상태
+
+| 영역 | 상태 | 근거 |
 | --- | --- | --- |
-| Core product flow | Implemented | Home, upload, EXIF/location assignment, albums, Explore, public profiles, likes |
-| Automated verification | Passing | `npm test`: 478 passing, 0 failing (2026-08-18 baseline) |
-| Production build | Passing | `npm run build` (2026-08-18 baseline) |
-| Preview delivery | Verified | The latest `dev` release, including KakaoTalk album sharing, is deployed at `https://dev.practice-week1-cws.pages.dev`. |
-| Production delivery | Promotion required | GitHub `dev` is 4 commits ahead of `main`. Production remains on `fb859cd` until explicit release approval. |
-| Supabase RLS | Enabled | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
-| Photo storage privacy | Private, passing | The `photos` bucket is private. Owner, non-owner, anonymous, signed-URL, legacy public-URL, and logged-out Production Explore checks passed. |
-| Storage cutover verification | Passing | The private-bucket and signed-URL access regression passed before sample cleanup. Storage policies and the bucket remain unchanged. |
-| Database sample cleanup | Passing | All 21 photo rows, 3 albums, and dependent content rows were removed on 2026-08-10. Auth accounts and profiles remain at 3 each. |
-| Storage sample cleanup | Passing | All photo files and empty-folder placeholders were removed through the authenticated Dashboard. 0 objects remain in the private `photos` bucket; the bucket and 4 policies remain. |
-| Public location privacy | Passing | Owner, non-owner, and anonymous role checks confirm approximate publication, hidden-location denial, and owner-only source coordinates. See `docs/qa/public-location-privacy-role-qa-2026-07-26.md`. |
-| Public Explore QA | Passing | Logged-out pins, photo details, public profiles/albums, non-owner likes, and scope switching verified in Cloudflare Preview |
-| Explore map platform | Modernized, passing | Production and Preview use the approved JavaScript vector Map ID, `AdvancedMarkerElement`, and `PlaceAutocompleteElement`; the browser key is limited to the Pages hosts and local Vite ports. See `docs/qa/google-maps-modernization-qa-2026-08-10.md`. |
-| Browser response headers | Implemented | Cloudflare Pages Preview returns CSP, frame, content-type, referrer, and permissions headers |
-| Authentication QA | Passing | Email verification, password recovery, Google and Kakao login, mobile Kakao return, and first-time account creation with fresh Google and Kakao accounts passed. |
-| KakaoTalk sharing | Preview verified | Kakao app name, Product Link domains, JavaScript SDK domains, Open Graph metadata, embedded-browser handling, and album-share picker integration are complete on `dev`; Production promotion remains. |
-| Password safety | Deferred on Free | Supabase leaked-password protection requires a paid plan; revisit after a plan upgrade |
-| Operations inventory | Cloudflare audit complete | Git/build/branch settings and environment key names were verified on 2026-07-25. The unused `SUPABASE_JWT_SECRET` and `MY_BUCKET` binding were removed without inspecting secret values or deleting the R2 bucket. |
-| Database backup/PITR | Manual recovery rehearsed | The encrypted export and data-free schema baseline are verified. On 2026-07-27 the backup restored transactionally in an isolated local Supabase database with 7 tables, 24 policies, 1 trigger, and RLS on all 7 public tables. Storage binaries remain a separate recovery boundary. |
+| 핵심 제품 흐름 | 구현 완료 | 공개 사진 발견형 랜딩, 검색, 업로드, EXIF·위치 지정, 내 사진·앨범, Explore, 공개 프로필, 좋아요 |
+| 웹 랜딩 개편 | 로컬 구현 완료 | 큰 검색창, 가로 사진 섹션, 계정 메뉴, 내 사진 안의 앨범, 관리자 편집, 거리뷰 지연 로딩. 운영 연결 확인 4개 남음 |
+| 자동 검증 | 통과 | 웹 테스트만 `test/*.test.mjs`에서 찾도록 분리했으며 `npm test` 593개 통과, 실패 0개 (2026-08-26) |
+| 운영 빌드 | 통과 | `npm run build` 재검증 (2026-08-26) |
+| 미리보기 배포 | 검증 완료 | KakaoTalk 앨범 공유를 포함한 최신 `dev` 출시가 `https://dev.practice-week1-cws.pages.dev`에 배포됨 |
+| 운영 배포 | 새 웹 커밋 미반영 | 2026-08-24 로컬 관찰 기준 `origin/dev`가 `origin/main`보다 27커밋 앞섬. 이번 점검에서는 배포·푸시하지 않음 |
+| Supabase RLS | 활성화 | `photos`, `albums`, `album_photos`, `profiles`, `user_likes`, `comments` |
+| 사진 Storage 개인정보 | 비공개·통과 | `photos` 버킷 비공개. 소유자·타 사용자·익명·서명 URL·과거 공개 URL·로그아웃 운영 Explore 점검 통과 |
+| Storage 전환 검증 | 통과 | 예시 데이터 정리 전에 비공개 버킷과 서명 URL 회귀 검증 통과. 정책과 버킷 유지 |
+| DB 예시 데이터 정리 | 통과 | 2026-08-10 사진 21개, 앨범 3개와 연결 콘텐츠 삭제. Auth 계정과 프로필은 각각 3개 유지 |
+| Storage 예시 정리 | 통과 | 사진 파일과 빈 폴더 표시 파일 삭제. 비공개 `photos` 버킷 객체 0개, 버킷과 정책 4개 유지 |
+| 공개 위치 개인정보 | 통과 | 소유자·타 사용자·익명 역할에서 근사 공개, 숨김 위치 거부, 소유자 전용 원본 좌표 확인. `docs/qa/public-location-privacy-role-qa-2026-07-26.md` |
+| 공개 Explore QA | 통과 | 로그아웃 핀, 사진 상세, 공개 프로필·앨범, 타 사용자 좋아요, 범위 전환을 Cloudflare 미리보기에서 확인 |
+| Explore 지도 플랫폼 | 최신화·통과 | 운영·미리보기에 JavaScript 벡터 Map ID, `AdvancedMarkerElement`, `PlaceAutocompleteElement` 적용. 키를 Pages 호스트와 로컬 Vite 포트로 제한 |
+| 브라우저 응답 헤더 | 구현 완료 | Cloudflare Pages 미리보기에 CSP, 프레임, 콘텐츠 유형, 리퍼러, 권한 헤더 적용 |
+| 인증 QA | 통과 | 이메일 인증·비밀번호 복구·Google·Kakao 로그인·모바일 Kakao 복귀·새 계정 가입 확인 |
+| KakaoTalk 공유 | 미리보기 검증 | 앱 이름, Product Link 도메인, JavaScript SDK 도메인, Open Graph, 내장 브라우저, 앨범 공유 선택기 완료. 운영 반영은 별도 |
+| 비밀번호 안전 | Free 요금제에서 보류 | Supabase 유출 비밀번호 차단은 유료 요금제가 필요하므로 업그레이드 뒤 재검토 |
+| 운영 환경 목록 | Cloudflare 점검 완료 | Git·빌드·브랜치와 환경 키 이름 확인. 사용하지 않는 `SUPABASE_JWT_SECRET`, `MY_BUCKET` 연결 제거 |
+| DB 백업·시점 복구 | 수동 복구 연습 완료 | 암호화 내보내기와 데이터 없는 스키마 기준 검증. 격리 로컬 Supabase에서 7개 테이블, 24개 정책, 트리거 1개, RLS 복구 확인 |
 
-## Launch Gates
+## 출시 관문
 
-### P0: Release Blockers
+### P0: 출시 차단 항목
 
-- [x] Establish a passing automated-test and build baseline.
-- [x] Approve the private-photo storage migration: private bucket, `storage_path`, signed URL policy, and rollback plan.
-- [x] Backfill `photos.storage_path` for existing images while retaining compatibility with existing `url` values.
-- [x] Add an RLS-controlled 15-minute signed URL resolver without exposing privileged credentials.
-- [x] Move upload, image rendering, and deletion flows to the private-storage-compatible model.
-- [x] Verify private files fail for logged-out and non-owner accounts, while public Explore remains visible.
-- [x] Define and implement public location rules: exact, approximate, hidden, and unpublish/revoke behavior.
-- [x] Run three-account RLS and Storage QA: owner, another signed-in user, and logged-out user.
-- [ ] **Deferred while on Supabase Free:** enable leaked-password protection and confirm email sign-up behavior after upgrading to a paid plan.
-- [x] Confirm the production environment inventory, secret ownership, backup/recovery steps, and migration rollback steps in the operator dashboard.
-- [x] Prepare privacy, location-sharing, account deletion, and support-contact copy for review before public publication. Final support address, retention policy, and legal review remain explicit pre-launch approvals.
-- [x] Run real-device authentication QA, including fresh email, Google, and Kakao account creation and mobile Kakao return behavior.
-- [x] Run real-photo lifecycle QA: GPS upload, manual location, edit, album assignment, visibility change, delete, and refresh recovery.
-- [x] Run public Explore QA: logged-out pins, detail views, likes, public albums, and public profiles.
+- [x] 자동 테스트와 빌드가 통과하는 기준선을 만든다.
+- [x] 비공개 버킷, `storage_path`, 서명 URL 정책, 되돌리기 계획을 포함한 비공개 사진 Storage 전환을 승인한다.
+- [x] 기존 `url` 호환성을 유지하면서 기존 이미지의 `photos.storage_path`를 채운다.
+- [x] 권한 상승 비밀값을 노출하지 않는 RLS 제어 15분 서명 URL 해석기를 추가한다.
+- [x] 업로드, 이미지 표시, 삭제 흐름을 비공개 Storage 호환 방식으로 바꾼다.
+- [x] 로그아웃 사용자와 소유자가 아닌 계정의 비공개 파일 접근은 실패하고 공개 Explore는 보이는지 검증한다.
+- [x] 정확·근사·숨김·게시 취소를 포함한 공개 위치 정책을 정의하고 구현한다.
+- [x] 소유자·다른 로그인 사용자·로그아웃 사용자의 3계정 RLS·Storage QA를 실행한다.
+- [ ] **Supabase Free 요금제 동안 보류:** 유출 비밀번호 차단을 켜고 유료 요금제 전환 뒤 이메일 가입 동작을 확인한다.
+- [x] 운영 환경 목록, 비밀값 담당, 백업·복구 절차, 마이그레이션 되돌리기 절차를 운영 화면에서 확인한다.
+- [x] 공개 전 검토할 개인정보, 위치 공유, 계정 삭제, 지원 연락처 초안을 준비한다. 최종 지원 주소·보존 정책·법률 검토는 별도 사람 승인이다.
+- [x] 새 이메일·Google·Kakao 계정 생성과 모바일 Kakao 복귀를 포함한 실기기 인증 QA를 실행한다.
+- [x] GPS 업로드, 수동 위치, 편집, 앨범 배정, 공개 범위 변경, 삭제, 새로고침 복구의 실제 사진 수명주기 QA를 실행한다.
+- [x] 로그아웃 핀, 상세, 좋아요, 공개 앨범, 공개 프로필의 공개 Explore QA를 실행한다.
 
-### Recently Completed Hardening
+### 최근 완료한 강화 작업
 
-- [x] Replace deprecated Google Maps Explore search integration with the supported `Autocomplete` API and async loader.
-- [x] Activate the approved vector Map ID in Preview and Production, verify the modern map/search path, and restrict the deployed browser key to the required Pages and local-development referrers.
-- [x] Add Cloudflare Pages response security headers and verify them against the `dev` Preview deployment.
-- [x] Distinguish saved-library failures from empty states, add retry actions, and replace map/upload backend details with safe user-facing guidance.
-- [x] Add enforceable JS, CSS, and image budgets; remove 8 MB of unused PNG build output; and record mobile route-render timing.
-- [x] Consolidate incident ownership, severity, Cloudflare/Supabase log paths, reversible rollback, privacy safeguards, and closeout evidence into one runbook.
-- [x] Define five privacy-conscious beta metrics using existing first-party aggregate records, with seven-day cohorts and small-group suppression.
-- [x] Rehearse the non-production release gate, deployed-shell smoke checks, and reversible rollback sequence.
-- [x] Normalize email confirmation/reset redirects and remove duplicate Kakao scopes found during Preview authentication QA.
-- [x] Verify public location privacy with owner, non-owner, and anonymous database roles without exposing coordinates or user identifiers.
-- [x] Capture and automatically validate a secret-free, data-free live Supabase schema baseline for disaster recovery.
-- [x] Restore the encrypted backup transactionally in an isolated local Supabase database and verify schema, RLS, policies, triggers, safe aggregates, and cleanup.
-- [x] Classify all current pre-launch content as disposable sample data so Storage cutover work can use a clean reset and minimal fresh QA fixtures.
-- [x] Revalidate the exact `dev` release candidate against the deployed Preview and record its commit, production distance, non-destructive boundary, and remaining gates.
-- [x] Add a non-destructive private Storage preflight that validates signed-URL compatibility, aggregate live evidence, Git state, Preview smoke checks, tests, and build before cutover approval.
-- [x] Fast-forward the approved signed-URL-compatible release to `main` and pass the Cloudflare Production smoke verification.
-- [x] Make the shared `photos` bucket private and pass role, direct-URL, signed-URL, and logged-out Production Explore regression checks.
-- [x] Revalidate Kakao Auth in Production and allow authenticated Kakao accounts without email to use upload and publish flows.
-- [x] Persist one canonical Ikkyee profile across linked Google and Kakao identities so provider metadata cannot swap the visible profile.
-- [x] Ask after Kakao OAuth whether to apply the Kakao name and avatar, with an explicit option to keep the current Ikkyee profile.
-- [x] Keep mobile Kakao OAuth in the browser and preserve the one-time profile choice across app or tab handoffs.
-- [x] Show a dedicated new-password form after a Supabase recovery callback and safely end the recovery session after success.
-- [x] Add a first-viewport photo-upload action to the public Home opening and preserve the login-to-upload handoff.
-- [x] Remove disposable public database samples and verify the logged-out Production Explore empty state without deleting Auth accounts or profiles.
-- [x] Register Production and Preview Kakao domains, rename the Kakao app to Ikkyee, and add album sharing with a copy-link fallback.
+- [x] 사용 중단된 Google Maps Explore 검색을 지원되는 `Autocomplete` API와 비동기 로더로 교체한다.
+- [x] 승인된 벡터 Map ID를 미리보기·운영에 적용하고 최신 지도·검색을 검증하며 브라우저 키를 필요한 Pages·로컬 주소로 제한한다.
+- [x] Cloudflare Pages 응답 보안 헤더를 추가하고 `dev` 미리보기에서 검증한다.
+- [x] 저장 목록 실패와 빈 상태를 구분하고 재시도를 추가하며 지도·업로드 오류를 안전한 사용자 문구로 바꾼다.
+- [x] JS·CSS·이미지 예산을 적용하고 사용하지 않는 PNG 8MB를 제거하며 모바일 화면 표시 시간을 기록한다.
+- [x] 장애 담당, 심각도, Cloudflare·Supabase 로그, 되돌리기, 개인정보 보호, 종료 근거를 하나의 운영 지침으로 통합한다.
+- [x] 기존 1차 집계 자료로 개인정보를 보호하는 베타 지표 5개를 정의하고 7일 집단과 소규모 집단 숨김을 적용한다.
+- [x] 비운영 출시 관문, 배포 화면 기본 점검, 되돌릴 수 있는 복구 순서를 연습한다.
+- [x] 이메일 확인·재설정 리디렉션을 정규화하고 미리보기 인증 QA에서 찾은 중복 Kakao 범위를 제거한다.
+- [x] 좌표나 사용자 식별자를 노출하지 않고 소유자·타 사용자·익명 DB 역할로 공개 위치 개인정보를 검증한다.
+- [x] 재해 복구용 비밀값·데이터 없는 실제 Supabase 스키마 기준을 수집하고 자동 검증한다.
+- [x] 격리된 로컬 DB에서 암호화 백업을 트랜잭션으로 복구하고 스키마, RLS, 정책, 트리거, 안전한 집계, 정리를 검증한다.
+- [x] Storage 전환에 깨끗한 초기화와 최소 QA 예시를 쓸 수 있도록 기존 출시 전 콘텐츠를 폐기 가능한 예시 데이터로 분류한다.
+- [x] 배포된 미리보기에서 정확한 `dev` 출시 후보의 커밋, 운영 차이, 비파괴 범위, 남은 관문을 다시 검증한다.
+- [x] 서명 URL 호환성, 실제 집계 근거, Git 상태, 미리보기 기본 점검, 테스트, 빌드를 확인하는 비파괴 Storage 사전 점검을 추가한다.
+- [x] 승인된 서명 URL 호환 출시를 `main`으로 빠르게 이동하고 Cloudflare 운영 기본 점검을 통과한다.
+- [x] 공용 `photos` 버킷을 비공개로 바꾸고 역할·직접 URL·서명 URL·로그아웃 운영 Explore 회귀 검증을 통과한다.
+- [x] 운영 Kakao Auth를 재검증하고 이메일 없는 Kakao 계정도 업로드·게시를 사용할 수 있게 한다.
+- [x] 연결된 Google·Kakao 계정에서 하나의 Ikkyee 대표 프로필을 유지해 공급자 정보가 표시 프로필을 바꾸지 못하게 한다.
+- [x] Kakao OAuth 뒤 Kakao 이름·아바타 적용 여부를 묻고 기존 Ikkyee 프로필 유지 선택을 제공한다.
+- [x] 모바일 Kakao OAuth를 브라우저에서 유지하고 앱·탭 전환에도 1회성 프로필 선택을 보존한다.
+- [x] Supabase 복구 콜백 뒤 전용 새 비밀번호 양식을 표시하고 성공 후 복구 세션을 안전하게 끝낸다.
+- [x] 공개 홈 첫 화면에 사진 업로드 동작을 추가하고 로그인 뒤 업로드로 돌아오는 흐름을 보존한다.
+- [x] 폐기 가능한 공개 DB 예시를 제거하고 Auth 계정·프로필을 지우지 않은 채 운영 Explore 빈 상태를 확인한다.
+- [x] 운영·미리보기 Kakao 도메인을 등록하고 앱 이름을 Ikkyee로 바꾸며 링크 복사 대체 동작이 있는 앨범 공유를 추가한다.
 
-### P1: Public Beta Readiness
+### P1: 공개 베타 준비
 
-- [ ] Test iOS Safari and Android Chrome for upload, maps, navigation, modal behavior, and safe areas.
-- [x] Make empty, loading, map-key, network, and upload-failure states actionable and non-sensitive.
-- [x] Measure mobile loading and route transitions; set an image-size and loading budget. See `docs/performance/mobile-performance-budget-2026-07-26.md`.
-- [x] Write a single incident runbook with Cloudflare/Supabase log paths, support contact, and rollback procedure.
-- [x] Define privacy-conscious beta metrics: sign-up, first upload, first album, first publish, and Explore engagement.
-- [x] Rehearse the production deployment, smoke test, and rollback path before public traffic.
+- [ ] iOS Safari와 Android Chrome에서 업로드, 지도, 화면 이동, 모달, 안전 영역을 테스트한다.
+- [x] 빈 상태, 로딩, 지도 키, 네트워크, 업로드 실패를 실행 가능하고 민감정보 없는 상태로 만든다.
+- [x] 모바일 로딩·화면 전환을 측정하고 이미지 크기·로딩 예산을 정한다. 근거: `docs/performance/mobile-performance-budget-2026-07-26.md`.
+- [x] Cloudflare·Supabase 로그 경로, 지원 연락처, 되돌리기가 포함된 단일 장애 대응 지침을 작성한다.
+- [x] 가입, 첫 업로드, 첫 앨범, 첫 게시, Explore 참여의 개인정보 보호 베타 지표를 정의한다.
+- [x] 공개 트래픽 전에 운영 배포, 기본 점검, 되돌리기 경로를 연습한다.
 
-### P2: After Public Beta Opens
+### P2: 공개 베타 이후
 
-- [ ] Collect and label feedback as bug, usability issue, or feature request.
-- [ ] Reprioritize weekly using user impact and recurrence rather than feature novelty.
-- [x] Track storage, image traffic, active users, and service cost thresholds.
+- [ ] 사용자 의견을 버그, 사용성 문제, 기능 요청으로 분류해 수집한다.
+- [ ] 기능의 새로움보다 사용자 영향과 반복 빈도를 기준으로 매주 우선순위를 다시 정한다.
+- [x] Storage, 이미지 트래픽, 활성 사용자, 서비스 비용 기준을 추적한다.
 
-## Required Verification Scenarios
+## 필수 검증 시나리오
 
-### Account
+### 계정
 
-1. Sign up with email, verify the email, sign in, and sign out.
-2. Reset a password and confirm the user returns safely to the app.
-3. Test Google and Kakao OAuth from desktop and mobile browsers.
+1. 이메일로 가입하고 이메일을 인증한 뒤 로그인·로그아웃한다.
+2. 비밀번호를 재설정하고 안전하게 앱으로 돌아오는지 확인한다.
+3. 데스크톱·모바일 브라우저에서 Google·Kakao OAuth를 테스트한다.
 
-### Private Archive
+### 비공개 보관함
 
-1. After any sample reset, upload one fresh GPS image and confirm map placement.
-2. Upload one fresh image without GPS, choose a point on the map, and save it.
-3. Add only the required fixtures to an album, edit a description, change visibility, delete a photo, then refresh.
-4. Confirm a second account and a logged-out browser cannot view private records or image files.
+1. 예시 데이터를 초기화한 뒤 GPS 사진 1개를 올리고 지도 위치를 확인한다.
+2. GPS 없는 사진 1개를 올리고 지도에서 위치를 선택해 저장한다.
+3. 필요한 예시만 앨범에 넣고 설명 편집, 공개 범위 변경, 삭제, 새로고침을 확인한다.
+4. 다른 계정과 로그아웃 브라우저에서 비공개 레코드·이미지 파일을 볼 수 없는지 확인한다.
 
-### Public Exploration
+### 공개 탐색
 
-1. Publish only approved photos with the intended location precision.
-2. Confirm a logged-out browser can browse public pins and public profiles.
-3. Like and unlike a public photo from a different account.
-4. Revoke publication and confirm the pin, route, and image access disappear as designed.
+1. 승인한 사진만 의도한 위치 정밀도로 공개한다.
+2. 로그아웃 브라우저에서 공개 핀과 공개 프로필을 볼 수 있는지 확인한다.
+3. 다른 계정으로 공개 사진에 좋아요를 추가·취소한다.
+4. 공개를 취소하고 핀, 화면 이동, 이미지 접근이 사라지는지 확인한다.
 
-## Deployment Rule
+## 배포 규칙
 
 ```text
-Local tests and build
-  -> GitHub dev push
-  -> Cloudflare Preview QA
-  -> P0 complete + P1 core QA complete
-  -> explicit approval
-  -> GitHub main push
-  -> production smoke test and release record
+로컬 테스트와 빌드
+  -> GitHub dev 푸시
+  -> Cloudflare 미리보기 QA
+  -> P0 완료 및 P1 핵심 QA 완료
+  -> 명시적 승인
+  -> GitHub main 푸시
+  -> 운영 기본 점검 및 출시 기록
 ```
 
-## First Execution Order
+## 실행 순서
 
-1. [Complete] Deploy the signed-URL-compatible release to `main` and pass Production smoke verification.
-2. [Complete] Use the compatible disposable samples for private-bucket access QA, then remove their database records and verify the Production Explore empty state.
-3. [Complete] Verify first-time automatic sign-up with never-used Google and Kakao accounts.
-4. Run the remaining upload, map, navigation, modal, and Kakao share QA on iOS Safari and Android Chrome.
-5. Approve the final public support address, deletion-request verification, response/retention policy, provider notice, and legal copy.
-6. Run the final release rehearsal, explicitly approve promotion, fast-forward `dev` to `main`, and complete Production smoke checks.
-7. Revisit leaked-password protection only when the Supabase plan is upgraded.
+1. [완료] 서명 URL 호환 출시를 `main`에 배포하고 운영 기본 점검을 통과한다.
+2. [완료] 비공개 버킷 접근 QA 뒤 폐기 가능한 예시 DB 레코드를 제거하고 운영 Explore 빈 상태를 확인한다.
+3. [완료] 한 번도 쓰지 않은 Google·Kakao 계정의 첫 자동 가입을 검증한다.
+4. iOS Safari·Android Chrome에서 남은 업로드, 지도, 화면 이동, 모달, Kakao 공유 QA를 실행한다.
+5. 공개 지원 주소, 삭제 요청 확인, 답변·보존 정책, 공급자 고지, 법률 문구를 승인한다.
+6. 최종 출시 연습과 명시적 승인을 거쳐 `dev`를 `main`으로 이동하고 운영 기본 점검을 마친다.
+7. Supabase 요금제를 올린 뒤에만 유출 비밀번호 차단을 다시 검토한다.
 
-## References
+## 참고 문서
 
 - `docs/product/v2.1-current-scope-decision.md`
 - `docs/product/storage-private-transition-plan-2026-06-05.md`

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const css = readFileSync('style.css', 'utf8');
+const html = readFileSync('index.html', 'utf8');
 
 function mobileBlock() {
     const start = css.indexOf('@media (max-width: 860px)');
@@ -15,12 +16,12 @@ function mobileBlock() {
 test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () => {
     const mobile = mobileBlock();
 
-    assert.match(mobile, /\.explore-map-canvas\s*\{[^}]*height:\s*calc\(100svh - 64px - 92px\);/s);
+    assert.match(mobile, /\.explore-map-canvas\s*\{[^}]*height:\s*calc\(100svh - 64px\);/s);
     assert.match(mobile, /\.map-search\s*\{[^}]*top:\s*12px;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*width:\s*auto;/s);
     assert.match(mobile, /\.explore-discovery-panel\s*\{[^}]*display:\s*block;[^}]*top:\s*66px;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*background:\s*transparent;/s);
     assert.match(mobile, /\.explore-discovery-header,\s*\.explore-discovery-body\s*\{[^}]*display:\s*none;/s);
     assert.match(mobile, /\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
-    assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*92px;/s);
+    assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*calc\(12px \+ env\(safe-area-inset-bottom\)\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*max-height:\s*min\(58svh,\s*520px\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
@@ -30,10 +31,10 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.pin-preview-visibility\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
-test('mobile Home keeps the private workspace and bottom reference visible while hiding top logged-in promos', () => {
+test('mobile Home keeps the legacy reference layout stable without restoring the private workspace', () => {
     const mobile = mobileBlock();
 
-    assert.match(mobile, /body\.is-logged-in\s+\.home-workspace\s*\{[^}]*padding-top:\s*24px;/s);
+    assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-workspace\s*\{/s);
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.hero\s*\{/s);
     assert.doesNotMatch(mobile, /body\.is-logged-in\s+\.home-public-preview\s*\{/s);
     assert.match(mobile, /\.home-feature-stories\s*\{[^}]*width:\s*100%;[^}]*gap:\s*0;[^}]*margin-bottom:\s*0;[^}]*padding-left:\s*16px;[^}]*padding-right:\s*16px;/s);
@@ -52,18 +53,17 @@ test('mobile Home keeps the private workspace and bottom reference visible while
     assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__divider\s*\{/);
     assert.match(mobile, /\.home-section-divider\s*\{[^}]*height:\s*104px;[^}]*margin-top:\s*0;[^}]*margin-bottom:\s*-16px;/s);
-    assert.match(mobile, /\.site-footer\s*\{[^}]*padding:\s*38px 16px calc\(34px \+ 92px\);/s);
+    assert.match(mobile, /\.site-footer\s*\{[^}]*padding:\s*38px 16px calc\(34px \+ env\(safe-area-inset-bottom\)\);/s);
 });
 
-test('mobile app shell uses a compact header and two-item bottom navigation', () => {
+test('mobile app shell uses a compact header without fixed bottom navigation', () => {
     const mobile = mobileBlock();
 
-    assert.match(css, /\.mobile-bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
-    assert.match(css, /\.mobile-bottom-nav\s*\{[^}]*padding:\s*10px 16px calc\(12px \+ env\(safe-area-inset-bottom\)\);/s);
-    assert.match(css, /\.mobile-bottom-nav button\.active\s*\{[^}]*background:\s*var\(--teal-dark\);[^}]*color:\s*#ffffff;/s);
-    assert.match(mobile, /body\s*\{[^}]*padding-bottom:\s*calc\(92px \+ env\(safe-area-inset-bottom\)\);/s);
+    assert.doesNotMatch(html, /class="mobile-bottom-nav"/);
+    assert.doesNotMatch(css, /\.mobile-bottom-nav\s*\{/);
+    assert.match(mobile, /body\s*\{[^}]*padding-bottom:\s*0;/s);
     assert.match(mobile, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
-    assert.match(mobile, /\.top-nav\s*\{[^}]*display:\s*none;/s);
+    assert.doesNotMatch(html, /class="top-nav"/);
 });
 
 test('mobile album and photo detail views avoid side-by-side desktop layouts', () => {

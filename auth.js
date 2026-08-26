@@ -22,6 +22,8 @@ const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,descript
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
+const LANDING_SECTION_SELECT_COLUMNS = 'id,title,description,sort_order,is_visible,created_at,updated_at';
+const LANDING_SECTION_PHOTO_SELECT_COLUMNS = 'section_id,photo_id,sort_order';
 
 let _supabaseClient = null;
 
@@ -292,6 +294,68 @@ export async function fetchPhotos() {
         return { data: await hydrateSignedPhotoUrls(sb, photosWithPrivateLocations), error: null };
     } catch (error) {
         return { data: [], error };
+    }
+}
+
+export async function fetchLandingCuration() {
+    try {
+        const sb = getSupabase();
+        const [{ data: sections, error: sectionError }, { data: assignments, error: assignmentError }] = await Promise.all([
+            sb.from('landing_sections').select(LANDING_SECTION_SELECT_COLUMNS).order('sort_order', { ascending: true }),
+            sb.from('landing_section_photos').select(LANDING_SECTION_PHOTO_SELECT_COLUMNS).order('sort_order', { ascending: true })
+        ]);
+        if (sectionError) throw sectionError;
+        if (assignmentError) throw assignmentError;
+        return { sections: sections || [], assignments: assignments || [], error: null };
+    } catch (error) {
+        return { sections: [], assignments: [], error };
+    }
+}
+
+export async function saveLandingSection(section, photoIds = []) {
+    try {
+        const sb = getSupabase();
+        const payload = {
+            id: section.id,
+            title: String(section.title || '').trim(),
+            description: String(section.description || '').trim(),
+            sort_order: Number(section.sort_order || 0),
+            is_visible: section.is_visible !== false,
+            updated_at: new Date().toISOString()
+        };
+        const { data, error } = await sb
+            .from('landing_sections')
+            .upsert(payload, { onConflict: 'id' })
+            .select(LANDING_SECTION_SELECT_COLUMNS)
+            .single();
+        if (error) throw error;
+
+        const { error: deleteError } = await sb
+            .from('landing_section_photos')
+            .delete()
+            .eq('section_id', data.id);
+        if (deleteError) throw deleteError;
+
+        const assignments = [...new Set(photoIds.map(String).filter(Boolean))]
+            .map((photoId, sortOrder) => ({ section_id: data.id, photo_id: photoId, sort_order: sortOrder }));
+        if (assignments.length) {
+            const { error: assignmentError } = await sb.from('landing_section_photos').insert(assignments);
+            if (assignmentError) throw assignmentError;
+        }
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
+export async function deleteLandingSection(sectionId) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.from('landing_sections').delete().eq('id', sectionId);
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
     }
 }
 

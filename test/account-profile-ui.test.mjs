@@ -70,17 +70,12 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
 });
 
-test('top navigation keeps the existing bar with subtle separators', () => {
+test('header keeps only the landing logo and account actions', () => {
     assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
-    assert.match(css, /\.top-nav\s*\{[^}]*gap:\s*40px;/s);
-    assert.match(css, /\.top-nav a\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*800;[^}]*padding:\s*20px 4px 17px;[^}]*border-radius:\s*8px;[^}]*background-image:\s*radial-gradient\(ellipse at center,\s*rgba\(26,\s*77,\s*78,\s*0\.064\)\s*0 36%,\s*rgba\(26,\s*77,\s*78,\s*0\.04\)\s*52%,\s*rgba\(26,\s*77,\s*78,\s*0\.02\)\s*68%,\s*rgba\(26,\s*77,\s*78,\s*0\.006\)\s*84%,\s*transparent 100%\);[^}]*background-size:\s*0 0;[^}]*transition:\s*background-size 150ms ease-out,\s*color 150ms ease-out;/s);
-    assert.match(css, /\.top-nav a \+ a::before\s*\{[^}]*left:\s*-20px;[^}]*width:\s*1px;[^}]*height:\s*24px;[^}]*background:\s*rgba\(5,\s*5,\s*5,\s*0\.18\);/s);
-    assert.match(css, /\.top-nav a::after\s*\{[^}]*bottom:\s*9px;[^}]*height:\s*2px;[^}]*opacity:\s*0;/s);
-    assert.match(css, /\.top-nav a\.active\s*\{[^}]*background-color:\s*transparent;[^}]*color:\s*#050505;/s);
-    assert.match(css, /\.top-nav a:hover\s*\{[^}]*background-size:\s*88px 48px;[^}]*color:\s*var\(--teal-dark\);/s);
-    assert.match(css, /\.top-nav a:hover::after\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scaleX\(1\);/s);
-    assert.match(css, /\.top-nav a\.active::after\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scaleX\(1\);/s);
-    assert.match(css, /\.top-nav:has\(a:hover\) a\.active:not\(:hover\)::after\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*scaleX\(0\.72\);/s);
+    assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
+    assert.doesNotMatch(html, /class="top-nav"/);
+    assert.match(html, /class="brand"[^>]*href="#\/landing"/);
+    assert.match(html, /id="btn-header-upload"/);
 });
 
 test('public profile page includes shared nickname, bio, and avatar editing fields for the current user', () => {
@@ -150,11 +145,13 @@ test('profile updates use nickname, bio, and uploaded avatar metadata only', () 
     assert.doesNotMatch(app, /profile-avatar-url-input/);
 });
 
-test('header profile trigger routes to the shared public profile page and supports edit mode', () => {
+test('header profile trigger opens the account menu and profile menu item routes to the shared profile page', () => {
     assert.match(app, /function openAccountProfilePage\(\)/);
     assert.match(app, /function setAccountProfileEditMode\(isEditing\)/);
     assert.match(app, /function handleAccountProfileAvatarChange\(event\)/);
-    assert.match(app, /\$\('#btn-open-profile'\)\?\.addEventListener\('click', openAccountProfilePage\)/);
+    assert.match(app, /function setAccountMenuOpen\(isOpen\)/);
+    assert.match(app, /\$\('#btn-open-profile'\)\?\.addEventListener\('click', \(event\) =>/);
+    assert.match(app, /accountRouteButton\.dataset\.accountRoute === 'profile'\) openAccountProfilePage\(\)/);
     assert.match(app, /async function handleLogout\(\)/);
     assert.match(app, /const accountProfileLogout = event\.target\.closest\('#account-profile-logout'\)/);
     assert.match(app, /if \(accountProfileLogout\) \{\s*await handleLogout\(\);\s*return;\s*\}/s);
