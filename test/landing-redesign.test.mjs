@@ -23,11 +23,13 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
 
 test('검색창 위에는 지정한 제목만 표시한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
     const heroStart = html.indexOf('class="landing-search-hero"');
     const searchStart = html.indexOf('id="landing-search"', heroStart);
     const beforeSearch = html.slice(heroStart, searchStart);
     assert.match(beforeSearch, />당신의 장소를 찾아보세요</);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;/s);
 });
 
 test('기본 랜딩 소제목은 추천, 한국, 일본, 풍경, 도시 순서로만 구성한다', () => {
