@@ -18,7 +18,7 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /id="landing-search"/);
     assert.match(html, /id="landing-search-input"/);
     assert.match(html, /class="landing-search-suggestions"/);
-    assert.match(html, /class="landing-search-globe" src="images\/landing-search-globe-soft\.jpg"/);
+    assert.match(html, /class="landing-search-globe" src="images\/landing-search-globe\.jpg"/);
     assert.match(html, /id="landing-sections"/);
     assert.match(html, /data-landing-scroll/);
     assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
@@ -37,13 +37,14 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     const searchStart = html.indexOf('id="landing-search"', heroStart);
     const beforeSearch = html.slice(heroStart, searchStart);
     const beforeHero = html.slice(landingStart, heroStart);
-    assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-search-globe-soft\.jpg"/);
+    assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-search-globe\.jpg"/);
     assert.match(beforeSearch, /<h1 id="home-title">당신만의 장소를 찾아보세요<\/h1>/);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;/s);
     assert.match(css, /\.landing-search-hero h1\s*\{[^}]*font-size:\s*clamp\(40px,\s*5vw,\s*64px\);/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*filter:\s*blur\(1px\)/s);
+    assert.match(css, /\.landing-search-globe\s*\{[^}]*mask-image:\s*linear-gradient\(to bottom,/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*84px 16px 44px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*max-width:\s*none;[^}]*font-size:\s*clamp\(24px,\s*7vw,\s*28px\);[^}]*white-space:\s*nowrap;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*22px;/s);

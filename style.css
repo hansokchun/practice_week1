@@ -379,16 +379,23 @@ body.is-logged-in #btn-open-auth {
     text-align: center;
 }
 
+.landing-discovery > :not(.landing-search-globe) {
+    position: relative;
+    z-index: 1;
+}
+
 .landing-search-globe {
     position: absolute;
     z-index: 0;
     top: clamp(180px, 18vw, 236px);
     left: 50%;
-    width: min(1220px, 96vw);
+    width: min(1130px, 92vw);
     max-width: none;
     height: auto;
     opacity: 0.68;
     filter: blur(1px) saturate(0.86);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 84%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 84%, transparent 100%);
     pointer-events: none;
     transform: translateX(-50%);
     user-select: none;
