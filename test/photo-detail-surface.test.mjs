@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-test('photo detail modal shows only the photo visibility status block', () => {
+test('photo detail modal shows visibility only for the current user photo', () => {
     const html = readFileSync('index.html', 'utf8');
 
     assert.equal(html.includes('<dt>Album</dt>'), false);
@@ -14,6 +14,9 @@ test('photo detail modal shows only the photo visibility status block', () => {
     assert.equal(html.includes('class="map-expand-button"'), false);
     assert.match(html, /id="photo-detail-visibility"/);
     assert.match(html, /data-show-photo-on-map/);
+
+    const source = readFileSync('js/app.js', 'utf8');
+    assert.match(source, /visibilityValue\.hidden = !canEdit/);
 });
 
 test('photo detail surface leads with description and compact info before the map', () => {
@@ -54,6 +57,9 @@ test('photo detail modal exposes close navigation, fullscreen, more, and report 
     assert.doesNotMatch(detail, /data-photo-detail-nearby-list/);
     assert.doesNotMatch(detail, />주변사진</);
     assert.doesNotMatch(detail, />×</);
+    assert.match(detail, /class="photo-detail-title-row"/);
+    assert.ok(detail.indexOf('id="photo-detail-description"') < detail.indexOf('data-photo-detail-more'));
+    assert.match(detail, /data-photo-detail-scroll-cue/);
     assert.match(fullscreen, /data-photo-fullscreen-image/);
     assert.match(fullscreen, /data-photo-fullscreen-back/);
     assert.doesNotMatch(fullscreen, /data-close-photo-fullscreen/);
@@ -77,6 +83,12 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /photo-detail-visibility/);
     assert.match(source, /visibilityValue\.innerHTML = `<span class="material-symbols-outlined">\$\{isPublicPhoto \? 'public' : 'lock'\}<\/span> \$\{isPublicPhoto \? '공개' : '비공개'\}`/);
     assert.match(source, /showOnMapButton\.hidden = !canShowOnExploreMap/);
+    assert.match(source, /const dateLabel =[^;]+: '-- --'/s);
+    assert.match(source, /async function openPhotoOnExploreMap\(photo\)/);
+    assert.match(source, /window\.setTimeout\(resolve, 32\)/);
+    assert.match(source, /await ensureExploreMap\(\)/);
+    assert.match(source, /openExplorePhotoPreview\(photo, \{ focusMap: true \}\)/);
+    assert.match(source, /getLandingPublicPhotos\(\)\.find\(\(candidate\) => String\(candidate\.id \|\| candidate\.localId\) === photoId\)/);
     assert.match(source, /const photoImageSrc = getPhotoImageSrc\(photo\)/);
     assert.match(source, /modal\.dataset\.photoDetailImageSrc = photoImageSrc/);
     assert.match(source, /modal\.dataset\.photoDetailImageFallbackSrc = getPhotoImageFallbackSrc\(photo, photoImageSrc\)/);
@@ -107,6 +119,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-detail-visibility\s*\{[^}]*display:\s*inline-flex;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
     assert.match(css, /\.photo-detail-visibility \.material-symbols-outlined\s*\{[^}]*color:\s*#475556;/s);
     assert.match(css, /\.photo-detail-more-menu\s*\{[^}]*position:\s*absolute;[^}]*min-width:\s*132px;/s);
+    assert.match(css, /\.photo-detail-scroll-cue\s*\{[^}]*position:\s*sticky;[^}]*pointer-events:\s*none;/s);
     assert.doesNotMatch(css, /\.photo-detail-nearby/);
     assert.match(css, /\.photo-fullscreen-modal\s*\{[^}]*z-index:\s*140;[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(css, /body\.photo-fullscreen-open\s*\{[^}]*overflow:\s*hidden;/s);

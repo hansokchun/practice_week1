@@ -521,14 +521,20 @@ body.is-logged-in #btn-open-auth {
 }
 
 .landing-map-footer.page-container {
+    position: relative;
+    isolation: isolate;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 28px;
     width: min(var(--container), calc(100% - 48px));
+    min-height: 220px;
+    overflow: hidden;
     margin-top: 16px;
-    border-radius: 24px;
-    background: var(--teal-dark);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, rgba(10, 48, 49, 0.86) 0%, rgba(10, 48, 49, 0.66) 54%, rgba(10, 48, 49, 0.44) 100%),
+        url('images/landing-map-pins-background.jpg') center 50% / cover no-repeat;
     color: #fff;
     padding: 36px clamp(24px, 4vw, 52px);
 }
@@ -1047,6 +1053,7 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
         grid-template-columns: 1fr;
         gap: 20px;
         width: calc(100% - 32px);
+        min-height: 210px;
         margin-right: auto;
         margin-left: auto;
         padding: 28px 20px;
@@ -7753,7 +7760,42 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     max-height: calc(100vh - 48px);
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-color: rgba(26, 77, 78, 0.42) transparent;
+    scrollbar-width: thin;
     background: #ffffff;
+}
+
+.photo-detail-scroll-cue {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    display: grid;
+    place-items: end center;
+    width: 100%;
+    height: 68px;
+    margin-top: -68px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.92));
+    padding-bottom: 10px;
+    pointer-events: none;
+    transition: opacity 160ms ease, visibility 160ms ease;
+}
+
+.photo-detail-scroll-cue .material-symbols-outlined {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(26, 77, 78, 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--teal-dark);
+    box-shadow: 0 8px 22px rgba(12, 42, 43, 0.14);
+    animation: photoDetailScrollHint 1.6s ease-in-out infinite;
+}
+
+.photo-detail-scroll-cue.is-hidden {
+    visibility: hidden;
+    opacity: 0;
 }
 
 .photo-detail-media-column > img {
@@ -7808,7 +7850,19 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
-    margin-bottom: 42px;
+    margin-bottom: 6px;
+}
+
+.photo-detail-title-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    min-height: 34px;
+}
+
+.photo-detail-title-row .photo-detail-more {
+    grid-column: 2;
 }
 
 .photo-detail-more {
@@ -7883,9 +7937,9 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-description {
     color: #2e3f3f !important;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 1.8 !important;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.5 !important;
     white-space: pre-line;
 }
 
@@ -8010,6 +8064,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-size: 20px;
 }
 
+.photo-detail-visibility[hidden] {
+    display: none;
+}
+
 .photo-detail-like-panel,
 .pin-preview-like-panel {
     display: flex;
@@ -8065,6 +8123,26 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .photo-like-button.is-liked .material-symbols-outlined {
     transform: scale(1.08);
     font-variation-settings: 'FILL' 1, 'wght' 520, 'GRAD' 0, 'opsz' 24;
+}
+
+.photo-like-button.is-snapping .material-symbols-outlined {
+    animation: photoLikeSnap 280ms cubic-bezier(0.2, 0.85, 0.35, 1);
+}
+
+.photo-like-button.is-snapping:disabled {
+    opacity: 1;
+}
+
+@keyframes photoLikeSnap {
+    0% { transform: scale(1); }
+    38% { transform: scale(0.72); }
+    72% { transform: scale(1.26); }
+    100% { transform: scale(1.08); }
+}
+
+@keyframes photoDetailScrollHint {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
 }
 
 .photo-like-button:disabled {
@@ -8481,9 +8559,22 @@ body.modal-open {
     line-height: 1.5;
 }
 
-.auth-intro,
-.auth-policy-note {
-    font-size: 13px;
+#auth-modal .auth-modal-card {
+    width: min(440px, 100%);
+    gap: 18px;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 34px 30px 28px;
+}
+
+#auth-modal .auth-modal-card > h2 {
+    text-align: center;
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+#auth-modal .auth-modal-card .auth-message:empty {
+    display: none;
 }
 
 .kakao-profile-import-card {
@@ -8521,7 +8612,7 @@ body.modal-open {
 
 .social-login {
     display: grid;
-    gap: 10px;
+    gap: 12px;
 }
 
 .social-login button,
@@ -8530,9 +8621,9 @@ body.modal-open {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    min-height: 46px;
+    min-height: 50px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 8px;
     background: #ffffff;
     color: var(--text);
     font-weight: 800;
@@ -8662,6 +8753,13 @@ body.modal-open {
     gap: 6px;
     color: var(--muted);
     font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .photo-detail-scroll-cue .material-symbols-outlined,
+    .photo-like-button.is-snapping .material-symbols-outlined {
+        animation: none;
+    }
 }
 
 .auth-message {

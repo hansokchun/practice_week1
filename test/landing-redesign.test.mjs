@@ -38,7 +38,7 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     const beforeSearch = html.slice(heroStart, searchStart);
     const beforeHero = html.slice(landingStart, heroStart);
     assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-globe-illustration\.png"/);
-    assert.match(beforeSearch, /<h1 id="home-title">당신만의 장소를 찾아보세요<\/h1>/);
+    assert.match(beforeSearch, /<h1 id="home-title">이끼에서 당신만의 장소를 찾아보세요<\/h1>/);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;/s);
     assert.match(css, /\.landing-search-hero h1\s*\{[^}]*font-size:\s*clamp\(40px,\s*5vw,\s*64px\);/s);
@@ -77,12 +77,28 @@ test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이�
     assert.match(css, /\.landing-photo-row\s*\{[^}]*min-width:\s*0;[^}]*width:\s*100%;/s);
 });
 
-test('하단 지도 CTA는 글자가 겹치지 않는 반응형 그리드를 사용한다', async () => {
+test('하단 지도 CTA는 참고 지도 배경과 글자가 겹치지 않는 반응형 그리드를 사용한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
-    assert.match(html, /id="landing-map-footer-title">지도에서 확인하세요<\/h2>/);
+    assert.match(html, /id="landing-map-footer-title">지도에서 찾아보세요<\/h2>/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
+    assert.match(css, /url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-footer\.page-container\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+});
+
+test('로그인 모달은 선택 수단만 간결하게 보여준다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const authStart = html.indexOf('id="auth-modal"');
+    const authEnd = html.indexOf('id="password-recovery-modal"', authStart);
+    const auth = html.slice(authStart, authEnd);
+
+    assert.match(auth, /id="auth-title"/);
+    assert.match(auth, /id="btn-google-login"/);
+    assert.match(auth, /id="btn-kakao-login"/);
+    assert.match(auth, /id="btn-email-start"/);
+    assert.doesNotMatch(auth, />Account</);
+    assert.doesNotMatch(auth, /auth-intro/);
+    assert.doesNotMatch(auth, /auth-policy-note/);
 });
 
 test('랜딩 소제목은 중앙에 놓이고 섹션 사이에는 충분한 여백을 둔다', async () => {
@@ -156,6 +172,8 @@ test('사진 상세는 정확 위치에서만 지연 로딩하는 거리뷰 영�
     assert.match(html, /id="photo-detail-street-view-static"/);
     assert.match(html, /id="btn-load-street-view"/);
     assert.match(html, /class="photo-detail-street-view__overlay"/);
+    assert.doesNotMatch(html, /정확한 위치가 공개된 사진에서만 사용할 수 있습니다/);
+    assert.doesNotMatch(app, /마우스를 올리거나 버튼에 초점을 맞춰 동적 거리뷰를 열 수 있습니다/);
     assert.match(app, /normalizeLocationPrecision\(photo\.location_precision\) === 'exact'/);
     assert.match(app, /getStreetViewStaticImageUrl/);
     assert.match(app, /renderPhotoDetailStreetViewPreview\(photo\)/);

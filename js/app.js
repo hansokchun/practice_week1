@@ -1197,7 +1197,7 @@ function updateExplorePhotoPreview(photo) {
         profileNames: state.profileNames
     });
     const date = photo.date ? new Date(photo.date) : null;
-    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 없음';
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '-- --';
     const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
     const visibilityLabel = photo.albumVisibility === 'link'
         ? '링크'
@@ -1270,6 +1270,21 @@ function openExplorePhotoPreview(photo, options = {}) {
     const position = { lat: Number(photo.lat), lng: Number(photo.lng) };
     map.panTo(position);
     if ((map.getZoom?.() || state.exploreZoom) < 13) map.setZoom(13);
+}
+
+async function openPhotoOnExploreMap(photo) {
+    if (!photo || !hasPhotoLocation(photo)) return;
+    closeModals();
+    state.explorePhotoScope = photo.owner_id === state.currentUser?.id ? 'mine' : 'others';
+    state.exploreInitializedUserId = state.currentUser?.id || state.exploreInitializedUserId;
+    state.exploreLastBoundsKey = null;
+    state.explorePreserveViewportOnce = false;
+    routeTo(APP_SECTIONS.EXPLORE);
+    await new Promise((resolve) => window.setTimeout(resolve, 32));
+    await ensureExploreMap();
+    if (document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
+    await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    openExplorePhotoPreview(photo, { focusMap: true });
 }
 
 function setExplorePreviewExpanded(isExpanded) {
@@ -1815,7 +1830,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const canLike = ['photo', 'explore', 'liked'].includes(context);
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     const likeTotal = Number(photo.liked || 0);
-    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '날짜 미상';
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '-- --';
     const placeName = String(photo.placeName || '').trim();
     const photoImageSrc = getPhotoImageSrc(photo);
     const locationLabel = placeName || (hasPhotoLocation(photo)
@@ -1832,6 +1847,8 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         setImageSourceWithFallback(image, photoImageSrc, getPhotoImageFallbackSrc(photo, photoImageSrc));
         image.alt = description || '여행 사진 상세';
     }
+    const mediaColumn = modal?.querySelector('.photo-detail-media-column');
+    if (mediaColumn) mediaColumn.scrollTop = 0;
     if (descriptionNode) {
         descriptionNode.textContent = description;
         descriptionNode.hidden = !description;
@@ -1873,6 +1890,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     if (canShowStreetView) renderPhotoDetailStreetViewPreview(photo);
     if (visibilityValue) {
         const isPublicPhoto = photo.shared || photo.visibility === 'public';
+        visibilityValue.hidden = !canEdit;
         visibilityValue.innerHTML = `<span class="material-symbols-outlined">${isPublicPhoto ? 'public' : 'lock'}</span> ${isPublicPhoto ? '공개' : '비공개'}`;
     }
     if (likePanel) likePanel.hidden = !canLike;
@@ -1892,6 +1910,20 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
     if (reportButton) reportButton.dataset.photoId = photo.id || '';
     setPhotoDetailMoreMenuOpen(false);
+    window.requestAnimationFrame(syncPhotoDetailScrollCue);
+}
+
+function syncPhotoDetailScrollCue() {
+    const modal = $('#photo-detail-modal');
+    const mediaColumn = $('#photo-detail-modal .photo-detail-media-column');
+    const cue = $('[data-photo-detail-scroll-cue]');
+    if (!mediaColumn || !cue) return;
+    const scrollContainer = window.matchMedia('(max-width: 760px)').matches
+        ? modal?.querySelector('.photo-detail-card')
+        : mediaColumn;
+    if (!scrollContainer) return;
+    const remainingScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight - scrollContainer.scrollTop;
+    cue.classList.toggle('is-hidden', scrollContainer.scrollHeight <= scrollContainer.clientHeight + 8 || remainingScroll <= 10);
 }
 
 function setPhotoDetailStreetViewButtonLabel(label) {
@@ -1916,20 +1948,24 @@ async function renderPhotoDetailStreetViewPreview(photo) {
         preview.classList.add('is-fallback');
         preview.hidden = false;
         if (message) message.textContent = '정적 미리보기를 표시할 수 없습니다. 버튼을 눌러 동적 거리뷰를 확인해 주세요.';
+        window.requestAnimationFrame(syncPhotoDetailScrollCue);
         return;
     }
 
     image.onload = () => {
-        if (message) message.textContent = '마우스를 올리거나 버튼에 초점을 맞춰 동적 거리뷰를 열 수 있습니다.';
+        if (message) message.textContent = '';
+        syncPhotoDetailScrollCue();
     };
     image.onerror = () => {
         image.removeAttribute('src');
         preview.classList.add('is-fallback');
         if (message) message.textContent = '정적 미리보기를 표시할 수 없습니다. 버튼을 눌러 동적 거리뷰를 확인해 주세요.';
+        syncPhotoDetailScrollCue();
     };
     preview.classList.remove('is-fallback');
     image.src = imageUrl;
     preview.hidden = false;
+    window.requestAnimationFrame(syncPhotoDetailScrollCue);
 }
 
 async function loadPhotoDetailStreetView() {
@@ -1981,7 +2017,16 @@ async function loadPhotoDetailStreetView() {
             fullscreenControl: true
         });
         if (message) message.textContent = '사진 위치와 가장 가까운 거리뷰입니다.';
+        syncPhotoDetailScrollCue();
     });
+}
+
+function playPhotoLikeSnap(button) {
+    if (!button) return;
+    button.classList.remove('is-snapping');
+    void button.offsetWidth;
+    button.classList.add('is-snapping');
+    window.setTimeout(() => button.classList.remove('is-snapping'), 320);
 }
 
 function setPhotoDetailMoreMenuOpen(isOpen) {
@@ -2025,6 +2070,7 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
     const likedIds = new Set(state.likedPhotoIds.map(String));
     const nextLiked = !likedIds.has(String(photo.id));
     const likeButton = eventOrPhotoId?.currentTarget || $('#photo-detail-like');
+    playPhotoLikeSnap(likeButton);
     if (likeButton) likeButton.disabled = true;
 
     const { likedCount, error } = await setPhotoLike(photo.id, nextLiked);
@@ -5552,6 +5598,10 @@ function bindEvents() {
         renderLandingAdminForm();
     });
     $('#btn-load-street-view')?.addEventListener('click', loadPhotoDetailStreetView);
+    $('#photo-detail-modal .photo-detail-media-column')?.addEventListener('scroll', syncPhotoDetailScrollCue, { passive: true });
+    $('#photo-detail-modal .photo-detail-card')?.addEventListener('scroll', syncPhotoDetailScrollCue, { passive: true });
+    $('#photo-detail-modal [data-photo-detail-image]')?.addEventListener('load', syncPhotoDetailScrollCue);
+    $('#photo-detail-street-view-static')?.addEventListener('load', syncPhotoDetailScrollCue);
     $$('[data-go-myphoto]').forEach((button) => button.addEventListener('click', () => routeTo(APP_SECTIONS.HOME)));
     $$('[data-go-album]').forEach((button) => button.addEventListener('click', () => routeTo('album')));
     $$('[data-go-trip]').forEach((button) => {
@@ -5941,18 +5991,11 @@ function bindEvents() {
         if (showPhotoOnMapButton) {
             const photoId = String(showPhotoOnMapButton.dataset.photoId || '');
             const photo = getAllDisplayPhotos().find((candidate) => String(candidate.id || candidate.localId) === photoId)
-                || state.albumDetailPhotos.find((candidate) => getTripReviewPhotoId(candidate) === photoId);
+                || state.albumDetailPhotos.find((candidate) => getTripReviewPhotoId(candidate) === photoId)
+                || getLandingPublicPhotos().find((candidate) => String(candidate.id || candidate.localId) === photoId)
+                || getExplorePhotoMapItems().find((candidate) => String(candidate.id || candidate.localId) === photoId);
             if (!photo) return;
-            closeModals();
-            state.explorePhotoScope = photo.owner_id === state.currentUser?.id ? 'mine' : 'others';
-            state.exploreInitializedUserId = state.currentUser?.id || state.exploreInitializedUserId;
-            state.exploreLastBoundsKey = null;
-            state.explorePreserveViewportOnce = false;
-            state.selectedPhotoId = photo.id;
-            routeTo(APP_SECTIONS.EXPLORE);
-            window.requestAnimationFrame(() => {
-                openExplorePhotoPreview(photo, { focusMap: true });
-            });
+            await openPhotoOnExploreMap(photo);
             return;
         }
 

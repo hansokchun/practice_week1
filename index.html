@@ -76,7 +76,7 @@
             <section class="landing-discovery" aria-labelledby="home-title">
                 <img class="landing-search-globe" src="images/landing-globe-illustration.png" alt="" aria-hidden="true" decoding="async">
                 <div class="landing-search-hero">
-                    <h1 id="home-title">당신만의 장소를 찾아보세요</h1>
+                    <h1 id="home-title">이끼에서 당신만의 장소를 찾아보세요</h1>
                     <form id="landing-search" class="landing-search" role="search">
                         <span class="material-symbols-outlined" aria-hidden="true">search</span>
                         <label class="sr-only" for="landing-search-input">여행 사진 검색</label>
@@ -108,7 +108,7 @@
                     </section>
                 </div>
                 <section class="landing-map-footer page-container" aria-labelledby="landing-map-footer-title">
-                    <h2 id="landing-map-footer-title">지도에서 확인하세요</h2>
+                    <h2 id="landing-map-footer-title">지도에서 찾아보세요</h2>
                     <button id="landing-map-footer" class="btn-primary" data-route="explore" type="button">
                         <span class="material-symbols-outlined" aria-hidden="true">explore</span>
                         <span>지도에서 둘러보기</span>
@@ -678,9 +678,12 @@
         <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">
             <div class="photo-detail-media-column">
                 <img src="images/main_bg2.jpg" alt="여행 사진 상세" data-photo-detail-image data-open-photo-fullscreen role="button" tabindex="0">
+                <div class="photo-detail-scroll-cue" data-photo-detail-scroll-cue aria-hidden="true">
+                    <span class="material-symbols-outlined">keyboard_arrow_down</span>
+                </div>
                 <section id="photo-detail-street-view" class="photo-detail-street-view" hidden>
                     <div class="photo-detail-street-view__heading">
-                        <div><h3>거리뷰</h3><p>정확한 위치가 공개된 사진에서만 사용할 수 있습니다.</p></div>
+                        <h3>거리뷰</h3>
                     </div>
                     <div id="photo-detail-street-view-preview" class="photo-detail-street-view__preview" hidden>
                         <img id="photo-detail-street-view-static" alt="사진 위치 주변 정적 거리뷰" loading="lazy" decoding="async">
@@ -695,6 +698,12 @@
             </div>
             <section>
                 <div class="photo-detail-section-head">
+                    <button class="modal-close photo-detail-close" data-close-modal type="button" aria-label="닫기">
+                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <div class="photo-detail-title-row">
+                    <p id="photo-detail-description" class="photo-detail-description" hidden></p>
                     <div class="photo-detail-more">
                         <button class="photo-detail-more-button" data-photo-detail-more type="button" aria-label="더보기" aria-expanded="false">
                             <span class="material-symbols-outlined" aria-hidden="true">more_vert</span>
@@ -704,16 +713,12 @@
                             <button data-report-photo type="button">신고하기</button>
                         </div>
                     </div>
-                    <button class="modal-close photo-detail-close" data-close-modal type="button" aria-label="닫기">
-                        <span class="material-symbols-outlined" aria-hidden="true">close</span>
-                    </button>
                 </div>
-                <p id="photo-detail-description" class="photo-detail-description" hidden></p>
                 <div class="photo-detail-meta">
-                    <span data-photo-detail-meta="date"><span class="material-symbols-outlined">calendar_today</span> 촬영 날짜 없음</span>
+                    <span data-photo-detail-meta="date"><span class="material-symbols-outlined">calendar_today</span> -- --</span>
                     <span data-photo-detail-meta="place"><span class="material-symbols-outlined">place</span> 위치 정보 없음</span>
                 </div>
-                <div id="photo-detail-visibility" class="photo-detail-visibility">비공개</div>
+                <div id="photo-detail-visibility" class="photo-detail-visibility" hidden>비공개</div>
                 <div class="photo-detail-like-panel">
                     <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
                         <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
@@ -721,7 +726,10 @@
                     <span id="photo-detail-like-count">0</span>
                 </div>
                 <div class="detail-actions">
-                    <button class="btn-primary" data-show-photo-on-map type="button" hidden>지도에서 위치 확인</button>
+                    <button class="btn-primary" data-show-photo-on-map type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                        <span>Explore 지도에서 보기</span>
+                    </button>
                 </div>
                 <div id="photo-detail-map" class="photo-detail-map" hidden>
                     <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -796,9 +804,7 @@
     <div id="auth-modal" class="modal" aria-hidden="true">
         <div class="modal-card auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
             <button class="modal-close" data-close-modal type="button" aria-label="&#45803;&#44592;">&times;</button>
-            <p class="eyebrow">Account</p>
             <h2 id="auth-title">&#47196;&#44536;&#51064;</h2>
-            <p class="auth-intro">Google, Kakao, &#51060;&#47700;&#51068; &#51473; &#54200;&#54620; &#48169;&#48277;&#51004;&#47196; &#47196;&#44536;&#51064;&#54616;&#49464;&#50836;.</p>
             <div class="social-login">
                 <button id="btn-google-login" class="auth-choice-button" type="button">
                     <span>G</span>
@@ -829,7 +835,6 @@
                 </div>
                 <button id="btn-reset-password" class="auth-link-button" type="button">&#48708;&#48128;&#48264;&#54840; &#51116;&#49444;&#51221;</button>
             </form>
-            <p class="auth-policy-note">&#44032;&#51077; &#51649;&#54980;&#50640;&#45716; &#54616;&#47336; &#50629;&#47196;&#46300; 20&#51109;, &#44277;&#44060; &#51204;&#54872; 5&#51109;&#51004;&#47196; &#51228;&#54620;&#46121;&#45768;&#45796;.</p>
             <p id="auth-message" class="auth-message"></p>
         </div>
     </div>

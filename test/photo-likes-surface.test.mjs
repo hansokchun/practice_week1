@@ -76,6 +76,7 @@ test('liked photos page uses the Korean title without extra intro or section cop
 
 test('app tracks liked photo ids and renders liked photo surfaces', () => {
     const source = readFileSync('js/app.js', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
 
     assert.match(source, /fetchMyLikes/);
     assert.match(source, /setPhotoLike/);
@@ -89,6 +90,9 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     assert.doesNotMatch(source, /liked-photo-like-button/);
     assert.match(source, /const canLike = \['photo', 'explore', 'liked'\]\.includes\(context\)/);
     assert.doesNotMatch(source, /dataset\.photoDetailContext !== 'explore'/);
+    assert.match(source, /playPhotoLikeSnap\(likeButton\)/);
+    assert.match(css, /\.photo-like-button\.is-snapping/);
+    assert.match(css, /@keyframes photoLikeSnap/);
 });
 
 test('photo like writes use one authenticated RPC and trust its exact count', () => {
