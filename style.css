@@ -859,21 +859,32 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-hero {
-        padding: 76px 16px 52px;
+        padding: 64px 16px 44px;
     }
 
     .landing-search-hero h1 {
-        max-width: 12em;
-        font-size: clamp(34px, 10.2vw, 44px);
-        line-height: 1.12;
+        max-width: none;
+        font-size: clamp(24px, 7vw, 28px);
+        line-height: 1.2;
         word-break: keep-all;
         overflow-wrap: normal;
+        white-space: nowrap;
     }
 
     .landing-search {
         grid-template-columns: auto minmax(0, 1fr);
-        min-height: 62px;
-        padding-right: 18px;
+        gap: 10px;
+        min-height: 56px;
+        margin-top: 22px;
+        padding: 6px 16px 6px 18px;
+    }
+
+    .landing-search > .material-symbols-outlined {
+        font-size: 24px;
+    }
+
+    .landing-search input {
+        font-size: 16px;
     }
 
     .landing-search button {

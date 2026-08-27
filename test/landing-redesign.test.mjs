@@ -37,6 +37,11 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     assert.match(beforeSearch, />당신의 장소를 찾아보세요</);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;/s);
+    assert.match(css, /\.landing-search-hero h1\s*\{[^}]*font-size:\s*clamp\(40px,\s*5vw,\s*64px\);/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*64px 16px 44px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*max-width:\s*none;[^}]*font-size:\s*clamp\(24px,\s*7vw,\s*28px\);[^}]*white-space:\s*nowrap;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*22px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search input\s*\{[^}]*font-size:\s*16px;/s);
 });
 
 test('기본 랜딩 소제목은 추천, 한국, 일본, 풍경, 도시 순서로만 구성한다', () => {
