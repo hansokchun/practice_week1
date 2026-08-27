@@ -79,14 +79,14 @@
                     <form id="landing-search" class="landing-search" role="search">
                         <span class="material-symbols-outlined" aria-hidden="true">search</span>
                         <label class="sr-only" for="landing-search-input">여행 사진 검색</label>
-                        <input id="landing-search-input" type="search" autocomplete="off" placeholder="도시, 장소, 여행 분위기를 검색해 보세요">
+                        <input id="landing-search-input" type="search" autocomplete="off" placeholder="도시, 장소, 분위기를 검색하세요">
                         <button type="submit">검색</button>
                     </form>
                     <div class="landing-search-suggestions" aria-label="추천 검색어">
                         <span>지금 둘러보기</span>
                         <button type="button" data-landing-query="제주 바다">제주 바다</button>
                         <button type="button" data-landing-query="서울 야경">서울 야경</button>
-                        <button type="button" data-landing-query="부산">부산</button>
+                        <button type="button" data-landing-query="일본">일본</button>
                         <button type="button" data-landing-query="도쿄 골목">도쿄 골목</button>
                         <button type="button" data-landing-query="벚꽃">벚꽃 여행</button>
                     </div>
@@ -462,7 +462,7 @@
         <section id="page-explore" class="page page-explore" aria-labelledby="explore-title">
             <div class="explore-map-canvas" aria-label="공개 여행 지도">
                 <div id="explore-map" class="explore-map" aria-label="공개 사진 위치 지도"></div>
-                <div class="explore-map-pin-loading" aria-live="polite">지도를 맞춘 뒤 핀을 표시하는 중입니다</div>
+                <div class="explore-map-pin-loading" aria-live="polite" hidden>지도를 맞춘 뒤 핀을 표시하는 중입니다</div>
                 <form id="explore-map-search" class="map-search" role="search">
                     <span class="material-symbols-outlined">search</span>
                     <input id="explore-map-search-input" type="search" placeholder="장소 검색">

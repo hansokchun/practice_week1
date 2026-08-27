@@ -850,8 +850,12 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     #btn-header-upload {
-        min-height: 38px;
+        min-height: 44px;
         padding: 0 12px;
+    }
+
+    .landing-search-suggestions button {
+        min-height: 44px;
     }
 
     .landing-search-hero {
@@ -8598,7 +8602,7 @@ body.modal-open {
 
     .account-area .btn-primary,
     .account-area .btn-secondary {
-        min-height: 38px;
+        min-height: 44px;
         padding: 0 12px;
         font-size: 13px;
     }
@@ -9571,13 +9575,13 @@ body.modal-open {
 
     .explore-photo-scope-trigger {
         white-space: nowrap;
-        min-height: 38px;
+        min-height: 44px;
         font-size: 13px;
         padding: 0 13px;
     }
 
     .explore-photo-scope-menu button {
-        min-height: 38px;
+        min-height: 44px;
         font-size: 13px;
     }
 
@@ -9841,11 +9845,14 @@ body.modal-open {
     }
 
     .photo-detail-card {
+        display: block;
         width: 100vw;
         height: 100svh;
         max-height: 100svh;
         border-radius: 0;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
     .photo-detail-card > img {
@@ -9858,22 +9865,23 @@ body.modal-open {
     }
 
     .photo-detail-media-column {
-        height: 52svh;
-        max-height: 52svh;
-        overflow-y: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
     }
 
     .photo-detail-media-column > img {
         width: 100%;
-        height: 52svh;
-        min-height: 52svh;
+        height: auto;
+        min-height: 0;
+        max-height: 70svh;
         object-fit: contain;
         padding: 12px;
     }
 
     .photo-detail-media-column .photo-detail-street-view {
         height: auto;
-        min-height: 52svh;
+        min-height: 0;
         max-height: none;
         overflow: visible;
         padding: 20px 16px !important;
@@ -9882,11 +9890,10 @@ body.modal-open {
     .photo-detail-card section {
         display: grid;
         gap: 12px;
-        height: 48svh;
+        height: auto;
         max-height: none;
-        overflow-y: auto;
+        overflow: visible;
         padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
-        overscroll-behavior: contain;
     }
 
     .photo-detail-section-head {
@@ -9900,11 +9907,23 @@ body.modal-open {
         backdrop-filter: blur(10px);
     }
 
+    .photo-detail-more-button,
+    .photo-detail-close {
+        width: 44px;
+        height: 44px;
+    }
+
+    .modal-close,
+    .auth-link-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
     .photo-detail-meta {
         justify-items: stretch;
     }
 
-    .photo-detail-meta span,
+    .photo-detail-meta > span,
     .photo-detail-visibility,
     .photo-detail-like-panel {
         width: 100%;
@@ -9918,6 +9937,16 @@ body.modal-open {
     .modal {
         align-items: flex-end;
         padding: 12px;
+    }
+
+    .modal.photo-detail-modal {
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .photo-detail-close {
+        position: static;
+        flex: 0 0 44px;
     }
 
     .modal-card,

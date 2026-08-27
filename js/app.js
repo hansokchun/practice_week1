@@ -957,6 +957,10 @@ function loadMoreLandingSectionPhotos(row) {
 
 function submitLandingSearch(event) {
     event.preventDefault();
+    syncLandingSearchQuery();
+}
+
+function syncLandingSearchQuery() {
     state.landingSearchQuery = $('#landing-search-input')?.value || '';
     state.landingVisibleCounts = {};
     renderLandingSections();
@@ -1531,6 +1535,8 @@ function getExplorePinIcon(maps, options = {}) {
 function setExploreMarkerLoading(isLoading) {
     state.isExploreMarkerLoading = Boolean(isLoading);
     $('.explore-map-canvas')?.classList.toggle('is-loading-pins', state.isExploreMarkerLoading);
+    const loadingMessage = $('.explore-map-pin-loading');
+    if (loadingMessage) loadingMessage.hidden = !state.isExploreMarkerLoading;
 }
 
 function clearExploreMapMarkers() {
@@ -1650,7 +1656,10 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     const map = await ensureExploreMap();
     const maps = window.google?.maps;
     if (renderToken !== state.exploreMarkerRenderToken) return;
-    if (!map || !maps) return;
+    if (!map || !maps) {
+        setExploreMarkerLoading(false);
+        return;
+    }
 
     state.exploreMarkerPhotos = locatedPhotos;
     state.exploreSelectedAlbumId = selectedAlbumId;
@@ -5455,6 +5464,8 @@ function bindEvents() {
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
     $$('[data-my-library-tab]').forEach((button) => button.addEventListener('click', () => setMyLibraryTab(button.dataset.myLibraryTab)));
     $('#landing-search')?.addEventListener('submit', submitLandingSearch);
+    $('#landing-search-input')?.addEventListener('input', syncLandingSearchQuery);
+    $('#landing-search-input')?.addEventListener('search', syncLandingSearchQuery);
     $$('[data-landing-query]').forEach((button) => button.addEventListener('click', () => {
         const input = $('#landing-search-input');
         if (input) input.value = button.dataset.landingQuery || '';

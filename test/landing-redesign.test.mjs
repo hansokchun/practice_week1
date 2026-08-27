@@ -14,11 +14,18 @@ const root = new URL('../', import.meta.url);
 
 test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
     assert.match(html, /id="landing-search"/);
     assert.match(html, /id="landing-search-input"/);
     assert.match(html, /class="landing-search-suggestions"/);
     assert.match(html, /id="landing-sections"/);
     assert.match(html, /data-landing-scroll/);
+    assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
+    assert.match(html, /data-landing-query="일본"/);
+    assert.doesNotMatch(html, /data-landing-query="부산"/);
+    assert.match(app, /function syncLandingSearchQuery\(\)/);
+    assert.match(app, /'input', syncLandingSearchQuery/);
+    assert.match(app, /'search', syncLandingSearchQuery/);
 });
 
 test('검색창 위에는 지정한 제목만 표시한다', async () => {
