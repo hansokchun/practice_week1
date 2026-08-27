@@ -34,20 +34,16 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     const heroStart = html.indexOf('class="landing-search-hero"');
     const searchStart = html.indexOf('id="landing-search"', heroStart);
     const beforeSearch = html.slice(heroStart, searchStart);
-    assert.match(beforeSearch, /class="landing-title-desktop">당신의 장소를 찾아보세요</);
-    assert.match(beforeSearch, /class="landing-title-mobile">당신만의 장소를 찾아보세요</);
+    assert.match(beforeSearch, /<h1 id="home-title">당신만의 장소를 찾아보세요<\/h1>/);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;/s);
     assert.match(css, /\.landing-search-hero h1\s*\{[^}]*font-size:\s*clamp\(40px,\s*5vw,\s*64px\);/s);
-    assert.match(css, /\.landing-title-mobile\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*84px 16px 44px;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-title-desktop\s*\{[^}]*display:\s*none;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-title-mobile\s*\{[^}]*display:\s*inline;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*max-width:\s*none;[^}]*font-size:\s*clamp\(24px,\s*7vw,\s*28px\);[^}]*white-space:\s*nowrap;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*22px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search input\s*\{[^}]*font-size:\s*16px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions\s*\{[^}]*flex-wrap:\s*nowrap;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions > span,[\s\S]*\.landing-search-suggestions button:nth-of-type\(n \+ 4\)\s*\{[^}]*display:\s*none;/s);
+    assert.doesNotMatch(html, /지금 둘러보기|data-landing-query="도쿄 골목"|data-landing-query="벚꽃"/);
 });
 
 test('기본 랜딩 소제목은 추천, 한국, 일본, 풍경, 도시 순서로만 구성한다', () => {
@@ -146,12 +142,22 @@ test('내 사진 페이지 안에서 사진과 앨범을 전환한다', async ()
 test('사진 상세는 정확 위치에서만 지연 로딩하는 거리뷰 영역을 제공한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const app = await readFile(new URL('js/app.js', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
     assert.match(html, /id="photo-detail-street-view"/);
+    assert.match(html, /id="photo-detail-street-view-preview"/);
+    assert.match(html, /id="photo-detail-street-view-static"/);
     assert.match(html, /id="btn-load-street-view"/);
+    assert.match(html, /class="photo-detail-street-view__overlay"/);
     assert.match(app, /normalizeLocationPrecision\(photo\.location_precision\) === 'exact'/);
+    assert.match(app, /getStreetViewStaticImageUrl/);
+    assert.match(app, /renderPhotoDetailStreetViewPreview\(photo\)/);
+    assert.match(app, /preview\.classList\.add\('is-fallback'\);[\s\S]*preview\.hidden = false;/s);
     assert.match(app, /new maps\.StreetViewService\(\)/);
     assert.match(app, /preference:\s*maps\.StreetViewPreference\.NEAREST/);
     assert.match(app, /new maps\.StreetViewPanorama\(canvas/);
+    assert.match(app, /preview\.hidden = true/);
+    assert.match(css, /\.photo-detail-street-view__preview:hover \.photo-detail-street-view__overlay,[\s\S]*opacity:\s*1;/s);
+    assert.match(css, /@media \(hover:\s*none\)[\s\S]*\.photo-detail-street-view__overlay\s*\{[^}]*opacity:\s*1;/s);
 });
 
 test('랜딩 관리자 저장소는 app_metadata 관리자만 변경할 수 있다', async () => {

@@ -75,7 +75,7 @@
         <section id="page-home" class="page page-home active" aria-labelledby="home-title">
             <section class="landing-discovery" aria-labelledby="home-title">
                 <div class="landing-search-hero">
-                    <h1 id="home-title"><span class="landing-title-desktop">당신의 장소를 찾아보세요</span><span class="landing-title-mobile">당신만의 장소를 찾아보세요</span></h1>
+                    <h1 id="home-title">당신만의 장소를 찾아보세요</h1>
                     <form id="landing-search" class="landing-search" role="search">
                         <span class="material-symbols-outlined" aria-hidden="true">search</span>
                         <label class="sr-only" for="landing-search-input">여행 사진 검색</label>
@@ -83,12 +83,9 @@
                         <button type="submit">검색</button>
                     </form>
                     <div class="landing-search-suggestions" aria-label="추천 검색어">
-                        <span>지금 둘러보기</span>
                         <button type="button" data-landing-query="제주 바다">제주 바다</button>
                         <button type="button" data-landing-query="서울 야경">서울 야경</button>
                         <button type="button" data-landing-query="일본">일본</button>
-                        <button type="button" data-landing-query="도쿄 골목">도쿄 골목</button>
-                        <button type="button" data-landing-query="벚꽃">벚꽃 여행</button>
                     </div>
                     <button id="landing-map-primary" class="landing-map-link" data-route="explore" type="button">
                         <span class="material-symbols-outlined" aria-hidden="true">map</span>
@@ -683,7 +680,13 @@
                 <section id="photo-detail-street-view" class="photo-detail-street-view" hidden>
                     <div class="photo-detail-street-view__heading">
                         <div><h3>거리뷰</h3><p>정확한 위치가 공개된 사진에서만 사용할 수 있습니다.</p></div>
-                        <button id="btn-load-street-view" class="btn-secondary" type="button">거리뷰 보기</button>
+                    </div>
+                    <div id="photo-detail-street-view-preview" class="photo-detail-street-view__preview" hidden>
+                        <img id="photo-detail-street-view-static" alt="사진 위치 주변 정적 거리뷰" loading="lazy" decoding="async">
+                        <button id="btn-load-street-view" class="photo-detail-street-view__overlay" type="button">
+                            <span class="material-symbols-outlined" aria-hidden="true">360</span>
+                            <span>스트리트뷰 보기</span>
+                        </button>
                     </div>
                     <div id="photo-detail-street-view-canvas" class="photo-detail-street-view__canvas" hidden></div>
                     <p id="photo-detail-street-view-message" aria-live="polite"></p>

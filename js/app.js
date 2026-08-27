@@ -143,6 +143,7 @@ import {
 } from './oauth-profile-import.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
+import { getStreetViewStaticImageUrl } from './street-view-static.mjs';
 import {
     getExploreDiscoveryPhotos,
     normalizeExploreBounds,
@@ -1796,6 +1797,8 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const map = $('#photo-detail-map');
     const mapFrame = $('#photo-detail-map-frame');
     const streetViewSection = $('#photo-detail-street-view');
+    const streetViewPreview = $('#photo-detail-street-view-preview');
+    const streetViewStaticImage = $('#photo-detail-street-view-static');
     const streetViewCanvas = $('#photo-detail-street-view-canvas');
     const streetViewMessage = $('#photo-detail-street-view-message');
     const streetViewButton = $('#btn-load-street-view');
@@ -1846,6 +1849,11 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         }
     }
     state.photoDetailStreetView = null;
+    if (streetViewPreview) {
+        streetViewPreview.hidden = true;
+        streetViewPreview.classList.remove('is-fallback');
+    }
+    if (streetViewStaticImage) streetViewStaticImage.removeAttribute('src');
     if (streetViewCanvas) {
         streetViewCanvas.hidden = true;
         streetViewCanvas.replaceChildren();
@@ -1858,10 +1866,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         streetViewSection.dataset.lng = canShowStreetView ? String(photo.lng) : '';
     }
     if (streetViewButton) {
-        streetViewButton.hidden = !canShowStreetView;
         streetViewButton.disabled = false;
-        streetViewButton.textContent = '거리뷰 보기';
+        setPhotoDetailStreetViewButtonLabel('스트리트뷰 보기');
     }
+    if (canShowStreetView) renderPhotoDetailStreetViewPreview(photo);
     if (visibilityValue) {
         const isPublicPhoto = photo.shared || photo.visibility === 'public';
         visibilityValue.innerHTML = `<span class="material-symbols-outlined">${isPublicPhoto ? 'public' : 'lock'}</span> ${isPublicPhoto ? '공개' : '비공개'}`;
@@ -1885,8 +1893,47 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     setPhotoDetailMoreMenuOpen(false);
 }
 
+function setPhotoDetailStreetViewButtonLabel(label) {
+    const labelNode = $('#btn-load-street-view span:last-child');
+    if (labelNode) labelNode.textContent = label;
+}
+
+async function renderPhotoDetailStreetViewPreview(photo) {
+    const section = $('#photo-detail-street-view');
+    const preview = $('#photo-detail-street-view-preview');
+    const image = $('#photo-detail-street-view-static');
+    const message = $('#photo-detail-street-view-message');
+    const lat = Number(photo?.lat);
+    const lng = Number(photo?.lng);
+    if (!section || !preview || !image || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    if (message) message.textContent = '정적 거리뷰 미리보기를 불러오는 중입니다…';
+    const { apiKey } = await getGoogleMapsRuntimeConfig();
+    if (Number(section.dataset.lat) !== lat || Number(section.dataset.lng) !== lng) return;
+    const imageUrl = getStreetViewStaticImageUrl({ lat, lng, apiKey });
+    if (!imageUrl) {
+        preview.classList.add('is-fallback');
+        preview.hidden = false;
+        if (message) message.textContent = '정적 미리보기를 표시할 수 없습니다. 버튼을 눌러 동적 거리뷰를 확인해 주세요.';
+        return;
+    }
+
+    image.onload = () => {
+        if (message) message.textContent = '마우스를 올리거나 버튼에 초점을 맞춰 동적 거리뷰를 열 수 있습니다.';
+    };
+    image.onerror = () => {
+        image.removeAttribute('src');
+        preview.classList.add('is-fallback');
+        if (message) message.textContent = '정적 미리보기를 표시할 수 없습니다. 버튼을 눌러 동적 거리뷰를 확인해 주세요.';
+    };
+    preview.classList.remove('is-fallback');
+    image.src = imageUrl;
+    preview.hidden = false;
+}
+
 async function loadPhotoDetailStreetView() {
     const section = $('#photo-detail-street-view');
+    const preview = $('#photo-detail-street-view-preview');
     const canvas = $('#photo-detail-street-view-canvas');
     const button = $('#btn-load-street-view');
     const message = $('#photo-detail-street-view-message');
@@ -1895,13 +1942,16 @@ async function loadPhotoDetailStreetView() {
     if (!section || !canvas || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
     if (button) {
         button.disabled = true;
-        button.textContent = '거리뷰 확인 중…';
+        setPhotoDetailStreetViewButtonLabel('거리뷰 확인 중…');
     }
     if (message) message.textContent = '';
     const maps = await loadGoogleMapsApi();
     if (!maps) {
         if (message) message.textContent = '현재 거리뷰를 불러올 수 없습니다.';
-        if (button) button.disabled = false;
+        if (button) {
+            button.disabled = false;
+            setPhotoDetailStreetViewButtonLabel('다시 시도');
+        }
         return;
     }
     const service = new maps.StreetViewService();
@@ -1915,11 +1965,12 @@ async function loadPhotoDetailStreetView() {
             if (message) message.textContent = '이 위치 주변에서 제공되는 거리뷰가 없습니다.';
             if (button) {
                 button.disabled = false;
-                button.textContent = '다시 확인';
+                setPhotoDetailStreetViewButtonLabel('다시 확인');
             }
             return;
         }
         canvas.hidden = false;
+        if (preview) preview.hidden = true;
         state.photoDetailStreetView = new maps.StreetViewPanorama(canvas, {
             position: data.location.latLng,
             pov: { heading: 0, pitch: 0 },
@@ -1927,7 +1978,6 @@ async function loadPhotoDetailStreetView() {
             addressControl: true,
             fullscreenControl: true
         });
-        if (button) button.hidden = true;
         if (message) message.textContent = '사진 위치와 가장 가까운 거리뷰입니다.';
     });
 }
