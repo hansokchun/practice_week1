@@ -881,7 +881,13 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-photo-row {
-        grid-auto-columns: 74%;
+        grid-auto-columns: 60%;
+        gap: 12px;
+        padding-bottom: 4px;
+    }
+
+    .landing-section-heading {
+        margin-bottom: 24px;
     }
 
     .landing-scroll-actions {
@@ -889,7 +895,9 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-sections.page-container {
-        gap: 104px;
+        gap: 72px;
+        padding-top: 36px;
+        padding-bottom: 56px;
     }
 
     .landing-section-toolbar,

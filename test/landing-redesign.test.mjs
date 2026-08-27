@@ -76,8 +76,11 @@ test('랜딩 소제목은 중앙에 놓이고 섹션 사이에는 충분한 여�
     assert.match(css, /\.landing-section-heading\s*\{[^}]*margin-bottom:\s*36px;/s);
     assert.match(css, /\.landing-section-heading h2\s*\{[^}]*text-align:\s*center;/s);
     assert.match(css, /\.landing-scroll-actions\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
+    assert.match(css, /\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*minmax\(210px,\s*25%\);/s);
     assert.match(css, /\.landing-sections\s*\{[^}]*gap:\s*128px;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-sections\.page-container\s*\{[^}]*gap:\s*104px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*60%;[^}]*gap:\s*12px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-heading\s*\{[^}]*margin-bottom:\s*24px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-sections\.page-container\s*\{[^}]*gap:\s*72px;[^}]*padding-top:\s*36px;[^}]*padding-bottom:\s*56px;/s);
 });
 
 test('로그인 여부와 관계없이 기본 홈은 새 랜딩만 표시한다', async () => {
