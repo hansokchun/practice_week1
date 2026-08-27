@@ -387,13 +387,13 @@ body.is-logged-in #btn-open-auth {
 .landing-search-globe {
     position: absolute;
     z-index: 0;
-    top: clamp(180px, 18vw, 236px);
+    top: clamp(100px, 11vw, 150px);
     left: 50%;
     width: min(1130px, 92vw);
     max-width: none;
     height: auto;
-    opacity: 0.68;
-    filter: blur(1px) saturate(0.86);
+    opacity: 0.86;
+    filter: blur(0.6px) saturate(0.92);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 84%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 84%, transparent 100%);
     pointer-events: none;
@@ -958,7 +958,7 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-globe {
-        top: 220px;
+        top: 168px;
         width: 96vw;
         opacity: 0.6;
     }
