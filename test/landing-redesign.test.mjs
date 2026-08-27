@@ -34,14 +34,20 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     const heroStart = html.indexOf('class="landing-search-hero"');
     const searchStart = html.indexOf('id="landing-search"', heroStart);
     const beforeSearch = html.slice(heroStart, searchStart);
-    assert.match(beforeSearch, />당신의 장소를 찾아보세요</);
+    assert.match(beforeSearch, /class="landing-title-desktop">당신의 장소를 찾아보세요</);
+    assert.match(beforeSearch, /class="landing-title-mobile">당신만의 장소를 찾아보세요</);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;/s);
     assert.match(css, /\.landing-search-hero h1\s*\{[^}]*font-size:\s*clamp\(40px,\s*5vw,\s*64px\);/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*64px 16px 44px;/s);
+    assert.match(css, /\.landing-title-mobile\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*84px 16px 44px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-title-desktop\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-title-mobile\s*\{[^}]*display:\s*inline;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*max-width:\s*none;[^}]*font-size:\s*clamp\(24px,\s*7vw,\s*28px\);[^}]*white-space:\s*nowrap;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*22px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search input\s*\{[^}]*font-size:\s*16px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions\s*\{[^}]*flex-wrap:\s*nowrap;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions > span,[\s\S]*\.landing-search-suggestions button:nth-of-type\(n \+ 4\)\s*\{[^}]*display:\s*none;/s);
 });
 
 test('기본 랜딩 소제목은 추천, 한국, 일본, 풍경, 도시 순서로만 구성한다', () => {
@@ -83,9 +89,20 @@ test('랜딩 소제목은 중앙에 놓이고 섹션 사이에는 충분한 여�
     assert.match(css, /\.landing-scroll-actions\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*minmax\(210px,\s*25%\);/s);
     assert.match(css, /\.landing-sections\s*\{[^}]*gap:\s*128px;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*60%;[^}]*gap:\s*12px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*gap:\s*12px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-heading\s*\{[^}]*margin-bottom:\s*24px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-sections\.page-container\s*\{[^}]*gap:\s*72px;[^}]*padding-top:\s*36px;[^}]*padding-bottom:\s*56px;/s);
+});
+
+test('모바일 사진 목록은 두 번째 사진을 중앙에 놓아 양옆 사진을 보여준다', async () => {
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*display:\s*flex;[^}]*--landing-mobile-card-width:\s*calc\(\(100vw - 32px\) \* 0\.6\);[^}]*padding-left:\s*calc\(\(100% - var\(--landing-mobile-card-width\)\) \/ 2\);/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-card\s*\{[^}]*flex:\s*0 0 var\(--landing-mobile-card-width\);[^}]*scroll-snap-align:\s*center;/s);
+    assert.match(app, /function centerLandingRowsOnMobile\(\)/);
+    assert.match(app, /window\.matchMedia\('\(max-width: 760px\)'\)\.matches/);
+    assert.match(app, /const target = cards\[1\]/);
+    assert.match(app, /row\.scrollLeft = target\.offsetLeft - \(row\.clientWidth - target\.clientWidth\) \/ 2/);
 });
 
 test('로그인 여부와 관계없이 기본 홈은 새 랜딩만 표시한다', async () => {

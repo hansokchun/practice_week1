@@ -826,6 +826,20 @@ function renderLandingSections() {
             </section>
         `;
     }).join('');
+    centerLandingRowsOnMobile();
+}
+
+function centerLandingRowsOnMobile() {
+    if (!window.matchMedia('(max-width: 760px)').matches) return;
+    requestAnimationFrame(() => {
+        $$('[data-landing-scroll]').forEach((row) => {
+            const cards = row.querySelectorAll('.landing-photo-card');
+            if (cards.length < 3) return;
+            const target = cards[1];
+            row.scrollLeft = target.offsetLeft - (row.clientWidth - target.clientWidth) / 2;
+            updateLandingScrollButtons(row);
+        });
+    });
 }
 
 async function loadLandingCuration() {

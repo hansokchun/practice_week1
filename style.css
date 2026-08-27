@@ -385,6 +385,10 @@ body.is-logged-in #btn-open-auth {
     line-height: 1.05;
 }
 
+.landing-title-mobile {
+    display: none;
+}
+
 .landing-search {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -859,7 +863,15 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-hero {
-        padding: 64px 16px 44px;
+        padding: 84px 16px 44px;
+    }
+
+    .landing-title-desktop {
+        display: none;
+    }
+
+    .landing-title-mobile {
+        display: inline;
     }
 
     .landing-search-hero h1 {
@@ -891,10 +903,33 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
         display: none;
     }
 
+    .landing-search-suggestions {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .landing-search-suggestions > span,
+    .landing-search-suggestions button:nth-of-type(n + 4) {
+        display: none;
+    }
+
     .landing-photo-row {
-        grid-auto-columns: 60%;
+        display: flex;
+        --landing-mobile-card-width: calc((100vw - 32px) * 0.6);
+        position: relative;
         gap: 12px;
+        padding-left: calc((100% - var(--landing-mobile-card-width)) / 2);
+        padding-right: calc((100% - var(--landing-mobile-card-width)) / 2);
         padding-bottom: 4px;
+    }
+
+    .landing-photo-card {
+        flex: 0 0 var(--landing-mobile-card-width);
+        scroll-snap-align: center;
+    }
+
+    .landing-empty-state {
+        flex: 0 0 100%;
     }
 
     .landing-section-heading {
