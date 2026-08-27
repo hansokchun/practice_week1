@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024" fill="none">
+  <defs>
+    <clipPath id="globe">
+      <path d="M44 1024C80 578 359 350 768 350s688 228 724 674H44Z" />
+    </clipPath>
+    <linearGradient id="globe-fill" x1="768" y1="350" x2="768" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAF4F0" stop-opacity=".82" />
+      <stop offset="1" stop-color="#D8EAE3" stop-opacity=".38" />
+    </linearGradient>
+    <linearGradient id="haze" x1="768" y1="350" x2="768" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFA" stop-opacity=".92" />
+      <stop offset=".23" stop-color="#F7FBFA" stop-opacity="0" />
+      <stop offset=".86" stop-color="#F7FBFA" stop-opacity="0" />
+      <stop offset="1" stop-color="#F7FBFA" stop-opacity=".75" />
+    </linearGradient>
+    <filter id="pin-shadow" x="-30%" y="-20%" width="160%" height="165%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#39736D" flood-opacity=".16" />
+    </filter>
+  </defs>
+  <g clip-path="url(#globe)">
+    <path d="M44 1024C80 578 359 350 768 350s688 228 724 674H44Z" fill="url(#globe-fill)" />
+    <g stroke="#A8C9C0" stroke-opacity=".28" stroke-width="2">
+      <path d="M-18 640C358 556 1178 556 1554 640" />
+      <path d="M-4 778C393 692 1143 692 1540 778" />
+      <path d="M14 916C420 833 1116 833 1522 916" />
+      <path d="M426 377C326 604 326 806 426 1024" />
+      <path d="M594 354C525 585 525 815 594 1024" />
+      <path d="M768 350V1024" />
+      <path d="M942 354C1011 585 1011 815 942 1024" />
+      <path d="M1110 377C1210 604 1210 806 1110 1024" />
+    </g>
+    <g fill="#D3E6DF" fill-opacity=".72" stroke="#B4D0C8" stroke-opacity=".6" stroke-width="2">
+      <path d="M308 570 362 522 428 507 489 519 512 553 495 579 452 583 419 610 365 604 334 626 290 616Z" />
+      <path d="M456 489 485 466 521 470 539 489 528 512 493 523 466 514Z" />
+      <path d="M676 454 713 428 753 441 764 473 745 499 724 529 711 571 682 548 671 506Z" />
+      <path d="M642 611 674 600 700 623 695 659 664 680 631 658Z" />
+      <path d="M699 638 739 625 778 642 812 634 846 649 875 642 906 660 900 684 858 691 818 706 780 696 742 710 715 687Z" />
+      <path d="M541 649 597 640 624 664 615 696 581 709 548 688Z" />
+      <path d="M592 718 643 713 682 745 704 798 682 843 648 826 623 787 588 762Z" />
+      <path d="M743 720 793 710 850 730 887 764 853 792 810 782 769 800 734 768Z" />
+      <path d="M934 675 988 667 1028 680 1067 673 1104 691 1089 716 1040 720 1005 738 962 724Z" />
+      <path d="M1062 737 1105 729 1141 749 1131 778 1090 782 1059 763Z" />
+    </g>
+    <path d="M44 1024C80 578 359 350 768 350s688 228 724 674H44Z" fill="url(#haze)" />
+  </g>
+  <g filter="url(#pin-shadow)" fill="#5E9F97">
+    <path d="M500 420c-20 0-36 16-36 36 0 27 36 66 36 66s36-39 36-66c0-20-16-36-36-36Z" />
+    <path d="M729 449c-20 0-36 16-36 36 0 27 36 66 36 66s36-39 36-66c0-20-16-36-36-36Z" />
+    <path d="M666 570c-20 0-36 16-36 36 0 27 36 66 36 66s36-39 36-66c0-20-16-36-36-36Z" />
+    <path d="M1018 620c-20 0-36 16-36 36 0 27 36 66 36 66s36-39 36-66c0-20-16-36-36-36Z" />
+  </g>
+  <g fill="#F7FBFA">
+    <circle cx="500" cy="456" r="10" />
+    <circle cx="729" cy="485" r="10" />
+    <circle cx="666" cy="606" r="10" />
+    <circle cx="1018" cy="656" r="10" />
+  </g>
+</svg>
