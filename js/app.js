@@ -1861,6 +1861,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     if (streetViewMessage) streetViewMessage.textContent = '';
     const canShowStreetView = hasPhotoLocation(photo) && normalizeLocationPrecision(photo.location_precision) === 'exact';
     if (streetViewSection) {
+        streetViewSection.classList.remove('is-unavailable');
         streetViewSection.hidden = !canShowStreetView;
         streetViewSection.dataset.lat = canShowStreetView ? String(photo.lat) : '';
         streetViewSection.dataset.lng = canShowStreetView ? String(photo.lng) : '';
@@ -1940,6 +1941,7 @@ async function loadPhotoDetailStreetView() {
     const lat = Number(section?.dataset.lat);
     const lng = Number(section?.dataset.lng);
     if (!section || !canvas || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    section.classList.remove('is-unavailable');
     if (button) {
         button.disabled = true;
         setPhotoDetailStreetViewButtonLabel('거리뷰 확인 중…');
@@ -1962,13 +1964,13 @@ async function loadPhotoDetailStreetView() {
         preference: maps.StreetViewPreference.NEAREST
     }, (data, status) => {
         if (status !== maps.StreetViewStatus.OK || !data?.location?.latLng) {
-            if (message) message.textContent = '이 위치 주변에서 제공되는 거리뷰가 없습니다.';
-            if (button) {
-                button.disabled = false;
-                setPhotoDetailStreetViewButtonLabel('다시 확인');
-            }
+            canvas.hidden = true;
+            if (preview) preview.hidden = true;
+            section.classList.add('is-unavailable');
+            if (message) message.textContent = '해당 위치에 거리뷰가 없습니다';
             return;
         }
+        section.classList.remove('is-unavailable');
         canvas.hidden = false;
         if (preview) preview.hidden = true;
         state.photoDetailStreetView = new maps.StreetViewPanorama(canvas, {

@@ -887,6 +887,16 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     font-size: 12px;
 }
 
+.photo-detail-street-view.is-unavailable {
+    min-height: 0;
+}
+
+.photo-detail-street-view.is-unavailable #photo-detail-street-view-message {
+    padding: 24px 0 18px;
+    text-align: center;
+    opacity: 0.62;
+}
+
 .photo-detail-street-view__canvas {
     width: 100%;
     min-height: 280px;

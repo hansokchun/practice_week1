@@ -156,8 +156,11 @@ test('사진 상세는 정확 위치에서만 지연 로딩하는 거리뷰 영�
     assert.match(app, /preference:\s*maps\.StreetViewPreference\.NEAREST/);
     assert.match(app, /new maps\.StreetViewPanorama\(canvas/);
     assert.match(app, /preview\.hidden = true/);
+    assert.match(app, /section\.classList\.add\('is-unavailable'\)/);
+    assert.match(app, /해당 위치에 거리뷰가 없습니다/);
     assert.match(css, /\.photo-detail-street-view__preview:hover \.photo-detail-street-view__overlay,[\s\S]*opacity:\s*1;/s);
     assert.match(css, /@media \(hover:\s*none\)[\s\S]*\.photo-detail-street-view__overlay\s*\{[^}]*opacity:\s*1;/s);
+    assert.match(css, /\.photo-detail-street-view\.is-unavailable #photo-detail-street-view-message\s*\{[^}]*opacity:\s*0\.62;/s);
 });
 
 test('랜딩 관리자 저장소는 app_metadata 관리자만 변경할 수 있다', async () => {
