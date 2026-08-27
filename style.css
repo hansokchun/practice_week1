@@ -359,34 +359,35 @@ body.is-logged-in #btn-open-auth {
 }
 
 .landing-discovery {
+    position: relative;
+    isolation: isolate;
     min-height: 100vh;
-    background: #fff;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 22% 18%, rgba(244, 140, 113, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 70%, rgba(26, 77, 78, 0.13), transparent 30%),
+        linear-gradient(180deg, #f7fbfa 0%, #fff 100%);
     padding-bottom: 96px;
 }
 
 .landing-search-hero {
     display: grid;
     position: relative;
-    isolation: isolate;
     justify-items: center;
-    overflow: hidden;
+    z-index: 1;
     padding: clamp(94px, 12vw, 154px) 24px clamp(54px, 8vw, 86px);
-    background:
-        radial-gradient(circle at 22% 18%, rgba(244, 140, 113, 0.18), transparent 28%),
-        radial-gradient(circle at 82% 70%, rgba(26, 77, 78, 0.13), transparent 30%),
-        linear-gradient(180deg, #f7fbfa 0%, #fff 100%);
     text-align: center;
 }
 
 .landing-search-globe {
     position: absolute;
-    z-index: -1;
-    top: clamp(88px, 8vw, 132px);
+    z-index: 0;
+    top: clamp(180px, 18vw, 236px);
     left: 50%;
-    width: min(1280px, 118vw);
+    width: min(1050px, 88vw);
     max-width: none;
     height: auto;
-    opacity: 0.72;
+    opacity: 0.68;
     filter: blur(1px) saturate(0.86);
     pointer-events: none;
     transform: translateX(-50%);
@@ -950,9 +951,9 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-globe {
-        top: 86px;
-        width: 880px;
-        opacity: 0.64;
+        top: 220px;
+        width: 96vw;
+        opacity: 0.6;
     }
 
     .landing-search-hero h1 {
