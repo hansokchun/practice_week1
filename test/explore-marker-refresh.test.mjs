@@ -15,8 +15,21 @@ test('logged-out Explore resolves the public photo scope before collecting marke
 test('Explore map marker rendering ignores stale async renders', () => {
     assert.match(source, /exploreMarkerRenderToken:\s*0/);
     assert.match(source, /exploreRenderedZoom:\s*null/);
+    assert.match(source, /exploreMarkerIdleTimer:\s*null/);
     assert.match(source, /const renderToken = \+\+state\.exploreMarkerRenderToken/);
     assert.match(source, /if \(renderToken !== state\.exploreMarkerRenderToken\) return/);
+});
+
+test('Explore mounts initial pins even when mobile map idle is missed', () => {
+    const markerStart = source.indexOf('function scheduleExploreMarkerMountAfterViewport');
+    const markerEnd = source.indexOf('async function renderExploreMapMarkers', markerStart);
+    const body = source.slice(markerStart, markerEnd);
+
+    assert.notEqual(markerStart, -1);
+    assert.match(body, /maps\.event\.addListenerOnce\(map, 'idle', mount\)/);
+    assert.match(body, /state\.exploreMarkerIdleTimer = window\.setTimeout\(mount, 480\)/);
+    assert.match(body, /mountExploreMapMarkers/);
+    assert.match(body, /setExploreMarkerLoading\(false\)/);
 });
 
 test('Explore cluster refresh listener is rebound when the map instance changes', () => {
@@ -53,8 +66,7 @@ test('Explore map refreshes markers after the map settles on first load', () => 
     assert.match(body, /settledZoom !== state\.exploreRenderedZoom/);
     assert.match(body, /!hasPendingMarkerRefresh/);
     assert.match(markerBody, /viewportAction\.type === 'fit'/);
-    assert.match(markerBody, /maps\.event\.addListenerOnce\(map, 'idle'/);
-    assert.match(markerBody, /mountExploreMapMarkers\(\{ maps, map, clusters, locatedPhotos, currentZoom: settledZoom \}\)/);
+    assert.match(markerBody, /scheduleExploreMarkerMountAfterViewport\(maps, map,/);
 });
 
 test('entering Explore resets the old viewport so current own pins are fitted', () => {

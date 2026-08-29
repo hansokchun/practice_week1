@@ -10150,6 +10150,11 @@ body.modal-open {
         min-height: 100%;
     }
 
+    .explore-map .google-map-marker-image {
+        transform: scale(1.14);
+        transform-origin: 50% 100%;
+    }
+
     .map-search {
         top: 12px;
         left: 12px;
@@ -10177,7 +10182,7 @@ body.modal-open {
 
     .explore-discovery-panel {
         display: block;
-        top: 66px;
+        top: 76px;
         left: 12px;
         right: 12px;
         width: auto;

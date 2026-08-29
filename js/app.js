@@ -256,6 +256,7 @@ const state = {
     exploreMarkerRenderToken: 0,
     exploreRenderedZoom: null,
     exploreMarkerIdleListener: null,
+    exploreMarkerIdleTimer: null,
     exploreZoomIdleListener: null,
     exploreMarkerRefreshTimer: null,
     isExploreMapCameraAnimating: false,
@@ -1604,6 +1605,7 @@ async function ensureExploreMap() {
         const settledZoom = Number(map.getZoom?.());
         const hasPendingMarkerRefresh = Boolean(
             state.exploreMarkerIdleListener
+            || state.exploreMarkerIdleTimer
             || state.exploreZoomIdleListener
             || state.exploreMarkerRefreshTimer
         );
@@ -1780,6 +1782,35 @@ function scheduleExploreMarkerRefreshAfterIdle(maps, map) {
     state.exploreMarkerRefreshTimer = window.setTimeout(refresh, 320);
 }
 
+function scheduleExploreMarkerMountAfterViewport(maps, map, {
+    renderToken,
+    locatedPhotos,
+    renderDiscovery = false
+}) {
+    state.exploreMarkerIdleListener?.remove?.();
+    if (state.exploreMarkerIdleTimer) window.clearTimeout(state.exploreMarkerIdleTimer);
+
+    let mounted = false;
+    const mount = () => {
+        if (mounted) return;
+        mounted = true;
+        state.exploreMarkerIdleListener?.remove?.();
+        state.exploreMarkerIdleListener = null;
+        if (state.exploreMarkerIdleTimer) window.clearTimeout(state.exploreMarkerIdleTimer);
+        state.exploreMarkerIdleTimer = null;
+        if (renderToken !== state.exploreMarkerRenderToken) return;
+
+        const settledZoom = map.getZoom?.() || state.exploreZoom;
+        const clusters = getExploreMarkerClusters(locatedPhotos, settledZoom, 54);
+        mountExploreMapMarkers({ maps, map, clusters, locatedPhotos, currentZoom: settledZoom });
+        if (renderDiscovery) renderExploreDiscoveryPanel(locatedPhotos);
+        setExploreMarkerLoading(false);
+    };
+
+    state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', mount);
+    state.exploreMarkerIdleTimer = window.setTimeout(mount, 480);
+}
+
 async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     const renderToken = ++state.exploreMarkerRenderToken;
     const map = await ensureExploreMap();
@@ -1812,19 +1843,10 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     state.exploreLastBoundsKey = viewportAction.boundsKey;
     if (viewportAction.type === 'focus') {
         setExploreMarkerLoading(true);
-        state.exploreMarkerIdleListener?.remove?.();
-        state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', () => {
-            state.exploreMarkerIdleListener = null;
-            if (renderToken !== state.exploreMarkerRenderToken) return;
-            mountExploreMapMarkers({
-                maps,
-                map,
-                clusters: getExploreMarkerClusters(locatedPhotos, map.getZoom?.() || 13, 54),
-                locatedPhotos,
-                currentZoom: map.getZoom?.() || 13
-            });
-            renderExploreDiscoveryPanel(locatedPhotos);
-            setExploreMarkerLoading(false);
+        scheduleExploreMarkerMountAfterViewport(maps, map, {
+            renderToken,
+            locatedPhotos,
+            renderDiscovery: true
         });
         map.setCenter(viewportAction.center);
         map.setZoom(13);
@@ -1834,14 +1856,9 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         const bounds = new maps.LatLngBounds();
         locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
         setExploreMarkerLoading(true);
-        state.exploreMarkerIdleListener?.remove?.();
-        state.exploreMarkerIdleListener = maps.event.addListenerOnce(map, 'idle', () => {
-            state.exploreMarkerIdleListener = null;
-            if (renderToken !== state.exploreMarkerRenderToken) return;
-            const settledZoom = map.getZoom?.() || state.exploreZoom;
-            const clusters = getExploreMarkerClusters(locatedPhotos, settledZoom, 54);
-            mountExploreMapMarkers({ maps, map, clusters, locatedPhotos, currentZoom: settledZoom });
-            setExploreMarkerLoading(false);
+        scheduleExploreMarkerMountAfterViewport(maps, map, {
+            renderToken,
+            locatedPhotos
         });
         map.fitBounds(bounds, 96);
         return;
