@@ -210,6 +210,7 @@ const state = {
     savedAlbums: [],
     likedPhotoIds: [],
     hasLoadedSavedPhotos: false,
+    isSavedLibraryLoading: true,
     hasLoadedMyLikes: false,
     hasLoadedSavedAlbums: false,
     savedPhotosLoadError: false,
@@ -3743,7 +3744,7 @@ function renderPublicSurfaces() {
     renderExplorePhotoScopeControls();
     if (
         document.body.dataset.page === APP_SECTIONS.EXPLORE
-        && !state.hasLoadedSavedPhotos
+        && (state.isSavedLibraryLoading || !state.hasLoadedSavedPhotos)
     ) {
         setExploreMarkerLoading(true);
         return;
@@ -4109,11 +4110,13 @@ async function loadSavedAlbums({ render = true } = {}) {
 }
 
 function loadSavedLibrary() {
+    state.isSavedLibraryLoading = true;
     return Promise.all([
         loadSavedPhotos({ render: false }),
         loadMyLikedPhotos({ render: false }),
         loadSavedAlbums({ render: false })
     ]).then(() => {
+        state.isSavedLibraryLoading = false;
         state.savedAlbums = applyPhotoUrlsToAlbumCovers(state.savedAlbums, state.savedPhotos);
         renderSavedPhotoSurfaces();
         renderPublicSurfaces();
@@ -4122,6 +4125,7 @@ function loadSavedLibrary() {
 }
 
 async function retrySavedLibrary() {
+    state.isSavedLibraryLoading = true;
     state.hasLoadedSavedPhotos = false;
     state.hasLoadedMyLikes = false;
     state.hasLoadedSavedAlbums = false;

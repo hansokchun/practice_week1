@@ -20,9 +20,22 @@ test('direct Explore entry keeps pin loading visible until saved photos finish l
     const emptyEnd = source.indexOf('function renderPublicOwnerProfile', emptyStart);
     const emptyBody = source.slice(emptyStart, emptyEnd);
 
-    assert.match(renderBody, /document\.body\.dataset\.page === APP_SECTIONS\.EXPLORE\s*&& !state\.hasLoadedSavedPhotos/);
+    assert.match(renderBody, /document\.body\.dataset\.page === APP_SECTIONS\.EXPLORE/);
+    assert.match(renderBody, /state\.isSavedLibraryLoading \|\| !state\.hasLoadedSavedPhotos/);
+    assert.match(source, /isSavedLibraryLoading:\s*true/);
+    assert.match(renderBody, /state\.isSavedLibraryLoading/);
     assert.match(renderBody, /setExploreMarkerLoading\(true\)/);
     assert.match(emptyBody, /setExploreMarkerLoading\(false\)/);
+});
+
+test('saved library loading ends only when all parallel library requests finish', () => {
+    const loadStart = source.indexOf('function loadSavedLibrary()');
+    const loadEnd = source.indexOf('async function retrySavedLibrary', loadStart);
+    const body = source.slice(loadStart, loadEnd);
+
+    assert.match(body, /state\.isSavedLibraryLoading = true/);
+    assert.match(body, /Promise\.all/);
+    assert.match(body, /state\.isSavedLibraryLoading = false/);
 });
 
 test('startup opens the requested Explore route before waiting for the photo library', () => {
