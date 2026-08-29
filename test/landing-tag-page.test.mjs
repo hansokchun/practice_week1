@@ -36,24 +36,24 @@ test('landing topic headings expose a right-side view-all action', () => {
     assert.match(cssSource, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-view-all\s*\{[\s\S]*right:\s*0;/s);
 });
 
-test('landing topic page uses a date-free progressive photo feed and side map', () => {
-    const feedStart = appSource.indexOf('function renderLandingTagPhotoFeed');
-    const feedEnd = appSource.indexOf('function renderTripReviewStoryBlock', feedStart);
-    const feedSource = appSource.slice(feedStart, feedEnd);
-
+test('landing topic page is a map-free regional gallery with thirty desktop photos per page', () => {
+    const pageStart = appSource.indexOf('function renderLandingTagPage');
+    const pageEnd = appSource.indexOf('function renderTripReviewStoryBlock', pageStart);
+    const pageSource = appSource.slice(pageStart, pageEnd);
     assert.match(appSource, /function renderLandingTagPage\(\)/);
     assert.match(appSource, /getLandingTagFeedPhotos\(section, getLandingPublicPhotos\(\), getLandingTagSessionSeed\(section\.id\)\)/);
-    assert.match(appSource, /renderTripReviewShell\(\)/);
-    assert.match(appSource, /renderLandingTagPhotoFeed\(visiblePhotos, section\.title, cover, state\.landingTagPhotos\.length\)/);
-    assert.match(appSource, /getLandingTagVisiblePhotos\(state\.landingTagPhotos, state\.landingTagVisibleCount\)/);
-    assert.match(appSource, /new IntersectionObserver/);
-    assert.match(appSource, /state\.landingTagVisibleCount \+= LANDING_TAG_BATCH_SIZE/);
-    assert.match(appSource, /renderTripReviewMap\(visiblePhotos\)/);
-    assert.ok(feedStart > -1 && feedEnd > feedStart);
-    assert.doesNotMatch(feedSource, /trip-review-day-divider|data-trip-review-date/);
-    assert.match(appSource, /document\.body\.dataset\.page === 'tag'/);
-    assert.match(appSource, /document\.body\.dataset\.page === 'tag'\s*\? albumPhotos\.filter\(canShowPhotoOnPublicMap\)/);
-    assert.match(appSource, /const places = isLandingTagPage[\s\S]*state\.albumDetailPhotos[\s\S]*\.filter\(canShowPhotoOnPublicMap\)[\s\S]*\.filter\(hasPhotoLocation\)\.length/);
+    assert.match(pageSource, /getLandingTagRegions\(sectionPhotos\)/);
+    assert.match(pageSource, /filterLandingTagPhotosByRegion\(sectionPhotos, state\.landingTagRegion\)/);
+    assert.match(pageSource, /getLandingTagPhotoPage\(regionPhotos, state\.landingTagPage\)/);
+    assert.match(pageSource, /class="landing-tag-gallery-grid"/);
+    assert.match(pageSource, /class="landing-tag-gallery-card" data-landing-photo-id=/);
+    assert.match(pageSource, /data-landing-tag-region/);
+    assert.match(pageSource, /data-landing-tag-page="previous"/);
+    assert.match(pageSource, /data-landing-tag-page="next"/);
+    assert.doesNotMatch(pageSource, /trip-review-map|renderTripReviewMap|IntersectionObserver|landing-tag-load-sentinel/);
+    assert.match(appSource, /function renderPublicSurfaces\(\)\s*\{\s*if \(document\.body\.dataset\.page === 'tag'\)\s*\{\s*renderLandingTagPage\(\);\s*return;/s);
+    assert.match(cssSource, /\.landing-tag-gallery-grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(cssSource, /@media \(max-width:\s*760px\)[\s\S]*\.landing-tag-gallery-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
 test('landing admin limits the manually ordered tag lead to twenty photos', () => {

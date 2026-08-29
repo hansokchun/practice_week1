@@ -201,10 +201,11 @@ import {
     parseLandingTagId
 } from './landing-tag-route.mjs';
 import {
-    LANDING_TAG_BATCH_SIZE,
     LANDING_TAG_PIN_LIMIT,
+    filterLandingTagPhotosByRegion,
     getLandingTagFeedPhotos,
-    getLandingTagVisiblePhotos
+    getLandingTagPhotoPage,
+    getLandingTagRegions
 } from './landing-tag-feed.mjs';
 
 const initialAuthHash = window.location.hash;
@@ -306,10 +307,10 @@ const state = {
     landingVisibleCounts: {},
     landingSearchQuery: '',
     selectedLandingSectionId: null,
-    landingTagVisibleCount: LANDING_TAG_BATCH_SIZE,
+    landingTagPage: 1,
+    landingTagRegion: '',
     landingTagPhotos: [],
     landingTagRandomSeeds: {},
-    landingTagLoadObserver: null,
     myLibraryTab: 'photos',
     isAccountMenuOpen: false,
     photoDetailStreetView: null
@@ -655,7 +656,8 @@ function routeToLandingTag(sectionId, { replace = false } = {}) {
     const section = state.landingSections.find((candidate) => String(candidate.id) === String(sectionId));
     if (!canOpenLandingTagPage(section)) return;
     state.selectedLandingSectionId = String(section.id);
-    state.landingTagVisibleCount = LANDING_TAG_BATCH_SIZE;
+    state.landingTagPage = 1;
+    state.landingTagRegion = '';
     state.tripReviewDateFilter = null;
     state.tripReviewFocusPhotoId = null;
     const hash = buildLandingTagHash(section.id);
@@ -693,10 +695,6 @@ function renderRoute(section) {
         setExploreMobileDiscoveryOpen(false);
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    if (normalized !== 'tag') {
-        state.landingTagLoadObserver?.disconnect();
-        state.landingTagLoadObserver = null;
-    }
     const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'admin-landing'].includes(normalized)
         ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
@@ -747,7 +745,8 @@ function applyRouteHash(hash, options = {}) {
     if (sharedRoute.route === 'tag') {
         const nextSectionId = parseLandingTagId(hash);
         if (String(state.selectedLandingSectionId || '') !== String(nextSectionId || '')) {
-            state.landingTagVisibleCount = LANDING_TAG_BATCH_SIZE;
+            state.landingTagPage = 1;
+            state.landingTagRegion = '';
         }
         state.selectedLandingSectionId = nextSectionId;
     }
@@ -3363,52 +3362,62 @@ function renderLandingTagPage() {
     }
 
     const sectionPhotos = getLandingTagFeedPhotos(section, getLandingPublicPhotos(), getLandingTagSessionSeed(section.id));
-    const cover = getPhotoImageSrc(sectionPhotos[0]) || MAIN_BG_2_URL;
+    const regions = getLandingTagRegions(sectionPhotos);
+    if (state.landingTagRegion && !regions.some((region) => region.label === state.landingTagRegion)) {
+        state.landingTagRegion = '';
+    }
+    const regionPhotos = filterLandingTagPhotosByRegion(sectionPhotos, state.landingTagRegion);
+    const photoPage = getLandingTagPhotoPage(regionPhotos, state.landingTagPage);
     state.selectedLandingSectionId = String(section.id);
     state.landingTagPhotos = sectionPhotos;
+    state.landingTagPage = photoPage.page;
+    state.albumDetailPhotos = photoPage.items;
     state.albumDetailEditMode = false;
     state.tripReviewDateFilter = null;
     state.tripReviewFocusPhotoId = null;
     state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
     state.tripReviewMarkers = [];
     state.tripReviewMap = null;
-    renderTripReviewShell();
-
     const page = $('#page-trip');
-    const header = page?.querySelector('.trip-review-header');
-    const title = $('#trip-title');
-    const description = $('#trip-review-description');
-    const meta = $('#trip-review-meta');
-    const backButton = page?.querySelector('.trip-review-header .back-link');
-    const backLabel = $('#trip-review-back-label');
-    const actions = page?.querySelector('.trip-review-header .trip-actions');
-    const timeline = page?.querySelector('.trip-review-timeline');
-    const timelineHeading = timeline?.querySelector('h2');
-    const mapPanel = page?.querySelector('.trip-review-map-panel');
-    const mapSummary = page?.querySelector('.trip-review-map-summary');
-    const mapAuthor = page?.querySelector('.trip-review-map-author');
-    const locatedCount = sectionPhotos.filter(canShowPhotoOnPublicMap).filter(hasPhotoLocation).length;
-
-    header?.classList.add('is-landing-tag');
-    page?.setAttribute('data-landing-tag-page', String(section.id));
-    if (title) title.textContent = section.title;
-    if (description) description.textContent = section.description || `${section.title} 사진을 한곳에서 둘러보세요.`;
-    if (meta) {
-        meta.innerHTML = `
-            <span>${formatPlaceCount(locatedCount)}</span>
-            <span>${formatPhotoCount(sectionPhotos.length)}</span>
-        `;
-    }
-    if (backButton) backButton.dataset.route = LANDING_ROUTE;
-    if (backLabel) backLabel.textContent = '홈';
-    if (actions) actions.innerHTML = '';
-    if (timeline) timeline.setAttribute('aria-label', `${section.title} 사진`);
-    if (timelineHeading) timelineHeading.textContent = '태그 사진';
-    if (mapPanel) mapPanel.setAttribute('aria-label', '태그 사진 위치 지도');
-    if (mapSummary) mapSummary.setAttribute('aria-label', '태그 지도 요약');
-    if (mapAuthor) mapAuthor.hidden = true;
-
-    renderLandingTagFeedBatch(section, cover);
+    if (!page) return;
+    page.setAttribute('data-landing-tag-page', String(section.id));
+    page.innerHTML = `
+        <div class="landing-tag-gallery-shell">
+            <header class="landing-tag-gallery-header">
+                <button class="back-link" data-route="${LANDING_ROUTE}" type="button">
+                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                    <span>홈</span>
+                </button>
+                <div class="landing-tag-gallery-title-line">
+                    <h1>${escapeHtml(section.title)}</h1>
+                    <span aria-hidden="true">·</span>
+                    <span>${regionPhotos.length}장의 사진</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${regions.length}개 지역</span>
+                </div>
+                <nav class="landing-tag-region-filters" aria-label="지역별 사진 필터">
+                    ${renderLandingTagRegionButton('', '전체')}
+                    ${regions.map((region) => renderLandingTagRegionButton(region.label, region.label)).join('')}
+                </nav>
+            </header>
+            <main class="landing-tag-gallery-content" aria-label="${escapeHtml(section.title)} 사진">
+                <div id="public-trip-photo-grid" class="landing-tag-gallery-grid">
+                    ${photoPage.items.length
+                        ? photoPage.items.map((photo) => renderLandingTagGalleryCard(photo, section.title)).join('')
+                        : '<div class="landing-tag-gallery-empty">이 지역에 해당하는 공개 사진이 아직 없습니다.</div>'}
+                </div>
+                <nav class="landing-tag-pagination" aria-label="태그 사진 페이지" ${photoPage.pageCount <= 1 ? 'hidden' : ''}>
+                    <button data-landing-tag-page="previous" type="button" aria-label="이전 사진 페이지" ${photoPage.hasPrevious ? '' : 'disabled'}>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+                    </button>
+                    <span>${photoPage.page} / ${photoPage.pageCount}</span>
+                    <button data-landing-tag-page="next" type="button" aria-label="다음 사진 페이지" ${photoPage.hasNext ? '' : 'disabled'}>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </button>
+                </nav>
+            </main>
+        </div>
+    `;
 }
 
 function getLandingTagSessionSeed(sectionId) {
@@ -3419,86 +3428,32 @@ function getLandingTagSessionSeed(sectionId) {
     return state.landingTagRandomSeeds[key];
 }
 
-function renderLandingTagFeedBatch(section, cover) {
-    const visiblePhotos = getLandingTagVisiblePhotos(state.landingTagPhotos, state.landingTagVisibleCount);
-    state.albumDetailPhotos = visiblePhotos;
-    renderLandingTagPhotoFeed(visiblePhotos, section.title, cover, state.landingTagPhotos.length);
-    renderTripReviewMap(visiblePhotos);
+function renderLandingTagRegionButton(value, label) {
+    const isActive = state.landingTagRegion === value;
+    return `<button class="${isActive ? 'active' : ''}" data-landing-tag-region="${escapeHtml(value)}" type="button" aria-pressed="${isActive ? 'true' : 'false'}">${escapeHtml(label)}</button>`;
 }
 
-function renderLandingTagPhotoFeed(visiblePhotos, sectionTitle, cover, totalCount) {
-    const grid = $('#public-trip-photo-grid');
-    if (!grid) return;
-    if (!visiblePhotos.length) {
-        grid.innerHTML = '<div class="trip-review-empty">이 태그에 해당하는 공개 사진이 아직 없습니다.</div>';
-        return;
-    }
-
-    if (!grid.querySelector('.landing-tag-photo-feed')) {
-        grid.innerHTML = `
-            <section class="trip-review-day landing-tag-photo-feed" aria-label="${escapeHtml(sectionTitle)} 사진">
-                <div class="trip-review-day-rows"></div>
-            </section>
-            <div class="landing-tag-load-status" aria-live="polite"></div>
-            <div class="landing-tag-load-sentinel" data-landing-tag-load-more aria-hidden="true"></div>
-        `;
-    }
-    const rows = grid.querySelector('.landing-tag-photo-feed .trip-review-day-rows');
-    const renderedIds = new Set([...rows.querySelectorAll('.trip-review-photo-card')].map((card) => card.dataset.photoId));
-    const nextPhotos = visiblePhotos.filter((photo) => !renderedIds.has(getTripReviewPhotoId(photo)));
-    rows.insertAdjacentHTML('beforeend', nextPhotos.map((photo) => renderTripReviewPhotoCard(photo, sectionTitle, cover, false)).join(''));
-    const hasMore = visiblePhotos.length < totalCount;
-    const status = grid.querySelector('.landing-tag-load-status');
-    const sentinel = grid.querySelector('[data-landing-tag-load-more]');
-    if (status) status.textContent = hasMore
-        ? `${visiblePhotos.length}장 표시 중`
-        : `사진 ${visiblePhotos.length}장을 모두 불러왔습니다.`;
-    if (sentinel) sentinel.hidden = !hasMore;
-    requestAnimationFrame(() => {
-        layoutTripReviewPhotoRows();
-        observeLandingTagLoadSentinel();
-    });
-}
-
-function observeLandingTagLoadSentinel() {
-    state.landingTagLoadObserver?.disconnect();
-    state.landingTagLoadObserver = null;
-    const sentinel = $('[data-landing-tag-load-more]');
-    if (!sentinel || sentinel.hidden || typeof IntersectionObserver === 'undefined') return;
-    state.landingTagLoadObserver = new IntersectionObserver((entries) => {
-        if (!entries.some((entry) => entry.isIntersecting) || document.body.dataset.page !== 'tag') return;
-        state.landingTagLoadObserver?.disconnect();
-        state.landingTagVisibleCount += LANDING_TAG_BATCH_SIZE;
-        const section = state.landingSections.find((candidate) => String(candidate.id) === String(state.selectedLandingSectionId));
-        if (!section) return;
-        const cover = getPhotoImageSrc(state.landingTagPhotos[0]) || MAIN_BG_2_URL;
-        renderLandingTagFeedBatch(section, cover);
-    }, { rootMargin: '480px 0px' });
-    state.landingTagLoadObserver.observe(sentinel);
+function renderLandingTagGalleryCard(photo, sectionTitle) {
+    const photoId = getTripReviewPhotoId(photo);
+    return `
+        <button class="landing-tag-gallery-card" data-landing-photo-id="${escapeHtml(photoId)}" type="button" aria-label="${escapeHtml(getPhotoFallbackLabel(photo, sectionTitle))} 상세 보기">
+            ${renderPhotoImage(photo, sectionTitle, { fetchPriority: 'low' })}
+        </button>
+    `;
 }
 
 function renderLandingTagLoadingPage() {
-    renderTripReviewShell();
     const page = $('#page-trip');
-    const title = $('#trip-title');
-    const description = $('#trip-review-description');
-    const meta = $('#trip-review-meta');
-    const backButton = page?.querySelector('.trip-review-header .back-link');
-    const backLabel = $('#trip-review-back-label');
-    const actions = page?.querySelector('.trip-review-header .trip-actions');
-    const mapAuthor = page?.querySelector('.trip-review-map-author');
-    const photoFlow = $('#public-trip-photo-grid');
-    const map = $('#trip-review-map');
-
-    if (title) title.textContent = '사진을 불러오는 중입니다';
-    if (description) description.textContent = '';
-    if (meta) meta.innerHTML = '';
-    if (backButton) backButton.dataset.route = LANDING_ROUTE;
-    if (backLabel) backLabel.textContent = '홈';
-    if (actions) actions.innerHTML = '';
-    if (mapAuthor) mapAuthor.hidden = true;
-    if (photoFlow) photoFlow.innerHTML = '<div class="trip-review-empty">공개 사진을 준비하고 있습니다.</div>';
-    if (map) map.innerHTML = '<div class="trip-review-empty">지도 위치를 준비하고 있습니다.</div>';
+    if (!page) return;
+    page.innerHTML = `
+        <div class="landing-tag-gallery-shell">
+            <header class="landing-tag-gallery-header">
+                <button class="back-link" data-route="${LANDING_ROUTE}" type="button"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span>홈</span></button>
+                <div class="landing-tag-gallery-title-line"><h1>사진을 불러오는 중입니다</h1></div>
+            </header>
+            <div class="landing-tag-gallery-empty">공개 사진을 준비하고 있습니다.</div>
+        </div>
+    `;
 }
 
 function renderTripReviewStoryBlock(afterId, text, isEditing) {
@@ -3853,6 +3808,10 @@ async function renderTripReviewMap(albumPhotos) {
 }
 
 function renderPublicSurfaces() {
+    if (document.body.dataset.page === 'tag') {
+        renderLandingTagPage();
+        return;
+    }
     ensureProfileHeaderShell();
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     renderExplorePhotoScopeControls();
@@ -6251,6 +6210,23 @@ function bindEvents() {
         const landingViewAllButton = event.target.closest('[data-landing-view-all]');
         if (landingViewAllButton) {
             routeToLandingTag(landingViewAllButton.dataset.landingViewAll);
+            return;
+        }
+
+        const landingTagRegionButton = event.target.closest('[data-landing-tag-region]');
+        if (landingTagRegionButton) {
+            state.landingTagRegion = landingTagRegionButton.dataset.landingTagRegion || '';
+            state.landingTagPage = 1;
+            renderLandingTagPage();
+            window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            return;
+        }
+
+        const landingTagPageButton = event.target.closest('[data-landing-tag-page]');
+        if (landingTagPageButton && !landingTagPageButton.disabled) {
+            state.landingTagPage += landingTagPageButton.dataset.landingTagPage === 'previous' ? -1 : 1;
+            renderLandingTagPage();
+            window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
             return;
         }
 
