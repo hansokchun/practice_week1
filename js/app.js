@@ -142,6 +142,7 @@ import {
     getExploreViewportAction
 } from './explore-marker-clusters.mjs';
 import { animateExploreMapCamera } from './explore-map-camera.mjs';
+import { getExploreMapFitPadding, getExploreMapFocusPanY } from './explore-mobile-viewport.mjs';
 import {
     getEmbeddedOAuthBrowserMessage,
     isLikelyEmbeddedOAuthBrowser
@@ -681,6 +682,7 @@ function renderRoute(section) {
         }
         state.exploreLastBoundsKey = null;
         state.explorePreserveViewportOnce = false;
+        if (isExploreMobileViewport()) setExploreMobileDiscoveryOpen(true);
     }
     if (normalized !== APP_SECTIONS.EXPLORE && state.isExploreMobileDiscoveryOpen) {
         setExploreMobileDiscoveryOpen(false);
@@ -1190,6 +1192,7 @@ function renderExplorePhotoScopeControls() {
         const isActive = button.dataset.exploreScope === state.explorePhotoScope;
         button.classList.toggle('active', isActive);
         button.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         if (button.dataset.exploreScope === 'mine') button.disabled = !state.currentUser;
     });
 }
@@ -1201,6 +1204,7 @@ function setExplorePhotoScopeMenuOpen(isOpen) {
 
 function setExplorePhotoScope(scope) {
     if (!['mine', 'others'].includes(scope)) return;
+    const keepMobileDiscoveryOpen = isExploreMobileViewport() && state.isExploreMobileDiscoveryOpen;
     state.explorePhotoScope = scope;
     state.isExplorePhotoScopeMenuOpen = false;
     state.explorePreserveViewportOnce = shouldPreserveExploreViewport(
@@ -1208,6 +1212,7 @@ function setExplorePhotoScope(scope) {
         getExploreCurrentBounds()
     );
     resetExploreSelectionState();
+    if (keepMobileDiscoveryOpen) setExploreMobileDiscoveryOpen(true);
     renderExplorePhotoScopeControls();
     renderPublicSurfaces();
 }
@@ -1517,13 +1522,39 @@ function setExploreMobileDiscoveryOpen(isOpen) {
     }
 }
 
+function isExploreMobileViewport() {
+    return window.matchMedia('(max-width: 860px)').matches;
+}
+
+function getExploreCurrentMapPadding() {
+    const mapCanvas = $('.explore-map-canvas');
+    const panel = $('#explore-list');
+    return getExploreMapFitPadding({
+        isMobile: isExploreMobileViewport(),
+        isDrawerOpen: state.isExploreMobileDiscoveryOpen,
+        viewportHeight: mapCanvas?.clientHeight || window.innerHeight,
+        drawerHeight: state.isExploreMobileDiscoveryOpen ? panel?.getBoundingClientRect?.().height : 0
+    });
+}
+
+function refreshExploreViewportForMobilePanel() {
+    if (document.body.dataset.page !== APP_SECTIONS.EXPLORE || !state.exploreMarkerPhotos.length) return;
+    state.exploreLastBoundsKey = null;
+    state.explorePreserveViewportOnce = false;
+    window.requestAnimationFrame(() => {
+        if (document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
+        renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+    });
+}
+
 function toggleExploreMobileDiscoveryPanel() {
     setExploreMobileDiscoveryOpen(!state.isExploreMobileDiscoveryOpen);
+    refreshExploreViewportForMobilePanel();
 }
 
 function toggleExploreDiscoveryPanel() {
     if (state.isExploreMobileDiscoveryOpen) {
-        setExploreMobileDiscoveryOpen(false);
+        toggleExploreMobileDiscoveryPanel();
         return;
     }
     const panel = $('#explore-list');
@@ -1908,6 +1939,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     const viewportAction = getExploreViewportAction(locatedPhotos, state.exploreLastBoundsKey, {
         preserveViewport: state.explorePreserveViewportOnce
     });
+    const mapPadding = getExploreCurrentMapPadding();
     state.explorePreserveViewportOnce = false;
     state.exploreLastBoundsKey = viewportAction.boundsKey;
     if (viewportAction.type === 'focus') {
@@ -1919,6 +1951,8 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
         });
         map.setCenter(viewportAction.center);
         map.setZoom(13);
+        const focusPanY = getExploreMapFocusPanY(mapPadding);
+        if (focusPanY) window.requestAnimationFrame(() => map.panBy(0, focusPanY));
         return;
     }
     if (viewportAction.type === 'fit') {
@@ -1929,7 +1963,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
             renderToken,
             locatedPhotos
         });
-        map.fitBounds(bounds, 96);
+        map.fitBounds(bounds, mapPadding);
         return;
     }
     const clusters = getExploreMarkerClusters(locatedPhotos, currentZoom, 54);

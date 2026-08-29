@@ -75,6 +75,7 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.match(html, /aria-controls="explore-discovery-body"/);
     assert.match(html, /사진 목록/);
     assert.match(html, /id="explore-discovery-title"[\s\S]*탐색/);
+    assert.match(html, /class="explore-mobile-scope-options"[\s\S]*data-explore-scope="mine"[\s\S]*data-explore-scope="others"/);
     const panelStart = html.indexOf('id="explore-list"');
     const panelEnd = html.indexOf('</aside>', panelStart);
     const panel = html.slice(panelStart, panelEnd);
@@ -88,6 +89,7 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open\s*\{[^}]*position:\s*fixed;[^}]*bottom:\s*0;[^}]*display:\s*grid;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-discovery-body\s*\{[^}]*display:\s*grid;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-mobile-scope-options\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
 test('mobile Explore photo list opens, reports its count, and closes before photo preview', () => {
@@ -108,10 +110,18 @@ test('mobile Explore photo list opens, reports its count, and closes before phot
     assert.match(source, /btn-toggle-explore-mobile-list/);
     assert.match(renderer, /mobileCount\.textContent = String\(visiblePhotos\.length\)/);
     assert.match(preview, /setExploreMobileDiscoveryOpen\(false\)/);
+    assert.match(source, /isExploreMobileViewport\(\)[\s\S]*setExploreMobileDiscoveryOpen\(true\)/);
     assert.match(css, /\.explore-mobile-list-count\s*\{/);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-auto-rows:\s*max-content;/s);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-item\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
+});
+
+test('Explore place search removes the autocomplete inner border and stays compact on mobile', () => {
+    const css = readFileSync('style.css', 'utf8');
+
+    assert.match(css, /\.map-search \.explore-place-autocomplete\s*\{[^}]*border:\s*0 !important;[^}]*outline:\s*0 !important;[^}]*box-shadow:\s*none !important;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.map-search\s*\{[^}]*left:\s*12px;[^}]*right:\s*auto;[^}]*width:\s*min\(228px,\s*calc\(100% - 24px\)\);/s);
 });
 
 test('Explore map does not render the old pin instruction hint', () => {
