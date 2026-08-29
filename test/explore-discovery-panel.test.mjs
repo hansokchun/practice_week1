@@ -120,7 +120,7 @@ test('mobile Explore photo list opens, reports its count, and closes before phot
 test('Explore place search removes the autocomplete inner border and stays compact on mobile', () => {
     const css = readFileSync('style.css', 'utf8');
 
-    assert.match(css, /\.map-search \.explore-place-autocomplete\s*\{[^}]*border:\s*0 !important;[^}]*outline:\s*0 !important;[^}]*box-shadow:\s*none !important;/s);
+    assert.match(css, /\.map-search \.explore-place-autocomplete\s*\{[^}]*height:\s*32px !important;[^}]*border:\s*0 !important;[^}]*outline:\s*0 !important;[^}]*box-shadow:\s*none !important;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.map-search\s*\{[^}]*left:\s*12px;[^}]*right:\s*auto;[^}]*width:\s*min\(228px,\s*calc\(100% - 24px\)\);/s);
 });
 
