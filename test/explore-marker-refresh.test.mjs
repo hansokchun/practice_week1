@@ -94,6 +94,18 @@ test('Explore refreshes marker rendering only after its visible map has been res
     assert.match(refreshBody, /if \(photos\.length\) renderExploreMapMarkers\(photos, state\.exploreSelectedAlbumId\)/);
 });
 
+test('Explore resizes the map when the mobile canvas changes size', () => {
+    const ensureStart = source.indexOf('async function ensureExploreMap()');
+    const ensureEnd = source.indexOf('function getExplorePinIcon', ensureStart);
+    const body = source.slice(ensureStart, ensureEnd);
+
+    assert.match(source, /exploreMapResizeObserver:\s*null/);
+    assert.match(source, /exploreMapResizeTimer:\s*null/);
+    assert.match(body, /new ResizeObserver/);
+    assert.match(body, /state\.exploreMapResizeObserver\.observe\(container\)/);
+    assert.match(body, /maps\.event\.trigger\(map, 'resize'\)/);
+});
+
 test('non-Explore public surfaces do not pre-render hidden Explore map markers', () => {
     const renderStart = source.indexOf('function renderPublicSurfaces()');
     const renderEnd = source.indexOf('function loadSavedPhotos()', renderStart);

@@ -245,6 +245,8 @@ const state = {
     pendingAuthRoute: null,
     exploreZoom: 7,
     exploreMap: null,
+    exploreMapResizeObserver: null,
+    exploreMapResizeTimer: null,
     exploreMarkers: [],
     exploreClusterListener: null,
     exploreClusterListenerMap: null,
@@ -1621,6 +1623,24 @@ async function ensureExploreMap() {
             renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
         }
     });
+
+    const scheduleMapResize = () => {
+        if (document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
+        if (state.exploreMapResizeTimer) window.clearTimeout(state.exploreMapResizeTimer);
+        state.exploreMapResizeTimer = window.setTimeout(() => {
+            state.exploreMapResizeTimer = null;
+            if (document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
+            maps.event.trigger(map, 'resize');
+        }, 80);
+    };
+    if (typeof ResizeObserver === 'function') {
+        state.exploreMapResizeObserver?.disconnect?.();
+        state.exploreMapResizeObserver = new ResizeObserver(scheduleMapResize);
+        state.exploreMapResizeObserver.observe(container);
+    } else {
+        window.addEventListener('resize', scheduleMapResize, { passive: true });
+    }
+    window.visualViewport?.addEventListener('resize', scheduleMapResize, { passive: true });
 
     const input = $('#explore-map-search-input');
     const searchForm = $('#explore-map-search');
