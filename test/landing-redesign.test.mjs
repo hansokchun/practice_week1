@@ -248,3 +248,18 @@ test('랜딩 섹션과 검색, 추가 로딩 규칙을 정규화한다', () => {
     assert.deepEqual(getLandingSearchResults(photos, '제주').map(({ id }) => id), ['a']);
     assert.equal(getLandingVisiblePhotos(Array.from({ length: 30 }), 20).length, 20);
 });
+
+test('랜딩 검색은 동의어와 AI 분석 메타데이터를 관련도 순으로 혼합한다', () => {
+    const photos = [
+        { id: 'exact', visibility: 'public', tags: ['길'], placeName: '서울' },
+        { id: 'synonym', visibility: 'public', ai_tags: ['도로'], placeName: '서울' },
+        { id: 'scene', visibility: 'public', ai_scene: 'road', placeName: '제주' },
+        { id: 'mood', visibility: 'public', ai_summary: '나무 사이의 조용한 산책', ai_moods: ['평온'] },
+        { id: 'private', visibility: 'private', tags: ['길'], placeName: '서울' }
+    ];
+
+    assert.deepEqual(getLandingSearchResults(photos, '길').map(({ id }) => id), ['exact', 'synonym', 'scene']);
+    assert.deepEqual(getLandingSearchResults(photos, '도로').map(({ id }) => id), ['synonym', 'scene', 'exact']);
+    assert.deepEqual(getLandingSearchResults(photos, '서울 길').map(({ id }) => id), ['exact', 'synonym']);
+    assert.deepEqual(getLandingSearchResults(photos, '한적한').map(({ id }) => id), ['mood']);
+});

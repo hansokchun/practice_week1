@@ -8,8 +8,94 @@ const DEFAULT_LANDING_SECTIONS = [
     { id: 'city', title: '도시', description: '', sort_order: 4 }
 ];
 
+const SEARCH_CONCEPT_GROUPS = [
+    ['길', '도로', '거리', '골목', '산책로', '오솔길', '시골길', '드라이브', 'road'],
+    ['바다', '해변', '해안', '파도', '항구', '비치', 'beach'],
+    ['산', '산맥', '등산', '봉우리', '산정상', 'mountain'],
+    ['숲', '산림', '나무', '수풀', '자연', 'forest'],
+    ['도시', '시내', '도심', '건물', '역', 'city'],
+    ['야경', '밤', '불빛', '조명', '밤경치', 'night'],
+    ['공원', '정원', '조경', '녹지', 'park'],
+    ['호수', '연못', '물가', '저수지', 'lake'],
+    ['눈', '설경', '설원', '겨울', 'snow'],
+    ['평온', '평화', '고요', '차분', '조용', '한적', '한적한', '여유'],
+    ['농촌', '시골', '마을', '전원', 'village']
+];
+
+const SCENE_SEARCH_LABELS = {
+    beach: '해변 beach',
+    city: '도시 city',
+    desert: '사막 desert',
+    forest: '숲 forest',
+    indoor: '실내 indoor',
+    lake: '호수 lake',
+    landmark: '명소 landmark',
+    mountain: '산 mountain',
+    night: '야경 night',
+    other: '여행 other',
+    park: '공원 park',
+    road: '도로 road',
+    snow: '설경 snow',
+    village: '마을 village'
+};
+
 function normalizeText(value) {
     return String(value ?? '').trim().toLocaleLowerCase('ko-KR');
+}
+
+function getSearchTokens(query) {
+    return normalizeText(query).split(/[\s,/#]+/u).filter(Boolean);
+}
+
+function getExpandedSearchTerms(token) {
+    const group = SEARCH_CONCEPT_GROUPS.find((terms) => terms.includes(token));
+    return group || [token];
+}
+
+function appendSearchFields(fields, value, weight) {
+    const values = Array.isArray(value) ? value : [value];
+    values.forEach((item) => {
+        const text = normalizeText(item);
+        if (text) fields.push({ text, weight });
+    });
+}
+
+function getPhotoSearchFields(photo = {}) {
+    const fields = [];
+    appendSearchFields(fields, photo.title, 14);
+    appendSearchFields(fields, photo.placeName, 14);
+    appendSearchFields(fields, photo.tags, 12);
+    appendSearchFields(fields, photo.ai_tags, 12);
+    appendSearchFields(fields, photo.description, 10);
+    appendSearchFields(fields, photo.album, 8);
+    appendSearchFields(fields, photo.ai_summary, 7);
+    appendSearchFields(fields, photo.ai_moods, 6);
+    appendSearchFields(fields, SCENE_SEARCH_LABELS[normalizeText(photo.ai_scene)] || photo.ai_scene, 8);
+    return fields;
+}
+
+function getPhotoSearchScore(photo, query) {
+    const normalizedQuery = normalizeText(query);
+    const tokens = getSearchTokens(query);
+    const fields = getPhotoSearchFields(photo);
+    if (!tokens.length) return 0;
+
+    let score = 0;
+    for (const token of tokens) {
+        const expandedTerms = getExpandedSearchTerms(token);
+        let tokenScore = 0;
+        fields.forEach(({ text, weight }) => {
+            if (text.includes(token)) tokenScore = Math.max(tokenScore, weight * 3);
+            expandedTerms.forEach((term) => {
+                if (term !== token && text.includes(term)) tokenScore = Math.max(tokenScore, weight * 2);
+            });
+        });
+        if (!tokenScore) return 0;
+        score += tokenScore;
+    }
+
+    if (fields.some(({ text }) => text.includes(normalizedQuery))) score += 20;
+    return score;
 }
 
 export function isLandingAdmin(user) {
@@ -47,13 +133,11 @@ export function getLandingSearchResults(photos = [], query = '') {
     const normalizedQuery = normalizeText(query);
     const publicPhotos = photos.filter((photo) => photo?.shared || photo?.visibility === 'public');
     if (!normalizedQuery) return publicPhotos;
-    return publicPhotos.filter((photo) => [
-        photo.title,
-        photo.description,
-        photo.placeName,
-        photo.album,
-        photo.tags
-    ].some((value) => normalizeText(Array.isArray(value) ? value.join(' ') : value).includes(normalizedQuery)));
+    return publicPhotos
+        .map((photo, index) => ({ photo, index, score: getPhotoSearchScore(photo, normalizedQuery) }))
+        .filter(({ score }) => score > 0)
+        .sort((left, right) => right.score - left.score || left.index - right.index)
+        .map(({ photo }) => photo);
 }
 
 export function getLandingSectionPhotos(section, photos = [], fallbackIndex = 0) {
