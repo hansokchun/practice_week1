@@ -30,7 +30,7 @@ The prototype is a documentation artifact and is intentionally outside Vite and 
 | Radius / pill | `--radius-pill` | `999px` |
 | Space scale | `--space-1` through `--space-6` | `4px, 8px, 12px, 16px, 24px, 32px` |
 
-Typography uses `SUIT Variable`, `SUIT`, `Inter`, and system sans-serif. The Ikkyee wordmark may use Georgia. Mobile sizes are fixed, not viewport-scaled: 28px title, 20px panel title, 16px body, 13px metadata, and 12px navigation label. Letter spacing remains `0`.
+Typography uses Google Fonts `Nanum Gothic` for all product text, including the Ikkyee wordmark. The available real font weights are 400, 700, and 800; synthetic weights are disabled. `Material Symbols Outlined` remains the only dedicated font exception because it renders icons rather than text. Mobile sizes are fixed, not viewport-scaled: 28px title, 20px panel title, 16px body, 13px metadata, and 12px navigation label. Letter spacing remains `0`.
 
 ## 2. Layout
 

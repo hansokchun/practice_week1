@@ -18,9 +18,9 @@
     --header-height: 76px;
     --container: 1280px;
     --thumbnail-radius: 8px;
-    --headline: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
-    --body: 'SUIT Variable', 'SUIT', 'Inter', sans-serif;
-    --brand: Georgia, 'Times New Roman', var(--headline);
+    --headline: 'Nanum Gothic', sans-serif;
+    --body: 'Nanum Gothic', sans-serif;
+    --brand: 'Nanum Gothic', sans-serif;
 }
 
 * {
@@ -44,11 +44,13 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--body);
+    font-synthesis: none;
     letter-spacing: 0;
 }
 
 button,
 input,
+select,
 textarea {
     font: inherit;
 }

@@ -5,23 +5,23 @@ import test from 'node:test';
 const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 
-test('site uses SUIT and Inter as the primary public font stack', () => {
-  assert.match(html, /<link rel="preconnect" href="https:\/\/cdn\.jsdelivr\.net">/);
+test('site loads Google Fonts Nanum Gothic for all public text', () => {
   assert.match(html, /<link rel="preconnect" href="https:\/\/fonts\.googleapis\.com">/);
   assert.match(html, /<link rel="preconnect" href="https:\/\/fonts\.gstatic\.com" crossorigin>/);
-  assert.match(html, /family=Inter:wght@400;500;600;700;800;900/);
-  assert.doesNotMatch(html, /Oswald/);
-  assert.match(html, /cdn.jsdelivr.net\/gh\/sunn-us\/SUIT\/fonts\/variable\/woff2\/SUIT-Variable\.css/);
-  assert.match(css, /--headline:\s*'SUIT Variable',\s*'SUIT',\s*'Inter',\s*sans-serif;/);
-  assert.match(css, /--body:\s*'SUIT Variable',\s*'SUIT',\s*'Inter',\s*sans-serif;/);
-  assert.match(css, /--brand:\s*Georgia,\s*'Times New Roman',\s*var\(--headline\);/);
+  assert.match(html, /family=Nanum\+Gothic:wght@400;700;800&display=swap/);
+  assert.doesNotMatch(html, /family=Inter|SUIT-Variable|cdn\.jsdelivr\.net\/gh\/sunn-us\/SUIT/);
+  assert.match(css, /--headline:\s*'Nanum Gothic',\s*sans-serif;/);
+  assert.match(css, /--body:\s*'Nanum Gothic',\s*sans-serif;/);
+  assert.match(css, /--brand:\s*'Nanum Gothic',\s*sans-serif;/);
+  assert.match(css, /body\s*\{[^}]*font-synthesis:\s*none;/s);
 });
 
-test('brand typography is the only non-icon serif exception', () => {
+test('only Material Symbols keeps a dedicated non-Nanum icon font', () => {
   assert.match(css, /\.brand\s*\{[^}]*font-family:\s*var\(--brand\);/s);
   assert.match(css, /\.home-houses-reference__word\s*\{[^}]*font-family:\s*var\(--brand\);/s);
   assert.match(css, /\.site-footer__brand h2\s*\{[^}]*font-family:\s*var\(--brand\);/s);
-  assert.doesNotMatch(css, /font-family:\s*'Oswald'/);
+  assert.match(css, /font-family:\s*"Material Symbols Outlined";/);
+  assert.doesNotMatch(css, /font-family:\s*(?:'SUIT Variable'|'SUIT'|'Inter'|Georgia|'Times New Roman')/);
   assert.doesNotMatch(css, /font-family:\s*var\(--font\)/);
   assert.doesNotMatch(css, /letter-spacing:\s*-/);
 });
