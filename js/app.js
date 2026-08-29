@@ -51,6 +51,7 @@ import {
     normalizeLocationDraft
 } from './location-workflow.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
+import { getGoogleMapsLocationUrl } from './location-copy.mjs';
 import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
 import {
     normalizeGoogleMapsRuntimeConfig,
@@ -2093,6 +2094,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const locationLabel = placeName || (hasPhotoLocation(photo)
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
         : '위치 정보 없음');
+    const googleMapsLocationUrl = getGoogleMapsLocationUrl(photo.lat, photo.lng);
 
     if (modal) {
         modal.dataset.photoDetailContext = context;
@@ -2111,7 +2113,21 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         descriptionNode.hidden = !description;
     }
     if (dateMeta) dateMeta.innerHTML = `<span class="material-symbols-outlined">calendar_today</span> ${dateLabel}`;
-    if (placeMeta) placeMeta.innerHTML = `<span class="material-symbols-outlined">place</span> ${locationLabel}`;
+    if (placeMeta) {
+        placeMeta.innerHTML = `<span class="material-symbols-outlined">place</span> ${locationLabel}`;
+        placeMeta.classList.toggle('is-link', Boolean(googleMapsLocationUrl));
+        if (googleMapsLocationUrl) {
+            placeMeta.href = googleMapsLocationUrl;
+            placeMeta.tabIndex = 0;
+            placeMeta.removeAttribute('aria-disabled');
+            placeMeta.setAttribute('aria-label', `${locationLabel} Google 지도에서 열기`);
+        } else {
+            placeMeta.removeAttribute('href');
+            placeMeta.tabIndex = -1;
+            placeMeta.setAttribute('aria-disabled', 'true');
+            placeMeta.removeAttribute('aria-label');
+        }
+    }
     if (aiAnalysisPanel) {
         const analysisStatus = photo.ai_analysis_status || 'pending';
         const isComplete = photo.ai_analysis_status === 'complete';

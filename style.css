@@ -8256,7 +8256,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     padding: 18px 0;
 }
 
-.photo-detail-meta span {
+.photo-detail-meta > span,
+.photo-detail-meta > a {
     display: inline-flex;
     align-items: center;
     gap: 12px;
@@ -8269,6 +8270,22 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-weight: 500;
     line-height: 1.25;
     padding: 0;
+    text-decoration: none;
+}
+
+.photo-detail-meta > a.is-link {
+    cursor: pointer;
+    transition: color 160ms ease;
+}
+
+.photo-detail-meta > a.is-link:hover,
+.photo-detail-meta > a.is-link:focus-visible {
+    color: var(--primary);
+}
+
+.photo-detail-meta > a.is-link:hover .material-symbols-outlined,
+.photo-detail-meta > a.is-link:focus-visible .material-symbols-outlined {
+    color: var(--primary);
 }
 
 .photo-detail-meta .material-symbols-outlined {
@@ -10651,6 +10668,7 @@ body.modal-open {
     }
 
     .photo-detail-meta > span,
+    .photo-detail-meta > a,
     .photo-detail-visibility,
     .photo-detail-like-panel {
         width: 100%;

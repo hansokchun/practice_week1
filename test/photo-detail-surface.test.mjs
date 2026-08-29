@@ -30,6 +30,7 @@ test('photo detail surface leads with description and compact info before the ma
     assert.match(detail, /id="photo-detail-author-name"/);
     assert.match(detail, />올린 사람</);
     assert.match(detail, /class="photo-detail-meta"/);
+    assert.match(detail, /<a data-photo-detail-meta="place"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
     assert.ok(detail.indexOf('id="photo-detail-description"') < detail.indexOf('class="photo-detail-meta"'));
     assert.ok(detail.indexOf('class="photo-detail-meta"') < detail.indexOf('id="photo-detail-map"'));
     assert.doesNotMatch(detail, /id="photo-detail-title"/);
@@ -92,6 +93,9 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /visibilityValue\.innerHTML = `<span class="material-symbols-outlined">\$\{isPublicPhoto \? 'public' : 'lock'\}<\/span> \$\{isPublicPhoto \? '공개' : '비공개'\}`/);
     assert.match(source, /showOnMapButton\.hidden = !canShowOnExploreMap/);
     assert.match(source, /const dateLabel =[^;]+: '-- --'/s);
+    assert.match(source, /const googleMapsLocationUrl = getGoogleMapsLocationUrl\(photo\.lat, photo\.lng\)/);
+    assert.match(source, /placeMeta\.href = googleMapsLocationUrl/);
+    assert.match(source, /placeMeta\.removeAttribute\('href'\)/);
     assert.match(source, /async function openPhotoOnExploreMap\(photo\)/);
     assert.match(source, /window\.setTimeout\(resolve, 32\)/);
     assert.match(source, /await ensureExploreMap\(\)/);
@@ -123,7 +127,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);[^}]*padding:\s*clamp\(32px,\s*5vh,\s*60px\)\s*clamp\(28px,\s*4vw,\s*56px\);/s);
     assert.match(css, /\.photo-detail-card section\s*\{[^}]*background:\s*#ffffff;/s);
     assert.doesNotMatch(css, /\.photo-detail-zoom-button\s*\{/);
-    assert.match(css, /\.photo-detail-meta span\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.photo-detail-meta > span,\s*\.photo-detail-meta > a\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
     assert.match(css, /\.photo-detail-visibility\s*\{[^}]*display:\s*inline-flex;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
     assert.match(css, /\.photo-detail-visibility \.material-symbols-outlined\s*\{[^}]*color:\s*#475556;/s);
     assert.match(css, /\.photo-detail-more-menu\s*\{[^}]*position:\s*absolute;[^}]*min-width:\s*132px;/s);
