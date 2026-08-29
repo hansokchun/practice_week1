@@ -31,11 +31,17 @@ test('Cloudflare photo analysis endpoint authenticates ownership and limits cost
     const wrangler = readFileSync(new URL('wrangler.toml', root), 'utf8');
 
     assert.match(wrangler, /\[ai\][\s\S]*binding\s*=\s*"AI"/);
-    assert.match(source, /@cf\/meta\/llama-3\.2-11b-vision-instruct/);
+    assert.match(source, /PHOTO_AI_VISION_MODEL/);
+    assert.match(source, /PHOTO_AI_STRUCTURE_MODEL/);
+    assert.match(source, /task:\s*'query'/);
+    assert.match(source, /response_format:[\s\S]*type:\s*'json_schema'/);
     assert.match(source, /\/auth\/v1\/user/);
     assert.match(source, /owner_id=eq\./);
     assert.match(source, /storage\/v1\/object\/authenticated\/photos/);
     assert.match(source, /DAILY_ANALYSIS_LIMIT\s*=\s*25/);
+    assert.match(source, /processingAge[\s\S]*10 \* 60 \* 1000/);
+    assert.match(source, /ai_analysis_status:\s*'processing',[\s\S]*ai_analyzed_at:/);
+    assert.match(source, /ai_analysis_status === 'failed'/);
     assert.match(source, /ai_analysis_status:\s*'complete'/);
     assert.match(source, /ai_tags:/);
     assert.match(source, /ai_analyzed_at:/);

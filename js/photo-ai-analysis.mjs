@@ -1,5 +1,7 @@
 export const PHOTO_AI_ANALYSIS_VERSION = '1';
-export const PHOTO_AI_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
+export const PHOTO_AI_VISION_MODEL = '@cf/moondream/moondream3.1-9B-A2B';
+export const PHOTO_AI_STRUCTURE_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast';
+export const PHOTO_AI_MODEL = `${PHOTO_AI_VISION_MODEL}+${PHOTO_AI_STRUCTURE_MODEL}`;
 
 const ALLOWED_SCENES = new Set([
     'beach',

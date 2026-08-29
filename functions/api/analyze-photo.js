@@ -1,11 +1,13 @@
 import {
     PHOTO_AI_ANALYSIS_VERSION,
+    PHOTO_AI_MODEL,
+    PHOTO_AI_STRUCTURE_MODEL,
+    PHOTO_AI_VISION_MODEL,
     normalizePhotoAiAnalysis
 } from '../../js/photo-ai-analysis.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
-const PHOTO_AI_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 const DAILY_ANALYSIS_LIMIT = 25;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -51,7 +53,7 @@ function toBase64(buffer) {
 }
 
 function parseAiPayload(result) {
-    const value = result?.response ?? result;
+    const value = result?.response ?? result?.choices?.[0]?.message?.content ?? result;
     if (value && typeof value === 'object') return value;
     if (typeof value !== 'string') return {};
 
@@ -150,20 +152,54 @@ async function downloadPhoto(token, storagePath) {
 }
 
 async function analyzePhoto(ai, image) {
-    const result = await ai.run(PHOTO_AI_MODEL, {
+    const visionResult = await ai.run(PHOTO_AI_VISION_MODEL, {
+        task: 'query',
+        image,
+        question: 'Describe only the visible subject, objects, broad scene, colors, and mood in 50 English words or fewer. Do not identify an exact location or any person.',
+        reasoning: false,
+        stream: false,
+        max_tokens: 100,
+        temperature: 0
+    });
+    const caption = String(
+        visionResult?.answer
+        || visionResult?.result?.answer
+        || visionResult?.caption
+        || visionResult?.result?.caption
+        || ''
+    ).trim();
+    if (!caption) throw new Error('empty_vision_response');
+
+    const result = await ai.run(PHOTO_AI_STRUCTURE_MODEL, {
         messages: [
             {
                 role: 'system',
-                content: '여행 사진 분류기입니다. 보이는 정보만 사용하고 사람의 신원, 민감정보, 정확한 장소는 추측하지 마세요. 한국어로 간결하게 답하세요.'
+                content: '입력된 이미지 설명을 여행 사진 검색 데이터로 변환합니다. 모든 텍스트는 자연스러운 한국어로 작성하고, 설명에 없는 정확한 장소나 인물 신원을 추가하지 마세요.'
             },
             {
                 role: 'user',
-                content: '검색과 추천에 쓸 태그 최대 10개, 한 문장 요약, 장면 분류, 분위기 최대 3개를 반환하세요. 설명이나 마크다운 없이 {"tags":["태그"],"summary":"요약","scene":"other","moods":["분위기"]} 형식의 JSON 객체만 출력하세요. scene은 beach, city, desert, forest, indoor, lake, landmark, mountain, night, other, park, road, snow, village 중 하나여야 합니다.'
+                content: `이미지 설명: ${caption}`
             }
         ],
-        image,
-        max_tokens: 300,
-        temperature: 0.1
+        response_format: {
+            type: 'json_schema',
+            json_schema: {
+                type: 'object',
+                properties: {
+                    tags: { type: 'array', items: { type: 'string' }, maxItems: 10 },
+                    summary: { type: 'string' },
+                    scene: {
+                        type: 'string',
+                        enum: ['beach', 'city', 'desert', 'forest', 'indoor', 'lake', 'landmark', 'mountain', 'night', 'other', 'park', 'road', 'snow', 'village']
+                    },
+                    moods: { type: 'array', items: { type: 'string' }, maxItems: 3 }
+                },
+                required: ['tags', 'summary', 'scene', 'moods'],
+                additionalProperties: false
+            }
+        },
+        max_tokens: 220,
+        temperature: 0
     });
     return normalizePhotoAiAnalysis(parseAiPayload(result));
 }
@@ -210,8 +246,12 @@ export async function onRequestPost({ request, env }) {
         });
     }
     if (photo.ai_analysis_status === 'processing') {
-        return json({ error: 'analysis_in_progress' }, 409);
+        const processingAge = Date.now() - new Date(photo.ai_analyzed_at || 0).getTime();
+        if (Number.isFinite(processingAge) && processingAge < 10 * 60 * 1000) {
+            return json({ error: 'analysis_in_progress' }, 409);
+        }
     }
+    if (photo.ai_analysis_status === 'failed') return json({ error: 'analysis_failed' }, 422);
     if (!env.AI) return json({ error: 'ai_unavailable' }, 503);
 
     try {
@@ -221,7 +261,8 @@ export async function onRequestPost({ request, env }) {
         }
 
         await updatePhotoAnalysis(token, user.id, photoId, {
-            ai_analysis_status: 'processing'
+            ai_analysis_status: 'processing',
+            ai_analyzed_at: new Date().toISOString()
         });
         const image = await downloadPhoto(token, photo.storage_path);
         const analysis = await analyzePhoto(env.AI, image);

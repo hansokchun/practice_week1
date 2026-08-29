@@ -68,12 +68,16 @@ No Cloudflare D1 database is currently referenced by the local code or
 Workers AI integration:
 
 - Binding: `AI`, configured in `wrangler.toml`.
-- Model: `@cf/meta/llama-3.2-11b-vision-instruct`.
+- Vision model: `@cf/moondream/moondream3.1-9B-A2B` for a short image-only description.
+- Structure model: `@cf/meta/llama-3.1-8b-instruct-fast` for compact Korean JSON.
+- A representative image test used about 29 Neurons total. At the application
+  cap of 25 analyses per account per day, that is about 725 Neurons before
+  retries, below Cloudflare's current 10,000-Neuron daily free allocation.
 - API boundary: `functions/api/analyze-photo.js`.
 - The endpoint authenticates the Supabase session and photo owner, then reads
   the private Storage object with the user's token. No service-role key is used.
-- The account owner must accept the Meta model license and acceptable-use
-  policy once before the first analysis request can succeed.
+- The account owner accepted the Meta vision model license and acceptable-use
+  policy on 2026-08-29. The active two-stage pipeline uses the models above.
 
 ## Local repo integration points
 
