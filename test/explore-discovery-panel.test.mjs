@@ -66,11 +66,14 @@ test('Explore preserves the current viewport only when the next scope has a visi
     ], null), false);
 });
 
-test('Explore shell exposes a desktop discovery panel instead of a hidden-only list', () => {
+test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigger', () => {
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');
 
     assert.match(html, /id="explore-list" class="explore-discovery-panel"/);
+    assert.match(html, /id="btn-toggle-explore-mobile-list"/);
+    assert.match(html, /aria-controls="explore-discovery-body"/);
+    assert.match(html, /사진 목록/);
     assert.match(html, /id="explore-discovery-title"[\s\S]*탐색/);
     const panelStart = html.indexOf('id="explore-list"');
     const panelEnd = html.indexOf('</aside>', panelStart);
@@ -80,8 +83,33 @@ test('Explore shell exposes a desktop discovery panel instead of a hidden-only l
     assert.doesNotMatch(panel, /현재 지도 화면 안의 공개 사진/);
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*block;[^}]*top:\s*96px;[^}]*left:\s*12px;[^}]*right:\s*12px;/s);
-    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-header,\s*\.explore-discovery-body\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /\.explore-mobile-list-toggle\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-mobile-list-toggle\s*\{[^}]*display:\s*inline-flex;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open\s*\{[^}]*position:\s*fixed;[^}]*bottom:\s*0;[^}]*display:\s*grid;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-discovery-body\s*\{[^}]*display:\s*grid;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
+});
+
+test('mobile Explore photo list opens, reports its count, and closes before photo preview', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+    const rendererStart = source.indexOf('function renderExploreDiscoveryPanel');
+    const rendererEnd = source.indexOf('async function getGoogleMapsRuntimeConfig', rendererStart);
+    const renderer = source.slice(rendererStart, rendererEnd);
+    const previewStart = source.indexOf('function openExplorePhotoPreview');
+    const previewEnd = source.indexOf('async function openPhotoOnExploreMap', previewStart);
+    const preview = source.slice(previewStart, previewEnd);
+
+    assert.match(html, /data-explore-mobile-list-count>0<\/span>/);
+    assert.match(source, /isExploreMobileDiscoveryOpen:\s*false/);
+    assert.match(source, /function setExploreMobileDiscoveryOpen\(isOpen\)/);
+    assert.match(source, /function toggleExploreMobileDiscoveryPanel\(\)/);
+    assert.match(source, /btn-toggle-explore-mobile-list/);
+    assert.match(renderer, /mobileCount\.textContent = String\(visiblePhotos\.length\)/);
+    assert.match(preview, /setExploreMobileDiscoveryOpen\(false\)/);
+    assert.match(css, /\.explore-mobile-list-count\s*\{/);
+    assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
 });
 
 test('Explore map does not render the old pin instruction hint', () => {

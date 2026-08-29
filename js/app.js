@@ -270,6 +270,7 @@ const state = {
     isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
     isExploreDiscoveryCollapsed: false,
+    isExploreMobileDiscoveryOpen: false,
     explorePreviewEditMode: false,
     isNotificationPopoverOpen: false,
     accountProfileEditMode: false,
@@ -679,6 +680,9 @@ function renderRoute(section) {
         }
         state.exploreLastBoundsKey = null;
         state.explorePreserveViewportOnce = false;
+    }
+    if (normalized !== APP_SECTIONS.EXPLORE && state.isExploreMobileDiscoveryOpen) {
+        setExploreMobileDiscoveryOpen(false);
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
     if (normalized !== 'tag') {
@@ -1208,6 +1212,7 @@ function setExplorePhotoScope(scope) {
 }
 
 function resetExploreSelectionState() {
+    setExploreMobileDiscoveryOpen(false);
     state.selectedPhotoId = null;
     state.selectedPublicAlbumId = null;
     setExploreDiscoverySelection(null);
@@ -1328,6 +1333,7 @@ function setExploreDiscoverySelection(photoId) {
 
 function openExplorePhotoPreview(photo, options = {}) {
     if (!photo) return;
+    setExploreMobileDiscoveryOpen(false);
     if (photo.album_id) state.selectedPublicAlbumId = photo.album_id;
     updateExplorePhotoPreview(photo);
     setExplorePreviewExpanded(false);
@@ -1481,7 +1487,44 @@ function setExploreDiscoveryCollapsed(nextCollapsed) {
     }
 }
 
+function setExploreMobileDiscoveryOpen(isOpen) {
+    state.isExploreMobileDiscoveryOpen = Boolean(isOpen);
+    const panel = $('#explore-list');
+    const mobileButton = $('#btn-toggle-explore-mobile-list');
+    const desktopButton = $('#btn-toggle-explore-discovery');
+    const desktopIcon = desktopButton?.querySelector('.material-symbols-outlined');
+    const title = $('#explore-discovery-title');
+
+    panel?.classList.toggle('is-mobile-open', state.isExploreMobileDiscoveryOpen);
+    document.body.classList.toggle('explore-mobile-discovery-open', state.isExploreMobileDiscoveryOpen);
+    if (mobileButton) mobileButton.setAttribute('aria-expanded', String(state.isExploreMobileDiscoveryOpen));
+    if (title) title.textContent = state.isExploreMobileDiscoveryOpen ? '사진 목록' : '탐색';
+    if (desktopButton) {
+        desktopButton.setAttribute('aria-expanded', String(state.isExploreMobileDiscoveryOpen || !state.isExploreDiscoveryCollapsed));
+        desktopButton.setAttribute('aria-label', state.isExploreMobileDiscoveryOpen
+            ? '사진 목록 닫기'
+            : (state.isExploreDiscoveryCollapsed ? '탐색 패널 열기' : '탐색 패널 접기'));
+    }
+    if (desktopIcon) {
+        desktopIcon.textContent = state.isExploreMobileDiscoveryOpen
+            ? 'keyboard_arrow_down'
+            : (state.isExploreDiscoveryCollapsed ? 'chevron_left' : 'chevron_right');
+    }
+    if (state.isExploreMobileDiscoveryOpen) {
+        state.isExplorePhotoScopeMenuOpen = false;
+        renderExplorePhotoScopeControls();
+    }
+}
+
+function toggleExploreMobileDiscoveryPanel() {
+    setExploreMobileDiscoveryOpen(!state.isExploreMobileDiscoveryOpen);
+}
+
 function toggleExploreDiscoveryPanel() {
+    if (state.isExploreMobileDiscoveryOpen) {
+        setExploreMobileDiscoveryOpen(false);
+        return;
+    }
     const panel = $('#explore-list');
     const nextCollapsed = !panel?.classList.contains('is-collapsed');
     setExploreDiscoveryCollapsed(nextCollapsed);
@@ -1492,12 +1535,15 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
     const list = panel?.querySelector('[data-explore-discovery-list]');
     if (!panel || !list) return;
     setExploreDiscoveryCollapsed(state.isExploreDiscoveryCollapsed);
+    setExploreMobileDiscoveryOpen(state.isExploreMobileDiscoveryOpen);
 
     const visiblePhotos = getExploreDiscoveryPhotos(photos, {
         bounds: options.bounds || getExploreCurrentBounds(),
         limit: 30
     });
     panel.dataset.visibleCount = String(visiblePhotos.length);
+    const mobileCount = $('[data-explore-mobile-list-count]');
+    if (mobileCount) mobileCount.textContent = String(visiblePhotos.length);
 
     if (!visiblePhotos.length) {
         list.innerHTML = '<p class="explore-discovery-empty">현재 지도 화면 안에 표시할 공개 사진이 없습니다.</p>';
@@ -6284,6 +6330,12 @@ function bindEvents() {
         const exploreScopeButton = event.target.closest('[data-explore-scope]');
         if (exploreScopeButton) {
             setExplorePhotoScope(exploreScopeButton.dataset.exploreScope);
+            return;
+        }
+
+        const mobileDiscoveryButton = event.target.closest('#btn-toggle-explore-mobile-list');
+        if (mobileDiscoveryButton) {
+            toggleExploreMobileDiscoveryPanel();
             return;
         }
 
