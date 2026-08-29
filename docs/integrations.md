@@ -1,6 +1,6 @@
 # Project Integrations
 
-Last checked: 2026-08-10
+Last checked: 2026-08-29
 
 This document is for Codex/operator context. It describes which connected
 services are available through the Codex plugins and which external resources
@@ -65,14 +65,25 @@ Cloudflare resources seen at last check:
 No Cloudflare D1 database is currently referenced by the local code or
 `wrangler.toml`.
 
+Workers AI integration:
+
+- Binding: `AI`, configured in `wrangler.toml`.
+- Model: `@cf/meta/llama-3.2-11b-vision-instruct`.
+- API boundary: `functions/api/analyze-photo.js`.
+- The endpoint authenticates the Supabase session and photo owner, then reads
+  the private Storage object with the user's token. No service-role key is used.
+- The account owner must accept the Meta model license and acceptable-use
+  policy once before the first analysis request can succeed.
+
 ## Local repo integration points
 
 - `auth.js` initializes the Supabase client and wraps Auth, Database, and
   Storage calls.
 - `index.html` loads the Supabase browser SDK from CDN.
-- `wrangler.toml` only configures Cloudflare Pages output:
+- `wrangler.toml` configures Cloudflare Pages output and Workers AI:
   - `name = "ikkyee"`
   - `pages_build_output_dir = "dist"`
+  - `[ai] binding = "AI"`
 - `functions/api/config.js` exposes the browser-visible Google Maps API key and optional Map ID. Cloudflare Preview and Production may use `GOOGLE_MAPS_MAP_ID` (or the Vite-prefixed equivalent); no private Google credential belongs in the repository.
 
 ## Operational notes

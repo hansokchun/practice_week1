@@ -18,7 +18,7 @@ import {
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url';
-const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,liked,shared,owner_id,album,album_id,visibility,geo_source';
+const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
@@ -389,6 +389,40 @@ export async function upsertPhoto(photo) {
         return { data, error: null };
     } catch (error) {
         return { data: null, error };
+    }
+}
+
+export async function requestPhotoAiAnalysis(photoId) {
+    try {
+        const sb = getSupabase();
+        const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        const accessToken = sessionData?.session?.access_token;
+        if (!accessToken) throw new Error('로그인이 필요합니다.');
+
+        const response = await fetch('/api/analyze-photo', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ photoId: String(photoId) })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const error = new Error(payload.error || '사진 AI 분석에 실패했습니다.');
+            error.code = payload.error || 'analysis_failed';
+            throw error;
+        }
+        return {
+            data: payload.photo || null,
+            analysis: payload.analysis || null,
+            cached: Boolean(payload.cached),
+            error: null
+        };
+    } catch (error) {
+        return { data: null, analysis: null, cached: false, error };
     }
 }
 

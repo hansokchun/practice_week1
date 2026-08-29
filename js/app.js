@@ -28,6 +28,7 @@ import {
     deletePhoto,
     replaceAlbumPhotos,
     removeUploadedImage,
+    requestPhotoAiAnalysis,
     saveLandingSection,
     upsertPhoto
 } from '../auth.js';
@@ -2766,8 +2767,44 @@ function normalizeSavedPhoto(photo) {
         album_id: photo.album_id || null,
         visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
         location_precision: normalizeLocationPrecision(photo.location_precision),
-        album: photo.album || null
+        album: photo.album || null,
+        tags: Array.isArray(photo.ai_tags) ? photo.ai_tags : (Array.isArray(photo.tags) ? photo.tags : []),
+        ai_tags: Array.isArray(photo.ai_tags) ? photo.ai_tags : [],
+        ai_summary: photo.ai_summary || '',
+        ai_scene: photo.ai_scene || 'other',
+        ai_moods: Array.isArray(photo.ai_moods) ? photo.ai_moods : [],
+        ai_analysis_status: photo.ai_analysis_status || 'pending',
+        ai_analyzed_at: photo.ai_analyzed_at || null,
+        ai_analysis_model: photo.ai_analysis_model || null
     };
+}
+
+let photoAiAnalysisQueue = Promise.resolve();
+
+function queuePhotoAiAnalysis(photos = []) {
+    const candidates = photos.filter((photo) => (
+        photo?.id
+        && photo.owner_id === state.currentUser?.id
+        && photo.ai_analysis_status !== 'complete'
+    ));
+    if (!candidates.length) return;
+
+    photoAiAnalysisQueue = photoAiAnalysisQueue.then(async () => {
+        let hasUpdates = false;
+        for (const photo of candidates) {
+            const [result] = await Promise.allSettled([requestPhotoAiAnalysis(photo.id)]);
+            if (result.status !== 'fulfilled' || result.value.error || !result.value.data) continue;
+
+            const normalized = normalizeSavedPhoto({ ...photo, ...result.value.data });
+            state.savedPhotos = state.savedPhotos.map((savedPhoto) => (
+                String(savedPhoto.id) === String(normalized.id) ? normalized : savedPhoto
+            ));
+            hasUpdates = true;
+        }
+        if (!hasUpdates) return;
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+    }).catch(() => null);
 }
 
 function normalizeSavedAlbum(album) {
@@ -5222,6 +5259,7 @@ async function persistStagedPhotos() {
             ...state.savedPhotos.filter((photo) => photo.owner_id !== state.currentUser.id || !saved.some((next) => next.id === photo.id))
         ];
         renderSavedPhotoSurfaces();
+        queuePhotoAiAnalysis(saved);
         if (status) status.textContent = `${saved.length}장의 사진을 개별사진 보관함에 저장했습니다.`;
         showToast(`${saved.length}장의 사진을 저장했습니다.`);
         clearUploadQueue();
