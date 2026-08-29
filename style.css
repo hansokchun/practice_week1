@@ -7385,10 +7385,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .landing-tag-gallery-shell {
-    width: min(1540px, 100%);
+    width: min(var(--container), calc(100% - 48px));
     min-height: calc(100svh - 72px);
     margin: 0 auto;
-    padding: 42px 40px 72px;
+    padding: 42px 0 72px;
 }
 
 .landing-tag-gallery-header {
@@ -7465,13 +7465,13 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .landing-tag-gallery-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 10px;
+    gap: 18px;
 }
 
 .landing-tag-gallery-card {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 4 / 5;
     overflow: hidden;
     border: 0;
     border-radius: 4px;
@@ -7577,7 +7577,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
     .landing-tag-gallery-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px;
+        gap: 10px;
     }
 
     .landing-tag-gallery-card {
