@@ -94,6 +94,21 @@ test('하단 지도 CTA는 별도 버튼 장식 없이 페이드 배경 전체�
     assert.match(css, /\.landing-map-footer-content\s*\{[^}]*font-size:\s*clamp\(22px,\s*2vw,\s*28px\);[^}]*text-shadow:/s);
 });
 
+test('하단 지도 CTA 비교 영역은 세 가지 전체 클릭 시안을 반응형으로 제공한다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    const gallery = html.match(/<section class="landing-map-cta-gallery[\s\S]*?<\/section>/)?.[0] ?? '';
+    const demos = [...gallery.matchAll(/class="landing-map-cta-demo landing-map-cta-demo--(floating|editorial|interactive)"/g)];
+
+    assert.equal(demos.length, 3);
+    assert.deepEqual(demos.map((match) => match[1]), ['floating', 'editorial', 'interactive']);
+    assert.equal((gallery.match(/data-route="explore"/g) ?? []).length, 3);
+    assert.equal((gallery.match(/지도에서 찾아보기/g) ?? []).length, 3);
+    assert.match(css, /\.landing-map-cta-gallery\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(css, /\.landing-map-cta-demo\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-cta-gallery\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+});
+
 test('로그인 모달은 선택 수단만 간결하게 보여준다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const authStart = html.indexOf('id="auth-modal"');

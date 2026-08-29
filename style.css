@@ -575,6 +575,187 @@ body.is-logged-in #btn-open-auth {
     outline-offset: 4px;
 }
 
+.landing-map-cta-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    width: min(var(--container), calc(100% - 48px));
+    margin: 28px auto 96px;
+}
+
+.landing-map-cta-demo {
+    position: relative;
+    isolation: isolate;
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 0;
+    border-radius: 8px;
+    background: #dfe9e4;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-align: left;
+}
+
+.landing-map-cta-demo::before,
+.landing-map-cta-demo::after {
+    content: '';
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+}
+
+.landing-map-cta-demo::before {
+    background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
+    transform: scale(1.015);
+    transition: filter 220ms ease, transform 380ms ease;
+}
+
+.landing-map-cta-demo::after {
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(7, 35, 36, 0.02) 35%, rgba(7, 35, 36, 0.54) 100%);
+}
+
+.landing-map-cta-demo:hover::before,
+.landing-map-cta-demo:focus-visible::before {
+    filter: saturate(1.08) contrast(1.04);
+    transform: scale(1.055);
+}
+
+.landing-map-cta-demo:focus-visible {
+    outline: 3px solid var(--teal);
+    outline-offset: 3px;
+}
+
+.landing-map-cta-demo__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+.landing-map-cta-demo__action .material-symbols-outlined {
+    font-size: 22px;
+}
+
+.landing-map-cta-demo--floating .landing-map-cta-demo__action {
+    position: absolute;
+    left: 50%;
+    bottom: 22px;
+    min-height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(8, 39, 40, 0.9);
+    box-shadow: 0 12px 28px rgba(6, 27, 28, 0.24);
+    padding: 0 20px;
+    transform: translateX(-50%);
+    transition: background-color 180ms ease, transform 180ms ease;
+    white-space: nowrap;
+}
+
+.landing-map-cta-demo--floating:hover .landing-map-cta-demo__action,
+.landing-map-cta-demo--floating:focus-visible .landing-map-cta-demo__action {
+    background: rgba(4, 31, 32, 0.98);
+    transform: translate(-50%, -3px);
+}
+
+.landing-map-cta-demo--editorial::after {
+    background: linear-gradient(90deg, rgba(5, 31, 32, 0.76) 0%, rgba(5, 31, 32, 0.18) 72%);
+}
+
+.landing-map-cta-demo--editorial .landing-map-cta-demo__action {
+    position: absolute;
+    right: 24px;
+    bottom: 26px;
+    left: 24px;
+    gap: 10px;
+    font-size: clamp(18px, 1.8vw, 24px);
+    text-shadow: 0 2px 14px rgba(0, 24, 25, 0.34);
+}
+
+.landing-map-cta-demo__arrow {
+    margin-left: auto;
+    transition: transform 180ms ease;
+}
+
+.landing-map-cta-demo--editorial:hover .landing-map-cta-demo__arrow,
+.landing-map-cta-demo--editorial:focus-visible .landing-map-cta-demo__arrow {
+    transform: translateX(6px);
+}
+
+.landing-map-cta-demo--interactive::after {
+    background: radial-gradient(circle at 64% 42%, rgba(255, 255, 255, 0.04) 0 14%, transparent 15%),
+        linear-gradient(180deg, rgba(7, 35, 36, 0.04) 20%, rgba(7, 35, 36, 0.66) 100%);
+}
+
+.landing-map-cta-demo--interactive .landing-map-cta-demo__action {
+    position: absolute;
+    right: 24px;
+    bottom: 26px;
+    left: 24px;
+    justify-content: center;
+    font-size: clamp(17px, 1.6vw, 21px);
+    text-shadow: 0 2px 14px rgba(0, 24, 25, 0.44);
+}
+
+.landing-map-cta-demo__pin {
+    position: absolute;
+    top: 30%;
+    left: 64%;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    color: var(--teal);
+    transform: translate(-50%, -50%);
+    transition: transform 240ms ease;
+}
+
+.landing-map-cta-demo__pin > .material-symbols-outlined {
+    position: relative;
+    z-index: 1;
+    font-size: 38px;
+    font-variation-settings: 'FILL' 1;
+    filter: drop-shadow(0 5px 8px rgba(0, 34, 35, 0.18));
+}
+
+.landing-map-cta-demo__pulse {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 18px;
+    height: 8px;
+    border: 2px solid rgba(15, 102, 102, 0.7);
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, 45%) scale(0.5);
+}
+
+.landing-map-cta-demo--interactive:hover .landing-map-cta-demo__pin,
+.landing-map-cta-demo--interactive:focus-visible .landing-map-cta-demo__pin {
+    transform: translate(-50%, -58%);
+}
+
+.landing-map-cta-demo--interactive:hover .landing-map-cta-demo__pulse,
+.landing-map-cta-demo--interactive:focus-visible .landing-map-cta-demo__pulse {
+    animation: landing-map-cta-pulse 1.2s ease-out infinite;
+}
+
+@keyframes landing-map-cta-pulse {
+    0% {
+        opacity: 0.72;
+        transform: translate(-50%, 45%) scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, 45%) scale(2.5);
+    }
+}
+
 .landing-section-heading {
     position: relative;
     display: grid;
@@ -1113,6 +1294,25 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
         text-align: center;
     }
 
+    .landing-map-cta-gallery {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        width: calc(100% - 32px);
+        margin-top: 20px;
+        margin-bottom: 64px;
+    }
+
+    .landing-map-cta-demo {
+        aspect-ratio: 16 / 9;
+    }
+
+    .landing-map-cta-demo--editorial .landing-map-cta-demo__action,
+    .landing-map-cta-demo--interactive .landing-map-cta-demo__action {
+        right: 20px;
+        bottom: 20px;
+        left: 20px;
+    }
+
     .landing-section-toolbar {
         align-items: flex-start;
         flex-direction: column;
@@ -1124,6 +1324,20 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
     .admin-photo-picker {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .landing-map-cta-demo::before,
+    .landing-map-cta-demo__action,
+    .landing-map-cta-demo__arrow,
+    .landing-map-cta-demo__pin {
+        transition: none;
+    }
+
+    .landing-map-cta-demo--interactive:hover .landing-map-cta-demo__pulse,
+    .landing-map-cta-demo--interactive:focus-visible .landing-map-cta-demo__pulse {
+        animation: none;
     }
 }
 
