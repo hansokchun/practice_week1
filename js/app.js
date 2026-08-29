@@ -6754,11 +6754,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentUser = await getCurrentUser();
         await ensureCurrentUserPublicProfile();
         updateAccountUI();
+        bindEvents();
+        if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
+        else applyRouteHash(window.location.hash, { replace: !window.location.hash });
         await loadSavedLibrary();
         await loadLandingCuration();
         await loadPublicProfileNames();
         ensureProfileHeaderShell();
-        bindEvents();
         showPendingKakaoProfileImport();
         startHomeHeroSlider();
         renderStagedPhotos();
@@ -6767,8 +6769,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderExploreList();
         setVisibilityMode(state.visibility);
         setProfileTab(state.profileTab);
-        if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
-        else applyRouteHash(window.location.hash, { replace: !window.location.hash });
         if (state.currentUser) await runPendingAuthAction();
         if (isPasswordRecoveryCallback(initialAuthHash)) {
             openModal('#password-recovery-modal');

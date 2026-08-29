@@ -25,6 +25,16 @@ test('direct Explore entry keeps pin loading visible until saved photos finish l
     assert.match(emptyBody, /setExploreMarkerLoading\(false\)/);
 });
 
+test('startup opens the requested Explore route before waiting for the photo library', () => {
+    const bootStart = source.indexOf("document.addEventListener('DOMContentLoaded'");
+    const bootBody = source.slice(bootStart);
+    const loadIndex = bootBody.indexOf('await loadSavedLibrary();');
+
+    assert.notEqual(loadIndex, -1);
+    assert.ok(bootBody.indexOf('bindEvents();') < loadIndex);
+    assert.ok(bootBody.indexOf('applyRouteHash(window.location.hash') < loadIndex);
+});
+
 test('Explore map marker rendering ignores stale async renders', () => {
     assert.match(source, /exploreMarkerRenderToken:\s*0/);
     assert.match(source, /exploreRenderedZoom:\s*null/);
