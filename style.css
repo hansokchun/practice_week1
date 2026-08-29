@@ -6267,10 +6267,6 @@ body.is-logged-in .home-workspace .album-row {
     display: none;
 }
 
-.explore-mobile-scope-options {
-    display: none;
-}
-
 .explore-mobile-list-count {
     display: grid;
     place-items: center;
@@ -10294,8 +10290,7 @@ body.modal-open {
     }
 
     .explore-discovery-panel .explore-photo-scope {
-        pointer-events: auto;
-        justify-content: flex-end;
+        display: none;
     }
 
     .explore-discovery-panel .explore-photo-scope-trigger {
@@ -10358,48 +10353,13 @@ body.modal-open {
     }
 
     .explore-discovery-panel.is-mobile-open .explore-photo-scope {
-        display: none;
-    }
-
-    .explore-discovery-panel.is-mobile-open .explore-mobile-scope-options {
         grid-column: 1;
         grid-row: 2;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 4px;
-        border-radius: 9px;
-        background: rgba(26, 77, 78, 0.07);
-        padding: 4px;
-    }
-
-    .explore-mobile-scope-options button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        min-width: 0;
-        min-height: 40px;
-        border: 0;
-        border-radius: 7px;
-        background: transparent;
-        color: #536061;
-        font-size: 13px;
-        font-weight: 800;
-        padding: 0 10px;
-    }
-
-    .explore-mobile-scope-options button.active {
-        background: #ffffff;
-        color: var(--teal-dark);
-        box-shadow: 0 3px 12px rgba(26, 77, 78, 0.12);
-    }
-
-    .explore-mobile-scope-options .material-symbols-outlined {
-        font-size: 18px;
-    }
-
-    .explore-mobile-scope-options button:disabled {
-        opacity: 0.42;
+        display: flex;
+        justify-content: flex-end;
+        justify-self: end;
+        width: max-content;
+        pointer-events: auto;
     }
 
     .explore-discovery-panel.is-mobile-open .explore-discovery-body {

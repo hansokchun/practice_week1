@@ -1192,7 +1192,6 @@ function renderExplorePhotoScopeControls() {
         const isActive = button.dataset.exploreScope === state.explorePhotoScope;
         button.classList.toggle('active', isActive);
         button.setAttribute('aria-checked', isActive ? 'true' : 'false');
-        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         if (button.dataset.exploreScope === 'mine') button.disabled = !state.currentUser;
     });
 }

@@ -24,7 +24,8 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-mobile-list-toggle\s*\{[^}]*display:\s*inline-flex;[^}]*bottom:\s*calc\(18px \+ env\(safe-area-inset-bottom\)\);/s);
     assert.match(mobile, /\.explore-discovery-panel\.is-mobile-open\s*\{[^}]*position:\s*fixed;[^}]*bottom:\s*0;[^}]*height:\s*min\(58svh,\s*520px\);/s);
     assert.match(mobile, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-header,\s*\.explore-discovery-panel\.is-mobile-open \.explore-discovery-body\s*\{[^}]*display:\s*grid;/s);
-    assert.match(mobile, /\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*pointer-events:\s*auto;/s);
+    assert.match(mobile, /\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*display:\s*none;/s);
+    assert.match(mobile, /\.explore-discovery-panel\.is-mobile-open \.explore-photo-scope\s*\{[^}]*display:\s*flex;[^}]*pointer-events:\s*auto;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*calc\(12px \+ env\(safe-area-inset-bottom\)\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*max-height:\s*min\(58svh,\s*520px\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);
