@@ -73,8 +73,10 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.match(html, /id="explore-list" class="explore-discovery-panel"/);
     assert.match(html, /id="btn-toggle-explore-mobile-list"/);
     assert.match(html, /aria-controls="explore-discovery-body"/);
-    assert.match(html, /사진 목록/);
     assert.match(html, /id="explore-discovery-title"[\s\S]*탐색/);
+    const mobileToggleStart = html.indexOf('id="btn-toggle-explore-mobile-list"');
+    const mobileToggleEnd = html.indexOf('</button>', mobileToggleStart);
+    const mobileToggle = html.slice(mobileToggleStart, mobileToggleEnd);
     const panelStart = html.indexOf('id="explore-list"');
     const panelEnd = html.indexOf('</aside>', panelStart);
     const panel = html.slice(panelStart, panelEnd);
@@ -83,6 +85,10 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.doesNotMatch(panel, /현재 지도 화면 안의 공개 사진/);
     assert.doesNotMatch(panel, /explore-mobile-scope-options/);
     assert.match(panel, /class="explore-discovery-header"[\s\S]*id="explore-discovery-title"[\s\S]*class="explore-photo-scope"[\s\S]*id="btn-toggle-explore-discovery"/);
+    assert.match(mobileToggle, /aria-label="사진 목록 열기"/);
+    assert.match(mobileToggle, />photo_library<\/span>/);
+    assert.doesNotMatch(mobileToggle, /사진 목록<\/span>/);
+    assert.doesNotMatch(mobileToggle, /explore-mobile-list-count/);
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*block;[^}]*top:\s*96px;[^}]*left:\s*12px;[^}]*right:\s*12px;/s);
     assert.match(css, /\.explore-mobile-list-toggle\s*\{[^}]*display:\s*none;/s);
@@ -95,7 +101,7 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-photo-scope\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1;[^}]*display:\s*flex;[^}]*pointer-events:\s*auto;/s);
 });
 
-test('mobile Explore photo list opens, reports its count, and closes before photo preview', () => {
+test('mobile Explore photo list opens efficiently and closes before photo preview', () => {
     const html = readFileSync('index.html', 'utf8');
     const css = readFileSync('style.css', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
@@ -106,20 +112,25 @@ test('mobile Explore photo list opens, reports its count, and closes before phot
     const previewEnd = source.indexOf('async function openPhotoOnExploreMap', previewStart);
     const preview = source.slice(previewStart, previewEnd);
 
-    assert.match(html, /data-explore-mobile-list-count>0<\/span>/);
+    assert.doesNotMatch(html, /data-explore-mobile-list-count/);
     assert.match(source, /isExploreMobileDiscoveryOpen:\s*false/);
     assert.match(source, /function setExploreMobileDiscoveryOpen\(isOpen\)/);
     assert.match(source, /function toggleExploreMobileDiscoveryPanel\(\)/);
     assert.match(source, /btn-toggle-explore-mobile-list/);
-    assert.match(renderer, /mobileCount\.textContent = String\(visiblePhotos\.length\)/);
+    assert.match(renderer, /const discoveryLimit = isExploreMobileViewport\(\) \? 20 : 30/);
+    assert.match(renderer, /limit: discoveryLimit/);
+    assert.match(renderer, /renderPhotoImage\(photo, label, \{ fetchPriority: 'low' \}\)/);
     assert.match(preview, /setExploreMobileDiscoveryOpen\(false\)/);
     assert.match(preview, /options\.focusMap \|\| isExploreMobileViewport\(\)/);
     assert.match(preview, /getExploreMapPreviewFocusPanY\([\s\S]*previewHeight:[\s\S]*map\.panBy\(0, focusPanY\)/);
     assert.match(source, /isExploreMobileViewport\(\)[\s\S]*setExploreMobileDiscoveryOpen\(true\)/);
-    assert.match(css, /\.explore-mobile-list-count\s*\{/);
+    assert.doesNotMatch(css, /\.explore-mobile-list-count\s*\{/);
+    assert.match(css, /@keyframes exploreMobileDrawerIn\s*\{[\s\S]*translateY\(100%\)[\s\S]*translateY\(0\)/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open\s*\{[^}]*animation:\s*exploreMobileDrawerIn 260ms cubic-bezier\(0\.2,\s*0\.8,\s*0\.2,\s*1\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-auto-rows:\s*max-content;/s);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-item\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-item\s*\{[^}]*content-visibility:\s*auto;[^}]*contain-intrinsic-size:\s*174px 174px;/s);
 });
 
 test('Explore place search removes the autocomplete inner border and stays compact on mobile', () => {
@@ -171,7 +182,7 @@ test('Explore discovery items use a consistent preview-sized frame without inlin
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected\s*\{/);
     assert.doesNotMatch(css, /\.explore-discovery-item\.is-selected,[\s\S]*var\(--coral\)/);
     assert.doesNotMatch(css, /\.explore-discovery-image\s*\{[^}]*height:\s*100cqw;/s);
-    assert.match(renderer, /<span class="explore-discovery-image">[\s\S]*\$\{renderPhotoImage\(photo, label\)\}/);
+    assert.match(renderer, /<span class="explore-discovery-image">[\s\S]*\$\{renderPhotoImage\(photo, label, \{ fetchPriority: 'low' \}\)\}/);
     assert.doesNotMatch(renderer, /const uploadTimeLabel = formatRelativeTime/);
     assert.doesNotMatch(renderer, /explore-discovery-copy/);
     assert.doesNotMatch(renderer, /explore-discovery-time/);
@@ -187,7 +198,7 @@ test('Explore discovery items keep descriptions only as accessibility labels', (
 
     assert.match(renderer, /const description = getPhotoDescriptionText\(photo\)/);
     assert.match(renderer, /aria-label="\$\{escapeHtml\(description \|\| label\)\} 사진 보기"/);
-    assert.match(renderer, /\$\{renderPhotoImage\(photo, label\)\}/);
+    assert.match(renderer, /\$\{renderPhotoImage\(photo, label, \{ fetchPriority: 'low' \}\)\}/);
     assert.doesNotMatch(renderer, /explore-discovery-copy/);
     assert.doesNotMatch(renderer, /explore-discovery-time/);
     assert.doesNotMatch(renderer, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);

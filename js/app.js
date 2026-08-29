@@ -420,10 +420,11 @@ function getPhotoImageSrc(photo = {}) {
     return photo?.url || photo?.albumCoverUrl || MAIN_BG_2_URL;
 }
 
-function renderPhotoImage(photo = {}, fallback = '사진') {
+function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'auto' } = {}) {
     const src = escapeHtml(getPhotoImageSrc(photo));
     const alt = escapeHtml(getPhotoFallbackLabel(photo, fallback));
-    return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`;
+    const priority = ['high', 'low'].includes(fetchPriority) ? ` fetchpriority="${fetchPriority}"` : '';
+    return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async"${priority}>`;
 }
 
 function revealPhotoThumbnailGridWhenReady(container) {
@@ -1517,7 +1518,10 @@ function setExploreMobileDiscoveryOpen(isOpen) {
 
     panel?.classList.toggle('is-mobile-open', state.isExploreMobileDiscoveryOpen);
     document.body.classList.toggle('explore-mobile-discovery-open', state.isExploreMobileDiscoveryOpen);
-    if (mobileButton) mobileButton.setAttribute('aria-expanded', String(state.isExploreMobileDiscoveryOpen));
+    if (mobileButton) {
+        mobileButton.setAttribute('aria-expanded', String(state.isExploreMobileDiscoveryOpen));
+        mobileButton.setAttribute('aria-label', state.isExploreMobileDiscoveryOpen ? '사진 목록 닫기' : '사진 목록 열기');
+    }
     if (title) title.textContent = state.isExploreMobileDiscoveryOpen ? '사진 목록' : '탐색';
     if (desktopButton) {
         desktopButton.setAttribute('aria-expanded', String(state.isExploreMobileDiscoveryOpen || !state.isExploreDiscoveryCollapsed));
@@ -1583,13 +1587,12 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
     setExploreDiscoveryCollapsed(state.isExploreDiscoveryCollapsed);
     setExploreMobileDiscoveryOpen(state.isExploreMobileDiscoveryOpen);
 
+    const discoveryLimit = isExploreMobileViewport() ? 20 : 30;
     const visiblePhotos = getExploreDiscoveryPhotos(photos, {
         bounds: options.bounds || getExploreCurrentBounds(),
-        limit: 30
+        limit: discoveryLimit
     });
     panel.dataset.visibleCount = String(visiblePhotos.length);
-    const mobileCount = $('[data-explore-mobile-list-count]');
-    if (mobileCount) mobileCount.textContent = String(visiblePhotos.length);
 
     if (!visiblePhotos.length) {
         list.innerHTML = '<p class="explore-discovery-empty">현재 지도 화면 안에 표시할 공개 사진이 없습니다.</p>';
@@ -1603,7 +1606,7 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
         return `
             <article class="explore-discovery-item${selected}" role="button" tabindex="0" data-explore-discovery-photo="${escapeHtml(photo.id || '')}" aria-label="${escapeHtml(description || label)} 사진 보기">
                 <span class="explore-discovery-image">
-                    ${renderPhotoImage(photo, label)}
+                    ${renderPhotoImage(photo, label, { fetchPriority: 'low' })}
                 </span>
             </article>
         `;
