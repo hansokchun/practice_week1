@@ -11,7 +11,7 @@ const root = new URL('../', import.meta.url);
 const migrationsDirectory = new URL('../supabase/migrations/', import.meta.url);
 
 test('photo AI analysis keeps a compact safe Korean tag contract', () => {
-    assert.equal(PHOTO_AI_ANALYSIS_VERSION, '1');
+    assert.equal(PHOTO_AI_ANALYSIS_VERSION, '2');
     assert.deepEqual(normalizePhotoAiAnalysis({
         tags: [' 바다 ', '여행', '바다', '', '노을', '풍경', '휴양', '해변', '자연', '여름', '산책', '추가'],
         summary: '  노을이 비치는 해변 풍경입니다.  ',
@@ -24,6 +24,27 @@ test('photo AI analysis keeps a compact safe Korean tag contract', () => {
         scene: 'beach',
         moods: ['평온함', '따뜻함', '여유']
     });
+});
+
+test('photo AI analysis removes foreign-language drift from user-facing metadata', () => {
+    assert.deepEqual(normalizePhotoAiAnalysis({
+        tags: ['green', '나무', '갈색 ton', '晴天'],
+        summary: 'dry grass, paved road, distant hills',
+        scene: 'road',
+        moods: ['peaceful', 'serene', 'yên bình']
+    }), {
+        tags: ['나무', '갈색'],
+        summary: '도로 풍경이 담긴 여행 사진입니다.',
+        scene: 'road',
+        moods: ['평온', '차분']
+    });
+
+    assert.deepEqual(normalizePhotoAiAnalysis({
+        tags: ['green', 'sky'],
+        summary: '',
+        scene: 'forest',
+        moods: []
+    }).tags, ['숲']);
 });
 
 test('Cloudflare photo analysis endpoint authenticates ownership and limits cost', () => {

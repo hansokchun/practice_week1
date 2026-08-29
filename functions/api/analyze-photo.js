@@ -174,11 +174,11 @@ async function analyzePhoto(ai, image) {
         messages: [
             {
                 role: 'system',
-                content: '입력된 이미지 설명을 여행 사진 검색 데이터로 변환합니다. 모든 텍스트는 자연스러운 한국어로 작성하고, 설명에 없는 정확한 장소나 인물 신원을 추가하지 마세요.'
+                content: '입력된 이미지 설명을 여행 사진 검색 데이터로 변환합니다. summary, tags, moods의 모든 항목은 반드시 한글로만 작성하세요. 영어, 로마자, 한자와 일본어를 섞지 마세요. 설명에 없는 정확한 장소나 인물 신원을 추가하지 마세요.'
             },
             {
                 role: 'user',
-                content: `이미지 설명: ${caption}`
+                content: `이미지 설명: ${caption}\n태그는 검색에 쓸 한국어 명사, 분위기는 한국어 단어로 번역해 JSON으로 반환하세요.`
             }
         ],
         response_format: {
