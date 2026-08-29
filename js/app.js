@@ -142,7 +142,11 @@ import {
     getExploreViewportAction
 } from './explore-marker-clusters.mjs';
 import { animateExploreMapCamera } from './explore-map-camera.mjs';
-import { getExploreMapFitPadding, getExploreMapFocusPanY } from './explore-mobile-viewport.mjs';
+import {
+    getExploreMapFitPadding,
+    getExploreMapFocusPanY,
+    getExploreMapPreviewFocusPanY
+} from './explore-mobile-viewport.mjs';
 import {
     getEmbeddedOAuthBrowserMessage,
     isLikelyEmbeddedOAuthBrowser
@@ -1226,9 +1230,13 @@ function resetExploreSelectionState() {
     $('#explore-pin-preview')?.setAttribute('hidden', '');
 }
 
-function clearExplorePinSelection() {
+function clearExplorePinSelection({ restoreMapCenter = false } = {}) {
     const hadSelection = Boolean(state.selectedPhotoId);
+    const selectedPhoto = state.exploreMarkerPhotos.find((photo) => photo.id === state.selectedPhotoId);
     resetExploreSelectionState();
+    if (restoreMapCenter && isExploreMobileViewport() && state.exploreMap && hasPhotoLocation(selectedPhoto)) {
+        state.exploreMap.panTo({ lat: Number(selectedPhoto.lat), lng: Number(selectedPhoto.lng) });
+    }
     if (hadSelection && state.exploreMap && state.exploreMarkerPhotos.length) {
         renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
     }
@@ -1349,13 +1357,20 @@ function openExplorePhotoPreview(photo, options = {}) {
         renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
     }
 
-    if (!options.focusMap) return;
+    const shouldFocusMap = Boolean(options.focusMap || isExploreMobileViewport());
+    if (!shouldFocusMap) return;
     const map = state.exploreMap;
     const maps = window.google?.maps;
     if (!map || !maps || !hasPhotoLocation(photo)) return;
     const position = { lat: Number(photo.lat), lng: Number(photo.lng) };
     map.panTo(position);
     if ((map.getZoom?.() || state.exploreZoom) < 13) map.setZoom(13);
+    const focusPanY = getExploreMapPreviewFocusPanY({
+        isMobile: isExploreMobileViewport(),
+        viewportHeight: $('.explore-map-canvas')?.clientHeight || window.innerHeight,
+        previewHeight: $('#explore-pin-preview')?.getBoundingClientRect?.().height
+    });
+    if (focusPanY) window.requestAnimationFrame(() => map.panBy(0, focusPanY));
 }
 
 async function openPhotoOnExploreMap(photo) {
@@ -6759,7 +6774,7 @@ function bindEvents() {
         event.preventDefault();
         openMyphotoAlbum(albumRow);
     });
-    $('#btn-close-pin-preview')?.addEventListener('click', () => clearExplorePinSelection());
+    $('#btn-close-pin-preview')?.addEventListener('click', () => clearExplorePinSelection({ restoreMapCenter: true }));
     $$('[data-visibility]').forEach((button) => button.addEventListener('click', () => setVisibilityMode(button.dataset.visibility)));
     $$('[data-visibility-shortcut]').forEach((button) => {
         button.addEventListener('click', async () => {

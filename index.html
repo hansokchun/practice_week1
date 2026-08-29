@@ -531,28 +531,28 @@
                         <div>
                             <h2 id="explore-discovery-title">탐색</h2>
                         </div>
+                        <div class="explore-photo-scope" aria-label="지도에 표시할 사진 출처">
+                            <button class="explore-photo-scope-trigger" type="button" data-explore-scope-trigger aria-haspopup="menu" aria-expanded="false" aria-controls="explore-photo-scope-menu">
+                                <span class="material-symbols-outlined" data-explore-scope-trigger-icon aria-hidden="true">person</span>
+                                <span data-explore-scope-trigger-label>내 사진</span>
+                                <span class="material-symbols-outlined explore-photo-scope-chevron" aria-hidden="true">keyboard_arrow_down</span>
+                            </button>
+                            <div id="explore-photo-scope-menu" class="explore-photo-scope-menu" role="menu" hidden>
+                                <button type="button" role="menuitemradio" data-explore-scope="mine" class="active" aria-checked="true">
+                                    <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                                    <span>내 사진</span>
+                                    <span class="material-symbols-outlined explore-photo-scope-check" aria-hidden="true">check</span>
+                                </button>
+                                <button type="button" role="menuitemradio" data-explore-scope="others" aria-checked="false">
+                                    <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+                                    <span>다른 사람 사진</span>
+                                    <span class="material-symbols-outlined explore-photo-scope-check" aria-hidden="true">check</span>
+                                </button>
+                            </div>
+                        </div>
                         <button id="btn-toggle-explore-discovery" class="explore-discovery-toggle" type="button" aria-controls="explore-discovery-body" aria-expanded="true" aria-label="탐색 패널 접기">
                             <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
                         </button>
-                    </div>
-                    <div class="explore-photo-scope" aria-label="지도에 표시할 사진 출처">
-                        <button class="explore-photo-scope-trigger" type="button" data-explore-scope-trigger aria-haspopup="menu" aria-expanded="false" aria-controls="explore-photo-scope-menu">
-                            <span class="material-symbols-outlined" data-explore-scope-trigger-icon aria-hidden="true">person</span>
-                            <span data-explore-scope-trigger-label>내 사진</span>
-                            <span class="material-symbols-outlined explore-photo-scope-chevron" aria-hidden="true">keyboard_arrow_down</span>
-                        </button>
-                        <div id="explore-photo-scope-menu" class="explore-photo-scope-menu" role="menu" hidden>
-                            <button type="button" role="menuitemradio" data-explore-scope="mine" class="active" aria-checked="true">
-                                <span class="material-symbols-outlined" aria-hidden="true">person</span>
-                                <span>내 사진</span>
-                                <span class="material-symbols-outlined explore-photo-scope-check" aria-hidden="true">check</span>
-                            </button>
-                            <button type="button" role="menuitemradio" data-explore-scope="others" aria-checked="false">
-                                <span class="material-symbols-outlined" aria-hidden="true">groups</span>
-                                <span>다른 사람 사진</span>
-                                <span class="material-symbols-outlined explore-photo-scope-check" aria-hidden="true">check</span>
-                            </button>
-                        </div>
                     </div>
                     <div id="explore-discovery-body" class="explore-discovery-body">
                         <div class="explore-discovery-list" data-explore-discovery-list>

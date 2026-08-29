@@ -3,7 +3,8 @@ import { test } from 'node:test';
 
 import {
     getExploreMapFitPadding,
-    getExploreMapFocusPanY
+    getExploreMapFocusPanY,
+    getExploreMapPreviewFocusPanY
 } from '../js/explore-mobile-viewport.mjs';
 
 test('desktop Explore keeps its existing even map padding', () => {
@@ -31,4 +32,17 @@ test('closed mobile photo list uses compact even padding', () => {
 
     assert.deepEqual(padding, { top: 72, right: 28, bottom: 72, left: 28 });
     assert.equal(getExploreMapFocusPanY(padding), 0);
+});
+
+test('mobile photo preview lifts the selected pin above the bottom panel', () => {
+    assert.equal(getExploreMapPreviewFocusPanY({
+        isMobile: true,
+        viewportHeight: 780,
+        previewHeight: 440
+    }), 196);
+    assert.equal(getExploreMapPreviewFocusPanY({
+        isMobile: false,
+        viewportHeight: 780,
+        previewHeight: 440
+    }), 0);
 });

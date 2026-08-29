@@ -82,7 +82,7 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.doesNotMatch(panel, /<p class="eyebrow">Explore<\/p>/);
     assert.doesNotMatch(panel, /현재 지도 화면 안의 공개 사진/);
     assert.doesNotMatch(panel, /explore-mobile-scope-options/);
-    assert.match(panel, /class="explore-photo-scope"[\s\S]*data-explore-scope-trigger[\s\S]*id="explore-photo-scope-menu"/);
+    assert.match(panel, /class="explore-discovery-header"[\s\S]*id="explore-discovery-title"[\s\S]*class="explore-photo-scope"[\s\S]*id="btn-toggle-explore-discovery"/);
     assert.match(css, /\.explore-discovery-panel\s*\{[^}]*position:\s*absolute;[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\s*\{[^}]*display:\s*block;[^}]*top:\s*96px;[^}]*left:\s*12px;[^}]*right:\s*12px;/s);
     assert.match(css, /\.explore-mobile-list-toggle\s*\{[^}]*display:\s*none;/s);
@@ -91,7 +91,8 @@ test('Explore shell exposes a desktop panel and a mobile photo-list drawer trigg
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-discovery-body\s*\{[^}]*display:\s*grid;/s);
     assert.doesNotMatch(css, /explore-mobile-scope-options/);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*display:\s*none;/s);
-    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-photo-scope\s*\{[^}]*grid-column:\s*1;[^}]*grid-row:\s*2;[^}]*display:\s*flex;[^}]*pointer-events:\s*auto;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-discovery-header\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.explore-discovery-panel\.is-mobile-open \.explore-photo-scope\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1;[^}]*display:\s*flex;[^}]*pointer-events:\s*auto;/s);
 });
 
 test('mobile Explore photo list opens, reports its count, and closes before photo preview', () => {
@@ -112,6 +113,8 @@ test('mobile Explore photo list opens, reports its count, and closes before phot
     assert.match(source, /btn-toggle-explore-mobile-list/);
     assert.match(renderer, /mobileCount\.textContent = String\(visiblePhotos\.length\)/);
     assert.match(preview, /setExploreMobileDiscoveryOpen\(false\)/);
+    assert.match(preview, /options\.focusMap \|\| isExploreMobileViewport\(\)/);
+    assert.match(preview, /getExploreMapPreviewFocusPanY\([\s\S]*previewHeight:[\s\S]*map\.panBy\(0, focusPanY\)/);
     assert.match(source, /isExploreMobileViewport\(\)[\s\S]*setExploreMobileDiscoveryOpen\(true\)/);
     assert.match(css, /\.explore-mobile-list-count\s*\{/);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);

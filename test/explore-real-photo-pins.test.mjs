@@ -80,6 +80,18 @@ test('Explore clears selected pin highlight when the user clicks an empty map ar
     assert.match(source, /map\.addListener\('click', \(\) => clearExplorePinSelection\(\)\)/);
 });
 
+test('closing the mobile photo preview recenters the selected pin without changing zoom', () => {
+    const fnStart = source.indexOf('function clearExplorePinSelection');
+    const fnEnd = source.indexOf('function getExplorePinPosition', fnStart);
+    const body = source.slice(fnStart, fnEnd);
+
+    assert.match(body, /restoreMapCenter = false/);
+    assert.match(body, /selectedPhoto = state\.exploreMarkerPhotos\.find/);
+    assert.match(body, /restoreMapCenter && isExploreMobileViewport\(\)/);
+    assert.match(body, /state\.exploreMap\.panTo\(\{ lat: Number\(selectedPhoto\.lat\), lng: Number\(selectedPhoto\.lng\) \}\)/);
+    assert.match(source, /btn-close-pin-preview[\s\S]*clearExplorePinSelection\(\{ restoreMapCenter: true \}\)/);
+});
+
 test('Explore route opens without carrying a stale selected pin from another route', () => {
     const fnStart = source.indexOf('function renderRoute');
     const fnEnd = source.indexOf('function applyRouteHash', fnStart);

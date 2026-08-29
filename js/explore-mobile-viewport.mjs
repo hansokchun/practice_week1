@@ -29,3 +29,20 @@ export function getExploreMapFocusPanY(padding) {
     if (!padding || typeof padding === 'number') return 0;
     return Math.max(0, Math.round((Number(padding.bottom) - Number(padding.top)) / 2));
 }
+
+export function getExploreMapPreviewFocusPanY({
+    isMobile = false,
+    viewportHeight = 0,
+    previewHeight = 0
+} = {}) {
+    if (!isMobile) return 0;
+
+    const height = Math.max(0, Number(viewportHeight) || 0);
+    const fallbackPreviewHeight = Math.min(height * 0.58, 520);
+    const resolvedPreviewHeight = Math.max(0, Number(previewHeight) || fallbackPreviewHeight);
+
+    return getExploreMapFocusPanY({
+        top: MOBILE_TOP_PADDING,
+        bottom: Math.round(resolvedPreviewHeight + 24)
+    });
+}

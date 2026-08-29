@@ -10308,7 +10308,7 @@ body.modal-open {
         z-index: 7;
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
         gap: 12px;
         width: auto;
         height: min(58svh, 520px);
@@ -10329,11 +10329,11 @@ body.modal-open {
     }
 
     .explore-discovery-panel.is-mobile-open .explore-discovery-header {
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto auto;
         grid-column: 1;
         grid-row: 1;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
     }
 
     .explore-discovery-panel.is-mobile-open .explore-discovery-header > div {
@@ -10347,14 +10347,14 @@ body.modal-open {
     }
 
     .explore-discovery-panel.is-mobile-open .explore-discovery-toggle {
-        grid-column: 2;
+        grid-column: 3;
         grid-row: 1;
         box-shadow: none;
     }
 
     .explore-discovery-panel.is-mobile-open .explore-photo-scope {
-        grid-column: 1;
-        grid-row: 2;
+        grid-column: 2;
+        grid-row: 1;
         display: flex;
         justify-content: flex-end;
         justify-self: end;
@@ -10364,7 +10364,7 @@ body.modal-open {
 
     .explore-discovery-panel.is-mobile-open .explore-discovery-body {
         grid-column: 1;
-        grid-row: 3;
+        grid-row: 2;
         min-height: 0;
     }
 
