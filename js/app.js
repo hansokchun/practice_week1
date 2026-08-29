@@ -3053,6 +3053,7 @@ async function shareCurrentTripWithKakao() {
 }
 
 function renderEmptyPublicSurfaces() {
+    if (document.body.dataset.page === APP_SECTIONS.EXPLORE) setExploreMarkerLoading(false);
     const empty = getPublicAlbumEmptyState();
     const shareOutput = $('#share-link-output');
     if (shareOutput) shareOutput.value = getCurrentShareUrl();
@@ -3740,6 +3741,13 @@ function renderPublicSurfaces() {
     ensureProfileHeaderShell();
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     renderExplorePhotoScopeControls();
+    if (
+        document.body.dataset.page === APP_SECTIONS.EXPLORE
+        && !state.hasLoadedSavedPhotos
+    ) {
+        setExploreMarkerLoading(true);
+        return;
+    }
     const publicPhotos = getPublicPhotoMapItems();
     const explorePhotos = getExplorePhotoMapItems();
     if (document.body.dataset.page === 'profile' && state.selectedPublicOwnerId) {

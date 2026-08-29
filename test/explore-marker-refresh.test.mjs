@@ -12,6 +12,19 @@ test('logged-out Explore resolves the public photo scope before collecting marke
     assert.ok(body.indexOf('renderExplorePhotoScopeControls();') < body.indexOf('const explorePhotos = getExplorePhotoMapItems();'));
 });
 
+test('direct Explore entry keeps pin loading visible until saved photos finish loading', () => {
+    const renderStart = source.indexOf('function renderPublicSurfaces()');
+    const renderEnd = source.indexOf('function loadSavedPhotos()', renderStart);
+    const renderBody = source.slice(renderStart, renderEnd);
+    const emptyStart = source.indexOf('function renderEmptyPublicSurfaces()');
+    const emptyEnd = source.indexOf('function renderPublicOwnerProfile', emptyStart);
+    const emptyBody = source.slice(emptyStart, emptyEnd);
+
+    assert.match(renderBody, /document\.body\.dataset\.page === APP_SECTIONS\.EXPLORE\s*&& !state\.hasLoadedSavedPhotos/);
+    assert.match(renderBody, /setExploreMarkerLoading\(true\)/);
+    assert.match(emptyBody, /setExploreMarkerLoading\(false\)/);
+});
+
 test('Explore map marker rendering ignores stale async renders', () => {
     assert.match(source, /exploreMarkerRenderToken:\s*0/);
     assert.match(source, /exploreRenderedZoom:\s*null/);
