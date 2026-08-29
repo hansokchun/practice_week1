@@ -110,6 +110,7 @@ test('mobile Explore photo list opens, reports its count, and closes before phot
     assert.match(preview, /setExploreMobileDiscoveryOpen\(false\)/);
     assert.match(css, /\.explore-mobile-list-count\s*\{/);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
+    assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-list\s*\{[^}]*grid-auto-rows:\s*max-content;/s);
     assert.match(css, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-item\s*\{[^}]*aspect-ratio:\s*1 \/ 1;[^}]*overflow:\s*hidden;/s);
 });
 
