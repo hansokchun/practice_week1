@@ -216,8 +216,10 @@ test('Explore discovery cards open the photo panel without direct like controls'
 test('Explore discovery panel scrolls long photo lists inside the panel', () => {
     const css = readFileSync('style.css', 'utf8');
 
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*clamp\(560px,\s*calc\(100svh - 32px\),\s*900px\);/s);
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100svh - 32px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*height:\s*min\(900px,\s*calc\(100% - 32px\)\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*max-height:\s*calc\(100% - 32px\);/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*min-height:\s*0;/s);
+    assert.doesNotMatch(css, /\.explore-discovery-panel\s*\{[^}]*100svh/s);
     assert.match(css, /\.explore-discovery-body\s*\{[^}]*display:\s*grid;[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\);[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*max-height:\s*100%;/s);
     assert.match(css, /\.explore-discovery-list\s*\{[^}]*overflow-y:\s*auto;/s);

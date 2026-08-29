@@ -6369,8 +6369,9 @@ body.is-logged-in .home-workspace .album-row {
     column-gap: 10px;
     row-gap: 16px;
     width: min(390px, calc(100% - 56px));
-    height: clamp(560px, calc(100svh - 32px), 900px);
-    max-height: calc(100svh - 32px);
+    height: min(900px, calc(100% - 32px));
+    min-height: 0;
+    max-height: calc(100% - 32px);
     border: 1px solid rgba(26, 77, 78, 0.14);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.97);
