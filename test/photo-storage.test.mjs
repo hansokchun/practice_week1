@@ -100,7 +100,7 @@ test('photo persistence requests signed URLs for stored paths instead of public 
     assert.match(authSource, /createSignedUrl\(fileName, 900\)/);
 });
 
-test('photo and album reads hydrate signed image URLs', () => {
+test('photo reads can return map metadata before hydrating signed image URLs', () => {
     const profilesStart = authSource.indexOf('export async function fetchProfilesByIds');
     const photosStart = authSource.indexOf('export async function fetchPhotos');
     const upsertStart = authSource.indexOf('export async function upsertPhoto');
@@ -112,7 +112,10 @@ test('photo and album reads hydrate signed image URLs', () => {
 
     assert.doesNotMatch(profilesBody, /hydrateSignedPhotoUrls/);
     assert.match(photosBody, /await hydratePrivatePhotoLocations\(sb, data \|\| \[\]\)/);
+    assert.match(photosBody, /hydrateUrls = true/);
+    assert.match(photosBody, /if \(!hydrateUrls\) return \{ data: photosWithPrivateLocations, error: null \}/);
     assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, photosWithPrivateLocations\)/);
+    assert.match(photosBody, /export async function hydratePhotoUrls\(photos = \[\]\)/);
     assert.match(albumsBody, /await hydrateSignedAlbumCoverUrls\(sb, data \|\| \[\]\)/);
     assert.match(authSource, /hydrateSignedAlbumCoverUrls/);
     assert.match(appSource, /state\.savedAlbums = applyPhotoUrlsToAlbumCovers\(state\.savedAlbums, state\.savedPhotos\)/);

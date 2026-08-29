@@ -282,7 +282,7 @@ export async function fetchProfilesByIds(userIds) {
  * RLS 정책이 자동으로 "누구나 SELECT 가능"을 보장하므로,
  * 프론트에서 owner_id 필터링을 추가로 수행
  */
-export async function fetchPhotos() {
+export async function fetchPhotos({ hydrateUrls = true } = {}) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb
@@ -291,9 +291,18 @@ export async function fetchPhotos() {
             .order('date', { ascending: false });
         if (error) throw error;
         const photosWithPrivateLocations = await hydratePrivatePhotoLocations(sb, data || []);
+        if (!hydrateUrls) return { data: photosWithPrivateLocations, error: null };
         return { data: await hydrateSignedPhotoUrls(sb, photosWithPrivateLocations), error: null };
     } catch (error) {
         return { data: [], error };
+    }
+}
+
+export async function hydratePhotoUrls(photos = []) {
+    try {
+        return { data: await hydrateSignedPhotoUrls(getSupabase(), photos), error: null };
+    } catch (error) {
+        return { data: photos, error };
     }
 }
 

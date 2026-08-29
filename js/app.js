@@ -9,6 +9,7 @@ import {
     fetchMyLikes,
     fetchPhotos,
     fetchProfilesByIds,
+    hydratePhotoUrls,
     getCurrentUser,
     resetPasswordForEmail,
     signInWithEmail,
@@ -3744,7 +3745,7 @@ function renderPublicSurfaces() {
     renderExplorePhotoScopeControls();
     if (
         document.body.dataset.page === APP_SECTIONS.EXPLORE
-        && (state.isSavedLibraryLoading || !state.hasLoadedSavedPhotos)
+        && !state.hasLoadedSavedPhotos
     ) {
         setExploreMarkerLoading(true);
         return;
@@ -4037,23 +4038,31 @@ function renderPublicSurfaces() {
 }
 
 async function loadSavedPhotos({ render = true } = {}) {
-    const { data, error } = await fetchPhotos();
+    const { data, error } = await fetchPhotos({ hydrateUrls: false });
     if (error) {
         state.savedPhotos = [];
         state.hasLoadedSavedPhotos = true;
         state.savedPhotosLoadError = true;
         showToast('저장된 사진을 불러오지 못했습니다.');
-        if (render) {
-            renderSavedPhotoSurfaces();
-            renderPublicSurfaces();
-        }
+        if (render) renderSavedPhotoSurfaces();
+        if (render || document.body.dataset.page === APP_SECTIONS.EXPLORE) renderPublicSurfaces();
         return;
     }
     state.savedPhotosLoadError = false;
-    state.savedPhotos = (data || [])
+    const metadataPhotos = (data || [])
         .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared || photo.visibility === 'public')
         .map(normalizeSavedPhoto);
+    state.savedPhotos = metadataPhotos;
     state.hasLoadedSavedPhotos = true;
+
+    if (document.body.dataset.page === APP_SECTIONS.EXPLORE) renderPublicSurfaces();
+
+    const { data: hydratedPhotos } = await hydratePhotoUrls(metadataPhotos);
+    const hydratedById = new Map((hydratedPhotos || []).map((photo) => [String(photo.id), photo]));
+    state.savedPhotos = state.savedPhotos.map((photo) => {
+        const hydrated = hydratedById.get(String(photo.id));
+        return hydrated?.url ? { ...photo, url: hydrated.url } : photo;
+    });
     if (render) {
         renderSavedPhotoSurfaces();
         renderPublicSurfaces();
