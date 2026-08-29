@@ -1112,12 +1112,13 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-hero h1 {
-        max-width: none;
-        font-size: clamp(24px, 7vw, 28px);
-        line-height: 1.2;
+        width: min(100%, 350px);
+        max-width: 350px;
+        font-size: 28px;
+        line-height: 1.25;
         word-break: keep-all;
-        overflow-wrap: normal;
-        white-space: nowrap;
+        overflow-wrap: break-word;
+        white-space: normal;
     }
 
     .landing-search {
@@ -1233,6 +1234,41 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
     .admin-photo-picker {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 360px) {
+    .site-header {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .brand {
+        gap: 6px;
+        font-size: 24px;
+    }
+
+    .brand img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .account-area {
+        gap: 6px;
+    }
+
+    #btn-header-upload {
+        width: 44px;
+        padding: 0;
+    }
+
+    #btn-header-upload > span:not(.material-symbols-outlined) {
+        display: none;
+    }
+
+    #btn-header-upload .material-symbols-outlined {
+        display: inline-block;
+        font-size: 22px;
     }
 }
 
