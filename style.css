@@ -10342,6 +10342,11 @@ body.modal-open {
         aspect-ratio: 1 / 1;
     }
 
+    .explore-discovery-panel.is-mobile-open .explore-discovery-item {
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+    }
+
     .explore-discovery-panel.is-mobile-open .explore-discovery-empty {
         grid-column: 1 / -1;
     }
