@@ -6755,9 +6755,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
         const sharedAlbumId = parseSharedAlbumId(window.location.hash);
         if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
+        const requestedInitialRoute = parseRouteHash(window.location.hash);
+        if (!restoredAuthContext?.route && requestedInitialRoute === APP_SECTIONS.EXPLORE) {
+            applyRouteHash(window.location.hash);
+        }
         state.currentUser = await getCurrentUser();
         await ensureCurrentUserPublicProfile();
         updateAccountUI();
+        if (state.currentUser?.id && requestedInitialRoute === APP_SECTIONS.EXPLORE) {
+            state.explorePhotoScope = 'mine';
+            state.exploreInitializedUserId = state.currentUser.id;
+        }
         bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });

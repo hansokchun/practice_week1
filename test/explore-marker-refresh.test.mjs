@@ -44,6 +44,7 @@ test('startup opens the requested Explore route before waiting for the photo lib
     const loadIndex = bootBody.indexOf('await loadSavedLibrary();');
 
     assert.notEqual(loadIndex, -1);
+    assert.ok(bootBody.indexOf('requestedInitialRoute === APP_SECTIONS.EXPLORE') < bootBody.indexOf('state.currentUser = await getCurrentUser();'));
     assert.ok(bootBody.indexOf('bindEvents();') < loadIndex);
     assert.ok(bootBody.indexOf('applyRouteHash(window.location.hash') < loadIndex);
 });
