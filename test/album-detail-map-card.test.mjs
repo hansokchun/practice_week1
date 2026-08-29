@@ -70,12 +70,17 @@ test('album edit fields use a lightweight Google Photos style', () => {
 });
 
 test('album edit mode can add text blocks between photos and persist them in album note metadata', () => {
+    const cardStart = appSource.indexOf('function renderTripReviewPhotoCard');
+    const cardEnd = appSource.indexOf('function renderTripReviewPhotoFlow', cardStart);
+    const cardSource = appSource.slice(cardStart, cardEnd);
+
     assert.match(appSource, /ALBUM_STORY_MARKER/);
     assert.match(appSource, /function getAlbumVisibleNote/);
     assert.match(appSource, /function serializeAlbumNoteWithStory/);
     assert.match(appSource, /data-add-trip-story-after/);
     assert.match(appSource, /data-remove-trip-story/);
-    assert.doesNotMatch(appSource, /trip-review-photo-card[\s\S]*trip-review-add-text/);
+    assert.ok(cardStart > -1 && cardEnd > cardStart);
+    assert.doesNotMatch(cardSource, /trip-review-add-text/);
     assert.match(appSource, /class="trip-review-story-insert"[\s\S]*data-add-trip-story-after/);
     assert.match(appSource, /child\.classList\?\.contains\('trip-review-story-insert'\) \|\| child\.classList\?\.contains\('trip-review-story-block'\)/);
     assert.match(appSource, /class="trip-review-story-block/);

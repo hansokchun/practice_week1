@@ -1,0 +1,75 @@
+name: Mobile CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Doctor, lint, typecheck, test, and schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Validate Expo project and dependency compatibility
+        run: npm run doctor
+
+      - name: Verify minimum platform support contract
+        run: npm run platform:verify
+
+      - name: Audit mobile release artifacts
+        run: npm run audit:release
+
+      - name: Verify store privacy declarations against installed SDKs
+        run: npm run privacy:verify
+
+      - name: Audit mobile security and privacy boundaries
+        run: npm run security:verify
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --runInBand
+
+      - name: Verify local schema recovery scenarios
+        run: npm run schema:verify
+
+      - name: Export production bundles for performance audit
+        env:
+          EXPO_PUBLIC_APP_ENV: development
+          EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_local_ci_bundle_verification_1234567890
+        run: npm run export:all
+
+      - name: Verify mobile performance budgets
+        run: npm run performance:verify

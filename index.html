@@ -90,7 +90,7 @@
                     </div>
                     <button id="landing-map-primary" class="landing-map-link" data-route="explore" type="button">
                         <span class="material-symbols-outlined" aria-hidden="true">map</span>
-                        <span>지도에서 둘러보기</span>
+                        <span>지도에서 찾아보기</span>
                     </button>
                 </div>
                 <div class="landing-section-toolbar page-container">
@@ -107,13 +107,12 @@
                         <div class="landing-photo-row" data-landing-scroll tabindex="0" aria-label="공개 여행 사진"></div>
                     </section>
                 </div>
-                <section class="landing-map-footer page-container" aria-labelledby="landing-map-footer-title">
-                    <h2 id="landing-map-footer-title">지도에서 찾아보세요</h2>
-                    <button id="landing-map-footer" class="btn-primary" data-route="explore" type="button">
-                        <span class="material-symbols-outlined" aria-hidden="true">explore</span>
-                        <span>지도에서 둘러보기</span>
-                    </button>
-                </section>
+                <button id="landing-map-footer" class="landing-map-footer page-container" data-route="explore" type="button" aria-label="지도에서 사진 찾아보기">
+                    <span class="landing-map-footer-content">
+                        <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                        <span class="landing-map-footer-label">지도에서 찾아보기</span>
+                    </span>
+                </button>
             </section>
             <section class="white-band home-houses-reference" aria-labelledby="home-houses-reference-title">
                 <div class="home-houses-reference__word" aria-hidden="true">Ikkyee</div>
@@ -714,6 +713,17 @@
                         </div>
                     </div>
                 </div>
+                <button id="photo-detail-author" class="photo-detail-author" data-photo-detail-author type="button" hidden>
+                    <span class="avatar photo-detail-author-avatar" aria-hidden="true">
+                        <img id="photo-detail-author-image" alt="" hidden>
+                        <span id="photo-detail-author-fallback" class="material-symbols-outlined avatar-fallback-icon">person</span>
+                    </span>
+                    <span class="photo-detail-author-copy">
+                        <span>올린 사람</span>
+                        <strong id="photo-detail-author-name">Ikkyee</strong>
+                    </span>
+                    <span class="material-symbols-outlined photo-detail-author-arrow" aria-hidden="true">chevron_right</span>
+                </button>
                 <div class="photo-detail-meta">
                     <span data-photo-detail-meta="date"><span class="material-symbols-outlined">calendar_today</span> -- --</span>
                     <span data-photo-detail-meta="place"><span class="material-symbols-outlined">place</span> 위치 정보 없음</span>
@@ -732,7 +742,7 @@
                     </button>
                 </div>
                 <div id="photo-detail-map" class="photo-detail-map" hidden>
-                    <iframe id="photo-detail-map-frame" title="Photo location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <div id="photo-detail-map-canvas" class="photo-detail-map-canvas" role="img" aria-label="올린 사람의 사진 위치 지도"></div>
                 </div>
             </section>
         </div>

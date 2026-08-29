@@ -5,6 +5,7 @@ import { test } from 'node:test';
 const html = readFileSync('index.html', 'utf8');
 const source = readFileSync('js/app.js', 'utf8');
 const css = readFileSync('style.css', 'utf8');
+const notificationSource = readFileSync('js/account-notifications.mjs', 'utf8');
 
 test('missing location banner has direct assign and dismiss actions only', () => {
     const photosPageStart = html.indexOf('id="page-photos"');
@@ -80,7 +81,8 @@ test('missing location dismiss also removes the account notification item', () =
     const dismissEnd = source.indexOf("$('#btn-open-album')", dismissStart);
     const dismissHandler = source.slice(dismissStart, dismissEnd);
 
-    assert.match(body, /if \(myMissingLocationPhotos\.length && !state\.isMissingLocationBannerDismissed\) \{/);
+    assert.match(body, /isMissingLocationBannerDismissed: state\.isMissingLocationBannerDismissed/);
+    assert.match(notificationSource, /if \(missingLocationCount && !isMissingLocationBannerDismissed\) \{/);
     assert.match(dismissHandler, /state\.isMissingLocationBannerDismissed = true/);
     assert.match(dismissHandler, /renderSavedPhotoSurfaces\(\)/);
     assert.match(dismissHandler, /renderAccountNotifications\(\)/);

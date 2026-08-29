@@ -2,8 +2,8 @@ node_modules/
 .npm-cache*/
 .expo/
 dist/
-ios/
-android/
+/ios/
+/android/
 .env
 .env.*
 !.env.example

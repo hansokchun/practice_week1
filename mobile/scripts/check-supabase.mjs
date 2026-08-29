@@ -39,9 +39,9 @@ if (publicUrl !== undefined) {
   }
 }
 
-const publicAnonKey = process.env["EXPO_PUBLIC_SUPABASE_ANON_KEY"];
-if (publicAnonKey !== undefined && (publicAnonKey.length < 20 || /service[_-]?role/iu.test(publicAnonKey))) {
-  fail("EXPO_PUBLIC_SUPABASE_ANON_KEY is invalid or unsafe. Values are never printed.");
+const publicKey = process.env["EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY"] ?? process.env["EXPO_PUBLIC_SUPABASE_ANON_KEY"];
+if (publicKey !== undefined && (publicKey.length < 20 || /service[_-]?role|secret/iu.test(publicKey))) {
+  fail("The Supabase public key is invalid or unsafe. Values are never printed.");
 }
 
 const docker = spawnSync("docker", ["version", "--format", "{{.Server.Version}}"], {

@@ -59,6 +59,12 @@ enable_confirmations = false
 enabled = true
 policy = "per_worker"
 
+[functions.photo-link]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
 [analytics]
 enabled = false
 port = 54327

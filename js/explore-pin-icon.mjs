@@ -33,24 +33,34 @@ export function getExplorePinSymbolIcon(maps, { size = 36, type = 'photo', selec
         const height = 72;
         const svg = `
             <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-                <circle cx="32" cy="30" r="20" fill="${EXPLORE_SELECTED_PIN_COLOR}" fill-opacity="0.22">
-                    <animate attributeName="r" values="20;34" dur="1.8s" repeatCount="indefinite" />
-                    <animate attributeName="fill-opacity" values="0.28;0" dur="1.8s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="32" cy="30" r="18" fill="${EXPLORE_SELECTED_PIN_COLOR}" fill-opacity="0.18">
-                    <animate attributeName="r" values="16;32" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
-                    <animate attributeName="fill-opacity" values="0.22;0" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
-                </circle>
-                <path d="${SELECTED_PHOTO_PIN_PATH}" fill="${EXPLORE_SELECTED_PIN_COLOR}" stroke="#ffffff" stroke-width="4" stroke-linejoin="round" filter="drop-shadow(0 7px 10px rgba(255, 79, 50, 0.3))" />
-                <circle cx="32" cy="28" r="8" fill="#ffffff" />
+                <defs>
+                    <mask id="selected-pin-mask">
+                        <rect width="${width}" height="${height}" fill="#ffffff" />
+                        <circle cx="32" cy="28" r="8" fill="#000000" />
+                    </mask>
+                </defs>
+                <ellipse cx="32" cy="62" rx="4" ry="1.5" fill="${EXPLORE_SELECTED_PIN_COLOR}" fill-opacity="0.42">
+                    <animate attributeName="rx" values="4;30" dur="1.8s" repeatCount="indefinite" />
+                    <animate attributeName="ry" values="1.5;8" dur="1.8s" repeatCount="indefinite" />
+                    <animate attributeName="fill-opacity" values="0.42;0" dur="1.8s" repeatCount="indefinite" />
+                </ellipse>
+                <ellipse cx="32" cy="62" rx="4" ry="1.5" fill="${EXPLORE_SELECTED_PIN_COLOR}" fill-opacity="0.34">
+                    <animate attributeName="rx" values="4;30" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
+                    <animate attributeName="ry" values="1.5;8" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
+                    <animate attributeName="fill-opacity" values="0.34;0" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
+                </ellipse>
+                <g>
+                    <animateTransform attributeName="transform" type="translate" values="0 0;0 -7;0 2;0 0" keyTimes="0;0.4;0.72;1" dur="0.44s" repeatCount="1" />
+                    <path d="${SELECTED_PHOTO_PIN_PATH}" fill="${EXPLORE_SELECTED_PIN_COLOR}" mask="url(#selected-pin-mask)" />
+                </g>
             </svg>
         `.trim();
 
         return {
             ...getSvgIcon(maps, { svg, width, height, anchorX: 32, anchorY: 62 }),
             fillColor: EXPLORE_SELECTED_PIN_COLOR,
-            strokeColor: '#ffffff',
-            strokeWeight: 4,
+            strokeColor: EXPLORE_SELECTED_PIN_COLOR,
+            strokeWeight: 0,
             scale: width / 48
         };
     }
@@ -61,21 +71,27 @@ export function getExplorePinSymbolIcon(maps, { size = 36, type = 'photo', selec
     const path = isCluster ? CLUSTER_PIN_PATH : PHOTO_PIN_PATH;
     const anchorX = isCluster ? 17 : 14;
     const anchorY = isCluster ? 41 : 35;
+    const maskId = isCluster ? 'cluster-pin-mask' : 'photo-pin-mask';
     const hole = isCluster
-        ? '<circle cx="17" cy="16.5" r="5.6" fill="#ffffff" />'
-        : '<circle cx="14" cy="14" r="5.2" fill="#ffffff" />';
+        ? '<circle cx="17" cy="16.5" r="5.6" fill="#000000" />'
+        : '<circle cx="14" cy="14" r="5.2" fill="#000000" />';
     const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-            <path d="${path}" fill="${color}" stroke="#ffffff" stroke-width="${isCluster ? 2.5 : 2}" stroke-linejoin="round" />
-            ${hole}
+            <defs>
+                <mask id="${maskId}">
+                    <rect width="${width}" height="${height}" fill="#ffffff" />
+                    ${hole}
+                </mask>
+            </defs>
+            <path d="${path}" fill="${color}" mask="url(#${maskId})" />
         </svg>
     `.trim();
 
     return {
         ...getSvgIcon(maps, { svg, width, height, anchorX, anchorY }),
         fillColor: color,
-        strokeColor: '#ffffff',
-        strokeWeight: isCluster ? 2.5 : 2,
+        strokeColor: color,
+        strokeWeight: 0,
         scale: width / 48
     };
 }

@@ -9,7 +9,7 @@ test('photo detail modal shows visibility only for the current user photo', () =
     assert.equal(html.includes('<dt>Visibility</dt>'), false);
     assert.equal(html.includes('<dt>Original</dt>'), false);
     assert.match(html, /id="photo-detail-map"/);
-    assert.match(html, /id="photo-detail-map-frame"/);
+    assert.match(html, /id="photo-detail-map-canvas"/);
     assert.equal(html.includes('id="btn-expand-photo-map"'), false);
     assert.equal(html.includes('class="map-expand-button"'), false);
     assert.match(html, /id="photo-detail-visibility"/);
@@ -26,6 +26,9 @@ test('photo detail surface leads with description and compact info before the ma
     const detail = html.slice(detailStart, detailEnd);
 
     assert.match(detail, /id="photo-detail-description"/);
+    assert.match(detail, /id="photo-detail-author"/);
+    assert.match(detail, /id="photo-detail-author-name"/);
+    assert.match(detail, />올린 사람</);
     assert.match(detail, /class="photo-detail-meta"/);
     assert.ok(detail.indexOf('id="photo-detail-description"') < detail.indexOf('class="photo-detail-meta"'));
     assert.ok(detail.indexOf('class="photo-detail-meta"') < detail.indexOf('id="photo-detail-map"'));
@@ -72,14 +75,19 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
 
     assert.equal(source.includes('albumValue'), false);
     assert.equal(source.includes('originalValue'), false);
-    assert.match(source, /const map = \$\('#photo-detail-map'\)/);
-    assert.match(source, /const mapFrame = \$\('#photo-detail-map-frame'\)/);
-    assert.match(source, /getPhotoMapUrl\(photo\)/);
+    assert.match(source, /const mapShell = \$\('#photo-detail-map'\)/);
+    assert.match(source, /const mapCanvas = \$\('#photo-detail-map-canvas'\)/);
+    assert.match(source, /getPhotoDetailOwnerMapItems\(/);
+    assert.match(source, /getPhotoDetailMapViewport\(photo\)/);
     assert.equal(source.includes('btn-expand-photo-map'), false);
     assert.match(source, /function updatePhotoDetailModal\(photo = getDefaultDetailPhoto\(\), \{ context = 'photo' \} = \{\}\)/);
     assert.match(source, /modal\.dataset\.photoDetailContext = context/);
-    assert.match(source, /if \(map && mapFrame\)/);
-    assert.match(source, /const mapUrl = getPhotoMapUrl\(photo\)/);
+    assert.match(source, /void renderPhotoDetailMap\(photo\)/);
+    assert.match(source, /state\.photoDetailMap\.setCenter\(viewport\.center\)/);
+    assert.match(source, /state\.photoDetailMap\.setZoom\(viewport\.zoom\)/);
+    assert.match(source, /selected: item\.isSelected/);
+    assert.match(source, /authorButton\.dataset\.publicOwnerId = ownerId/);
+    assert.match(source, /setAvatarDisplay\(authorImage, authorFallback, authorProfile\.avatarUrl, authorProfile\.nickname\)/);
     assert.match(source, /photo-detail-visibility/);
     assert.match(source, /visibilityValue\.innerHTML = `<span class="material-symbols-outlined">\$\{isPublicPhoto \? 'public' : 'lock'\}<\/span> \$\{isPublicPhoto \? '공개' : '비공개'\}`/);
     assert.match(source, /showOnMapButton\.hidden = !canShowOnExploreMap/);
@@ -131,6 +139,8 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(css, /\.photo-detail-map\s*\{[^}]*order:\s*6;/s);
     assert.match(css, /\.photo-detail-map,\s*\.location-editor-map\s*\{/s);
     assert.match(css, /\.photo-detail-map\[hidden\]\s*\{[^}]*display:\s*none !important;/s);
+    assert.match(css, /\.photo-detail-author\s*\{[^}]*grid-template-columns:\s*40px minmax\(0, 1fr\) 20px;/s);
+    assert.match(css, /\.photo-detail-map-canvas,\s*\.location-editor-map-canvas\s*\{/s);
 });
 
 test('photo detail click handling separates album photos from individual photos', () => {
@@ -138,7 +148,8 @@ test('photo detail click handling separates album photos from individual photos'
 
     assert.match(source, /const isTripPhoto = Boolean\(photoCard\.closest\('#public-trip-photo-grid'\)\)/);
     assert.match(source, /const isLikedPhoto = Boolean\(photoCard\.closest\('#liked-photo-grid, #liked-photo-full-grid'\)\)/);
-    assert.match(source, /const context = isTripPhoto \? 'album' : \(isLikedPhoto \? 'liked' : 'photo'\)/);
+    assert.match(source, /document\.body\.dataset\.page === 'tag' \? 'explore' : 'album'/);
+    assert.match(source, /: \(isLikedPhoto \? 'liked' : 'photo'\)/);
     assert.match(source, /document\.body\.dataset\.page === 'trip' \? 'album' : 'photo'/);
 });
 

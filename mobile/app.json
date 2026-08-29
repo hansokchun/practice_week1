@@ -3,16 +3,21 @@
     "name": "Ikkyee",
     "slug": "ikkyee-mobile",
     "version": "0.1.0",
+    "icon": "./assets/app-icon.png",
     "orientation": "portrait",
     "scheme": "ikkyee",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ikkyee.mobile"
     },
     "android": {
-      "package": "com.ikkyee.mobile"
+      "package": "com.ikkyee.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#F9F7F2",
+        "foregroundImage": "./assets/app-icon-foreground.png",
+        "monochromeImage": "./assets/app-icon-foreground.png"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -29,7 +34,26 @@
           "savePhotosPermission": "Allow Ikkyee to save travel photos.",
           "isAccessMediaLocationEnabled": true,
           "preventAutomaticLimitedAccessAlert": true,
-          "granularPermissions": ["photo", "video"]
+          "granularPermissions": [
+            "photo"
+          ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Ikkyee to choose a profile photo."
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F9F7F2",
+          "image": "./assets/app-icon-foreground.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
         }
       ]
     ],

@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["IkkyeePlaceSearchModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.ikkyeeplacesearch.IkkyeePlaceSearchModule"]
+  }
+}

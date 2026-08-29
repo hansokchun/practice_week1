@@ -28,3 +28,4 @@ dist/
 
 # Local QA and generated scratch files
 tmp/
+supabase/.temp/

@@ -62,8 +62,9 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /isNotificationPopoverOpen:\s*false/);
     assert.match(app, /function getAccountNotificationItems\(\)/);
-    assert.match(app, /getMissingLocationPhotos\(state\.savedPhotos\)/);
-    assert.match(app, /getLikedPhotos\(\)/);
+    assert.match(app, /buildAccountNotificationItems\(\{/);
+    assert.match(app, /likedPhotoIds: state\.likedPhotoIds/);
+    assert.match(app, /isMissingLocationBannerDismissed: state\.isMissingLocationBannerDismissed/);
     assert.match(app, /badge\.textContent = '';/);
     assert.match(app, /badge\.setAttribute\('aria-label', `새 알림 \$\{actionableCount\}개`\)/);
     assert.match(app, /data-route="\$\{escapeHtml\(item\.route\)\}"/);

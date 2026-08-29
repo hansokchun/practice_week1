@@ -1,0 +1,32 @@
+{
+  "contractVersion": 1,
+  "reviewedAt": "2026-08-26",
+  "expoSdk": 57,
+  "ios": {
+    "minimumVersion": "16.4",
+    "formFactor": "iphone",
+    "supportsTablet": false,
+    "nativeArchitecture": "arm64",
+    "dependencyFloors": [
+      { "id": "expo-sdk-57", "minimumVersion": "16.4" },
+      { "id": "google-places-9.4.0", "minimumVersion": "15.0" }
+    ]
+  },
+  "android": {
+    "minimumApiLevel": 24,
+    "minimumVersionName": "7.0",
+    "requiresGooglePlayServicesForNativeMaps": true,
+    "dependencyFloors": [
+      { "id": "expo-modules-core", "minimumApiLevel": 24 },
+      { "id": "google-places-5.1.1", "minimumApiLevel": 24 },
+      { "id": "react-native-maps", "minimumApiLevel": 21 }
+    ]
+  },
+  "releaseQa": {
+    "minimumFreeStorageMiB": 1024,
+    "iosDeviceClasses": ["oldest-supported-iphone", "current-reference-iphone"],
+    "androidMemoryTiersGiB": [4, 6],
+    "requiresPhysicalDevice": true,
+    "enforcedAsStoreCompatibilityFilter": false
+  }
+}

@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "projectRef": "pqczcponriukilrtpbdl",
-  "inspectedAt": "2026-08-20T17:57:30.044Z",
+  "inspectedAt": "2026-08-25T10:29:45.407Z",
   "liveMetadataReadOnly": true,
   "mobileAllowedTables": [
     "profiles",
@@ -234,7 +234,7 @@
     "Bucket MIME and size limits are null live; mobile validation must not assume server-side restrictions beyond policy checks."
   ],
   "officialSources": [
-    {"url":"https://supabase.com/changelog.md","checkedAt":"2026-08-20T17:55:45.325Z","finding":"No current changelog item directly changed this hosted RLS or Storage contract."},
+    {"url":"https://supabase.com/changelog.md","checkedAt":"2026-08-25T10:29:45.407Z","finding":"No current changelog item directly changed this hosted RLS or Storage contract."},
     {"url":"https://supabase.com/docs/guides/database/postgres/row-level-security","checkedAt":"2026-08-20T17:56:30.000Z","finding":"RLS is required for exposed schemas and policies combine with role grants."},
     {"url":"https://supabase.com/docs/guides/storage/security/access-control","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Storage access is enforced through storage.objects RLS; upsert requires SELECT, INSERT, and UPDATE."},
     {"url":"https://supabase.com/docs/guides/auth/native-mobile-deep-linking","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Native OAuth callbacks require an allowed application deep-link redirect."},
@@ -243,7 +243,7 @@
   ],
   "liveEvidence": {
     "catalogPath": ".omo/evidence/task-5/backend/live/catalog-sanitized.json",
-    "catalogSha256": "d83c3fbb96264041647f99928589b5189213018215b6297e6fd27761212ff86d",
+    "catalogSha256": "2b86d9ade8d5b6ea1b4a30a2fbb32abb3823b845b04a1ba8306c94900c643b20",
     "queryShapes": [
       "SELECT pg_policies metadata for allowlisted tables",
       "SELECT pg_proc security metadata for allowlisted functions",

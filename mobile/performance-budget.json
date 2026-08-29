@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "artifacts": {
+    "iosEntryBytes": 4000000,
+    "androidEntryBytes": 4400000,
+    "webEntryBytes": 1850000,
+    "largestAssetBytes": 1100000,
+    "totalExportBytes": 12000000
+  },
+  "runtime": {
+    "thumbnailCacheBytes": 536870912,
+    "thumbnailLongEdge": 512,
+    "publicationLongEdge": 2048,
+    "thumbnailConcurrency": 4,
+    "thumbnailMaximumConcurrency": 8,
+    "publicationSelectionMaximum": 20,
+    "explorePageSize": 20,
+    "exploreMaximumPageSize": 50,
+    "mediaPageSize": 250,
+    "maximumAssetsPerRun": 10000,
+    "signedUrlRefreshMilliseconds": 270000
+  },
+  "deviceReleaseGates": {
+    "coldStartP75Milliseconds": 2500,
+    "warmStartP75Milliseconds": 1000,
+    "minimumSustainedFramesPerSecond": 55,
+    "maximumMemoryAfterTenThousandPhotoIndexMiB": 350,
+    "maximumAppManagedStorageMiB": 600,
+    "maximumTenMinuteBatteryDropPercent": 5
+  }
+}

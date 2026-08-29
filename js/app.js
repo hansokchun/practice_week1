@@ -35,6 +35,7 @@ import {
     getProviderAccountProfile,
     resolveAccountProfile
 } from './account-profile.mjs';
+import { buildAccountNotificationItems } from './account-notifications.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { getPhotoPage } from './photo-pagination.mjs';
 import { isVerifiedAccount } from './account-verification.mjs';
@@ -56,6 +57,10 @@ import {
 import { createGoogleMapsMarker } from './google-maps-marker.mjs';
 import { mountGoogleMapsPlaceAutocomplete } from './google-maps-place-autocomplete.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
+import {
+    getPhotoDetailMapViewport,
+    getPhotoDetailOwnerMapItems
+} from './photo-detail-map.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
@@ -81,6 +86,10 @@ import { getProfileAlbums, getProfileAlbumStats, getProfileMapCenter, getRelated
 import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
+import {
+    getPublicOwnerProfileMapPhotos,
+    getPublicOwnerProfilePhotos
+} from './public-owner-profile-photos.mjs';
 import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
 import { formatRelativeTime } from './relative-time.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
@@ -178,6 +187,17 @@ import {
     isLandingAdmin,
     normalizeLandingSections
 } from './landing-sections.mjs';
+import {
+    buildLandingTagHash,
+    canOpenLandingTagPage,
+    parseLandingTagId
+} from './landing-tag-route.mjs';
+import {
+    LANDING_TAG_BATCH_SIZE,
+    LANDING_TAG_PIN_LIMIT,
+    getLandingTagFeedPhotos,
+    getLandingTagVisiblePhotos
+} from './landing-tag-feed.mjs';
 
 const initialAuthHash = window.location.hash;
 
@@ -226,12 +246,14 @@ const state = {
     exploreMap: null,
     exploreMarkers: [],
     exploreClusterListener: null,
+    exploreClusterListenerMap: null,
     exploreMarkerPhotos: [],
     exploreSelectedAlbumId: null,
     exploreAutocomplete: null,
     exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
+    exploreRenderedZoom: null,
     exploreMarkerIdleListener: null,
     exploreZoomIdleListener: null,
     exploreMarkerRefreshTimer: null,
@@ -249,6 +271,9 @@ const state = {
     profileMap: null,
     profileMarkers: [],
     profileMapRenderToken: 0,
+    photoDetailMap: null,
+    photoDetailMarkers: [],
+    photoDetailMapRenderToken: 0,
     isMissingLocationBannerDismissed: false,
     tripReviewMap: null,
     tripReviewMarkers: [],
@@ -264,8 +289,14 @@ const state = {
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
     landingAssignments: [],
+    hasLoadedLandingCuration: false,
     landingVisibleCounts: {},
     landingSearchQuery: '',
+    selectedLandingSectionId: null,
+    landingTagVisibleCount: LANDING_TAG_BATCH_SIZE,
+    landingTagPhotos: [],
+    landingTagRandomSeeds: {},
+    landingTagLoadObserver: null,
     myLibraryTab: 'photos',
     isAccountMenuOpen: false,
     photoDetailStreetView: null
@@ -279,7 +310,7 @@ const EXPLORE_PHOTO_SCOPE_META = {
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const LANDING_ROUTE = 'landing';
-const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'profile', 'admin-landing']);
+const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'admin-landing']);
 const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
 const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
@@ -566,6 +597,7 @@ function parseRouteHash(hash) {
 }
 
 function getRenderedRoute(route) {
+    if (route === 'tag') return 'trip';
     return [APP_SECTIONS.MYPHOTO, LANDING_ROUTE].includes(route) ? APP_SECTIONS.HOME : route;
 }
 
@@ -605,6 +637,19 @@ function routeToTrip(albumId, options = {}) {
     routeToPublic('trip', albumId, options);
 }
 
+function routeToLandingTag(sectionId, { replace = false } = {}) {
+    const section = state.landingSections.find((candidate) => String(candidate.id) === String(sectionId));
+    if (!canOpenLandingTagPage(section)) return;
+    state.selectedLandingSectionId = String(section.id);
+    state.landingTagVisibleCount = LANDING_TAG_BATCH_SIZE;
+    state.tripReviewDateFilter = null;
+    state.tripReviewFocusPhotoId = null;
+    const hash = buildLandingTagHash(section.id);
+    if (replace) window.history.replaceState(null, '', hash);
+    else if (window.location.hash !== hash) window.location.hash = hash;
+    renderRoute('tag');
+}
+
 function clearUploadQueue() {
     state.stagedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
     state.stagedPhotos = [];
@@ -630,13 +675,17 @@ function renderRoute(section) {
         state.explorePreserveViewportOnce = false;
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'admin-landing'].includes(normalized)
+    if (normalized !== 'tag') {
+        state.landingTagLoadObserver?.disconnect();
+        state.landingTagLoadObserver = null;
+    }
+    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'admin-landing'].includes(normalized)
         ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
             : renderedRoute;
 
-    document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : renderedRoute;
+    document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : normalized === 'tag' ? 'tag' : renderedRoute;
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
@@ -649,6 +698,7 @@ function renderRoute(section) {
     }
     if (normalized === 'photos') setMyLibraryTab(state.myLibraryTab);
     if (normalized === 'admin-landing') renderLandingAdminForm();
+    if (normalized === 'tag') renderLandingTagPage();
     if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
         requestAnimationFrame(() => refreshExploreMapAfterRouteEntry());
@@ -675,6 +725,13 @@ function applyRouteHash(hash, options = {}) {
     if (sharedRoute.ownerId) {
         state.selectedPublicOwnerId = sharedRoute.ownerId;
         state.selectedPublicAlbumId = null;
+    }
+    if (sharedRoute.route === 'tag') {
+        const nextSectionId = parseLandingTagId(hash);
+        if (String(state.selectedLandingSectionId || '') !== String(nextSectionId || '')) {
+            state.landingTagVisibleCount = LANDING_TAG_BATCH_SIZE;
+        }
+        state.selectedLandingSectionId = nextSectionId;
     }
     const route = sharedRoute.route || parseRouteHash(hash);
     const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
@@ -764,7 +821,13 @@ function getLandingPublicPhotos() {
         { id: 'landing-interlaken', url: MAIN_BG_3_URL, description: '숲과 산이 이어지는 길', placeName: '스위스 인터라켄', album: '자연 여행', lat: 46.6863, lng: 7.8632 },
         { id: 'landing-bangkok', url: MAIN_BG_4_URL, description: '바다와 하늘이 만나는 하루', placeName: '태국 방콕', album: '바다 여행', lat: 13.7563, lng: 100.5018 },
         { id: 'landing-merzouga', url: MAIN_BG_5_URL, description: '사막에 남은 여행의 빛', placeName: '모로코 메르주가', album: '자연 여행', lat: 31.0993, lng: -4.0111 }
-    ].map((photo) => ({ ...photo, visibility: 'public', shared: true, location_precision: 'exact' }));
+    ].map((photo) => ({
+        ...photo,
+        owner_id: 'demo',
+        visibility: 'public',
+        shared: true,
+        location_precision: 'exact'
+    }));
     const albumPhotos = getPublicAlbums().flatMap((album) => album.photos || []);
     const candidates = [...state.savedPhotos, ...albumPhotos, ...demoPhotos]
         .filter((photo) => photo?.shared || photo?.visibility === 'public');
@@ -818,6 +881,11 @@ function renderLandingSections() {
             <section class="landing-photo-section" data-landing-section="${escapeHtml(section.id)}" aria-labelledby="landing-section-${escapeHtml(section.id)}">
                 <div class="landing-section-heading">
                     <h2 id="landing-section-${escapeHtml(section.id)}">${escapeHtml(section.title)}</h2>
+                    ${canOpenLandingTagPage(section) ? `
+                        <button class="landing-section-view-all" data-landing-view-all="${escapeHtml(section.id)}" type="button">
+                            전체보기
+                        </button>
+                    ` : ''}
                     <div class="landing-scroll-actions" aria-label="${escapeHtml(section.title)} 사진 이동">
                         <button data-landing-scroll-direction="previous" type="button" aria-label="이전 사진" disabled><span class="material-symbols-outlined">chevron_left</span></button>
                         <button data-landing-scroll-direction="next" type="button" aria-label="다음 사진" ${visiblePhotos.length > 1 ? '' : 'disabled'}><span class="material-symbols-outlined">chevron_right</span></button>
@@ -849,7 +917,9 @@ async function loadLandingCuration() {
         state.landingAssignments = assignments;
         state.landingSections = normalizeLandingSections(sections, assignments, { includeHidden: isLandingAdmin(state.currentUser) });
     }
+    state.hasLoadedLandingCuration = true;
     renderLandingSections();
+    if (getCurrentRoute() === 'tag') renderLandingTagPage();
 }
 
 function setAccountMenuOpen(isOpen) {
@@ -888,7 +958,7 @@ function renderLandingAdminForm() {
     }
     const publicPhotos = getLandingPublicPhotos().filter((photo) => !String(photo.id).startsWith('landing-'));
     container.innerHTML = state.landingSections.map((section, index) => {
-        const selectedIds = section.photo_ids || [];
+        const selectedIds = (section.photo_ids || []).slice(0, LANDING_TAG_PIN_LIMIT);
         const photoById = new Map(publicPhotos.map((photo) => [String(photo.id), photo]));
         const selectedMarkup = selectedIds.map((photoId, photoIndex) => {
             const photo = photoById.get(String(photoId));
@@ -922,7 +992,7 @@ function renderLandingAdminForm() {
             <label>소제목<input name="title" maxlength="80" value="${escapeHtml(section.title)}" required></label>
             <label>설명<textarea name="description" maxlength="180" rows="2">${escapeHtml(section.description || '')}</textarea></label>
             <label>공개 상태<select name="is_visible"><option value="true" ${section.is_visible !== false ? 'selected' : ''}>공개</option><option value="false" ${section.is_visible === false ? 'selected' : ''}>숨김</option></select></label>
-            <div class="admin-selected-photos"><strong>표시 순서</strong>${selectedMarkup || '<p>선택한 사진이 없습니다.</p>'}</div>
+            <div class="admin-selected-photos"><strong>상단 고정 사진 (최대 20장)</strong>${selectedMarkup || '<p>고정하지 않으면 태그 사진이 무작위 순서로 표시됩니다.</p>'}</div>
             <div class="admin-photo-picker" aria-label="공개 사진 선택">${pickerMarkup || '<p>선택할 수 있는 실제 공개 사진이 없습니다.</p>'}</div>
             <input name="photo_ids" type="hidden" value="${escapeHtml(selectedIds.join(','))}">
             <input name="sort_order" type="hidden" value="${index}">
@@ -992,7 +1062,7 @@ async function saveLandingAdminForm(event) {
         fieldset.querySelectorAll('input, textarea, select').forEach((input) => formData.set(input.name, input.value));
         const currentId = fieldset.dataset.adminLandingSection;
         const id = /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(currentId) ? currentId : crypto.randomUUID();
-        const photoIds = String(formData.get('photo_ids') || '').split(',').map((value) => value.trim()).filter(Boolean);
+        const photoIds = String(formData.get('photo_ids') || '').split(',').map((value) => value.trim()).filter(Boolean).slice(0, LANDING_TAG_PIN_LIMIT);
         const { error } = await saveLandingSection({
             id,
             title: formData.get('title'),
@@ -1048,11 +1118,6 @@ function hasPhotoLocation(photo) {
     return hasUsablePhotoLocation(photo);
 }
 
-function getPhotoMapUrl(photo, zoom = 14) {
-    if (!hasPhotoLocation(photo)) return '';
-    return `https://www.google.com/maps?q=${Number(photo.lat)},${Number(photo.lng)}&z=${zoom}&output=embed`;
-}
-
 function formatPhotoDateInput(value) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return '';
@@ -1089,6 +1154,10 @@ function getExplorePhotoMapItems() {
             currentUserId: state.currentUser?.id || ''
         }))
         .map(normalizePhotoMapItem);
+}
+
+function getPublicProfilePhotoItems() {
+    return getLandingPublicPhotos().map(normalizePhotoMapItem);
 }
 
 function renderExplorePhotoScopeControls() {
@@ -1531,6 +1600,23 @@ async function ensureExploreMap() {
         ) {
             renderExploreDiscoveryPanel(state.exploreMarkerPhotos);
         }
+        const settledZoom = Number(map.getZoom?.());
+        const hasPendingMarkerRefresh = Boolean(
+            state.exploreMarkerIdleListener
+            || state.exploreZoomIdleListener
+            || state.exploreMarkerRefreshTimer
+        );
+        if (
+            document.body.dataset.page === APP_SECTIONS.EXPLORE
+            && state.exploreMarkerPhotos.length
+            && Number.isFinite(settledZoom)
+            && state.exploreRenderedZoom !== null
+            && settledZoom !== state.exploreRenderedZoom
+            && !hasPendingMarkerRefresh
+            && !state.isExploreMapCameraAnimating
+        ) {
+            renderExploreMapMarkers(state.exploreMarkerPhotos, state.exploreSelectedAlbumId);
+        }
     });
 
     const input = $('#explore-map-search-input');
@@ -1572,6 +1658,7 @@ function setExploreMarkerLoading(isLoading) {
 function clearExploreMapMarkers() {
     state.exploreMarkers.forEach((marker) => marker.setMap(null));
     state.exploreMarkers = [];
+    state.exploreRenderedZoom = null;
 }
 
 function mountExploreMapMarkers(renderState) {
@@ -1659,7 +1746,18 @@ function mountExploreMapMarkers(renderState) {
         nextMarkers.push(selectedMarker);
     }
     state.exploreMarkers = nextMarkers;
+    state.exploreRenderedZoom = Number(currentZoom);
     previousMarkers.forEach((marker) => marker.setMap(null));
+}
+
+function bindExploreClusterRefresh(maps, map) {
+    if (state.exploreClusterListenerMap === map && state.exploreClusterListener) return;
+    state.exploreClusterListener?.remove?.();
+    state.exploreClusterListenerMap = map;
+    state.exploreClusterListener = map.addListener('zoom_changed', () => {
+        if (state.isExploreMapCameraAnimating) return;
+        scheduleExploreMarkerRefreshAfterIdle(maps, map);
+    });
 }
 
 function scheduleExploreMarkerRefreshAfterIdle(maps, map) {
@@ -1704,12 +1802,7 @@ async function renderExploreMapMarkers(locatedPhotos, selectedAlbumId) {
     }
     renderExploreDiscoveryPanel(locatedPhotos);
     const currentZoom = map.getZoom?.() || state.exploreZoom;
-    if (!state.exploreClusterListener) {
-        state.exploreClusterListener = map.addListener('zoom_changed', () => {
-            if (state.isExploreMapCameraAnimating) return;
-            scheduleExploreMarkerRefreshAfterIdle(maps, map);
-        });
-    }
+    bindExploreClusterRefresh(maps, map);
 
     const viewportAction = getExploreViewportAction(locatedPhotos, state.exploreLastBoundsKey, {
         preserveViewport: state.explorePreserveViewportOnce
@@ -1802,6 +1895,76 @@ async function renderProfileMap(photos = []) {
     map.fitBounds(bounds, 96);
 }
 
+function clearPhotoDetailMapMarkers() {
+    state.photoDetailMarkers.forEach((marker) => marker.setMap?.(null));
+    state.photoDetailMarkers = [];
+}
+
+function getPhotoDetailMapCandidates() {
+    const publicAlbumPhotos = getPublicAlbums().flatMap((album) => album.photos || []);
+    return [
+        ...getAllDisplayPhotos(),
+        ...state.albumDetailPhotos,
+        ...publicAlbumPhotos,
+        ...getLandingPublicPhotos()
+    ];
+}
+
+async function renderPhotoDetailMap(photo) {
+    const renderToken = ++state.photoDetailMapRenderToken;
+    const mapShell = $('#photo-detail-map');
+    const mapCanvas = $('#photo-detail-map-canvas');
+    const viewport = getPhotoDetailMapViewport(photo);
+    const mapItems = getPhotoDetailOwnerMapItems(
+        photo,
+        getPhotoDetailMapCandidates(),
+        state.currentUser?.id || ''
+    );
+    const selectedItem = mapItems.find((item) => item.isSelected);
+
+    clearPhotoDetailMapMarkers();
+    if (!mapShell || !mapCanvas || !viewport || !selectedItem) {
+        mapShell?.setAttribute('hidden', '');
+        return;
+    }
+
+    mapShell.removeAttribute('hidden');
+    mapCanvas.setAttribute('aria-label', `올린 사람의 사진 위치 ${mapItems.length}개가 표시된 지도`);
+    const maps = await loadGoogleMapsApi();
+    if (renderToken !== state.photoDetailMapRenderToken) return;
+    if (!maps) {
+        renderMapUnavailable(mapCanvas);
+        return;
+    }
+
+    if (!state.photoDetailMap) {
+        mapCanvas.replaceChildren();
+        state.photoDetailMap = new maps.Map(mapCanvas, getExploreMapOptions({
+            ...viewport,
+            mapId: state.googleMapsMapId
+        }));
+    } else {
+        state.photoDetailMap.setCenter(viewport.center);
+        state.photoDetailMap.setZoom(viewport.zoom);
+    }
+
+    state.photoDetailMarkers = mapItems.map((item) => createGoogleMapsMarker(maps, {
+        map: state.photoDetailMap,
+        position: { lat: Number(item.lat), lng: Number(item.lng) },
+        title: getPhotoFallbackLabel(item, '사진 위치'),
+        icon: getExplorePinIcon(maps, { type: 'photo', selected: item.isSelected }),
+        label: null,
+        zIndex: item.isSelected ? 100 : 10
+    }, { mapId: state.googleMapsMapId }));
+
+    window.requestAnimationFrame(() => {
+        if (renderToken !== state.photoDetailMapRenderToken || !state.photoDetailMap) return;
+        maps.event?.trigger?.(state.photoDetailMap, 'resize');
+        state.photoDetailMap.setCenter(viewport.center);
+        state.photoDetailMap.setZoom(viewport.zoom);
+    });
+}
+
 function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'photo' } = {}) {
     state.selectedPhotoId = photo.id || null;
     const modal = $('#photo-detail-modal');
@@ -1809,8 +1972,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const descriptionNode = $('#photo-detail-description');
     const dateMeta = modal?.querySelector('[data-photo-detail-meta="date"]');
     const placeMeta = modal?.querySelector('[data-photo-detail-meta="place"]');
-    const map = $('#photo-detail-map');
-    const mapFrame = $('#photo-detail-map-frame');
+    const authorButton = $('#photo-detail-author');
+    const authorImage = $('#photo-detail-author-image');
+    const authorFallback = $('#photo-detail-author-fallback');
+    const authorName = $('#photo-detail-author-name');
     const streetViewSection = $('#photo-detail-street-view');
     const streetViewPreview = $('#photo-detail-street-view-preview');
     const streetViewStaticImage = $('#photo-detail-street-view-static');
@@ -1832,6 +1997,8 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '-- --';
     const placeName = String(photo.placeName || '').trim();
+    const ownerId = String(photo.owner_id || '');
+    const authorProfile = getPublicProfileDetails(ownerId);
     const photoImageSrc = getPhotoImageSrc(photo);
     const locationLabel = placeName || (hasPhotoLocation(photo)
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
@@ -1855,16 +2022,14 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
     if (dateMeta) dateMeta.innerHTML = `<span class="material-symbols-outlined">calendar_today</span> ${dateLabel}`;
     if (placeMeta) placeMeta.innerHTML = `<span class="material-symbols-outlined">place</span> ${locationLabel}`;
-    if (map && mapFrame) {
-        const mapUrl = getPhotoMapUrl(photo);
-        if (mapUrl) {
-            mapFrame.src = mapUrl;
-            map.removeAttribute('hidden');
-        } else {
-            mapFrame.removeAttribute('src');
-            map.setAttribute('hidden', '');
-        }
+    if (authorButton) {
+        authorButton.hidden = !ownerId;
+        authorButton.dataset.publicOwnerId = ownerId;
+        authorButton.dataset.publicAlbumId = String(photo.album_id || '');
     }
+    if (authorName) authorName.textContent = authorProfile.nickname;
+    setAvatarDisplay(authorImage, authorFallback, authorProfile.avatarUrl, authorProfile.nickname);
+    void renderPhotoDetailMap(photo);
     state.photoDetailStreetView = null;
     if (streetViewPreview) {
         streetViewPreview.hidden = true;
@@ -2410,52 +2575,12 @@ function setAppBooting(isBooting) {
 }
 
 function getAccountNotificationItems() {
-    if (!state.currentUser) return [];
-
-    const myMissingLocationPhotos = getMissingLocationPhotos(state.savedPhotos)
-        .filter((photo) => photo.owner_id === state.currentUser.id);
-    const likedPhotos = getLikedPhotos();
-    const publicPhotos = state.savedPhotos.filter((photo) => (
-        photo.owner_id === state.currentUser.id
-        && (photo.shared || ['public', 'link'].includes(photo.visibility))
-    ));
-    const items = [];
-
-    if (myMissingLocationPhotos.length && !state.isMissingLocationBannerDismissed) {
-        items.push({
-            icon: 'location_on',
-            title: `위치 정보 없는 사진 ${myMissingLocationPhotos.length}장`,
-            body: '지도에 표시하려면 위치를 지정하세요.',
-            route: 'photos'
-        });
-    }
-    if (likedPhotos.length) {
-        items.push({
-            icon: 'favorite',
-            title: `좋아요한 사진 ${likedPhotos.length}장`,
-            body: '모아둔 공개 사진을 다시 확인하세요.',
-            route: 'liked'
-        });
-    }
-    if (publicPhotos.length) {
-        items.push({
-            icon: 'public',
-            title: `공개 중인 사진 ${publicPhotos.length}장`,
-            body: 'Explore에 보이는 내 사진을 확인하세요.',
-            route: 'explore'
-        });
-    }
-
-    if (!items.length) {
-        items.push({
-            icon: 'notifications',
-            title: '새 알림 없음',
-            body: '사진을 올리면 필요한 알림을 알려드릴게요.',
-            route: ''
-        });
-    }
-
-    return items;
+    return buildAccountNotificationItems({
+        currentUserId: state.currentUser?.id || '',
+        savedPhotos: state.savedPhotos,
+        likedPhotoIds: state.likedPhotoIds,
+        isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed
+    });
 }
 
 function setAccountNotificationsOpen(isOpen) {
@@ -2885,7 +3010,7 @@ function renderEmptyPublicSurfaces() {
 
 function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
     ensureProfileHeaderShell();
-    const ownerPhotos = publicPhotos.filter((photo) => photo.owner_id === ownerId || photo.albumOwnerId === ownerId);
+    const ownerPhotos = getPublicOwnerProfilePhotos(publicPhotos, ownerId);
     const ownerAlbums = getSavedPublicAlbums().filter((album) => album.owner_id === ownerId && ['public', 'link'].includes(album.visibility));
     const authorDetails = getPublicProfileDetails(ownerId);
     const authorName = authorDetails.nickname;
@@ -2918,7 +3043,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         profileHeroImage.src = cover;
         profileHeroImage.alt = `${authorName} public profile cover`;
     }
-    renderProfileMap(ownerPhotos);
+    renderProfileMap(getPublicOwnerProfileMapPhotos(ownerPhotos));
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
         profilePhotoGrid.innerHTML = ownerPhotos.length
@@ -3000,6 +3125,158 @@ function renderTripReviewShell() {
             </div>
         </div>
     `;
+}
+
+function renderLandingTagPage() {
+    if (!state.hasLoadedLandingCuration) {
+        renderLandingTagLoadingPage();
+        return;
+    }
+
+    const sectionId = state.selectedLandingSectionId || parseLandingTagId(window.location.hash);
+    const section = state.landingSections.find((candidate) => String(candidate.id) === String(sectionId));
+    if (!canOpenLandingTagPage(section)) {
+        routeTo(LANDING_ROUTE, { replace: true });
+        return;
+    }
+
+    const sectionPhotos = getLandingTagFeedPhotos(section, getLandingPublicPhotos(), getLandingTagSessionSeed(section.id));
+    const cover = getPhotoImageSrc(sectionPhotos[0]) || MAIN_BG_2_URL;
+    state.selectedLandingSectionId = String(section.id);
+    state.landingTagPhotos = sectionPhotos;
+    state.albumDetailEditMode = false;
+    state.tripReviewDateFilter = null;
+    state.tripReviewFocusPhotoId = null;
+    state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
+    state.tripReviewMarkers = [];
+    state.tripReviewMap = null;
+    renderTripReviewShell();
+
+    const page = $('#page-trip');
+    const header = page?.querySelector('.trip-review-header');
+    const title = $('#trip-title');
+    const description = $('#trip-review-description');
+    const meta = $('#trip-review-meta');
+    const backButton = page?.querySelector('.trip-review-header .back-link');
+    const backLabel = $('#trip-review-back-label');
+    const actions = page?.querySelector('.trip-review-header .trip-actions');
+    const timeline = page?.querySelector('.trip-review-timeline');
+    const timelineHeading = timeline?.querySelector('h2');
+    const mapPanel = page?.querySelector('.trip-review-map-panel');
+    const mapSummary = page?.querySelector('.trip-review-map-summary');
+    const mapAuthor = page?.querySelector('.trip-review-map-author');
+    const locatedCount = sectionPhotos.filter(canShowPhotoOnPublicMap).filter(hasPhotoLocation).length;
+
+    header?.classList.add('is-landing-tag');
+    page?.setAttribute('data-landing-tag-page', String(section.id));
+    if (title) title.textContent = section.title;
+    if (description) description.textContent = section.description || `${section.title} 사진을 한곳에서 둘러보세요.`;
+    if (meta) {
+        meta.innerHTML = `
+            <span>${formatPlaceCount(locatedCount)}</span>
+            <span>${formatPhotoCount(sectionPhotos.length)}</span>
+        `;
+    }
+    if (backButton) backButton.dataset.route = LANDING_ROUTE;
+    if (backLabel) backLabel.textContent = '홈';
+    if (actions) actions.innerHTML = '';
+    if (timeline) timeline.setAttribute('aria-label', `${section.title} 사진`);
+    if (timelineHeading) timelineHeading.textContent = '태그 사진';
+    if (mapPanel) mapPanel.setAttribute('aria-label', '태그 사진 위치 지도');
+    if (mapSummary) mapSummary.setAttribute('aria-label', '태그 지도 요약');
+    if (mapAuthor) mapAuthor.hidden = true;
+
+    renderLandingTagFeedBatch(section, cover);
+}
+
+function getLandingTagSessionSeed(sectionId) {
+    const key = String(sectionId || 'tag');
+    if (!state.landingTagRandomSeeds[key]) {
+        state.landingTagRandomSeeds[key] = `${Date.now()}-${crypto.randomUUID()}`;
+    }
+    return state.landingTagRandomSeeds[key];
+}
+
+function renderLandingTagFeedBatch(section, cover) {
+    const visiblePhotos = getLandingTagVisiblePhotos(state.landingTagPhotos, state.landingTagVisibleCount);
+    state.albumDetailPhotos = visiblePhotos;
+    renderLandingTagPhotoFeed(visiblePhotos, section.title, cover, state.landingTagPhotos.length);
+    renderTripReviewMap(visiblePhotos);
+}
+
+function renderLandingTagPhotoFeed(visiblePhotos, sectionTitle, cover, totalCount) {
+    const grid = $('#public-trip-photo-grid');
+    if (!grid) return;
+    if (!visiblePhotos.length) {
+        grid.innerHTML = '<div class="trip-review-empty">이 태그에 해당하는 공개 사진이 아직 없습니다.</div>';
+        return;
+    }
+
+    if (!grid.querySelector('.landing-tag-photo-feed')) {
+        grid.innerHTML = `
+            <section class="trip-review-day landing-tag-photo-feed" aria-label="${escapeHtml(sectionTitle)} 사진">
+                <div class="trip-review-day-rows"></div>
+            </section>
+            <div class="landing-tag-load-status" aria-live="polite"></div>
+            <div class="landing-tag-load-sentinel" data-landing-tag-load-more aria-hidden="true"></div>
+        `;
+    }
+    const rows = grid.querySelector('.landing-tag-photo-feed .trip-review-day-rows');
+    const renderedIds = new Set([...rows.querySelectorAll('.trip-review-photo-card')].map((card) => card.dataset.photoId));
+    const nextPhotos = visiblePhotos.filter((photo) => !renderedIds.has(getTripReviewPhotoId(photo)));
+    rows.insertAdjacentHTML('beforeend', nextPhotos.map((photo) => renderTripReviewPhotoCard(photo, sectionTitle, cover, false)).join(''));
+    const hasMore = visiblePhotos.length < totalCount;
+    const status = grid.querySelector('.landing-tag-load-status');
+    const sentinel = grid.querySelector('[data-landing-tag-load-more]');
+    if (status) status.textContent = hasMore
+        ? `${visiblePhotos.length}장 표시 중`
+        : `사진 ${visiblePhotos.length}장을 모두 불러왔습니다.`;
+    if (sentinel) sentinel.hidden = !hasMore;
+    requestAnimationFrame(() => {
+        layoutTripReviewPhotoRows();
+        observeLandingTagLoadSentinel();
+    });
+}
+
+function observeLandingTagLoadSentinel() {
+    state.landingTagLoadObserver?.disconnect();
+    state.landingTagLoadObserver = null;
+    const sentinel = $('[data-landing-tag-load-more]');
+    if (!sentinel || sentinel.hidden || typeof IntersectionObserver === 'undefined') return;
+    state.landingTagLoadObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting) || document.body.dataset.page !== 'tag') return;
+        state.landingTagLoadObserver?.disconnect();
+        state.landingTagVisibleCount += LANDING_TAG_BATCH_SIZE;
+        const section = state.landingSections.find((candidate) => String(candidate.id) === String(state.selectedLandingSectionId));
+        if (!section) return;
+        const cover = getPhotoImageSrc(state.landingTagPhotos[0]) || MAIN_BG_2_URL;
+        renderLandingTagFeedBatch(section, cover);
+    }, { rootMargin: '480px 0px' });
+    state.landingTagLoadObserver.observe(sentinel);
+}
+
+function renderLandingTagLoadingPage() {
+    renderTripReviewShell();
+    const page = $('#page-trip');
+    const title = $('#trip-title');
+    const description = $('#trip-review-description');
+    const meta = $('#trip-review-meta');
+    const backButton = page?.querySelector('.trip-review-header .back-link');
+    const backLabel = $('#trip-review-back-label');
+    const actions = page?.querySelector('.trip-review-header .trip-actions');
+    const mapAuthor = page?.querySelector('.trip-review-map-author');
+    const photoFlow = $('#public-trip-photo-grid');
+    const map = $('#trip-review-map');
+
+    if (title) title.textContent = '사진을 불러오는 중입니다';
+    if (description) description.textContent = '';
+    if (meta) meta.innerHTML = '';
+    if (backButton) backButton.dataset.route = LANDING_ROUTE;
+    if (backLabel) backLabel.textContent = '홈';
+    if (actions) actions.innerHTML = '';
+    if (mapAuthor) mapAuthor.hidden = true;
+    if (photoFlow) photoFlow.innerHTML = '<div class="trip-review-empty">공개 사진을 준비하고 있습니다.</div>';
+    if (map) map.innerHTML = '<div class="trip-review-empty">지도 위치를 준비하고 있습니다.</div>';
 }
 
 function renderTripReviewStoryBlock(afterId, text, isEditing) {
@@ -3133,21 +3410,32 @@ function updateTripReviewDateFilterUI() {
     });
     const meta = $('#trip-review-map-meta');
     if (!meta) return;
-    const selectedAlbum = getSelectedPublicAlbum();
+    const isLandingTagPage = document.body.dataset.page === 'tag';
+    const selectedAlbum = isLandingTagPage ? null : getSelectedPublicAlbum();
     const tripSummary = getTravelSummary({
         draftPhotos: state.albumDetailPhotos,
         selectedAlbum
     });
     const photoCount = state.albumDetailPhotos.length || Number(selectedAlbum?.photo_count || 0);
-    const places = Number(selectedAlbum?.places || Math.max(1, Math.ceil(photoCount / 4)));
+    const places = isLandingTagPage
+        ? state.albumDetailPhotos
+            .filter(canShowPhotoOnPublicMap)
+            .filter(hasPhotoLocation).length
+        : Number(selectedAlbum?.places || Math.max(1, Math.ceil(photoCount / 4)));
     const focusedPhoto = getTripReviewFocusedPhoto();
     const focusedDate = focusedPhoto ? getTripReviewPhotoDateKey(focusedPhoto)?.replaceAll('-', '.') : null;
-    meta.innerHTML = `
-        <span>${state.tripReviewDateFilter ? state.tripReviewDateFilter.replaceAll('-', '.') : (tripSummary.dateRange || '날짜 없음')}</span>
-        <span>${formatPlaceCount(places)}</span>
-        <span>${focusedPhoto ? `선택 사진${focusedDate ? ` · ${focusedDate}` : ''}` : (state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀')}</span>
-        ${state.tripReviewDateFilter ? '<button class="trip-review-clear-filter" data-clear-trip-review-date type="button">전체 보기</button>' : ''}
-    `;
+    meta.innerHTML = isLandingTagPage
+        ? `
+            <span>${formatPlaceCount(places)}</span>
+            <span>${formatPhotoCount(photoCount)} 불러옴</span>
+            <span>현재 사진 핀</span>
+        `
+        : `
+            <span>${state.tripReviewDateFilter ? state.tripReviewDateFilter.replaceAll('-', '.') : (tripSummary.dateRange || '날짜 없음')}</span>
+            <span>${formatPlaceCount(places)}</span>
+            <span>${focusedPhoto ? `선택 사진${focusedDate ? ` · ${focusedDate}` : ''}` : (state.tripReviewDateFilter ? '날짜별 핀' : '전체 핀')}</span>
+            ${state.tripReviewDateFilter ? '<button class="trip-review-clear-filter" data-clear-trip-review-date type="button">전체 보기</button>' : ''}
+        `;
     $$('.trip-review-photo-card').forEach((card) => {
         card.classList.toggle('is-map-focused', Boolean(state.tripReviewFocusPhotoId && card.dataset.photoId === String(state.tripReviewFocusPhotoId)));
     });
@@ -3266,7 +3554,10 @@ async function renderTripReviewMap(albumPhotos) {
     const renderToken = ++state.tripReviewMapRenderToken;
     const container = $('#trip-review-map');
     if (!container) return;
-    const located = getTripReviewMapPhotos(albumPhotos).filter(hasPhotoLocation);
+    const mapPhotos = document.body.dataset.page === 'tag'
+        ? albumPhotos.filter(canShowPhotoOnPublicMap)
+        : albumPhotos;
+    const located = getTripReviewMapPhotos(mapPhotos).filter(hasPhotoLocation);
     if (!located.length) {
         state.tripReviewMarkers.forEach((marker) => marker.setMap?.(null));
         state.tripReviewMarkers = [];
@@ -3321,7 +3612,9 @@ async function renderTripReviewMap(albumPhotos) {
             icon: getExplorePinIcon(maps, { type: 'photo', selected }),
             zIndex: selected ? 20 : 10
         }, { mapId: state.googleMapsMapId });
-        marker.addListener('click', () => updatePhotoDetailModal(photo, { context: 'album' }));
+        marker.addListener('click', () => updatePhotoDetailModal(photo, {
+            context: document.body.dataset.page === 'tag' ? 'explore' : 'album'
+        }));
         return marker;
     });
 
@@ -3344,7 +3637,7 @@ function renderPublicSurfaces() {
     const publicPhotos = getPublicPhotoMapItems();
     const explorePhotos = getExplorePhotoMapItems();
     if (document.body.dataset.page === 'profile' && state.selectedPublicOwnerId) {
-        renderPublicOwnerProfile(state.selectedPublicOwnerId, publicPhotos);
+        renderPublicOwnerProfile(state.selectedPublicOwnerId, getPublicProfilePhotoItems());
         return;
     }
     const selected = document.body.dataset.page === APP_SECTIONS.EXPLORE
@@ -5664,6 +5957,11 @@ function bindEvents() {
             const section = state.landingSections.find((candidate) => String(candidate.id) === fieldset?.dataset.adminLandingSection);
             if (!section) return;
             const photoId = adminPhotoToggle.dataset.adminPhotoToggle;
+            if (!section.photo_ids.includes(photoId) && section.photo_ids.length >= LANDING_TAG_PIN_LIMIT) {
+                const message = $('#landing-admin-message');
+                if (message) message.textContent = '상단에 고정할 사진은 최대 20장까지 선택할 수 있습니다.';
+                return;
+            }
             section.photo_ids = section.photo_ids.includes(photoId)
                 ? section.photo_ids.filter((id) => id !== photoId)
                 : [...section.photo_ids, photoId];
@@ -5702,6 +6000,12 @@ function bindEvents() {
                 updatePhotoDetailModal(photo, { context: 'explore' });
                 openModal('#photo-detail-modal');
             }
+            return;
+        }
+
+        const landingViewAllButton = event.target.closest('[data-landing-view-all]');
+        if (landingViewAllButton) {
+            routeToLandingTag(landingViewAllButton.dataset.landingViewAll);
             return;
         }
 
@@ -6048,6 +6352,16 @@ function bindEvents() {
             return;
         }
 
+        const photoDetailAuthorButton = event.target.closest('[data-photo-detail-author]');
+        if (photoDetailAuthorButton) {
+            closeModals();
+            routeToProfileFromAuthor(
+                photoDetailAuthorButton.dataset.publicAlbumId,
+                photoDetailAuthorButton.dataset.publicOwnerId
+            );
+            return;
+        }
+
         const goProfileButton = event.target.closest('[data-go-profile]');
         if (goProfileButton) {
             routeToProfileFromAuthor(goProfileButton.dataset.publicAlbumId, goProfileButton.dataset.publicOwnerId);
@@ -6110,7 +6424,9 @@ function bindEvents() {
             const photo = isTripPhoto
                 ? state.albumDetailPhotos.find((candidate) => getTripReviewPhotoId(candidate) === String(photoCard.dataset.photoId))
                 : getAllDisplayPhotos().find((candidate) => candidate.id === photoCard.dataset.photoId);
-            const context = isTripPhoto ? 'album' : (isLikedPhoto ? 'liked' : 'photo');
+            const context = isTripPhoto
+                ? (document.body.dataset.page === 'tag' ? 'explore' : 'album')
+                : (isLikedPhoto ? 'liked' : 'photo');
             updatePhotoDetailModal(photo || getDefaultDetailPhoto(), { context });
             openModal('#photo-detail-modal');
             return;

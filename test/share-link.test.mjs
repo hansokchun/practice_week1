@@ -130,3 +130,11 @@ test('getSharedRouteState preserves the authenticated liked photos route', () =>
         ownerId: null
     });
 });
+
+test('getSharedRouteState preserves refreshable landing tag pages', () => {
+    assert.deepEqual(getSharedRouteState('#/tag?section=korea'), {
+        route: 'tag',
+        albumId: null,
+        ownerId: null
+    });
+});

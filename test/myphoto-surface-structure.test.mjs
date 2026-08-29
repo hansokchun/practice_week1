@@ -229,7 +229,7 @@ test('logo landing route uses the same redesigned landing for signed-in users', 
     const app = source();
 
     assert.match(app, /const LANDING_ROUTE = 'landing';/);
-    assert.match(app, /document\.body\.dataset\.page = normalized === LANDING_ROUTE \? LANDING_ROUTE : renderedRoute;/);
+    assert.match(app, /document\.body\.dataset\.page = normalized === LANDING_ROUTE \? LANDING_ROUTE : normalized === 'tag' \? 'tag' : renderedRoute;/);
     assert.match(styles, /\.page-home\s*>\s*\.home-workspace\s*\{[^}]*display:\s*none\s*!important;/s);
     assert.doesNotMatch(styles, /body\.is-logged-in\[data-page="landing"\]\s+\.(?:home-workspace|home-houses-reference|home-feature-stories|white-band)[\s\S]*display:\s*(?:block|grid);/s);
 });

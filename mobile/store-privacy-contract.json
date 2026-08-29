@@ -1,0 +1,227 @@
+{
+  "contractVersion": 1,
+  "reviewedAt": "2026-08-26",
+  "reviewStatus": "store-console-review-required",
+  "globalPractices": {
+    "tracking": false,
+    "advertising": false,
+    "dataSale": false,
+    "encryptedInTransit": true,
+    "inAppAccountDeletion": true
+  },
+  "localOnly": [
+    {
+      "id": "device_photo_originals",
+      "description": "운영체제 사진 원본은 자동 업로드하거나 수정하지 않는다.",
+      "evidence": ["mobile/src/device-photo-library.ts", "mobile/src/publication-selection.ts"]
+    },
+    {
+      "id": "device_photo_metadata",
+      "description": "EXIF와 Live Photo 메타데이터는 정제해 백업 제외 로컬 저장소에만 둔다.",
+      "evidence": ["mobile/src/device-photo-metadata.ts", "mobile/src/device-photo-metadata-enricher.ts"]
+    },
+    {
+      "id": "device_photo_location",
+      "description": "기기 사진 GPS와 수동 보정 위치는 외부 지도 요청 없이 로컬에만 저장한다.",
+      "evidence": ["mobile/src/device-photo-location.ts", "mobile/src/local-photo-location-runtime.ts"]
+    },
+    {
+      "id": "local_sqlite_index",
+      "description": "사진 인덱스와 게시 재시도 작업은 계정 토큰과 분리된 백업 제외 SQLite에 둔다.",
+      "evidence": ["mobile/src/local-photo-database.ts", "mobile/src/native-local-photo-storage.ts"]
+    },
+    {
+      "id": "thumbnail_cache",
+      "description": "기기 썸네일은 제한된 백업 제외 LRU 캐시에만 둔다.",
+      "evidence": ["mobile/src/thumbnail-cache.ts", "mobile/src/device-photo-thumbnail-cache.ts"]
+    },
+    {
+      "id": "raw_share_token",
+      "description": "공유 원문 토큰은 로컬 게시 작업과 URL fragment에만 존재하고 서버에는 SHA-256 해시만 저장한다.",
+      "evidence": ["mobile/src/publication-link-token.ts", "mobile/src/publication-publisher.ts"]
+    }
+  ],
+  "apple": {
+    "privacyManifest": {
+      "NSPrivacyTracking": false,
+      "NSPrivacyTrackingDomains": [],
+      "NSPrivacyAccessedAPITypes": [
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+          "NSPrivacyAccessedAPITypeReasons": ["0A2A.1", "3B52.1", "C617.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+          "NSPrivacyAccessedAPITypeReasons": ["85F4.1", "E174.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+          "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+          "NSPrivacyAccessedAPITypeReasons": ["1C8F.1", "CA92.1"]
+        }
+      ],
+      "NSPrivacyCollectedDataTypes": [
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality", "NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhotosorVideos",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherUserContent",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeSearchHistory",
+          "NSPrivacyCollectedDataTypeLinked": false,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality", "NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeProductInteraction",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality", "NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+          "NSPrivacyCollectedDataTypeLinked": false,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality", "NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCrashData",
+          "NSPrivacyCollectedDataTypeLinked": false,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePerformanceData",
+          "NSPrivacyCollectedDataTypeLinked": false,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+          "NSPrivacyCollectedDataTypeLinked": false,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePreciseLocation",
+          "NSPrivacyCollectedDataTypeLinked": false,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        }
+      ]
+    }
+  },
+  "googlePlay": {
+    "dataShared": false,
+    "dataTypes": [
+      {
+        "type": "Name",
+        "optional": true,
+        "purposes": ["account_management", "app_functionality"],
+        "evidence": ["mobile/src/profile-editor-repository.ts"]
+      },
+      {
+        "type": "Email address",
+        "optional": true,
+        "purposes": ["account_management"],
+        "evidence": ["mobile/src/email-auth.ts", "mobile/src/oauth-auth.ts"]
+      },
+      {
+        "type": "User IDs",
+        "optional": true,
+        "purposes": ["account_management", "app_functionality"],
+        "evidence": ["mobile/src/auth-session.tsx", "mobile/src/supabase-client.ts"]
+      },
+      {
+        "type": "Photos and videos",
+        "optional": true,
+        "purposes": ["app_functionality"],
+        "evidence": ["mobile/src/publication-publisher.ts", "mobile/src/profile-editor-repository.ts"]
+      },
+      {
+        "type": "Other user-generated content",
+        "optional": true,
+        "purposes": ["app_functionality", "account_management"],
+        "evidence": ["mobile/src/photo-comment-repository.ts", "mobile/src/content-safety-repository.ts"]
+      },
+      {
+        "type": "App interactions",
+        "optional": true,
+        "purposes": ["app_functionality", "analytics"],
+        "evidence": ["mobile/src/liked-photo-repository.ts", "mobile/src/content-safety-repository.ts", "react-native-maps"]
+      },
+      {
+        "type": "Search history",
+        "optional": true,
+        "purposes": ["app_functionality", "analytics"],
+        "evidence": ["mobile/src/place-search-runtime.ts", "mobile/modules/ikkyee-place-search"]
+      },
+      {
+        "type": "Device or other IDs",
+        "optional": false,
+        "purposes": ["analytics", "app_functionality"],
+        "evidence": ["react-native-maps", "Google Maps Platform SDK identifier"]
+      },
+      {
+        "type": "Crash logs",
+        "optional": false,
+        "purposes": ["analytics"],
+        "evidence": ["react-native-maps", "Google Maps and Places SDK crash metrics"]
+      },
+      {
+        "type": "Diagnostics",
+        "optional": false,
+        "purposes": ["analytics"],
+        "evidence": ["react-native-maps", "Google Maps and Places SDK request metadata"]
+      }
+    ]
+  },
+  "processors": [
+    {
+      "id": "supabase",
+      "role": "service-provider",
+      "data": ["account", "profile", "published photos", "comments", "likes", "reports", "blocks"],
+      "evidence": ["mobile/src/supabase-client.ts", "docs/mobile/backend-contract.md"]
+    },
+    {
+      "id": "google-maps-places",
+      "role": "service-provider-sdk",
+      "data": ["device metadata", "IP address", "SDK identifier", "crash metrics", "map interactions", "search request metadata"],
+      "evidence": ["mobile/src/ExploreMapSurface.native.tsx", "mobile/modules/ikkyee-place-search"]
+    },
+    {
+      "id": "google-kakao-oauth",
+      "role": "user-directed-auth-provider",
+      "data": ["OAuth authorization request", "provider account response"],
+      "evidence": ["mobile/src/oauth-auth.ts", "docs/mobile/oauth-redirect-setup.md"]
+    }
+  ]
+}
