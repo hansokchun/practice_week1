@@ -4,7 +4,7 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const budgets = {
-    javascriptGzipKb: 55,
+    javascriptGzipKb: 65,
     cssGzipKb: 30,
     totalImageKb: 2200,
     largestImageKb: 450

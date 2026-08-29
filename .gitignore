@@ -29,3 +29,5 @@ dist/
 # Local QA and generated scratch files
 tmp/
 supabase/.temp/
+.omo/evidence/
+supabase/.branches/

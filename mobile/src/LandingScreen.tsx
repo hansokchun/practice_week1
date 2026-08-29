@@ -21,7 +21,7 @@ type LandingState =
   | { readonly status: "failed" }
   | { readonly status: "ready"; readonly content: LandingContent };
 
-const suggestions = ["제주 바다", "서울 야경", "부산", "도쿄 골목", "벚꽃 여행"] as const;
+const suggestions = ["제주 바다", "서울 야경", "일본"] as const;
 const webKeepAllWords = Platform.OS === "web" ? ({ wordBreak: "keep-all" } as unknown as TextStyle) : undefined;
 
 function photoLabel(photo: LandingPhoto): string {

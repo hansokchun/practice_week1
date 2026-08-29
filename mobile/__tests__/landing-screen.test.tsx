@@ -24,6 +24,12 @@ describe("web-parity landing screen", () => {
 
     await waitFor(() => expect(screen.getByText("추천")).toBeOnTheScreen());
     expect(screen.getByText("이끼에서 당신만의 장소를 찾아보세요")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "제주 바다" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "서울 야경" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "일본" })).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "부산" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "도쿄 골목" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "벚꽃 여행" })).not.toBeOnTheScreen();
     await act(async () => fireEvent.press(screen.getByRole("button", { name: "사진 추가" })));
     expect(navigate).toHaveBeenCalledWith("/upload");
     await act(async () => fireEvent.press(screen.getByRole("button", { name: "계정 메뉴 열기" })));

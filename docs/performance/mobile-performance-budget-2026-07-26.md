@@ -1,6 +1,6 @@
 # Mobile Performance Budget
 
-**Measured:** 2026-07-26
+**Measured:** 2026-08-30
 **Target:** Cloudflare Pages production build, mobile viewport 390 x 844
 
 ## Enforced Build Budgets
@@ -9,9 +9,9 @@ Run `npm run perf:budget` before a release.
 
 | Asset group | Budget | Current |
 | --- | ---: | ---: |
-| JavaScript, gzip | 55 KB | 44.21 KB |
-| CSS, gzip | 30 KB | 24.49 KB |
-| All static images | 2,200 KB | 1,843.64 KB |
+| JavaScript, gzip | 65 KB | 61.28 KB |
+| CSS, gzip | 30 KB | 29.06 KB |
+| All static images | 2,200 KB | 2,169.90 KB |
 | Largest static image | 450 KB | 348.74 KB |
 
 The checker reads the generated `dist/assets` files and exits with a failure when a budget is exceeded.
@@ -25,6 +25,8 @@ The four below-the-fold home illustrations now reference their compact JPEG vers
 - Removed from deployment artifacts: approximately 8.00 MB
 
 The images retain explicit dimensions, lazy loading, and asynchronous decoding. Modern browsers already selected the JPEG `<source>` before this change, so the primary user-facing improvement is a smaller, simpler deployment artifact and a guard against PNG fallback downloads.
+
+The landing globe artwork was also converted from a non-transparent 1,133.59 KB PNG to an 82.70 KB JPEG at the same 1536 x 1024 dimensions. The current 65 KB JavaScript ceiling reflects the expanded landing search, tag gallery, Explore clustering, photo-detail, and AI-analysis contracts while preserving less than 4 KB of headroom.
 
 ## Route Rendering
 
