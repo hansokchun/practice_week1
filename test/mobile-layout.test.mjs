@@ -27,6 +27,7 @@ test('mobile Explore uses a map-first canvas with a bottom-sheet preview', () =>
     assert.match(mobile, /\.explore-discovery-panel \.explore-photo-scope\s*\{[^}]*display:\s*none;/s);
     assert.match(mobile, /\.explore-discovery-panel\.is-mobile-open \.explore-discovery-header\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto;/s);
     assert.match(mobile, /\.explore-discovery-panel\.is-mobile-open \.explore-photo-scope\s*\{[^}]*grid-column:\s*2;[^}]*display:\s*flex;[^}]*pointer-events:\s*auto;/s);
+    assert.match(mobile, /\.explore-discovery-panel\.is-mobile-open \.explore-photo-scope-trigger > span\s*\{[^}]*color:\s*#ffffff;/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*position:\s*fixed;[^}]*left:\s*12px;[^}]*right:\s*12px;[^}]*bottom:\s*calc\(12px \+ env\(safe-area-inset-bottom\)\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*max-height:\s*min\(58svh,\s*520px\);/s);
     assert.match(mobile, /\.explore-pin-preview\s*\{[^}]*width:\s*auto;/s);

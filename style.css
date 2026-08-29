@@ -10365,6 +10365,10 @@ body.modal-open {
         pointer-events: auto;
     }
 
+    .explore-discovery-panel.is-mobile-open .explore-photo-scope-trigger > span {
+        color: #ffffff;
+    }
+
     .explore-discovery-panel.is-mobile-open .explore-discovery-body {
         grid-column: 1;
         grid-row: 2;
