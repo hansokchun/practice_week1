@@ -8,7 +8,7 @@ import {
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
-const DAILY_ANALYSIS_LIMIT = 25;
+const DAILY_ANALYSIS_LIMIT = 30;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 function json(body, status = 200) {

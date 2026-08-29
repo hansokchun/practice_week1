@@ -8223,6 +8223,71 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-size: 20px;
 }
 
+.photo-detail-ai-analysis {
+    display: grid;
+    gap: 10px;
+    border-bottom: 1px solid rgba(26, 77, 78, 0.12);
+    padding: 0 0 18px;
+}
+
+.photo-detail-ai-analysis[hidden] {
+    display: none;
+}
+
+.photo-detail-ai-analysis__heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #526162;
+}
+
+.photo-detail-ai-analysis__heading .material-symbols-outlined {
+    color: #7a8888;
+    font-size: 20px;
+}
+
+.photo-detail-ai-analysis__heading strong {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.photo-detail-ai-analysis.is-complete .photo-detail-ai-analysis__heading,
+.photo-detail-ai-analysis.is-complete .photo-detail-ai-analysis__heading .material-symbols-outlined {
+    color: var(--teal);
+}
+
+.photo-detail-ai-analysis.is-failed .photo-detail-ai-analysis__heading,
+.photo-detail-ai-analysis.is-failed .photo-detail-ai-analysis__heading .material-symbols-outlined {
+    color: #a04b55;
+}
+
+#photo-detail-ai-summary {
+    color: #3f4e4f;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.photo-detail-ai-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.photo-detail-ai-tags[hidden] {
+    display: none;
+}
+
+.photo-detail-ai-tags span {
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 999px;
+    background: rgba(26, 77, 78, 0.05);
+    color: var(--teal-dark);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 7px 9px;
+}
+
 .photo-detail-map {
     order: 6;
 }

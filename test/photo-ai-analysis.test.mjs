@@ -38,7 +38,7 @@ test('Cloudflare photo analysis endpoint authenticates ownership and limits cost
     assert.match(source, /\/auth\/v1\/user/);
     assert.match(source, /owner_id=eq\./);
     assert.match(source, /storage\/v1\/object\/authenticated\/photos/);
-    assert.match(source, /DAILY_ANALYSIS_LIMIT\s*=\s*25/);
+    assert.match(source, /DAILY_ANALYSIS_LIMIT\s*=\s*30/);
     assert.match(source, /processingAge[\s\S]*10 \* 60 \* 1000/);
     assert.match(source, /ai_analysis_status:\s*'processing',[\s\S]*ai_analyzed_at:/);
     assert.match(source, /ai_analysis_status === 'failed'/);
@@ -70,6 +70,7 @@ test('photo AI migration stores searchable analysis on owner-protected photo row
 test('web upload queues non-blocking AI analysis and hydrates tags for search', () => {
     const auth = readFileSync(new URL('auth.js', root), 'utf8');
     const app = readFileSync(new URL('js/app.js', root), 'utf8');
+    const html = readFileSync(new URL('index.html', root), 'utf8');
 
     assert.match(auth, /PHOTO_SELECT_COLUMNS[^\n]+ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model/);
     assert.match(auth, /export async function requestPhotoAiAnalysis\(photoId\)/);
@@ -77,4 +78,10 @@ test('web upload queues non-blocking AI analysis and hydrates tags for search', 
     assert.match(app, /Promise\.allSettled/);
     assert.match(app, /tags:\s*Array\.isArray\(photo\.ai_tags\)/);
     assert.match(app, /queuePhotoAiAnalysis\(saved\)/);
+    assert.match(app, /queuePhotoAiAnalysis\(state\.savedPhotos\.filter/);
+    assert.match(html, /id="photo-detail-ai-analysis"/);
+    assert.match(html, /id="photo-detail-ai-summary"/);
+    assert.match(html, /id="photo-detail-ai-tags"/);
+    assert.match(app, /aiAnalysisPanel\.hidden = !canEdit/);
+    assert.match(app, /photo\.ai_analysis_status === 'complete'/);
 });

@@ -71,7 +71,7 @@ Workers AI integration:
 - Vision model: `@cf/moondream/moondream3.1-9B-A2B` for a short image-only description.
 - Structure model: `@cf/meta/llama-3.1-8b-instruct-fast` for compact Korean JSON.
 - A representative image test used about 29 Neurons total. At the application
-  cap of 25 analyses per account per day, that is about 725 Neurons before
+  cap of 30 analyses per account per day, that is about 870 Neurons before
   retries, below Cloudflare's current 10,000-Neuron daily free allocation.
 - API boundary: `functions/api/analyze-photo.js`.
 - The endpoint authenticates the Supabase session and photo owner, then reads

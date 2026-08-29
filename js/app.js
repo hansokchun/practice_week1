@@ -1973,6 +1973,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const descriptionNode = $('#photo-detail-description');
     const dateMeta = modal?.querySelector('[data-photo-detail-meta="date"]');
     const placeMeta = modal?.querySelector('[data-photo-detail-meta="place"]');
+    const aiAnalysisPanel = $('#photo-detail-ai-analysis');
+    const aiAnalysisStatus = $('#photo-detail-ai-status');
+    const aiAnalysisSummary = $('#photo-detail-ai-summary');
+    const aiAnalysisTags = $('#photo-detail-ai-tags');
     const authorButton = $('#photo-detail-author');
     const authorImage = $('#photo-detail-author-image');
     const authorFallback = $('#photo-detail-author-fallback');
@@ -2023,6 +2027,33 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
     if (dateMeta) dateMeta.innerHTML = `<span class="material-symbols-outlined">calendar_today</span> ${dateLabel}`;
     if (placeMeta) placeMeta.innerHTML = `<span class="material-symbols-outlined">place</span> ${locationLabel}`;
+    if (aiAnalysisPanel) {
+        const analysisStatus = photo.ai_analysis_status || 'pending';
+        const isComplete = photo.ai_analysis_status === 'complete';
+        const statusLabels = {
+            complete: 'AI 분석 완료',
+            failed: 'AI 분석 실패',
+            pending: 'AI 분석 대기',
+            processing: 'AI 분석 중'
+        };
+        aiAnalysisPanel.hidden = !canEdit;
+        aiAnalysisPanel.classList.toggle('is-complete', isComplete);
+        aiAnalysisPanel.classList.toggle('is-failed', analysisStatus === 'failed');
+        if (aiAnalysisStatus) aiAnalysisStatus.textContent = statusLabels[analysisStatus] || statusLabels.pending;
+        if (aiAnalysisSummary) {
+            aiAnalysisSummary.textContent = isComplete ? String(photo.ai_summary || '') : '';
+            aiAnalysisSummary.hidden = !isComplete || !photo.ai_summary;
+        }
+        if (aiAnalysisTags) {
+            const tags = isComplete && Array.isArray(photo.ai_tags) ? photo.ai_tags : [];
+            aiAnalysisTags.replaceChildren(...tags.map((tag) => {
+                const chip = document.createElement('span');
+                chip.textContent = tag;
+                return chip;
+            }));
+            aiAnalysisTags.hidden = !tags.length;
+        }
+    }
     if (authorButton) {
         authorButton.hidden = !ownerId;
         authorButton.dataset.publicOwnerId = ownerId;
@@ -2781,16 +2812,16 @@ function normalizeSavedPhoto(photo) {
 
 let photoAiAnalysisQueue = Promise.resolve();
 
-function queuePhotoAiAnalysis(photos = []) {
+function queuePhotoAiAnalysis(photos = [], { notifyOnComplete = false } = {}) {
     const candidates = photos.filter((photo) => (
         photo?.id
         && photo.owner_id === state.currentUser?.id
-        && photo.ai_analysis_status !== 'complete'
+        && photo.ai_analysis_status === 'pending'
     ));
     if (!candidates.length) return;
 
     photoAiAnalysisQueue = photoAiAnalysisQueue.then(async () => {
-        let hasUpdates = false;
+        let completedCount = 0;
         for (const photo of candidates) {
             const [result] = await Promise.allSettled([requestPhotoAiAnalysis(photo.id)]);
             if (result.status !== 'fulfilled' || result.value.error || !result.value.data) continue;
@@ -2799,11 +2830,12 @@ function queuePhotoAiAnalysis(photos = []) {
             state.savedPhotos = state.savedPhotos.map((savedPhoto) => (
                 String(savedPhoto.id) === String(normalized.id) ? normalized : savedPhoto
             ));
-            hasUpdates = true;
+            completedCount += 1;
         }
-        if (!hasUpdates) return;
+        if (!completedCount) return;
         renderSavedPhotoSurfaces();
         renderPublicSurfaces();
+        if (notifyOnComplete) showToast(`AI 사진 분석 ${completedCount}장을 완료했습니다.`);
     }).catch(() => null);
 }
 
@@ -3980,6 +4012,10 @@ async function loadSavedPhotos({ render = true } = {}) {
         renderSavedPhotoSurfaces();
         renderPublicSurfaces();
     }
+    queuePhotoAiAnalysis(state.savedPhotos.filter((photo) => (
+        photo.owner_id === state.currentUser?.id
+        && photo.ai_analysis_status === 'pending'
+    )), { notifyOnComplete: true });
 }
 
 async function loadMyLikedPhotos({ render = true } = {}) {
