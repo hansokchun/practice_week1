@@ -1,0 +1,84 @@
+{
+  "contractVersion": 1,
+  "reviewedAt": "2026-08-30",
+  "reviewStatus": "store-console-operator-review-required",
+  "audience": {
+    "directedToChildren": false,
+    "minimumAgePolicy": null,
+    "minimumAgePolicyStatus": "operator-approval-required"
+  },
+  "content": {
+    "userGeneratedContent": true,
+    "publicPhotos": true,
+    "comments": true,
+    "messagingOrChat": true,
+    "unrestrictedWebAccess": false,
+    "firstPartyViolence": false,
+    "firstPartySexualContent": false,
+    "firstPartyGambling": false,
+    "firstPartyControlledSubstances": false
+  },
+  "safety": {
+    "reportContent": true,
+    "blockUsers": true,
+    "removeOwnedContent": true,
+    "deleteAccount": true,
+    "moderationRunbook": true,
+    "parentalControls": false,
+    "ageAssurance": false
+  },
+  "commerce": {
+    "advertising": false,
+    "inAppPurchases": false,
+    "lootBoxes": false,
+    "contests": false,
+    "gambling": false
+  },
+  "apple": {
+    "ageRating": {
+      "consoleQuestionnaireRequired": true,
+      "calculatedRating": null,
+      "madeForKids": false,
+      "override": null
+    },
+    "exportCompliance": {
+      "customOrProprietaryCryptography": false,
+      "usesNonExemptEncryption": false,
+      "basis": [
+        "HTTPS through operating-system and provider networking stacks",
+        "operating-system keychain access through Expo SecureStore"
+      ],
+      "signedArchiveReviewRequired": true
+    }
+  },
+  "googlePlay": {
+    "contentRating": {
+      "category": "All Other App Types",
+      "consoleQuestionnaireRequired": true,
+      "rating": null
+    },
+    "appAccess": {
+      "restrictedFunctionality": true,
+      "instructionsRequired": true
+    }
+  },
+  "reviewAccess": {
+    "guestAccessAvailable": true,
+    "loginRequiredForFullReview": true,
+    "demoAccount": {
+      "status": "operator-action-required",
+      "credentialsStoredInRepository": false,
+      "username": null,
+      "password": null,
+      "mfaOrOtpRequired": false,
+      "mustRemainReusable": true,
+      "mustContainOnlyNonSensitiveFixtures": true
+    }
+  },
+  "reviewContact": {
+    "status": "operator-action-required",
+    "name": null,
+    "email": null,
+    "phone": null
+  }
+}
