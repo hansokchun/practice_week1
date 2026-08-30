@@ -20,6 +20,7 @@ GOOGLE_MAPS_IOS_API_KEY
 
 - development에 두 키가 없으면 외부 지도 요청이 없는 대체 지도를 사용한다.
 - preview·production은 두 키 중 하나라도 없거나 한쪽만 있으면 config 단계에서 빌드를 거부한다.
+- 로컬 Expo Go 실기기 확인은 `IKKYEE_EXPO_GO_TEST=1`을 명시한 일회성 서버에서만 production의 공개 사진을 읽을 수 있다. 이 모드는 `nativeMapsEnabled`와 `nativePlaceSearchEnabled`를 강제로 끄며, preview·production EAS 빌드 환경에는 등록하지 않는다.
 - 키 값은 저장소·`app.json`·앱 JavaScript·로그에 기록하지 않고 EAS `preview`·`production` environment에 저장한다.
 - Android 키는 `com.ikkyee.mobile` 패키지와 development·Play App Signing SHA-1에, iOS 키는 `com.ikkyee.mobile` bundle ID에 제한한다.
 - 각 플랫폼 키의 API 제한에는 해당 Maps SDK와 Places API (New)를 함께 허용한다. 웹 서비스용 무제한 키나 JavaScript에 노출되는 Places REST 키는 만들지 않는다.

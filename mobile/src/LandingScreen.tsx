@@ -120,7 +120,7 @@ export function LandingScreen({
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
-          <Text style={[styles.heroTitle, webKeepAllWords]}>이끼에서 당신만의 장소를 찾아보세요</Text>
+          <Text adjustsFontSizeToFit minimumFontScale={0.72} numberOfLines={1} style={[styles.heroTitle, webKeepAllWords]}>당신만의 장소를 찾아보세요</Text>
           <View style={styles.searchRow}>
             <TextInput
               accessibilityLabel="공개 사진 검색"
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   accountMenuText: { color: mobileColors.ink, fontSize: 15, fontWeight: "700" },
   content: { paddingBottom: 56 },
   hero: { alignItems: "center", paddingBottom: 48, paddingHorizontal: 16, paddingTop: 42 },
-  heroTitle: { color: mobileColors.ink, fontSize: 28, fontWeight: "900", lineHeight: 36, textAlign: "center" },
+  heroTitle: { color: mobileColors.ink, fontSize: 28, fontWeight: "900", lineHeight: 36, maxWidth: 420, textAlign: "center", width: "100%" },
   searchRow: { flexDirection: "row", gap: 8, marginTop: 28, width: "100%" },
   searchInput: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 12, borderWidth: 1, color: mobileColors.ink, flex: 1, fontSize: 15, height: 54, paddingHorizontal: 14 },
   searchButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 12, justifyContent: "center", minHeight: 54, paddingHorizontal: 16 },

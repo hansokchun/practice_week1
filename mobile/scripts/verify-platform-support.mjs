@@ -27,6 +27,21 @@ assert.deepEqual(buildProperties?.[1], {
   ios: { deploymentTarget: support.ios.minimumVersion }
 });
 
+assert.throws(
+  () => buildExpoConfig(appJson, { EXPO_PUBLIC_APP_ENV: 'production' }),
+  /Native map configuration requires restricted iOS and Android keys together/u
+);
+const expoGoConfig = buildExpoConfig(appJson, {
+  EXPO_PUBLIC_APP_ENV: 'production',
+  IKKYEE_EXPO_GO_TEST: '1'
+});
+assert.equal(expoGoConfig.extra.expoGoTestMode, true);
+assert.equal(expoGoConfig.extra.nativeMapsEnabled, false);
+assert.equal(expoGoConfig.extra.nativePlaceSearchEnabled, false);
+assert.ok(expoGoConfig.plugins.every((plugin) =>
+  !(Array.isArray(plugin) && plugin[0] === 'react-native-maps')
+));
+
 const expoModulesCore = readFileSync(join(mobileRoot, 'node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle'), 'utf8');
 const reactNativeMaps = readFileSync(join(mobileRoot, 'node_modules/react-native-maps/android/build.gradle'), 'utf8');
 const placesAndroid = readFileSync(join(mobileRoot, 'modules/ikkyee-place-search/android/build.gradle'), 'utf8');

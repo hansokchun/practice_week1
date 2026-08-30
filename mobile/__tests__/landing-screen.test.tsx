@@ -31,7 +31,10 @@ describe("web-parity landing screen", () => {
     );
 
     await waitFor(() => expect(screen.getByText("추천")).toBeOnTheScreen());
-    expect(screen.getByText("이끼에서 당신만의 장소를 찾아보세요")).toBeOnTheScreen();
+    const heroTitle = screen.getByText("당신만의 장소를 찾아보세요");
+    expect(heroTitle).toBeOnTheScreen();
+    expect(heroTitle).toHaveProp("numberOfLines", 1);
+    expect(screen.queryByText("이끼에서 당신만의 장소를 찾아보세요")).not.toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "제주 바다" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "서울 야경" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "일본" })).toBeOnTheScreen();

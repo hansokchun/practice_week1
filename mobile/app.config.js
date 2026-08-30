@@ -32,10 +32,11 @@ function resolveLinkOrigin(appEnvironment, environment) {
 
 function buildExpoConfig(config, environment = process.env) {
   const appEnvironment = optionalValue(environment.EXPO_PUBLIC_APP_ENV) ?? 'development';
+  const expoGoTestMode = environment.IKKYEE_EXPO_GO_TEST === '1';
   const androidKey = optionalValue(environment.GOOGLE_MAPS_ANDROID_API_KEY);
   const iosKey = optionalValue(environment.GOOGLE_MAPS_IOS_API_KEY);
   const hasBothKeys = androidKey !== null && iosKey !== null;
-  const requiresKeys = appEnvironment === 'preview' || appEnvironment === 'production';
+  const requiresKeys = !expoGoTestMode && (appEnvironment === 'preview' || appEnvironment === 'production');
   const publicLinkOrigin = resolveLinkOrigin(appEnvironment, environment);
 
   if ((androidKey === null) !== (iosKey === null) || (requiresKeys && !hasBothKeys)) {
@@ -50,7 +51,7 @@ function buildExpoConfig(config, environment = process.env) {
     android: { minSdkVersion: platformSupport.android.minimumApiLevel },
     ios: { deploymentTarget: platformSupport.ios.minimumVersion }
   }]);
-  if (hasBothKeys) {
+  if (hasBothKeys && !expoGoTestMode) {
     plugins.push(['react-native-maps', {
       androidGoogleMapsApiKey: androidKey,
       iosGoogleMapsApiKey: iosKey
@@ -88,8 +89,9 @@ function buildExpoConfig(config, environment = process.env) {
     },
     extra: {
       ...(config.extra ?? {}),
-      nativeMapsEnabled: hasBothKeys,
-      nativePlaceSearchEnabled: hasBothKeys,
+      expoGoTestMode,
+      nativeMapsEnabled: hasBothKeys && !expoGoTestMode,
+      nativePlaceSearchEnabled: hasBothKeys && !expoGoTestMode,
       publicLinkOrigin
     },
     plugins
