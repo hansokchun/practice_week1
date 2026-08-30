@@ -1,0 +1,55 @@
+{
+  "projectRef": "pqczcponriukilrtpbdl",
+  "inspectedAt": "2026-08-25T10:29:45.407Z",
+  "fingerprint": {
+    "migrationCount": 12,
+    "publicFunctionCount": 5,
+    "bucketCount": 1,
+    "policyCount": 28
+  },
+  "storage": {
+    "bucket": "photos",
+    "public": false
+  },
+  "tables": {
+    "profiles": ["id", "nickname", "bio", "avatar_url"],
+    "photos": ["id", "url", "date", "title", "description", "lat", "lng", "liked", "shared", "owner_id", "created_at", "album", "album_id", "visibility", "geo_source", "storage_path", "location_precision"],
+    "photo_private_locations": ["photo_id", "owner_id", "lat", "lng", "created_at", "updated_at"],
+    "comments": ["id", "photo_id", "text", "date", "author_id"],
+    "user_likes": ["user_id", "photo_id", "created_at"]
+  },
+  "policies": [
+    {"name": "album_photos_delete_owner_album"},
+    {"name": "album_photos_insert_owner_album"},
+    {"name": "album_photos_select_owner_or_visible_album"},
+    {"name": "album_photos_update_owner_album"},
+    {"name": "albums_delete_owner"},
+    {"name": "albums_insert_owner"},
+    {"name": "albums_select_owner_or_visible"},
+    {"name": "albums_update_owner"},
+    {"name": "comments_insert_visible_photo"},
+    {"name": "comments_select_visible_photo"},
+    {"name": "photo_private_locations_delete_owner"},
+    {"name": "photo_private_locations_insert_owner"},
+    {"name": "photo_private_locations_select_owner"},
+    {"name": "photo_private_locations_update_owner"},
+    {"name": "photos_delete_owner"},
+    {"name": "photos_insert_owner"},
+    {"name": "photos_select_owner_or_visible"},
+    {"name": "photos_update_owner"},
+    {"name": "Profiles are viewable by everyone"},
+    {"name": "Users can insert own profile"},
+    {"name": "Users can update own profile"},
+    {"name": "user_likes_delete_own"},
+    {"name": "user_likes_insert_own"},
+    {"name": "user_likes_select_own"},
+    {"name": "photos_bucket_delete_own_object"},
+    {"name": "photos_bucket_insert_own_folder"},
+    {"name": "photos_bucket_select_owned_or_public_photo"},
+    {"name": "photos_bucket_update_own_object"}
+  ],
+  "advisorWarnings": [
+    "Authenticated callers can execute set_photo_like as a SECURITY DEFINER function.",
+    "Leaked-password protection is disabled."
+  ]
+}

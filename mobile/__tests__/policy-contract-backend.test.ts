@@ -221,6 +221,7 @@ test('contains fresh, hash-bound, sanitized source evidence', () => {
   expect(inspectedAt).toBeGreaterThan(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   const repoRoot = process['cwd']().replace(/[\\/]mobile$/, '');
+  expect(contract.liveEvidence.catalogPath).toMatch(/^docs\/mobile\/evidence\//);
   const catalogBytes = readFileSync(`${repoRoot}/${contract.liveEvidence.catalogPath}`);
   expect(createHash('sha256').update(catalogBytes).digest('hex')).toBe(contract.liveEvidence.catalogSha256);
 

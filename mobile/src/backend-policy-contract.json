@@ -247,7 +247,7 @@
     {"url":"https://supabase.com/docs/guides/api/securing-your-api","checkedAt":"2026-08-20T17:56:30.000Z","finding":"Data API table privileges and RLS are separate security layers."}
   ],
   "liveEvidence": {
-    "catalogPath": ".omo/evidence/task-5/backend/live/catalog-sanitized.json",
+    "catalogPath": "docs/mobile/evidence/backend-catalog-sanitized-2026-08-25.json",
     "catalogSha256": "2b86d9ade8d5b6ea1b4a30a2fbb32abb3823b845b04a1ba8306c94900c643b20",
     "queryShapes": [
       "SELECT pg_policies metadata for allowlisted tables",

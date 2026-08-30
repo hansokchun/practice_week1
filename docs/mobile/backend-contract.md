@@ -98,7 +98,7 @@ The contracted live table policy names, commands, roles, RLS flags, and function
 
 Live runtime impersonation was not attempted because the allowed SQL channel was `SELECT`-only; transaction-local role/claim setup would require non-`SELECT` statements. Evidence therefore combines live `pg_catalog`/`information_schema` capture with executable owner/non-owner/anonymous fixtures and labels that limitation as `catalog-plus-fixture`.
 
-The sanitized live snapshot is hash-bound at `.omo/evidence/task-5/backend/live/catalog-sanitized.json`. Before/after aggregate fingerprints cover migration, public-function, bucket, and policy counts to prove that this inspection did not mutate those surfaces.
+The sanitized live snapshot is hash-bound at `docs/mobile/evidence/backend-catalog-sanitized-2026-08-25.json`. Before/after aggregate fingerprints cover migration, public-function, bucket, and policy counts to prove that this inspection did not mutate those surfaces. The snapshot contains no row data, account identifiers, tokens, URLs, or credentials and is committed so clean CI checkouts can verify the same contract.
 
 ## Official Sources
 
