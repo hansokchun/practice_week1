@@ -6,7 +6,7 @@
 
 ## 현재 진행 상황
 
-**전체 99개 중 62개 완료(62.6%), 37개 남음 — 2026-08-30 기준**
+**전체 99개 중 64개 완료(64.6%), 35개 남음 — 2026-08-30 기준**
 
 ### 지금까지 완료한 것
 
@@ -78,7 +78,7 @@
 - [x] 웹 앨범은 모바일에서 소유자 읽기 전용 목록·상세로 제공하고 생성·편집·삭제·공유·정렬은 제외한다. 근거: `docs/mobile/product-definition.md`, `mobile/src/backend-policy-contract.json`, `mobile/src/album-repository.ts`, `mobile/__tests__/mobile-album-boundary.test.ts` (2026-08-30).
 - [x] 첫 출시의 기기 미디어 및 개인정보 경계를 정의한다. 근거: `docs/mobile/adr/0001-native-media-boundary.md`, `docs/mobile/privacy-media-policy.md`.
 - [ ] 실제 iPhone과 Android 화면에서 운영용 모바일 디자인 방향을 승인한다.
-- [ ] 첫 배포 대상을 TestFlight·내부 테스트, 비공개 베타, 공개 스토어 중에서 정한다.
+- [x] 첫 배포 대상을 iOS TestFlight 내부 테스트와 Google Play 내부 테스트로 확정한다. 비공개 외부 베타와 공개 스토어 출시는 내부 테스트의 서명 실기기 QA 뒤 별도 승인한다. 근거: `docs/mobile/first-beta-release-target.md` (2026-08-30).
 - [x] 최소 지원 OS 버전과 기기 등급을 확정한다. iPhone 전용 iOS 16.4와 Android 7.0(API 24)을 설치 하한으로 고정하고, 오래된·현재 iPhone과 RAM 4GiB·6GiB Android 실기기 QA 등급 및 최소 1,024MiB 여유 공간을 정의했다. `expo-build-properties`와 CI drift 검사를 연결하고 임시 production prebuild에서 Android `minSdkVersion=24`, iOS deployment target `16.4` 생성을 확인했다. 근거: `mobile/platform-support.json`, `mobile/app.config.js`, `mobile/scripts/verify-platform-support.mjs`, `docs/mobile/platform-support.md`, `test/mobile-platform-support.test.mjs` (2026-08-26). 실기기 서명 release 검증은 별도 항목으로 유지한다.
 - [ ] 출시 책임자, 장애 연락 담당자, 공개 지원 이메일을 지정한다.
 - [ ] 모바일 개인정보 안내, 계정 삭제 방법, 데이터 보존 문구를 승인한다.
@@ -93,7 +93,7 @@
 - [ ] 최종 사용자 정의 URL 스킴과 유니버설 링크·앱 링크를 등록하고 검증한다. `ikkyee` 스킴과 운영 `https://practice-week1-cws.pages.dev/photo-link`, preview 대응 도메인을 고정하고 iOS Associated Domains와 Android `autoVerify` intent filter를 prebuild 산출물에서 확인했다. AASA·`assetlinks.json`은 필요한 식별자가 없으면 404로 닫히며 로컬 Cloudflare 런타임에서 응답 형식·캐시·무리디렉션을 검증했다. Apple Team ID, Android 출시 서명 SHA-256의 Cloudflare 환경 등록과 배포 후 서명 실기기 수신은 외부 관문으로 남아 미완료다. 근거: `mobile/app.config.js`, `functions/.well-known/`, `functions/_shared/mobile-link-association.mjs`, `docs/mobile/universal-links.md`, `test/mobile-universal-link-contract.test.mjs`, `test/mobile-google-maps-config.test.mjs` (2026-08-26).
 - [ ] 로컬·미리보기·운영 Supabase 환경을 분리한다. 앱 코드와 EAS build profile의 `development`·`preview`·`production` 구분은 구현했다. development는 loopback·사설 IP, preview는 운영과 다른 HTTPS Supabase ref, production은 웹과 공유하는 `pqczcponriukilrtpbdl` ref만 허용한다. preview·production은 publishable key만 허용하고 legacy anon fallback·service-role·secret 형태를 거부한다. 근거: `mobile/src/supabase-client.ts`, `mobile/eas.json`, `mobile/.env.example`, `mobile/__tests__/supabase-client.test.ts`, `mobile/__tests__/backend-environment-config.test.ts`, `docs/mobile/backend-environments.md` (2026-08-25). 별도 Preview Supabase 프로젝트 생성, EAS 세 environment의 실제 URL·publishable key 등록, 서명 빌드 왕복이 남아 있어 미완료로 유지한다.
 - [ ] EAS 비밀값 저장소를 구성하고 서비스 역할 키나 공급자 비밀값이 클라이언트 번들에 들어가지 않게 한다.
-- [ ] 깨끗한 체크아웃에서 재현 가능한 iOS·Android 개발 빌드를 만든다.
+- [ ] 깨끗한 체크아웃에서 재현 가능한 iOS·Android 개발 빌드를 만든다. iOS 18.6 iPhone 16 simulator, CocoaPods 1.16.2, 임시 영문 경로의 Expo prebuild·Pod 설치까지 확인했다. 현재 Xcode 16.4의 Swift 6.1.2는 Expo 57 `expo-modules-jsi`가 요구하는 Swift tools 6.2보다 낮아 compile이 중단되며 Android SDK·emulator도 없다. Xcode 업데이트 또는 EAS Build와 Android 빌드가 남아 미완료다. 근거: `docs/mobile/native-build-host-audit-2026-08-30.md` (2026-08-30).
 
 ## 3. 디자인 및 화면 이동
 
@@ -176,7 +176,7 @@
 
 ## 9. 품질·보안·운영
 
-- [ ] CI에서 `mobile/`의 `npm run lint`, `npm run typecheck`, `npm test`, `npm run schema:verify`를 모두 통과시킨다. Node.js 22, 읽기 전용 저장소 권한, 잠금 파일 설치, 중복 실행 취소가 적용된 GitHub Actions workflow와 소스 계약 테스트를 추가했고 네 명령은 로컬에서 모두 통과했다. 근거: `.github/workflows/mobile-ci.yml`, `test/mobile-prelaunch-checklist.test.mjs` (2026-08-25). 실제 `dev` push 또는 pull request에서 원격 workflow가 성공해야 완료로 전환한다.
+- [x] CI에서 `mobile/`의 Doctor, 플랫폼·출시·개인정보·보안 검사, lint, typecheck, 88개 suite·317개 테스트, 스키마 복구, 3개 플랫폼 export와 성능 예산을 모두 통과시킨다. 로컬 전용 `.omo` 증빙 의존을 제거하고 민감 정보가 없는 해시 고정 catalog를 정식 저장소 경로에 포함했다. GitHub Actions Mobile CI #34가 `dev` 커밋 `3cff34e`에서 2분 12초로 성공했다. 근거: `.github/workflows/mobile-ci.yml`, `docs/mobile/evidence/backend-catalog-sanitized-2026-08-25.json`, `mobile/__tests__/policy-contract-backend.test.ts`, `https://github.com/hansokchun/practice_week1/actions/runs/33295822469` (2026-08-30).
 - [x] 인증, 미디어 권한, 로컬 스캔, 게시, Explore, 좋아요, 삭제 통합 테스트를 추가한다. 근거: `mobile/__tests__/release-journey-integration.test.ts` (2026-08-25). 검증된 세션 부트스트랩에서 시작해 전체 사진 권한 해석, 페이지 기반 기기 사진 인덱싱, 선택 라우트 왕복, private Storage 소유자 경로 게시 작업, 공개 Explore 서명 조회, 원자적 좋아요와 좋아요 목록, 계정 로컬 SQLite·파생본 정리를 인메모리 경계 구현으로 한 흐름에서 검증한다. 원본 기기 사진은 삭제하지 않으며 실제 RLS·Storage 역할 검증은 별도의 로컬 Supabase 전체 왕복 테스트가 담당한다.
 - [ ] iOS·Android 빌드 산출물에서 Maestro 기본 동작 테스트를 실행한다. 누락돼 항상 실패하던 `mobile/maestro/explore-smoke.yaml`을 추가하고 `com.ikkyee.mobile` standalone 빌드에서 계정·비밀값 없이 초기화, 런타임 권한 거부, Explore 빈 검색 검증, 내 사진 권한 안내, 좋아요·프로필 핵심 이동을 접근성 ID로 실행하도록 고정했다. `clearKeychain`은 사용하지 않으며 Expo Go 결과를 독립 빌드 근거로 인정하지 않는다. 근거: `mobile/maestro/explore-smoke.yaml`, `mobile/scripts/run-maestro.mjs`, `test/mobile-maestro-contract.test.mjs`, `docs/mobile/maestro-release-smoke.md` (2026-08-26). 현재 환경에는 Maestro CLI·실행 중인 대상 기기와 설치된 iOS·Android standalone 빌드가 없어 실제 양 플랫폼 실행은 외부 빌드 관문으로 남아 미완료다.
 - [x] 비밀값, 개인 테스트 데이터, 정확한 위치 예시, 비공개 사진이 커밋되거나 로그에 남지 않았는지 확인한다. 근거: `mobile/scripts/audit-release-artifacts.mjs`, `test/mobile-release-artifact-audit.test.mjs`, `mobile/package.json`, `.github/workflows/mobile-ci.yml` (2026-08-25). Git이 추적하거나 추적 예정인 `mobile`·`.github`·`supabase` 출시 범위에서 실제 secret/JWT/API key/인증정보 포함 DB URL/개인키 형식, 비예시 이메일, 앱 소스의 정밀 좌표 상수·민감 로깅, 환경·로그·서명 파일과 승인되지 않은 사진 자산을 검사한다. 일치 내용은 출력하지 않고 코드와 경로만 보고하며 현재 216개 파일·213개 텍스트에서 발견 0건으로 통과했다. CI에서 매 실행 재검사한다.
@@ -190,7 +190,7 @@
 
 ## 10. 스토어 및 출시
 
-- [ ] 앱 이름, 아이콘, 적응형 아이콘, 시작 화면, 스크린샷, 스토어 설명을 확정한다. `Ikkyee` 이름과 1024px 불투명 스토어 아이콘, 투명 Android 적응형·테마 전경, `#F9F7F2` 배경의 네이티브 시작 화면을 Expo 구성에 연결했다. 근거: `mobile/app.json`, `mobile/assets/`, `mobile/__tests__/app-assets-contract.test.ts`, `docs/mobile/app-assets.md` (2026-08-26). 실기기 release 마스크·시작 화면 승인과 스크린샷·스토어 설명이 남아 미완료로 유지한다.
+- [ ] 앱 이름, 아이콘, 적응형 아이콘, 시작 화면, 스크린샷, 스토어 설명을 확정한다. `Ikkyee` 이름과 1024px 불투명 스토어 아이콘, 투명 Android 적응형·테마 전경, `#F9F7F2` 배경의 네이티브 시작 화면을 Expo 구성에 연결하고 내부 테스트용 스토어 설명·키워드·스크린샷 순서 초안을 작성했다. 근거: `mobile/app.json`, `mobile/assets/`, `mobile/__tests__/app-assets-contract.test.ts`, `docs/mobile/app-assets.md`, `docs/mobile/store-listing-draft.md` (2026-08-30). 실기기 release 마스크·시작 화면, 실제 스크린샷과 최종 문구 승인이 남아 미완료로 유지한다.
 - [ ] 작동하는 개인정보 처리방침, 지원, 계정 삭제 URL을 게시한다.
 - [ ] Apple 개인정보 표시와 Google Play 데이터 보안 선언을 완료한다. 현재 앱·SDK 데이터 흐름을 `mobile/store-privacy-contract.json` 한 곳에 고정하고 Expo iOS 개인정보 매니페스트와 연결했다. 설치된 13개 SDK `PrivacyInfo.xcprivacy` 대비 수집 유형·필수 사유 API 누락을 `npm run privacy:verify`와 CI에서 검사하며, 임시 production iOS prebuild의 병합 매니페스트(추적 false, 추적 도메인 0개, 수집 유형 12개, 필수 사유 API 4개)를 확인했다. Google Play 수집·선택 여부·목적 및 Maps/Places 처리자 경계를 문서화했다. 근거: `mobile/store-privacy-contract.json`, `mobile/app.config.js`, `mobile/scripts/verify-store-privacy.mjs`, `docs/mobile/store-privacy-disclosures.md`, `test/mobile-store-privacy-contract.test.mjs` (2026-08-26). App Store Connect·Google Play Console 입력, 제출 archive Privacy Report 대조, 공급자 계약 및 운영자·법률 승인이 남아 미완료로 유지한다.
 - [ ] 콘텐츠·연령 등급, 수출 규정, 필수 테스트 계정·정보 공개를 완료한다.
@@ -304,3 +304,4 @@
 - 웹 `1be7f51`의 랜딩·로그인·Explore·사진 상세 변경을 모바일에 반영했다. 랜딩 문구와 지도 CTA 배경, 공통 기본 아바타, 간결한 인증 선택 화면을 동기화했다. 로그인 사용자는 Explore에서 모든 소유 위치 사진을 먼저 보고, 비공개 사진은 RLS로 보호된 owner-only 위치에서만 표시한다. 다른 사람 범위는 공개 사진과 공개 가능한 위치만 유지한다. 초기 소유 사진 범위 맞춤, 군집의 여유 있는 애니메이션 확대, 상세의 스크롤 안내·하트 모션·소유자 전용 공개 상태·Explore 초점 이동·exact 전용 외부 거리뷰도 연결했다. Expo SDK 57 패치 의존성을 정합 버전으로 올리고 잠금 파일을 갱신했다. 390px 로컬 웹 QA에서 랜딩 한글 단어 줄바꿈을 보정하고 로그인·Explore 대체 화면까지 다시 렌더링해 콘솔 오류·경고 0건을 확인했다. 최종 검증은 모바일 83개 suite·309개 테스트, 타입 검사, Expo lint, 로컬 스키마 4개 시나리오, 266개 출시 파일·257개 텍스트 유출 검사 0건, 개인정보·보안·플랫폼 검사, Expo Doctor 21/21, iOS·Android·웹 production export와 성능 예산이 통과했다. 공유 웹 596개 테스트와 Vite 운영 빌드도 통과했다. 현재 export 지표는 Android 4,103,836B, iOS 3,792,422B, web 1,708,385B, 최대 자산 963,776B, 전체 11,759,794B다. 자동 검증으로 실기기 항목을 대신 완료 처리하지 않아 체크리스트는 62/99를 유지하며, 다음 관문은 서명된 iPhone·Android에서의 화면·OAuth·지도·딥링크 확인이다. (2026-08-28)
 - 2026-08-30 코드 출시 후보 검증에서 웹과 추천 검색어를 `제주 바다·서울 야경·일본`으로 다시 맞추고 Expo `57.0.18`, `expo-constants` `57.0.16` 호환 패치를 적용했다. Expo Doctor 21/21, 플랫폼·출시 파일·개인정보·보안 검사, lint, typecheck, 모바일 83개 suite·309개 테스트, 로컬 스키마 4개 시나리오, Android·iOS·Web production export와 성능 예산이 통과했다. 현재 export 지표는 Android 4,103,343B, iOS 3,791,938B, web 1,707,834B, 최대 자산 963,776B, 전체 11,594,997B다. 공유 웹은 640개 테스트와 성능 예산을 통과했다. 운영 Supabase에는 모바일 전용 링크·신고·계정 삭제 마이그레이션과 Edge Functions가 아직 배포되지 않았고 서명 실기기·스토어 관문도 남아 있으므로 체크리스트는 62/99를 유지한다.
 - 같은 날 최신 웹 기능을 앱에 추가 동기화했다. 추천 이외 섹션의 `/tag/[sectionId]` 전체보기는 지역 필터, 운영자 지정 최대 20장 우선 배치, 20장 단위 점진 로딩을 제공한다. 검색은 AI 태그·장면·분위기와 웹의 동의어 가중 순위를 공유한다. `/albums`와 `/album/[albumId]`는 기기 사진 권한과 무관하게 소유자 웹 앨범을 읽기 전용으로 표시하며 쓰기 메서드와 RPC를 자동 경계로 거부한다. 모바일 88개 suite·317개 테스트, typecheck, Expo lint, 로컬 스키마 4개 시나리오, 출시 파일·개인정보·보안·플랫폼 검사, Expo Doctor 21/21, Android·iOS·Web 24개 정적 라우트 export와 성능 예산이 통과했다. 현재 export 지표는 Android 4,144,856B, iOS 3,833,368B, web 1,736,626B, 최대 자산 963,776B, 전체 11,799,208B다. 새 외부 관문을 자동 완료 처리하지 않아 체크리스트는 62/99를 유지한다.
+- 실제 기기 없이 가능한 출시 검증을 계속했다. CocoaPods 1.16.2와 iOS 18.6 simulator를 준비하고 영문 임시 worktree에서 Expo prebuild·Pods 설치를 통과했지만, Xcode 16.4 Swift 6.1.2가 Expo 57의 Swift 6.2 요구보다 낮아 iOS compile은 보류했다. Android SDK도 없어 양 플랫폼 개발 빌드는 미완료로 유지했다. 한편 깨끗한 GitHub checkout에서 누락되던 backend catalog 증빙을 민감 정보 없는 정식 경로로 옮겨 Mobile CI #34를 성공시켰다. 첫 배포를 TestFlight·Play 내부 테스트로 확정하고 스토어 문구 초안을 작성해 체크리스트는 64/99가 됐다. (2026-08-30)
