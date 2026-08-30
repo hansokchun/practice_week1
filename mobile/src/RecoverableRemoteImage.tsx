@@ -28,7 +28,9 @@ export function RecoverableRemoteImage({
   uri
 }: RecoverableRemoteImageProps) {
   const [failedUri, setFailedUri] = useState<string | null>(null);
+  const [loadedUri, setLoadedUri] = useState<string | null>(null);
   const failed = failedUri === uri;
+  const loaded = loadedUri === uri;
 
   return (
     <View style={[styles.container, style]}>
@@ -41,6 +43,7 @@ export function RecoverableRemoteImage({
               accessibilityRole="button"
               onPress={() => {
                 setFailedUri(null);
+                setLoadedUri(null);
                 onRetry();
               }}
               style={styles.retryButton}
@@ -52,10 +55,14 @@ export function RecoverableRemoteImage({
       ) : (
         <Image
           accessibilityLabel={accessibilityLabel}
-          onError={() => setFailedUri(uri)}
+          onError={() => {
+            setLoadedUri(null);
+            setFailedUri(uri);
+          }}
+          onLoad={() => setLoadedUri(uri)}
           resizeMode={resizeMode}
           source={{ uri }}
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, { opacity: loaded ? 1 : 0 }]}
         />
       )}
     </View>

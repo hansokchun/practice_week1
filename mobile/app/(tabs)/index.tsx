@@ -22,6 +22,7 @@ import { DefaultProfileAvatar } from "../../src/DefaultProfileAvatar";
 import {
   fetchExplorePhotoPage,
   fetchOwnedPhotoBounds,
+  fetchPublicPhotoBounds,
   SEOUL_EXPLORE_BOUNDS,
   type ExplorePhoto
 } from "../../src/explore-photo-repository";
@@ -45,6 +46,7 @@ const colors = {
 type ExploreScreenProps = {
   readonly initialFocus?: { readonly photoId: string; readonly lat: number; readonly lng: number; readonly scope: ExplorePhotoScope };
   readonly loadOwnerBounds?: typeof fetchOwnedPhotoBounds;
+  readonly loadPublicBounds?: typeof fetchPublicPhotoBounds;
   readonly MapSurface?: ExploreMapSurfaceComponent;
   readonly loadPage?: typeof fetchExplorePhotoPage;
   readonly openPhoto?: (photoId: string) => void;
@@ -72,6 +74,7 @@ export function ExploreScreen({
   initialFocus,
   MapSurface = DefaultExploreMapSurface,
   loadOwnerBounds = fetchOwnedPhotoBounds,
+  loadPublicBounds = fetchPublicPhotoBounds,
   loadPage = fetchExplorePhotoPage,
   openPhoto = (photoId) => router.push({ pathname: publicPhotoDetailRoute, params: { photoId } }),
   refreshKey = 0,
@@ -111,6 +114,17 @@ export function ExploreScreen({
       .catch(() => {});
     return () => controller.abort();
   }, [initialFocus, loadOwnerBounds, normalizedScope, normalizedViewerId]);
+
+  useEffect(() => {
+    if (initialFocus !== undefined || normalizedScope !== "others") return undefined;
+    const controller = new AbortController();
+    void loadPublicBounds(controller.signal)
+      .then((publicBounds) => {
+        if (!controller.signal.aborted && publicBounds !== null) setBounds(publicBounds);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [initialFocus, loadPublicBounds, normalizedScope]);
 
   useEffect(() => {
     const controller = new AbortController();

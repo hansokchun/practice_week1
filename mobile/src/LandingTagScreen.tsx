@@ -118,15 +118,17 @@ export function LandingTagScreen({
             </View>
             <View style={styles.intro}>
               <Text style={styles.title}>{section.title}</Text>
-              <Text style={styles.summary}>{feed.length}장의 사진 · {regions.length}개 지역</Text>
+              <Text style={styles.summary}>{feed.length}장의 사진{regions.length > 0 ? ` · ${regions.length}개 지역` : ""}</Text>
               {section.description.length > 0 ? <Text style={styles.description}>{section.description}</Text> : null}
             </View>
-            <ScrollView contentContainerStyle={styles.regionRow} horizontal showsHorizontalScrollIndicator={false}>
-              <RegionChip active={region === ""} label="전체" onPress={() => chooseRegion("")} />
-              {regions.map((item) => (
-                <RegionChip active={region === item.label} key={item.label} label={item.label} onPress={() => chooseRegion(item.label)} />
-              ))}
-            </ScrollView>
+            {regions.length > 0 ? (
+              <ScrollView contentContainerStyle={styles.regionRow} horizontal showsHorizontalScrollIndicator={false}>
+                <RegionChip active={region === ""} label="전체" onPress={() => chooseRegion("")} />
+                {regions.map((item) => (
+                  <RegionChip active={region === item.label} key={item.label} label={item.label} onPress={() => chooseRegion(item.label)} />
+                ))}
+              </ScrollView>
+            ) : null}
             {region.length > 0 ? <Text style={styles.filteredCount}>{filtered.length}장의 사진</Text> : null}
           </View>
         )}

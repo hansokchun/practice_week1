@@ -1,8 +1,19 @@
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { RecoverableRemoteImage } from "../src/RecoverableRemoteImage";
 
 describe("RecoverableRemoteImage", () => {
+  it("keeps a remote image hidden until the full image load completes", async () => {
+    const screen = await render(
+      <RecoverableRemoteImage accessibilityLabel="공개 여행 사진" uri="https://storage.example/signed/photo-a" />
+    );
+    const image = screen.getByLabelText("공개 여행 사진");
+
+    expect(image).toHaveStyle({ opacity: 0 });
+    await act(async () => fireEvent(image, "load"));
+    expect(image).toHaveStyle({ opacity: 1 });
+  });
+
   it("replaces a failed remote image with a safe retry action", async () => {
     const onRetry = jest.fn();
     const screen = await render(

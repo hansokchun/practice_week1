@@ -49,4 +49,25 @@ describe("landing tag gallery", () => {
     await act(async () => fireEvent.press(screen.getByRole("button", { name: "서울 지역" })));
     expect(screen.getByText("12장의 사진")).toBeOnTheScreen();
   });
+
+  it("does not show an empty region count or filter when no photo has region metadata", async () => {
+    const noRegionPhotos = photos.slice(0, 2).map((item) => ({
+      ...item,
+      description: "여행 사진",
+      album: null,
+      aiTags: [],
+      aiScene: null
+    }));
+    const screen = await render(
+      <LandingTagScreen
+        loadContent={async () => ({ sections: [{ ...content.sections[0]!, photos: noRegionPhotos }] })}
+        sectionId="korea"
+        seed="test"
+      />
+    );
+
+    await waitFor(() => expect(screen.getByText("2장의 사진")).toBeOnTheScreen());
+    expect(screen.queryByText("2장의 사진 · 0개 지역")).toBeNull();
+    expect(screen.queryByRole("button", { name: "전체 지역" })).toBeNull();
+  });
 });

@@ -1,4 +1,4 @@
-import { fetchExplorePhotoPage, fetchOwnedPhotoBounds, SEOUL_EXPLORE_BOUNDS } from "../src/explore-photo-repository";
+import { fetchExplorePhotoPage, fetchOwnedPhotoBounds, fetchPublicPhotoBounds, SEOUL_EXPLORE_BOUNDS } from "../src/explore-photo-repository";
 
 describe("explore photo repository", () => {
   it("requests only public photos inside the viewport with bounded pagination", async () => {
@@ -116,5 +116,20 @@ describe("explore photo repository", () => {
     expect(bounds?.north).toBeGreaterThan(37.57);
     expect(bounds?.west).toBeLessThan(126.55);
     expect(bounds?.east).toBeGreaterThan(129.08);
+  });
+
+  it("fits the initial public viewport around every visible public location", async () => {
+    const bounds = await fetchPublicPhotoBounds(undefined, {
+      fetchLocations: async () => ({ rows: [
+        { lat: 33.45, lng: 126.55 },
+        { lat: 35.68, lng: 139.76 }
+      ], error: null })
+    });
+
+    expect(bounds).not.toBeNull();
+    expect(bounds?.south).toBeLessThan(33.45);
+    expect(bounds?.north).toBeGreaterThan(35.68);
+    expect(bounds?.west).toBeLessThan(126.55);
+    expect(bounds?.east).toBeGreaterThan(139.76);
   });
 });

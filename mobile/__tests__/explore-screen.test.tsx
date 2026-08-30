@@ -242,6 +242,16 @@ describe("ExploreScreen", () => {
     await waitFor(() => expect(loadPage).toHaveBeenCalledWith(expect.objectContaining({ bounds: ownerBounds, scope: "mine" })));
   });
 
+  it("fits the first guest Explore viewport around public located photos", async () => {
+    const publicBounds = { north: 36.1, south: 33.0, east: 140.2, west: 126.0 };
+    const loadPage = jest.fn(async () => ({ photos: [], hasMore: false, nextOffset: 0 }));
+    await render(
+      <ExploreScreen loadPublicBounds={async () => publicBounds} loadPage={loadPage} getConnectivity={async () => "online"} />
+    );
+
+    await waitFor(() => expect(loadPage).toHaveBeenCalledWith(expect.objectContaining({ bounds: publicBounds, scope: "others" })));
+  });
+
   it("offers a safe retry when the Places quota is temporarily exceeded", async () => {
     const loadPage = jest.fn(async () => ({ photos: [], hasMore: false, nextOffset: 0 }));
     const searchPlaces = jest.fn(async () => { throw new PlaceSearchError("quota"); });

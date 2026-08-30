@@ -55,6 +55,10 @@ type OwnedPhotoBoundsDependencies = {
   readonly fetchLocations: (viewerId: string, signal?: AbortSignal) => Promise<{ readonly rows: unknown; readonly error: unknown }>;
 };
 
+type PublicPhotoBoundsDependencies = {
+  readonly fetchLocations: (signal?: AbortSignal) => Promise<{ readonly rows: unknown; readonly error: unknown }>;
+};
+
 const GENERIC_EXPLORE_ERROR = "공개 사진을 불러오지 못했습니다.";
 const PHOTO_COLUMNS = "id,date,description,liked,owner_id,created_at,storage_path,lat,lng,location_precision,visibility";
 
@@ -177,14 +181,21 @@ const defaultOwnedBoundsDependencies: OwnedPhotoBoundsDependencies = {
   }
 };
 
-export async function fetchOwnedPhotoBounds(
-  viewerId: string,
-  signal?: AbortSignal,
-  dependencies: OwnedPhotoBoundsDependencies = defaultOwnedBoundsDependencies
-): Promise<ExploreBounds | null> {
-  if (viewerId.trim().length === 0 || viewerId.length > 128) throw new Error(GENERIC_EXPLORE_ERROR);
-  throwIfAborted(signal);
-  const { rows, error } = await dependencies.fetchLocations(viewerId, signal);
+const defaultPublicBoundsDependencies: PublicPhotoBoundsDependencies = {
+  async fetchLocations(signal) {
+    let query = getSupabaseClient()
+      .from("photos")
+      .select("lat,lng")
+      .eq("visibility", "public")
+      .in("location_precision", ["approximate", "exact"])
+      .limit(5000);
+    if (signal !== undefined) query = query.abortSignal(signal);
+    const { data, error } = await query;
+    return { rows: data, error };
+  }
+};
+
+function boundsFromLocationRows(rows: unknown, error: unknown): ExploreBounds | null {
   if (error !== null || !Array.isArray(rows)) throw new Error(GENERIC_EXPLORE_ERROR);
   const locations = rows.map((value) => {
     if (typeof value !== "object" || value === null) return null;
@@ -209,6 +220,28 @@ export async function fetchOwnedPhotoBounds(
     east: Math.min(180, maxLng + lngPadding),
     west: Math.max(-180, minLng - lngPadding)
   };
+}
+
+export async function fetchPublicPhotoBounds(
+  signal?: AbortSignal,
+  dependencies: PublicPhotoBoundsDependencies = defaultPublicBoundsDependencies
+): Promise<ExploreBounds | null> {
+  throwIfAborted(signal);
+  const { rows, error } = await dependencies.fetchLocations(signal);
+  throwIfAborted(signal);
+  return boundsFromLocationRows(rows, error);
+}
+
+export async function fetchOwnedPhotoBounds(
+  viewerId: string,
+  signal?: AbortSignal,
+  dependencies: OwnedPhotoBoundsDependencies = defaultOwnedBoundsDependencies
+): Promise<ExploreBounds | null> {
+  if (viewerId.trim().length === 0 || viewerId.length > 128) throw new Error(GENERIC_EXPLORE_ERROR);
+  throwIfAborted(signal);
+  const { rows, error } = await dependencies.fetchLocations(viewerId, signal);
+  throwIfAborted(signal);
+  return boundsFromLocationRows(rows, error);
 }
 
 export async function fetchExplorePhotoPage(
