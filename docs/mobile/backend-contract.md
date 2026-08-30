@@ -4,14 +4,22 @@ This is the read-only Task 5 contract for Supabase project `pqczcponriukilrtpbdl
 
 No migration, DDL, DML, user creation, function deployment, bucket mutation, or policy mutation was performed. Live SQL inspection was limited to catalog `SELECT` queries. Database output was treated as untrusted data and reduced to schema, policy, function, aggregate, and bucket metadata; no row payload, user identifier, email, object path, credential, or signed URL is recorded.
 
-> 이 문서의 위 설명은 2026-08-20 운영 환경 관찰 기록이다. 2026-08-24에 아래의 모바일 링크 후보 계약을 저장소와 로컬 Supabase에 추가했지만 운영 환경에는 아직 배포하지 않았다.
+> 이 문서의 위 설명은 2026-08-20 운영 환경 관찰 기록이다. 2026-08-30에 아래 모바일 계약을 운영 Supabase에 적용했으며, 현재 배포 상태는 다음 절이 우선한다.
+
+## Hosted Deployment Update (2026-08-30)
+
+- 키체인이나 로컬 DB 비밀번호를 사용하지 않고 연결된 Supabase 관리 도구로 `secure_mobile_photo_links`, `secure_mobile_comments`, `add_mobile_content_safety`, `add_mobile_profile_editing`, `add_content_report_fk_indexes`를 적용했다.
+- `photo-link` version 1과 `delete-account` version 1은 `ACTIVE`다. 두 함수는 자체 토큰 검증을 수행하며, 미인증·잘못된 입력이 각각 일반화된 401·404로 닫히는 것을 확인했다.
+- `photos` 버킷은 계속 비공개이고 기존 소유자·공개 사진 서명 URL 정책을 유지한다. `avatars` 버킷과 모바일 프로필 경로, 신고·차단 테이블 및 정책도 운영 메타데이터에서 확인했다.
+- Supabase 성능 진단에서 `content_reports.photo_id`와 `reported_user_id`의 누락 FK 인덱스 경고가 사라졌다. 새 인덱스의 미사용 안내는 배포 직후 통계이므로 삭제 근거로 사용하지 않는다.
+- 실제 로그인 계정의 링크 게시·회수와 일회용 계정 정상 삭제 왕복은 사용자 데이터를 변경하므로 별도의 승인된 QA 계정으로 검증한다.
 
 ## Local Mobile Profile Candidate
 
 - `profiles.avatar_path`는 모바일이 관리하는 공개 아바타의 정규 경로다. 기존 웹·OAuth의 `avatar_url`은 호환을 위해 유지하며, 모바일 공개 프로필은 유효한 `avatar_path`를 우선한다.
 - 공개 `avatars` 버킷은 2MiB·`image/jpeg`로 제한한다. 인증 사용자는 본인 UUID 폴더의 `avatar-<uuid>.jpg` 불변 경로만 `INSERT`, 본인 객체만 `SELECT`·`DELETE`할 수 있고 `UPDATE` 정책은 없다.
 - 모바일은 선택 이미지를 최대 변 512px JPEG로 다시 렌더링하고 메타데이터 제거를 재검증한다. 새 객체 업로드 뒤 프로필 행을 전환하며 DB 실패 시 새 객체를 보상 삭제하고 성공 시 이전 객체를 정리한다.
-- 빈 로컬 DB 마이그레이션 재생과 실제 publishable-key 클라이언트로 소유자·비소유자·익명 프로필/Storage 왕복을 검증했다. 운영 마이그레이션 적용과 원격 역할 재검증 전에는 운영 계약으로 간주하지 않는다.
+- 빈 로컬 DB 마이그레이션 재생과 실제 publishable-key 클라이언트로 소유자·비소유자·익명 프로필/Storage 왕복을 검증했다. 운영 마이그레이션과 `avatars` 버킷 메타데이터 적용을 확인했으며, 승인된 QA 계정의 원격 역할 왕복은 출시 관문으로 남긴다.
 
 ## Local Mobile Link Candidate
 
@@ -19,14 +27,14 @@ No migration, DDL, DML, user creation, function deployment, bucket mutation, or 
 - 앱이 만든 256-bit 원문 토큰은 백업 제외 로컬 게시 작업에만 저장한다. `photos.link_token_hash`에는 SHA-256 소문자 64자리 해시만 저장하며 DB 제약과 부분 고유 인덱스로 형식을 고정한다.
 - 공개 `photo-link` Edge Function만 원문 토큰을 받는다. 이 함수는 정확한 해시·비공개·비공유 행을 privileged server client로 조회하고 위치·Storage 경로·토큰 해시를 제외한 안전한 사진 투영과 5분 Storage 서명 URL만 반환한다.
 - 잘못되거나 만료·삭제된 링크는 원인을 구분하지 않는 404와 `Cache-Control: no-store`를 반환한다. 토큰과 해시는 로그나 응답에 기록하지 않는다.
-- 로컬 검증은 익명·비소유자의 직접 DB 읽기 차단, 소유자 읽기, 토큰 고유 인덱스, 잘못된 토큰 거부, 정상 토큰의 서명 URL 응답을 포함한다. 운영 migration history 정합성 확인, 마이그레이션·함수 배포, 원격 RLS·Storage 검증 전에는 출시 계약으로 간주하지 않는다.
+- 로컬 검증은 익명·비소유자의 직접 DB 읽기 차단, 소유자 읽기, 토큰 고유 인덱스, 잘못된 토큰 거부, 정상 토큰의 서명 URL 응답을 포함한다. 운영 마이그레이션과 함수 배포 및 잘못된 토큰 404까지 확인했으며, 승인된 QA 계정의 정상 링크 왕복은 출시 관문으로 남긴다.
 
 ## Local Account Deletion Candidate
 
 - `delete-account` Edge Function은 클라이언 사용자 ID 대신 Bearer token을 `auth.getUser` 재검증하고 고정 `DELETE_ACCOUNT` 확인값을 요구한다.
 - Auth 사용자 삭제 전에 `photos`·`avatars` 소유자 경로, 신고·차단·댓글·좋아요·사진·기존 웹 앨범·프로필 행을 순차로 정리한다. 중간 실패는 Auth delete로 넘기지 않으며 다시 실행할 수 있다.
 - 앱은 서버 요청 전에 백업 제외 SQLite와 썸네일·게시 파생본을 정리하고 기기 원본을 유지한다. 서버 삭제 성공 뒤 로컬 세션을 제거한다.
-- 로컬 실제 왕복은 인증·확인 경계, 대상 Auth·DB·Storage 전체 제거, 비교 사용자 보존을 확인했다. 운영 함수 배포와 원격 재검증 전에는 출시 계약으로 간주하지 않는다. 세부 운영 계약은 `docs/mobile/account-deletion-operations.md`에 따른다.
+- 로컬 실제 왕복은 인증·확인 경계, 대상 Auth·DB·Storage 전체 제거, 비교 사용자 보존을 확인했다. 운영 함수 배포와 미인증 401까지 확인했으며, 일회용 운영 QA 계정의 정상 삭제는 출시 관문으로 남긴다. 세부 운영 계약은 `docs/mobile/account-deletion-operations.md`에 따른다.
 
 ## Shared Web And Mobile Visibility
 
@@ -80,21 +88,21 @@ The security advisor warns that authenticated callers can execute public `set_ph
 
 The only application bucket is private `photos`. Its live size and MIME restrictions are unset. Object names must begin with `<auth.uid()>/`; insert and update require both object ownership and that first path segment. Delete requires object ownership.
 
-The local candidate also adds the public `avatars` bucket described above. It has not been observed or applied in the live project yet.
+The public `avatars` bucket and its mobile profile path were observed in the hosted project after the 2026-08-30 deployment. A signed-in QA round trip is still required before release.
 
 The policies are `photos_bucket_select_owned_or_public_photo`, `photos_bucket_insert_own_folder`, `photos_bucket_update_own_object`, and `photos_bucket_delete_own_object`. Owners may read their objects. Non-owner and anonymous reads require a matching `photos.storage_path` whose photo is public or shared. Mobile display must use signed reads. Storage upsert is not equivalent to insert: it requires `SELECT`, `INSERT`, and `UPDATE` permissions, so default uploads should remain insert-only unless replacement is intentional.
 
-The original baseline dump did not reproduce the hosted `photos` bucket or its `storage.objects` policies. Local migration `20260825085451_restore_private_photo_storage_policies.sql` now creates the private bucket and restores those four observed policies without adding public access. A publishable-key round trip verifies owner upload and private read, anonymous/non-owner public signed reads, private signing and direct-download denial, signed URL expiry, and denial of newly requested URLs after a public row becomes private. Local DB lint and security/performance advisors report no issues. This local migration is not yet applied to the hosted project.
+The original baseline dump did not reproduce the hosted `photos` bucket or its `storage.objects` policies. Local migration `20260825085451_restore_private_photo_storage_policies.sql` creates the private bucket and restores those four observed policies without adding public access. A publishable-key round trip verifies owner upload and private read, anonymous/non-owner public signed reads, private signing and direct-download denial, signed URL expiry, and denial of newly requested URLs after a public row becomes private. The hosted project already has the equivalent private bucket and policies, so this compatibility migration was not redundantly applied.
 
 ## OAuth And Auth
 
 The existing web contract uses Google and Kakao through `signInWithOAuth`; Kakao adds its provider-specific mobile option while Google uses the default scopes. Local native configuration declares `ikkyee://auth/callback` and development redirects `exp://127.0.0.1:8081` and `http://localhost:8081`.
 
-The custom scheme must be registered by the native application, added to Supabase's allowed redirects, and reflected in each provider console where applicable. Live provider enablement, provider application identifiers, and live redirect allow-list values were not available through the permitted read-only metadata tools, so they are explicitly unknown rather than inferred from local configuration. No Edge Functions are deployed or required by this client contract.
+The custom scheme must be registered by the native application, added to Supabase's allowed redirects, and reflected in each provider console where applicable. Live provider enablement, provider application identifiers, and live redirect allow-list values remain external dashboard gates. The hosted `photo-link` and `delete-account` Edge Functions are deployed; neither changes the OAuth redirect contract.
 
 ## Drift And Limits
 
-The contracted live table policy names, commands, roles, RLS flags, and function security modes match `supabase/schema.sql`; `policyDrift.status` is `matched`. The baseline dump omitted the Storage-owned schema, so the observed Storage policies are reproduced by the later local migration above. Live migration history and repository migration history differ; this is recorded and requires reconciliation before any hosted deployment rather than being treated as proof of hosted drift.
+The contracted live table policy names, commands, roles, RLS flags, and function security modes matched `supabase/schema.sql` at the original inspection. The baseline dump omitted the Storage-owned schema, so the observed Storage policies are reproduced by the later local migration above. Live migration history now records the approved 2026-08-30 mobile migrations. The older baseline still differs from hosted history, so clean local replay plus hosted metadata checks remain the release evidence instead of assuming complete historical parity.
 
 Live runtime impersonation was not attempted because the allowed SQL channel was `SELECT`-only; transaction-local role/claim setup would require non-`SELECT` statements. Evidence therefore combines live `pg_catalog`/`information_schema` capture with executable owner/non-owner/anonymous fixtures and labels that limitation as `catalog-plus-fixture`.
 
