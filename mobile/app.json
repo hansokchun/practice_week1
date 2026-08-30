@@ -9,10 +9,12 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.ikkyee.mobile"
+      "bundleIdentifier": "com.ikkyee.mobile",
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.ikkyee.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#F9F7F2",
         "foregroundImage": "./assets/app-icon-foreground.png",

@@ -43,6 +43,9 @@ jobs:
       - name: Verify minimum platform support contract
         run: npm run platform:verify
 
+      - name: Verify release version and channel contract
+        run: npm run release:verify
+
       - name: Audit mobile release artifacts
         run: npm run audit:release
 

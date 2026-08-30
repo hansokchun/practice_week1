@@ -28,6 +28,7 @@ import {
 import { useAuthSession } from "../../src/auth-session";
 import { LandingScreen } from "../../src/LandingScreen";
 import { useContentVisibilityRefreshKey } from "../../src/content-visibility-refresh";
+import { formatPhotoDate } from "../../src/photo-date";
 
 const colors = {
   paper: "#f9f7f2",
@@ -355,7 +356,7 @@ export function ExploreScreen({
             <RecoverableRemoteImage accessibilityLabel="선택한 공개 사진" onRetry={() => setReloadKey((value) => value + 1)} style={styles.previewImage} uri={selectedPhoto.imageUrl} />
             <View style={styles.previewCopy}>
               <Text numberOfLines={2} style={styles.previewTitle}>{selectedPhoto.description ?? "여행 사진"}</Text>
-              <Text style={styles.previewMeta}>{selectedPhoto.date ?? "-- --"}{normalizedScope === "mine" ? ` · ${selectedPhoto.visibility === "public" ? "공개" : selectedPhoto.visibility === "link" ? "링크 공개" : "비공개"}` : ""}</Text>
+              <Text style={styles.previewMeta}>{formatPhotoDate(selectedPhoto.date)}{normalizedScope === "mine" ? ` · ${selectedPhoto.visibility === "public" ? "공개" : selectedPhoto.visibility === "link" ? "링크 공개" : "비공개"}` : ""}</Text>
               {state.pageError ? <Text accessibilityLiveRegion="polite" style={styles.pageError}>{state.pageError === "offline" ? "인터넷 연결 후 사진을 더 불러올 수 있어요." : "사진을 더 불러오지 못했어요."}</Text> : null}
             </View>
             <Pressable accessibilityLabel="사진 자세히 보기" accessibilityRole="button" onPress={() => openPhoto(selectedPhoto.id)} style={styles.detailButton}>

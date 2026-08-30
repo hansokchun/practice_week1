@@ -12,6 +12,7 @@
     "audit:release": "node ./scripts/audit-release-artifacts.mjs",
     "privacy:verify": "node ./scripts/verify-store-privacy.mjs",
     "security:verify": "node ./scripts/audit-security-privacy.mjs",
+    "release:verify": "node ./scripts/verify-release-contract.mjs",
     "platform:verify": "node ./scripts/verify-platform-support.mjs",
     "performance:verify": "node ./scripts/audit-performance-budget.mjs",
     "typecheck": "tsc --noEmit",

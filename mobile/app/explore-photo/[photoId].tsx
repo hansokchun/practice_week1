@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { AccessibilityInfo, Animated, Image, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +16,7 @@ import { KeyboardSafeScrollView } from "../../src/KeyboardSafeScrollView";
 import { useMobileScreenGutter } from "../../src/mobile-layout";
 import { useContentVisibilityRefreshKey } from "../../src/content-visibility-refresh";
 import { DefaultProfileAvatar } from "../../src/DefaultProfileAvatar";
+import { formatPhotoDate } from "../../src/photo-date";
 
 type PublicPhotoDetailScreenProps = {
   readonly blockAuthor?: (blockerId: string, blockedId: string) => Promise<void>;
@@ -59,7 +60,7 @@ export function PublicPhotoDetailScreen({
   currentUserId = null,
   goBack = router.back,
   loadComments = fetchPhotoComments,
-  loadPhoto = (id, signal) => fetchPublicPhotoDetail(id, signal, undefined, currentUserId),
+  loadPhoto,
   openAuthor = (userId) => router.push({ pathname: publicProfileRoute, params: { userId } }),
   openOnMap = (photo) => {
     if (photo.location === undefined) return;
@@ -94,6 +95,12 @@ export function PublicPhotoDetailScreen({
   const [actionsOpen, setActionsOpen] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [likeScale] = useState(() => new Animated.Value(1));
+  const loadPhotoForViewer = useCallback(
+    (id: string, signal?: AbortSignal) => loadPhoto === undefined
+      ? fetchPublicPhotoDetail(id, signal, undefined, currentUserId)
+      : loadPhoto(id, signal),
+    [currentUserId, loadPhoto]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -105,13 +112,13 @@ export function PublicPhotoDetailScreen({
     const controller = new AbortController();
     if (photoId === null) return () => controller.abort();
     queueMicrotask(() => { if (!controller.signal.aborted) setState({ status: "loading" }); });
-    void loadPhoto(photoId, controller.signal)
+    void loadPhotoForViewer(photoId, controller.signal)
       .then((photo) => { if (!controller.signal.aborted) setState({ status: "ready", photo, likePending: false, likeError: false }); })
       .catch((error: unknown) => {
         if (!controller.signal.aborted && !isAbortError(error)) setState({ status: "failed" });
       });
     return () => controller.abort();
-  }, [loadPhoto, photoId, refreshKey, retryKey]);
+  }, [loadPhotoForViewer, photoId, refreshKey, retryKey]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -291,7 +298,7 @@ export function PublicPhotoDetailScreen({
             ) : null}
           </View>
           <View style={styles.metaRow}>
-            <Text style={styles.meta}>{displayState.photo.date ?? "-- --"} · 좋아요 {displayState.photo.liked}</Text>
+            <Text style={styles.meta}>{formatPhotoDate(displayState.photo.date)} · 좋아요 {displayState.photo.liked}</Text>
             <Animated.View style={{ transform: [{ scale: likeScale }] }}>
               <Pressable
                 accessibilityLabel={displayState.photo.viewerHasLiked ? "좋아요 취소" : "좋아요"}

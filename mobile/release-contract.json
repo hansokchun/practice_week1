@@ -1,0 +1,40 @@
+{
+  "contractVersion": 1,
+  "marketingVersion": "0.1.0",
+  "identifiers": {
+    "ios": "com.ikkyee.mobile",
+    "android": "com.ikkyee.mobile"
+  },
+  "buildNumbers": {
+    "source": "remote",
+    "iosInitial": "1",
+    "androidInitial": 1,
+    "productionAutoIncrement": true
+  },
+  "profiles": {
+    "development": {
+      "appEnvironment": "development",
+      "channel": "development",
+      "kind": "development-client"
+    },
+    "development-simulator": {
+      "appEnvironment": "development",
+      "channel": "development-simulator",
+      "kind": "ios-simulator-development-client"
+    },
+    "preview": {
+      "appEnvironment": "preview",
+      "channel": "preview",
+      "kind": "standalone-internal"
+    },
+    "production": {
+      "appEnvironment": "production",
+      "channel": "production",
+      "kind": "store"
+    }
+  },
+  "otaUpdates": {
+    "enabled": false,
+    "reason": "EAS Update requires separate product and security approval."
+  }
+}

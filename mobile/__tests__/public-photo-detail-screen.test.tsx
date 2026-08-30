@@ -1,8 +1,26 @@
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { PublicPhotoDetailScreen } from "../app/explore-photo/[photoId]";
+import * as publicPhotoRepository from "../src/public-photo-detail-repository";
 
 describe("public photo detail screen", () => {
+  it("settles when the real route uses its default photo loader", async () => {
+    const loadPhoto = jest.spyOn(publicPhotoRepository, "fetchPublicPhotoDetail").mockResolvedValue({
+      id: "photo-route", date: null, description: "라우트 사진", liked: 0,
+      owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
+      createdAt: "2026-08-30T08:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-route",
+      locationPrecision: "hidden", visibility: "public", viewerHasLiked: false
+    });
+    const screen = await render(
+      <PublicPhotoDetailScreen loadComments={async () => []} photoId="photo-route" />
+    );
+
+    await waitFor(() => expect(screen.getByText("라우트 사진")).toBeOnTheScreen());
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(loadPhoto).toHaveBeenCalledTimes(1);
+    loadPhoto.mockRestore();
+  });
+
   it("renders only the safe public projection", async () => {
     const openAuthor = jest.fn();
     const loadPhoto = jest.fn(async () => ({
@@ -44,6 +62,21 @@ describe("public photo detail screen", () => {
     expect(screen.getByText("-- -- · 좋아요 2")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole("button", { name: "Explore 지도에서 보기" }));
     expect(openOnMap).toHaveBeenCalledWith(photo);
+  });
+
+  it("formats provider timestamps as a calm calendar date", async () => {
+    const photo = {
+      id: "photo-date", date: "2026-07-24T04:30:00.000Z", description: "여름 풍경", liked: 0,
+      owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
+      createdAt: "2026-07-24T04:31:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-date",
+      locationPrecision: "hidden" as const, visibility: "public" as const, viewerHasLiked: false
+    };
+    const screen = await render(
+      <PublicPhotoDetailScreen loadPhoto={async () => photo} photoId="photo-date" />
+    );
+
+    await waitFor(() => expect(screen.getByText("2026. 07. 24. · 좋아요 0")).toBeOnTheScreen());
+    expect(screen.queryByText(/T04:30/u)).toBeNull();
   });
 
   it("optimistically likes and rolls back when the mutation fails", async () => {

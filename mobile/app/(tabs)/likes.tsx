@@ -10,6 +10,7 @@ import { guestLoginRoute, publicPhotoDetailRoute } from "../../src/mobile-routes
 import { mobileColors } from "../../src/mobile-theme";
 import { RecoverableRemoteImage } from "../../src/RecoverableRemoteImage";
 import { useContentVisibilityRefreshKey } from "../../src/content-visibility-refresh";
+import { formatPhotoDate } from "../../src/photo-date";
 
 type LikesScreenProps = {
   readonly loadPhotos?: (signal?: AbortSignal) => Promise<readonly LikedPhoto[]>;
@@ -113,7 +114,7 @@ export function LikesScreen({
               <Pressable accessibilityLabel={`${photo.description ?? "공개 사진"} 상세 열기`} accessibilityRole="button" onPress={() => openPhoto(photo.id)}>
                 <RecoverableRemoteImage accessibilityLabel={`${photo.description ?? "공개 사진"} 이미지`} onRetry={() => setRetryKey((value) => value + 1)} style={styles.photo} uri={photo.imageUrl} />
                 <Text style={styles.description}>{photo.description ?? "여행 사진"}</Text>
-                <Text style={styles.date}>{photo.date ?? "날짜 없음"}</Text>
+                <Text style={styles.date}>{formatPhotoDate(photo.date)}</Text>
               </Pressable>
               <Pressable
                 accessibilityLabel={`${photo.description ?? "공개 사진"} 좋아요 취소`}
