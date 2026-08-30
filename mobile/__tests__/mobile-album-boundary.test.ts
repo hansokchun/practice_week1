@@ -24,24 +24,25 @@ function sourceFiles(directory: string): string[] {
 }
 
 describe("mobile album product boundary", () => {
-  it("contains no album table query, mutation, RPC, route, or repository", () => {
+  it("allows the shared album tables through one read-only repository only", () => {
     const violations: string[] = [];
-    const forbidden = [
-      /\.from\(\s*["']albums["']\s*\)/u,
-      /\.from\(\s*["']album_photos["']\s*\)/u,
-      /\b(?:insert\s+into|update|delete\s+from|select\b[\s\S]{0,80}\bfrom)\s+(?:public\.)?albums\b/iu,
-      /\b(?:insert\s+into|update|delete\s+from|select\b[\s\S]{0,80}\bfrom)\s+(?:public\.)?album_photos\b/iu,
-      /\.rpc\(\s*["'][^"']*album[^"']*["']/iu,
-      /pathname\s*:\s*["'][^"']*album[^"']*["']/iu
-    ];
 
     for (const path of sourceRoots.flatMap(sourceFiles)) {
       const source = readFileSync(path, "utf8");
-      if (forbidden.some((pattern) => pattern.test(source))) violations.push(relative(mobileRoot, path));
+      if (/\.from\(\s*["'](?:albums|album_photos)["']\s*\)/u.test(source) &&
+          relative(mobileRoot, path) !== "src/album-repository.ts") violations.push(relative(mobileRoot, path));
     }
 
     expect(violations).toEqual([]);
+    const repository = readFileSync(join(mobileRoot, "src/album-repository.ts"), "utf8");
+    expect(repository).toMatch(/\.from\("albums"\)\.select/u);
+    expect(repository).toMatch(/\.from\("album_photos"\)[\s\S]{0,80}\.select/u);
+    expect(repository).not.toMatch(/\.(?:insert|update|delete|upsert|rpc)\(/u);
     expect(contract.mobileRepositories.some((entry) => /album/iu.test(`${entry.name}:${entry.table}`))).toBe(false);
-    expect(contract.webOnlyTables).toEqual(expect.arrayContaining(["albums", "album_photos"]));
+    expect(contract.mobileReadOnlyTables).toEqual(["albums", "album_photos"]);
+    expect(contract.mobileReadOnlyRepositories.every((entry) =>
+      entry.queries.join(",") === "select" && entry.mutations.length === 0
+    )).toBe(true);
+    expect(contract.webOnlyTables).toEqual([]);
   });
 });

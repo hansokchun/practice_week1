@@ -8,7 +8,8 @@ const mobileRoot = resolve(scriptDir, '..');
 const repoRoot = resolve(mobileRoot, '..');
 const defaultContractPath = resolve(mobileRoot, 'src/backend-policy-contract.json');
 const expectedMobileTables = ['profiles', 'photos', 'photo_private_locations', 'comments', 'user_likes'];
-const expectedWebTables = ['albums', 'album_photos'];
+const expectedWebTables = [];
+const expectedMobileReadOnlyTables = ['albums', 'album_photos'];
 const operations = ['select', 'insert', 'update', 'delete'];
 const roles = ['owner', 'nonOwner', 'anonymous'];
 const advisorFollowups = [
@@ -104,6 +105,11 @@ function validate(contract, catalogBytes, catalog) {
     && contract.liveMetadataReadOnly === true
     && sameArray(contract.mobileAllowedTables, expectedMobileTables)
     && sameArray(contract.webOnlyTables, expectedWebTables)
+    && sameArray(contract.mobileReadOnlyTables, expectedMobileReadOnlyTables)
+    && sameArray((contract.mobileReadOnlyRepositories ?? []).map(({ table }) => table), expectedMobileReadOnlyTables)
+    && (contract.mobileReadOnlyRepositories ?? []).every(({ queries, mutations }) => (
+      sameArray(queries, ['select']) && sameArray(mutations, [])
+    ))
     && repositories.length === expectedMobileTables.length
     && sameArray(repositories.map(({ table }) => table), expectedMobileTables)
     && repositories.every(({ table, name, queries, mutations }) => (
@@ -171,7 +177,7 @@ if (process.argv.length !== 2 || process.argv.includes('--show-sensitive')) {
         liveMetadataReadOnly: true,
         mobileAllowedTables: contract.mobileAllowedTables,
         webOnlyTables: contract.webOnlyTables,
-        mobileAlbumRepositories: 0,
+        mobileAlbumRepositories: contract.mobileReadOnlyRepositories.length,
         ownerNonOwnerAnonymousMatrixComplete: true,
         advisorFollowups: {
           count: advisorFollowups.length,

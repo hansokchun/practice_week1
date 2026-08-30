@@ -19,6 +19,8 @@ type BackendContract = {
   liveMetadataReadOnly: boolean;
   mobileAllowedTables: string[];
   webOnlyTables: string[];
+  mobileReadOnlyTables: string[];
+  mobileReadOnlyRepositories: Array<{ name: string; table: string; queries: string[]; mutations: string[] }>;
   mobileRepositories: Array<{ name: string; table: string }>;
   tables: Record<string, TableContract>;
   functions: Array<{
@@ -133,7 +135,12 @@ test('pins the exact mobile and web-only backend boundaries', () => {
     'comments',
     'user_likes',
   ]);
-  expect(contract.webOnlyTables).toEqual(['albums', 'album_photos']);
+  expect(contract.webOnlyTables).toEqual([]);
+  expect(contract.mobileReadOnlyTables).toEqual(['albums', 'album_photos']);
+  expect(contract.mobileReadOnlyRepositories).toEqual([
+    { name: 'albumRepository', table: 'albums', queries: ['select'], mutations: [] },
+    { name: 'albumPhotoRepository', table: 'album_photos', queries: ['select'], mutations: [] },
+  ]);
   expect(contract.mobileRepositories.map(({ table }) => table)).toEqual(contract.mobileAllowedTables);
   expect(contract.mobileRepositories.filter(({ table, name }) => /album/i.test(`${table} ${name}`))).toHaveLength(0);
 });

@@ -10,7 +10,15 @@ const content = {
       createdAt: "2026-08-27T00:00:00.000Z", date: null,
       imageUrl: "https://example.supabase.co/signed/photo-a", locationPrecision: "approximate" as const,
       lat: 33.4, lng: 126.5
-    }]
+    }], curatedPhotoIds: ["photo-a"]
+  }, {
+    id: "korea", title: "한국", description: "",
+    photos: [{
+      id: "photo-a", description: "제주 바다", title: null, album: "한국", ownerId: "owner-a",
+      createdAt: "2026-08-27T00:00:00.000Z", date: null,
+      imageUrl: "https://example.supabase.co/signed/photo-a", locationPrecision: "approximate" as const,
+      lat: 33.4, lng: 126.5, aiTags: ["제주", "바다"], aiScene: "beach", aiSummary: "제주 바다 풍경"
+    }], curatedPhotoIds: []
   }]
 };
 
@@ -30,6 +38,9 @@ describe("web-parity landing screen", () => {
     expect(screen.queryByRole("button", { name: "부산" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "도쿄 골목" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "벚꽃 여행" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "추천 사진 전체보기" })).not.toBeOnTheScreen();
+    await act(async () => fireEvent.press(screen.getByRole("button", { name: "한국 사진 전체보기" })));
+    expect(navigate).toHaveBeenCalledWith("/tag/korea");
     await act(async () => fireEvent.press(screen.getByRole("button", { name: "사진 추가" })));
     expect(navigate).toHaveBeenCalledWith("/upload");
     await act(async () => fireEvent.press(screen.getByRole("button", { name: "계정 메뉴 열기" })));
@@ -39,7 +50,7 @@ describe("web-parity landing screen", () => {
     await act(async () => fireEvent.press(screen.getByRole("button", { name: "지도에서 찾아보기" })));
     expect(navigate).toHaveBeenCalledWith("/explore");
     expect(screen.queryByText("지도에서 찾아보세요")).not.toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByRole("button", { name: "제주 바다 상세 보기" })));
+    await act(async () => fireEvent.press(screen.getAllByRole("button", { name: "제주 바다 상세 보기" })[0]!));
     expect(openPhoto).toHaveBeenCalledWith("photo-a");
   });
 

@@ -21,7 +21,8 @@ describe("landing photo repository", () => {
     await expect(fetchLandingContent({ fetchCuration, fetchPhotos, signPaths })).resolves.toEqual({
       sections: [{
         id: "section-a", title: "추천", description: "",
-        photos: [expect.objectContaining({ id: "photo-a", imageUrl: "https://example.supabase.co/signed/photo-a" })]
+        photos: [expect.objectContaining({ id: "photo-a", imageUrl: "https://example.supabase.co/signed/photo-a" })],
+        curatedPhotoIds: ["photo-a"]
       }]
     });
     expect(fetchPhotos).toHaveBeenCalledWith(100);
@@ -41,5 +42,21 @@ describe("landing photo repository", () => {
       fetchCuration: async () => ({ sections: [], assignments: [], error: new Error("private detail") }),
       fetchPhotos: jest.fn(), signPaths: jest.fn()
     })).rejects.toThrow("랜딩 사진을 불러오지 못했어요.");
+  });
+
+  it("ranks exact copy before synonym tags and AI scene matches", () => {
+    const base = {
+      title: null, album: null, ownerId: "owner", createdAt: "2026-08-30T00:00:00.000Z",
+      date: null, imageUrl: "https://example.com/photo.jpg", locationPrecision: "hidden" as const,
+      lat: null, lng: null, aiSummary: null, aiMoods: [] as const
+    };
+    const photos = [
+      { ...base, id: "scene", description: null, aiTags: [] as const, aiScene: "road" },
+      { ...base, id: "synonym", description: null, aiTags: ["도로"] as const, aiScene: null },
+      { ...base, id: "exact", description: "서울 길", aiTags: [] as const, aiScene: null }
+    ];
+
+    expect(filterLandingPhotos(photos, "길").map((photo) => photo.id)).toEqual(["exact", "synonym", "scene"]);
+    expect(filterLandingPhotos(photos, "도로").map((photo) => photo.id)).toEqual(["synonym", "scene", "exact"]);
   });
 });

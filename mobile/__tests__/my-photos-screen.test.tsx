@@ -59,6 +59,7 @@ describe("My Photos permission flow", () => {
     }));
     const loadThumbnail = jest.fn(async (assetId: string) => `file:///cache/${assetId}.jpg`);
     const openPhoto = jest.fn();
+    const openAlbums = jest.fn();
     const startPublicationReview = jest.fn();
     const { getByLabelText, getByRole, getByText, queryByText } = await render(
       <MyPhotosScreen
@@ -66,6 +67,7 @@ describe("My Photos permission flow", () => {
         refreshLocalPhotos={refreshLocalPhotos}
         loadThumbnail={loadThumbnail}
         openPhoto={openPhoto}
+        openAlbums={openAlbums}
         startPublicationReview={startPublicationReview}
       />
     );
@@ -77,6 +79,8 @@ describe("My Photos permission flow", () => {
     }));
     expect(queryByText("jeju.jpg")).not.toBeOnTheScreen();
     expect(getByText("위치 없음")).toBeOnTheScreen();
+    await act(async () => fireEvent.press(getByRole("button", { name: "앨범 보기" })));
+    expect(openAlbums).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       fireEvent.press(getByRole("button", { name: "사진 상세 열기 기기 사진" }));

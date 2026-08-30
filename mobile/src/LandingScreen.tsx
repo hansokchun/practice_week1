@@ -6,7 +6,7 @@ import { fetchLandingContent, filterLandingPhotos, type LandingContent, type Lan
 import { RecoverableRemoteImage } from "./RecoverableRemoteImage";
 import { DefaultProfileAvatar } from "./DefaultProfileAvatar";
 import { mobileColors } from "./mobile-theme";
-import { exploreRoute, guestLoginRoute, likesRoute, myPhotosRoute, profileRoute, uploadRoute } from "./mobile-routes";
+import { buildLandingTagRoute, exploreRoute, guestLoginRoute, likesRoute, myPhotosRoute, profileRoute, uploadRoute } from "./mobile-routes";
 
 type LandingScreenProps = {
   readonly loadContent?: () => Promise<LandingContent>;
@@ -161,7 +161,19 @@ export function LandingScreen({
 
         {displayedSections.map((section) => (
           <View accessibilityLabel={`${section.title} 사진 목록`} key={section.id} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              {query.length === 0 && section.title !== "추천" ? (
+                <Pressable
+                  accessibilityLabel={`${section.title} 사진 전체보기`}
+                  accessibilityRole="button"
+                  onPress={() => go(buildLandingTagRoute(section.id))}
+                  style={styles.sectionAllButton}
+                >
+                  <Text style={styles.sectionAllText}>전체보기</Text>
+                </Pressable>
+              ) : null}
+            </View>
             {section.description.length > 0 ? <Text style={styles.sectionDescription}>{section.description}</Text> : null}
             {section.photos.length === 0 ? (
               <Text style={styles.emptyText}>{query.length > 0 ? "검색 결과가 없어요." : "이 주제에 표시할 공개 사진이 아직 없어요."}</Text>
@@ -216,7 +228,10 @@ const styles = StyleSheet.create({
   mapButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 8, justifyContent: "center", marginTop: 24, minHeight: 56, minWidth: 220, paddingHorizontal: 24 },
   mapButtonText: { color: mobileColors.surface, fontSize: 16, fontWeight: "800" },
   section: { marginBottom: 48 },
-  sectionTitle: { color: mobileColors.ink, fontSize: 24, fontWeight: "900", paddingHorizontal: 16, textAlign: "center" },
+  sectionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "center", minHeight: 44, paddingHorizontal: 16, position: "relative" },
+  sectionTitle: { color: mobileColors.ink, fontSize: 24, fontWeight: "900", textAlign: "center" },
+  sectionAllButton: { alignItems: "flex-end", justifyContent: "center", minHeight: 44, paddingLeft: 12, position: "absolute", right: 16 },
+  sectionAllText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" },
   sectionDescription: { color: mobileColors.muted, fontSize: 14, marginTop: 8, paddingHorizontal: 24, textAlign: "center" },
   photoRow: { gap: 10, paddingHorizontal: 16, paddingTop: 28 },
   photoCard: { borderRadius: 14, height: 210, overflow: "hidden", width: 168 },

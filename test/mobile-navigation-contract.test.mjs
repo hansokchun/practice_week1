@@ -22,12 +22,15 @@ const routeFiles = [
   'mobile/app/public-profile/[userId].tsx',
   'mobile/app/photo-link/[token].tsx',
   'mobile/app/photo-link/index.tsx',
+  'mobile/app/tag/[sectionId].tsx',
+  'mobile/app/albums.tsx',
+  'mobile/app/album/[albumId].tsx',
 ];
 
 test('every launch route resolves to a concrete Expo Router screen', () => {
   for (const path of routeFiles) assert.equal(existsSync(path), true, path);
   assert.match(routes, /exploreRoute[\s\S]*myPhotosRoute[\s\S]*likesRoute[\s\S]*uploadRoute/);
-  assert.doesNotMatch(routes, /album/i);
+  assert.match(routes, /landingTagRoute[\s\S]*albumsRoute[\s\S]*albumDetailRoute/);
 });
 
 test('the core route graph wires discovery, local photos, publication, auth, and recovery', () => {
@@ -45,6 +48,7 @@ test('the core route graph wires discovery, local photos, publication, auth, and
   assert.match(tabLayout, /tabBarStyle: \{ display: "none" \}/);
   assert.match(myPhotos, /devicePhotoDetailRoute/);
   assert.match(myPhotos, /publicationReviewRoute/);
+  assert.match(myPhotos, /albumsRoute/);
   assert.match(detail, /devicePhotoLocationRoute/);
   assert.match(publicDetail, /publicProfileRoute/);
   assert.match(callback, /passwordUpdateRoute[\s\S]*profileRoute/);
@@ -56,5 +60,6 @@ test('the navigation record distinguishes automated coverage from device-only ga
   assert.match(navigation, /랜딩[^\n]*Explore/);
   assert.match(navigation, /내 사진[^\n]*기기 사진 상세[^\n]*위치 편집/);
   assert.match(navigation, /내 사진[^\n]*게시 확인/);
+  assert.match(navigation, /내 사진[^\n]*웹 앨범 목록[^\n]*앨범 상세/);
   assert.match(navigation, /automated[^\n]*real-device/i);
 });

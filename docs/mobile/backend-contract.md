@@ -46,7 +46,7 @@ Mobile repositories may be created only for these tables:
 | `comments` | `id`, `photo_id`, `text`, `date`, `author_id` | `SELECT` when the target photo is owned or visible; authenticated own-author `INSERT` when the target photo is visible; no `UPDATE` or `DELETE` |
 | `user_likes` | `user_id`, `photo_id`, `created_at` | Authenticated own-row `SELECT`, `INSERT`, `DELETE`; no `UPDATE`; mobile mutations use `set_photo_like` |
 
-`albums` and `album_photos` are preserved web-only tables. The mobile repository creation list contains zero album table clients, queries, or mutations. Existing album columns on `photos` remain part of the shared live row shape but do not authorize a mobile album repository.
+`albums` and `album_photos` are shared with mobile through one read-only repository. Mobile may select only the signed-in owner's album rows, ordered assignments, and RLS-visible photo rows. Album insert, update, delete, upsert, and RPC operations remain prohibited until a separate editing contract is approved. Existing album columns on `photos` remain part of the shared live row shape and do not independently authorize album writes.
 
 The JSON contract contains a complete `select`/`insert`/`update`/`delete` matrix for `owner`, `nonOwner`, and `anonymous` on every mobile table. For conditional public reads, the non-owner and anonymous fixture is a visible target; the same matrix scope explicitly denies private, unshared targets. Tests independently evaluate these fixture decisions instead of merely checking that fields exist.
 

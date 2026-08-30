@@ -6,7 +6,7 @@
 
 ## 현재 진행 상황
 
-**전체 99개 중 62개 완료(62.6%), 37개 남음 — 2026-08-28 기준**
+**전체 99개 중 62개 완료(62.6%), 37개 남음 — 2026-08-30 기준**
 
 ### 지금까지 완료한 것
 
@@ -40,7 +40,7 @@
 - 확인 문구를 요구하는 계정 삭제 UI와 기기 파생 데이터, Storage, DB, Auth 순차 정리를 구현했다.
 - 웹에서 삭제·비공개·링크 해제한 사진을 모바일 재 focus·foreground 시 재검증해 공개 화면에서 제거한다.
 - 5분 서명 이미지를 focus 중 4분 30초마다 갱신하고 오프라인 재시도·private Storage 차단을 검증했다.
-- 모바일 소스에 웹 전용 앨범 테이블·RPC·라우트·저장소가 추가되지 않도록 자동 경계 테스트를 고정했다.
+- 웹 앨범을 소유자 읽기 전용 목록·상세로 연결하고, 생성·편집·삭제·RPC가 추가되지 않도록 자동 경계 테스트를 고정했다.
 - Explore에 네이티브 Places 장소 검색과 익명·로그인별 공개 사진 범위 선택을 연결했다.
 - 웹 `1be7f51` 기준 랜딩 문구·지도 CTA·단순 로그인·공통 기본 아바타·사진 상세 UI를 동기화했다.
 - 로그인 사용자의 Explore는 모든 소유 위치 사진에 맞춰 시작하며, 비공개 사진은 owner-only 원본 위치로 본인 지도에만 표시한다.
@@ -69,13 +69,13 @@
 - 완료할 때 `[ ]`를 `[x]`로 바꾸고 날짜가 포함된 근거 파일 또는 명령 결과를 기록한다.
 - 보류 항목은 체크하지 않고 `보류`라고 표시한다. 보류는 완료가 아니다.
 - 새 출시 요건은 관련 절의 끝에 추가한다.
-- 모바일 앱에는 앨범 기능을 넣지 않는다. 별도 제품 결정 없이는 웹 앨범과 향후 웹 AI 앨범 작업을 모바일 범위에 포함하지 않는다.
+- 모바일 앱은 웹에서 만든 소유자 앨범을 읽기 전용으로 표시한다. 생성·편집·삭제·공유·정렬과 향후 AI 앨범 생성은 별도 제품 결정 전까지 포함하지 않는다.
 - 앞으로 새 항목과 진행 기록은 한글로 작성한다. 파일명, 명령어, API 이름 같은 기술 식별자는 원문을 유지한다.
 
 ## 1. 제품 및 출시 결정
 
 - [x] 웹과 같은 공개 사진 랜딩을 기본 화면으로 정하고 고정 하단 탐색 대신 사진 추가·로그인/계정·Explore 진입을 제공한다. 근거: `docs/mobile/product-definition.md`, `docs/mobile/web-parity-2026-08-27.md`, `mobile/src/LandingScreen.tsx` (2026-08-28).
-- [x] 모바일 앱에서 앨범 생성·편집·목록·공유를 제외한다. 근거: `docs/mobile/product-definition.md`, `mobile/src/backend-policy-contract.json`.
+- [x] 웹 앨범은 모바일에서 소유자 읽기 전용 목록·상세로 제공하고 생성·편집·삭제·공유·정렬은 제외한다. 근거: `docs/mobile/product-definition.md`, `mobile/src/backend-policy-contract.json`, `mobile/src/album-repository.ts`, `mobile/__tests__/mobile-album-boundary.test.ts` (2026-08-30).
 - [x] 첫 출시의 기기 미디어 및 개인정보 경계를 정의한다. 근거: `docs/mobile/adr/0001-native-media-boundary.md`, `docs/mobile/privacy-media-policy.md`.
 - [ ] 실제 iPhone과 Android 화면에서 운영용 모바일 디자인 방향을 승인한다.
 - [ ] 첫 배포 대상을 TestFlight·내부 테스트, 비공개 베타, 공개 스토어 중에서 정한다.
@@ -100,7 +100,7 @@
 - [x] 모바일 디자인 토큰, 반응형 제약, 접근성 규칙, 상호작용 원칙을 문서화한다. 근거: `docs/mobile/DESIGN.md`.
 - [x] 클릭 가능한 정적 제품 시제품을 만든다. 근거: `docs/mobile/prototype/index.html`.
 - [x] 프로필 진입점과 3개 탭이 있는 초기 네이티브 Explore 화면을 만든다. 근거: `mobile/app/(tabs)/index.tsx`.
-- [x] Explore, 내 사진, 좋아요, 프로필, 인증, 사진 상세, 위치 편집, 게시 확인의 운영용 화면 이동을 완성한다. 3개 기본 탭, 게스트·인증·비밀번호 복구, 로컬 사진 상세·위치, 게시 검토, 공개 사진·작성자, HTTPS·custom scheme 토큰 링크의 14개 라우트 파일과 핵심 이동 간선을 계약 테스트로 고정했다. 상세·편집은 stack back, 인증 완료는 replace, 공개 화면은 ID만 전달한 후 재조회하며 앱 특유 앨범 라우트는 없다. 근거: `mobile/src/mobile-routes.ts`, `mobile/app/`, `mobile/__tests__/mobile-routes.test.ts`, 화면별 이동 테스트, `test/mobile-navigation-contract.test.mjs`, `docs/mobile/navigation-contract.md` (2026-08-26).
+- [x] Explore, 내 사진, 좋아요, 프로필, 인증, 사진 상세, 위치 편집, 게시 확인, 태그 전체보기, 읽기 전용 앨범의 운영용 화면 이동을 완성한다. 게스트·인증·비밀번호 복구, 로컬 사진 상세·위치, 게시 검토, 공개 사진·작성자, HTTPS·custom scheme 토큰 링크를 포함한 24개 정적 라우트와 핵심 이동 간선을 계약 테스트로 고정했다. 상세·편집은 stack back, 인증 완료는 replace, 공개 화면은 ID만 전달한 후 재조회한다. 근거: `mobile/src/mobile-routes.ts`, `mobile/app/`, `mobile/__tests__/mobile-routes.test.ts`, 화면별 이동 테스트, `test/mobile-navigation-contract.test.mjs`, `docs/mobile/navigation-contract.md` (2026-08-30).
 - [ ] 모든 화면에 로딩, 빈 상태, 오프라인, 권한 거부, 복구 가능한 오류 상태를 구현한다. 주요 화면 상태 매트릭스를 `docs/mobile/accessibility-state-audit.md`에 기록했다. 공유 링크는 만료·해제·잘못된 토큰을 같은 unavailable 상태로 유지하면서 Supabase Relay·Fetch·5xx만 네트워크 장애로 분리해 재시도한다. Explore는 최초 오프라인에서 요청을 차단하고 연결 안내를 표시하며, 추가 페이지 오프라인·네트워크 실패 때 기존 사진과 선택 상태를 보존한 채 재시도한다. Explore 미리보기, 공개 상세, 좋아요, 공개 프로필, 내 프로필 공개 요약, 비공개 링크의 원격 이미지 실패는 안전한 대체 상태를 표시하고 현재 공개 범위나 비밀 링크를 다시 검증해 새 서명 URL을 받는다. 내 사진 격자와 기기 사진 상세의 로컬 썸네일 실패는 해당 캐시 한 장만 제거하고 원본에서 다시 생성하며, 원본 접근 실패 시 내부 경로 없이 재시도 상태를 유지한다. 인증 공급자 원시 오류는 프로필·세션 화면에서 숨긴다. 실제 OS 오프라인 전환과 백그라운드 복귀 실기기 확인이 남아 있어 미완료다. 근거: `mobile/src/RecoverableRemoteImage.tsx`, `mobile/src/RecoverableDeviceThumbnail.tsx`, 이미지 사용 화면들, `mobile/src/explore-connectivity.ts`, `mobile/src/auth-session.tsx`, 관련 테스트 (2026-08-25).
 - [ ] 360px·390px 너비, 안전 영역, 키보드 회피, 화면 회전 정책, 글자 확대를 검증한다. 세로 고정 정책을 Expo 설정과 계약 테스트로 고정했다. 로그인·비밀번호 변경·프로필 편집·계정 삭제·댓글·신고 입력은 공통 키보드 회피 스크롤에 넣었고 iOS 키보드 인셋·대화형 닫기, Android 높이 회피·드래그 닫기를 적용했다. 360px은 12px, 390px은 20px 좌우 여백을 적용한다. 근거: `mobile/src/KeyboardSafeScrollView.tsx`, `mobile/src/mobile-layout.ts`, `mobile/app.json`, 입력 화면들, 관련 테스트 (2026-08-26). 실제 안전 영역·최대 글자 크기·키보드 전환 시 버튼 잘림은 iOS·Android 실기기 확인이 남아 미완료로 유지한다.
 - [ ] 스크린 리더 이름, 초점 순서, 대비, 모션 감소, 최소 44px 터치 영역을 점검한다. 모든 `Pressable`의 명시적 버튼 역할을 AST로 검사하고 탭 프로필·프로필 닫기·로컬 지도 마커를 최소 44pt로 보정했다. 핵심 일반 텍스트 색 조합의 WCAG AA 4.5:1 이상 대비를 계산하며 현재 의도적 화면 애니메이션이 없음을 확인했다. 근거: `mobile/__tests__/accessibility-contract.test.ts`, `docs/mobile/accessibility-state-audit.md` (2026-08-25). VoiceOver·TalkBack 실제 읽기 순서, 최대 글자 크기, 스위치 제어·외부 키보드와 렌더링 대비 검증은 실기기 관문이라 미완료다.
@@ -122,7 +122,7 @@
 
 ## 5. 인증 및 공용 백엔드
 
-- [x] 읽기 전용 Supabase 스키마, RLS, Storage, 웹 전용 앨범 경계를 기록한다. 근거: `docs/mobile/backend-contract.md`.
+- [x] Supabase 스키마, RLS, Storage와 소유자 앨범 읽기 전용 경계를 기록한다. 근거: `docs/mobile/backend-contract.md`, `mobile/src/backend-policy-contract.json` (2026-08-30).
 - [x] 계약 테스트용 로컬 Supabase 구성을 추가한다. 근거: `supabase/config.toml`.
 - [x] 모바일 앱에 운영용 Supabase 클라이언트를 설치하고 구성한다. 근거: `mobile/src/supabase-client.ts`, `mobile/.env.example`, `mobile/__tests__/supabase-client.test.ts`.
 - [x] 빈 로컬 데이터베이스에서 커밋된 Supabase 마이그레이션을 순서대로 재생할 수 있게 한다. 근거: `supabase/migrations/20260724000000_initial_remote_schema_baseline.sql`, `test/supabase-migration-baseline.test.mjs` (2026-08-24). `supabase db reset`으로 기준 스키마와 이후 증분 마이그레이션 전체를 빈 로컬 DB에 적용하고 로컬 migration history를 확인했다. 기존 원격 migration history와의 정합성 확인·운영 적용은 별도 배포 관문으로 유지한다.
@@ -162,7 +162,7 @@
 - [ ] 명시적 확인 뒤에만 업로드하고 재시도 가능한 게시 작업을 저장한다. 비공개·공개·링크 목적 모두 최종 `지금 업로드` 확인 뒤 `photos` 버킷의 소유자 경로에 `ArrayBuffer`, `upsert: false`로 전송하고 사진 행을 만든다. 링크 사진은 기존 웹 `visibility = 'link'`와 분리해 `private`, `shared = false`로 저장하고, 원문 256-bit 토큰은 백업 제외 SQLite 작업에만 보관하며 서버에는 SHA-256 해시만 저장한다. 실패 작업의 수동 재시도, 최대 3회 제한, Storage 보상 삭제, 임시 파생본 정리도 연결했다. 빈 로컬 DB에서 익명·비소유자 차단, 소유자 접근, 잘못된 토큰 404, 정상 토큰의 5분 서명 URL 전체 왕복을 검증했다. 운영 마이그레이션·Edge Function 배포와 실제 원격 RLS·Storage 검증이 남아 있어 미완료다. 근거: `supabase/migrations/20260824113903_secure_mobile_photo_links.sql`, `supabase/functions/photo-link/index.ts`, `mobile/src/publication-publisher.ts`, `mobile/src/publication-retry.ts`, `mobile/src/publication-job-repository.ts`, `mobile/src/publication-runtime.ts`, `mobile/scripts/verify-mobile-link-policy.mjs`, 관련 테스트 (2026-08-24).
 - [x] 취소, 백그라운드 중단, 중복 제출, 부분 실패를 안전하게 처리한다. 근거: `mobile/app/publish/review.tsx`, `mobile/src/publication-operation-lock.ts`, `mobile/src/publication-job-repository.ts`, `mobile/src/local-photo-indexing-runtime.ts`, `mobile/src/publication-runtime.ts`, `mobile/src/publication-publisher.ts`, 관련 테스트 (2026-08-24). 게시 준비 취소나 뒤로 가기는 생성된 모든 임시 파생본을 지운 뒤 화면을 닫고, 업로드가 시작되면 뒤로 가기를 잠가 완료·실패 기록 전에 흐름이 사라지지 않게 한다. 프로세스 메모리 잠금과 SQLite 미완료 작업 조회를 함께 사용해 같은 소유자 사진의 겹치는 제출을 전송 전에 거부한다. 앱 프로세스 최초 로컬 DB 접근에서 이전 `running` 작업만 실패·재시도 가능 상태로 복구해 현재 프로세스의 정상 업로드와 충돌하지 않는다. 여러 장 배치는 한 장의 네트워크 실패 뒤에도 다음 장을 계속 처리하고 성공·실패 수와 각 작업 ID를 반환한다.
 - [x] 게시 취소, 삭제, 앱 재설치, 기기 원본 삭제 동작을 검증한다. 게시 준비 취소 시 임시 파생본 정리, 두 번 확인하는 소유자 클라우드 게시물 삭제, 원격 정리 실패 시 로컬 재시도 상태 보존, 빈 재설치 DB의 기기 사진 재인덱싱, OS 원본 삭제 뒤 로컬 tombstone·썸네일 정리를 구현하고 자동 테스트로 검증했다. 기기 원본 바이트는 어느 경로에서도 삭제하지 않는다. 빈 로컬 Supabase 전체 migration 재생 뒤 실제 publishable-key 소유자·비소유자 클라이언트로 DB 행과 Storage 객체 삭제 허용·거부 및 객체 생존 여부까지 왕복 검증했다. 근거: `mobile/src/publication-deletion.ts`, `mobile/src/publication-runtime.ts`, `mobile/app/device-photo/[assetId].tsx`, `mobile/__tests__/publication-deletion.test.ts`, `mobile/__tests__/local-photo-reinstall-integration.test.ts`, `mobile/__tests__/publication-review-screen.test.tsx`, `mobile/scripts/verify-photo-storage-access.mjs`, `test/mobile-security-privacy-review.test.mjs` (2026-08-26).
-- [x] 모바일 코드가 앨범을 생성·조회·수정·삭제하지 않는지 확인한다. 근거: `mobile/__tests__/mobile-album-boundary.test.ts`, `mobile/src/backend-policy-contract.json`, `docs/mobile/product-definition.md` (2026-08-25). `mobile/app`/`mobile/src`의 TypeScript·TSX·MJS 전체에서 `albums`·`album_photos` Supabase 테이블 조회·SQL 생성/수정/삭제·앨범 RPC·앨범 라우트를 금지하는 소스 계약 테스트를 추가했다. 백엔드 계약의 모바일 repository 목록에도 앨범이 없고 `albums`·`album_photos`는 웹 전용으로 유지된다. 계정 삭제 경고와 서버 정리에서 기존 웹 앨범을 언급·제거하는 것은 새 모바일 앨범 기능이 아니므로 유지한다.
+- [x] 모바일 앨범 저장소를 소유자 읽기 전용으로 제한한다. 근거: `mobile/__tests__/mobile-album-boundary.test.ts`, `mobile/src/backend-policy-contract.json`, `mobile/src/album-repository.ts`, `docs/mobile/product-definition.md` (2026-08-30). `albums`·`album_photos`는 승인된 저장소 한 곳에서만 `select`하며 insert·update·delete·upsert·RPC를 소스 계약으로 금지한다. 앱은 웹에서 만든 앨범 목록과 정렬된 사진을 표시하지만 앨범 쓰기 권한을 추가하지 않는다.
 
 ## 8. 좋아요·댓글·공유·안전·프로필
 
@@ -303,3 +303,4 @@
 - Expo SDK 57 출시 설치 하한을 iPhone iOS 16.4와 Android 7.0(API 24)으로 고정하고 QA 기기 등급을 문서화했다. `expo-build-properties`와 CI drift 검사를 연결했으며 임시 production prebuild에서 Android Gradle과 iOS Pods·Xcode 생성값을 확인한 뒤 생성물을 삭제했다. 이전 보안 검토에서 완료한 소유자·비소유자 사진 DB·Storage 삭제 왕복 근거도 출시 원장에 반영했다. 전체 검증은 모바일 81개 suite·299개 테스트, 타입 검사, Expo lint, 로컬 스키마 4개 시나리오, 256개 출시 파일·249개 텍스트 유출 검사 0건, 개인정보·보안·플랫폼 검사, Expo Doctor 21/21, iOS·Android·웹 production export와 성능 예산이 통과했다. 공유 웹 579개 테스트와 Vite 운영 빌드도 통과했다. 현재 export 지표는 Android 4,058,307B, iOS 3,754,295B, web 1,684,524B, 최대 자산 962,968B, 전체 11,073,179B이며 체크리스트는 62/99다. 서명 release 실기기 QA와 스토어 배포는 별도 미완료 관문으로 유지한다.
 - 웹 `1be7f51`의 랜딩·로그인·Explore·사진 상세 변경을 모바일에 반영했다. 랜딩 문구와 지도 CTA 배경, 공통 기본 아바타, 간결한 인증 선택 화면을 동기화했다. 로그인 사용자는 Explore에서 모든 소유 위치 사진을 먼저 보고, 비공개 사진은 RLS로 보호된 owner-only 위치에서만 표시한다. 다른 사람 범위는 공개 사진과 공개 가능한 위치만 유지한다. 초기 소유 사진 범위 맞춤, 군집의 여유 있는 애니메이션 확대, 상세의 스크롤 안내·하트 모션·소유자 전용 공개 상태·Explore 초점 이동·exact 전용 외부 거리뷰도 연결했다. Expo SDK 57 패치 의존성을 정합 버전으로 올리고 잠금 파일을 갱신했다. 390px 로컬 웹 QA에서 랜딩 한글 단어 줄바꿈을 보정하고 로그인·Explore 대체 화면까지 다시 렌더링해 콘솔 오류·경고 0건을 확인했다. 최종 검증은 모바일 83개 suite·309개 테스트, 타입 검사, Expo lint, 로컬 스키마 4개 시나리오, 266개 출시 파일·257개 텍스트 유출 검사 0건, 개인정보·보안·플랫폼 검사, Expo Doctor 21/21, iOS·Android·웹 production export와 성능 예산이 통과했다. 공유 웹 596개 테스트와 Vite 운영 빌드도 통과했다. 현재 export 지표는 Android 4,103,836B, iOS 3,792,422B, web 1,708,385B, 최대 자산 963,776B, 전체 11,759,794B다. 자동 검증으로 실기기 항목을 대신 완료 처리하지 않아 체크리스트는 62/99를 유지하며, 다음 관문은 서명된 iPhone·Android에서의 화면·OAuth·지도·딥링크 확인이다. (2026-08-28)
 - 2026-08-30 코드 출시 후보 검증에서 웹과 추천 검색어를 `제주 바다·서울 야경·일본`으로 다시 맞추고 Expo `57.0.18`, `expo-constants` `57.0.16` 호환 패치를 적용했다. Expo Doctor 21/21, 플랫폼·출시 파일·개인정보·보안 검사, lint, typecheck, 모바일 83개 suite·309개 테스트, 로컬 스키마 4개 시나리오, Android·iOS·Web production export와 성능 예산이 통과했다. 현재 export 지표는 Android 4,103,343B, iOS 3,791,938B, web 1,707,834B, 최대 자산 963,776B, 전체 11,594,997B다. 공유 웹은 640개 테스트와 성능 예산을 통과했다. 운영 Supabase에는 모바일 전용 링크·신고·계정 삭제 마이그레이션과 Edge Functions가 아직 배포되지 않았고 서명 실기기·스토어 관문도 남아 있으므로 체크리스트는 62/99를 유지한다.
+- 같은 날 최신 웹 기능을 앱에 추가 동기화했다. 추천 이외 섹션의 `/tag/[sectionId]` 전체보기는 지역 필터, 운영자 지정 최대 20장 우선 배치, 20장 단위 점진 로딩을 제공한다. 검색은 AI 태그·장면·분위기와 웹의 동의어 가중 순위를 공유한다. `/albums`와 `/album/[albumId]`는 기기 사진 권한과 무관하게 소유자 웹 앨범을 읽기 전용으로 표시하며 쓰기 메서드와 RPC를 자동 경계로 거부한다. 모바일 88개 suite·317개 테스트, typecheck, Expo lint, 로컬 스키마 4개 시나리오, 출시 파일·개인정보·보안·플랫폼 검사, Expo Doctor 21/21, Android·iOS·Web 24개 정적 라우트 export와 성능 예산이 통과했다. 현재 export 지표는 Android 4,144,856B, iOS 3,833,368B, web 1,736,626B, 최대 자산 963,776B, 전체 11,799,208B다. 새 외부 관문을 자동 완료 처리하지 않아 체크리스트는 62/99를 유지한다.

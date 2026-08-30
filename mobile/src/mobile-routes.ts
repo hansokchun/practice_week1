@@ -19,3 +19,10 @@ export const photoLinkRoute = "/photo-link/[token]" as const;
 export const universalPhotoLinkRoute = "/photo-link" as const;
 export const publicPhotoDetailRoute = "/explore-photo/[photoId]" as const;
 export const publicProfileRoute = "/public-profile/[userId]" as const;
+export const landingTagRoute = "/tag/[sectionId]" as const;
+export const albumsRoute = "/albums" as const;
+export const albumDetailRoute = "/album/[albumId]" as const;
+
+export function buildLandingTagRoute(sectionId: string): string {
+  return `/tag/${encodeURIComponent(sectionId.trim())}`;
+}

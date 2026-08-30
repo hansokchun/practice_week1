@@ -10,7 +10,12 @@
     "comments",
     "user_likes"
   ],
-  "webOnlyTables": ["albums", "album_photos"],
+  "webOnlyTables": [],
+  "mobileReadOnlyTables": ["albums", "album_photos"],
+  "mobileReadOnlyRepositories": [
+    {"name":"albumRepository","table":"albums","queries":["select"],"mutations":[]},
+    {"name":"albumPhotoRepository","table":"album_photos","queries":["select"],"mutations":[]}
+  ],
   "mobileRepositories": [
     {"name":"profileRepository","table":"profiles","queries":["select"],"mutations":["insert","update"]},
     {"name":"photoRepository","table":"photos","queries":["select"],"mutations":["insert","update","delete"]},

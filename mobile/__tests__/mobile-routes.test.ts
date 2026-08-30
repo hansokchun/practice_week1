@@ -12,6 +12,10 @@ import {
   profileRoute,
   exploreRoute,
   likesRoute,
+  albumsRoute,
+  albumDetailRoute,
+  landingTagRoute,
+  buildLandingTagRoute,
   myPhotosRoute,
   uploadRoute,
   universalPhotoLinkRoute
@@ -42,5 +46,9 @@ describe("mobile route contract", () => {
     expect(universalPhotoLinkRoute).toBe("/photo-link");
     expect(publicPhotoDetailRoute).toBe("/explore-photo/[photoId]");
     expect(publicProfileRoute).toBe("/public-profile/[userId]");
+    expect(landingTagRoute).toBe("/tag/[sectionId]");
+    expect(buildLandingTagRoute("korea travel")).toBe("/tag/korea%20travel");
+    expect(albumsRoute).toBe("/albums");
+    expect(albumDetailRoute).toBe("/album/[albumId]");
   });
 });

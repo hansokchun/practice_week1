@@ -20,7 +20,7 @@ import { mobileColors } from "../../src/mobile-theme";
 import { devicePhotoThumbnailCache } from "../../src/device-photo-thumbnail-cache";
 import { hydrateDevicePhotoThumbnails } from "../../src/device-photo-thumbnails";
 import { PrivatePhotoMap } from "../../src/private-photo-map";
-import { devicePhotoDetailRoute, publicationReviewRoute } from "../../src/mobile-routes";
+import { albumsRoute, devicePhotoDetailRoute, publicationReviewRoute } from "../../src/mobile-routes";
 import { isDevicePhotoLocationMissing } from "../../src/device-photo-location";
 import {
   createPublicationReviewParams,
@@ -40,6 +40,7 @@ type MyPhotosScreenProps = {
   readonly loadThumbnail?: (assetId: string) => Promise<string>;
   readonly recoverThumbnail?: (assetId: string) => Promise<string>;
   readonly openPhoto?: (assetId: string) => void;
+  readonly openAlbums?: () => void;
   readonly openSettings?: () => Promise<void>;
   readonly startPublicationReview?: (selection: PublicationSelection) => void;
 };
@@ -61,6 +62,7 @@ export function MyPhotosScreen({
     pathname: devicePhotoDetailRoute,
     params: { assetId }
   } as unknown as Href),
+  openAlbums = () => router.push(albumsRoute),
   openSettings = Linking.openSettings,
   startPublicationReview = (selection) => router.push({
     pathname: publicationReviewRoute,
@@ -180,6 +182,14 @@ export function MyPhotosScreen({
 
   return (
     <SafeAreaView edges={[]} style={styles.safeArea} testID="my-photos-screen">
+      <View style={styles.libraryTabs}>
+        <View accessibilityLabel="사진 보기" style={[styles.libraryTab, styles.libraryTabActive]}>
+          <Text style={[styles.libraryTabText, styles.libraryTabTextActive]}>사진</Text>
+        </View>
+        <Pressable accessibilityLabel="앨범 보기" accessibilityRole="button" onPress={openAlbums} style={styles.libraryTab}>
+          <Text style={styles.libraryTabText}>앨범</Text>
+        </Pressable>
+      </View>
       {busy && permission === null ? (
         <StatusBody title="사진 접근 상태를 확인하고 있어요" description="기기의 원본 사진은 변경하거나 자동 업로드하지 않습니다." />
       ) : error !== null ? (
@@ -380,6 +390,11 @@ export default function MyPhotosRoute() {
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: mobileColors.paper, flex: 1 },
   content: { flex: 1 },
+  libraryTabs: { alignSelf: "flex-start", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, flexDirection: "row", marginHorizontal: 16, marginTop: 12, padding: 3 },
+  libraryTab: { alignItems: "center", borderRadius: 6, justifyContent: "center", minHeight: 40, minWidth: 76, paddingHorizontal: 14 },
+  libraryTabActive: { backgroundColor: mobileColors.pineDeep },
+  libraryTabText: { color: mobileColors.muted, fontSize: 13, fontWeight: "800" },
+  libraryTabTextActive: { color: mobileColors.surface },
   statusBody: { alignItems: "center", flex: 1, justifyContent: "center", padding: 32 },
   statusTitle: { color: mobileColors.ink, fontSize: 20, fontWeight: "800", textAlign: "center" },
   statusDescription: { color: mobileColors.muted, fontSize: 15, lineHeight: 22, marginTop: 10, textAlign: "center" },

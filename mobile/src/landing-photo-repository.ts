@@ -12,6 +12,10 @@ export type LandingPhoto = {
   readonly locationPrecision: "hidden" | "approximate" | "exact";
   readonly lat: number | null;
   readonly lng: number | null;
+  readonly aiTags?: readonly string[];
+  readonly aiScene?: string | null;
+  readonly aiSummary?: string | null;
+  readonly aiMoods?: readonly string[];
 };
 
 export type LandingSection = {
@@ -19,6 +23,7 @@ export type LandingSection = {
   readonly title: string;
   readonly description: string;
   readonly photos: readonly LandingPhoto[];
+  readonly curatedPhotoIds?: readonly string[];
 };
 
 export type LandingContent = { readonly sections: readonly LandingSection[] };
@@ -37,8 +42,27 @@ type LandingDependencies = {
 };
 
 const GENERIC_LANDING_ERROR = "랜딩 사진을 불러오지 못했어요.";
-const PHOTO_COLUMNS = "id,title,description,album,storage_path,owner_id,created_at,date,location_precision,lat,lng";
+const PHOTO_COLUMNS = "id,title,description,album,storage_path,owner_id,created_at,date,location_precision,lat,lng,ai_tags,ai_scene,ai_summary,ai_moods";
 const DEFAULT_SECTIONS = ["추천", "한국", "일본", "풍경", "도시"] as const;
+const SEARCH_CONCEPT_GROUPS = [
+  ["길", "도로", "거리", "골목", "산책로", "오솔길", "시골길", "드라이브", "road"],
+  ["바다", "해변", "해안", "파도", "항구", "비치", "beach"],
+  ["산", "산맥", "등산", "봉우리", "산정상", "mountain"],
+  ["숲", "산림", "나무", "수풀", "자연", "forest"],
+  ["도시", "시내", "도심", "건물", "역", "city"],
+  ["야경", "밤", "불빛", "조명", "밤경치", "night"],
+  ["공원", "정원", "조경", "녹지", "park"],
+  ["호수", "연못", "물가", "저수지", "lake"],
+  ["눈", "설경", "설원", "겨울", "snow"],
+  ["평온", "평화", "고요", "차분", "조용", "한적", "한적한", "여유"],
+  ["농촌", "시골", "마을", "전원", "village"]
+] as const;
+const SCENE_SEARCH_LABELS: Readonly<Record<string, string>> = {
+  beach: "해변 beach", city: "도시 city", desert: "사막 desert", forest: "숲 forest",
+  indoor: "실내 indoor", lake: "호수 lake", landmark: "명소 landmark", mountain: "산 mountain",
+  night: "야경 night", other: "여행 other", park: "공원 park", road: "도로 road",
+  snow: "설경 snow", village: "마을 village"
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -51,6 +75,12 @@ function isSafeStoragePath(value: unknown): value is string {
 
 function nullableText(value: unknown): string | null {
   return typeof value === "string" ? value : value === null ? null : null;
+}
+
+function safeTextList(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim().slice(0, 24)).filter(Boolean))].slice(0, 10);
 }
 
 function parsePhoto(row: unknown, imageUrl: string | undefined): LandingPhoto | null {
@@ -71,7 +101,11 @@ function parsePhoto(row: unknown, imageUrl: string | undefined): LandingPhoto | 
     album: nullableText(row["album"]), ownerId: row["owner_id"], createdAt: row["created_at"],
     date: nullableText(row["date"]), imageUrl, locationPrecision: precision,
     lat: hasPublicCoordinates ? row["lat"] as number : null,
-    lng: hasPublicCoordinates ? row["lng"] as number : null
+    lng: hasPublicCoordinates ? row["lng"] as number : null,
+    aiTags: safeTextList(row["ai_tags"]),
+    aiScene: nullableText(row["ai_scene"]),
+    aiSummary: nullableText(row["ai_summary"]),
+    aiMoods: safeTextList(row["ai_moods"])
   };
 }
 
@@ -80,10 +114,45 @@ function normalizeSearchText(value: string | null | undefined): string {
 }
 
 export function filterLandingPhotos(photos: readonly LandingPhoto[], query: string): readonly LandingPhoto[] {
-  const normalized = normalizeSearchText(query);
-  if (normalized.length === 0) return photos;
-  return photos.filter((photo) => [photo.title, photo.description, photo.album]
-    .some((value) => normalizeSearchText(value).includes(normalized)));
+  const normalizedQuery = normalizeSearchText(query);
+  const tokens = normalizedQuery.split(/[\s,/#]+/u).filter(Boolean);
+  if (tokens.length === 0) return photos;
+
+  return photos.map((photo, index) => {
+    const fields: { readonly text: string; readonly weight: number }[] = [];
+    const appendFields = (value: string | readonly string[] | null | undefined, weight: number) => {
+      const values = Array.isArray(value) ? value : [value];
+      values.forEach((item) => {
+        const text = normalizeSearchText(item);
+        if (text.length > 0) fields.push({ text, weight });
+      });
+    };
+    appendFields(photo.title, 14);
+    appendFields(photo.aiTags, 12);
+    appendFields(photo.description, 10);
+    appendFields(photo.album, 8);
+    appendFields(photo.aiSummary, 7);
+    appendFields(photo.aiMoods, 6);
+    appendFields(SCENE_SEARCH_LABELS[normalizeSearchText(photo.aiScene)] ?? photo.aiScene, 8);
+
+    let score = 0;
+    for (const token of tokens) {
+      const expandedTerms = SEARCH_CONCEPT_GROUPS.find((terms) => terms.some((term) => term === token)) ?? [token];
+      let tokenScore = 0;
+      for (const field of fields) {
+        if (field.text.includes(token)) tokenScore = Math.max(tokenScore, field.weight * 3);
+        for (const term of expandedTerms) {
+          if (term !== token && field.text.includes(term)) tokenScore = Math.max(tokenScore, field.weight * 2);
+        }
+      }
+      if (tokenScore === 0) return { photo, index, score: 0 };
+      score += tokenScore;
+    }
+    if (fields.some((field) => field.text.includes(normalizedQuery))) score += 20;
+    return { photo, index, score };
+  }).filter((result) => result.score > 0)
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((result) => result.photo);
 }
 
 const defaultDependencies: LandingDependencies = {
@@ -164,7 +233,8 @@ export async function fetchLandingContent(
         id: section["id"] as string,
         title: (section["title"] as string).trim() || "여행 사진",
         description: typeof section["description"] === "string" ? section["description"].trim() : "",
-        photos: assigned.length > 0 ? assigned : fallback
+        photos: assigned.length > 0 ? assigned : fallback,
+        curatedPhotoIds: assigned.map((photo) => photo.id)
       };
     })
   };

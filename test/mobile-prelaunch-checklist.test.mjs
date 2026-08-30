@@ -11,7 +11,8 @@ const schemaVerifier = readFileSync('mobile/scripts/verify-local-schema.mjs', 'u
 test('모바일 출시 전 체크리스트는 항목을 보존하는 고정 출시 원장이다', () => {
     assert.match(checklist, /추가한 항목을 삭제하거나 번호 체계를 임의로 바꾸지 않는다/);
     assert.match(checklist, /완료할 때 `\[ \]`를 `\[x\]`로 바꾸고/);
-    assert.match(checklist, /모바일 앱에는 앨범 기능을 넣지 않는다/);
+    assert.match(checklist, /소유자 앨범을 읽기 전용으로 표시한다/);
+    assert.match(checklist, /생성·편집·삭제·공유·정렬.*별도 제품 결정/);
 });
 
 test('모바일 체크리스트는 기반 완료와 운영 통합 미완료를 구분한다', () => {
