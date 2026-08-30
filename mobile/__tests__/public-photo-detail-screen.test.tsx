@@ -88,7 +88,7 @@ describe("public photo detail screen", () => {
       locationPrecision: "hidden" as const, viewerHasLiked: false
     };
     const { getByRole, getByText } = await render(
-      <PublicPhotoDetailScreen loadPhoto={async () => photo} photoId="photo-a" updateLike={updateLike} />
+      <PublicPhotoDetailScreen currentUserId="22222222-2222-4222-8222-222222222222" loadPhoto={async () => photo} photoId="photo-a" updateLike={updateLike} />
     );
     await waitFor(() => expect(getByRole("button", { name: "좋아요" })).toBeOnTheScreen());
 
@@ -96,6 +96,27 @@ describe("public photo detail screen", () => {
     await waitFor(() => expect(getByText("좋아요를 변경하지 못했어요. 로그인 상태를 확인해 주세요.")).toBeOnTheScreen());
     expect(getByRole("button", { name: "좋아요" })).toBeOnTheScreen();
     expect(getByText(/좋아요 7/)).toBeOnTheScreen();
+  });
+
+  it("sends guests to login without an optimistic like or server mutation", async () => {
+    const requestLogin = jest.fn();
+    const updateLike = jest.fn(async () => 8);
+    const photo = {
+      id: "photo-a", date: null, description: "한강 저녁", liked: 7,
+      owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
+      createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-a",
+      locationPrecision: "hidden" as const, viewerHasLiked: false
+    };
+    const screen = await render(
+      <PublicPhotoDetailScreen loadPhoto={async () => photo} photoId="photo-a" requestLogin={requestLogin} updateLike={updateLike} />
+    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "좋아요" })).toBeOnTheScreen());
+
+    fireEvent.press(screen.getByRole("button", { name: "좋아요" }));
+
+    expect(requestLogin).toHaveBeenCalledTimes(1);
+    expect(updateLike).not.toHaveBeenCalled();
+    expect(screen.getByText(/좋아요 7/)).toBeOnTheScreen();
   });
 
   it("shows a generic retryable state without backend details", async () => {

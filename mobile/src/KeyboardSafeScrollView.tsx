@@ -32,7 +32,7 @@ export function KeyboardSafeScrollView({
       style={styles.container}
     >
       <ScrollView
-        automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
+        automaticallyAdjustKeyboardInsets={false}
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
         keyboardShouldPersistTaps="handled"
         {...scrollViewProps}

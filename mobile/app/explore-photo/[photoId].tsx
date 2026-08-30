@@ -7,7 +7,7 @@ import { useAuthSession } from "../../src/auth-session";
 import { blockUser, reportPublicPhoto, type ContentReportReason } from "../../src/content-safety-repository";
 import { PhotoSafetyControls } from "../../src/PhotoSafetyControls";
 import { mobileColors } from "../../src/mobile-theme";
-import { exploreRoute, publicProfileRoute } from "../../src/mobile-routes";
+import { exploreRoute, guestLoginRoute, publicProfileRoute } from "../../src/mobile-routes";
 import { setPhotoLiked } from "../../src/liked-photo-repository";
 import { createPhotoComment, deletePhotoComment, fetchPhotoComments, type PhotoComment } from "../../src/photo-comment-repository";
 import { fetchPublicPhotoDetail, type PublicPhotoDetail } from "../../src/public-photo-detail-repository";
@@ -29,6 +29,7 @@ type PublicPhotoDetailScreenProps = {
   readonly openStreetView?: (photo: PublicPhotoDetail) => void | Promise<void>;
   readonly photoId: string | null;
   readonly refreshKey?: number;
+  readonly requestLogin?: () => void;
   readonly removeComment?: (commentId: number) => Promise<void>;
   readonly reportPhoto?: (photoId: string, reporterId: string, reportedUserId: string, reason: ContentReportReason, details: string) => Promise<void>;
   readonly submitComment?: (photoId: string, authorId: string, text: string) => Promise<PhotoComment>;
@@ -81,6 +82,7 @@ export function PublicPhotoDetailScreen({
   },
   photoId,
   refreshKey = 0,
+  requestLogin = () => router.push(guestLoginRoute),
   removeComment = deletePhotoComment,
   reportPhoto = reportPublicPhoto,
   submitComment = createPhotoComment,
@@ -135,7 +137,7 @@ export function PublicPhotoDetailScreen({
   const displayState: DetailState = photoId === null ? { status: "failed" } : state;
 
   async function toggleLike() {
-    if (state.status !== "ready" || state.likePending) return;
+    if (currentUserId === null || state.status !== "ready" || state.likePending) return;
     const previous = state;
     const nextLiked = !previous.photo.viewerHasLiked;
     setState({
@@ -162,6 +164,15 @@ export function PublicPhotoDetailScreen({
       Animated.spring(likeScale, { friction: 4, tension: 240, toValue: 1.14, useNativeDriver: true }),
       Animated.spring(likeScale, { friction: 6, tension: 180, toValue: 1, useNativeDriver: true })
     ]).start();
+  }
+
+  function handleLikePress() {
+    if (currentUserId === null) {
+      requestLogin();
+      return;
+    }
+    animateLike();
+    void toggleLike();
   }
 
   async function addComment() {
@@ -304,7 +315,7 @@ export function PublicPhotoDetailScreen({
                 accessibilityLabel={displayState.photo.viewerHasLiked ? "좋아요 취소" : "좋아요"}
                 accessibilityRole="button"
                 disabled={displayState.likePending}
-                onPress={() => { animateLike(); void toggleLike(); }}
+                onPress={handleLikePress}
                 style={[styles.likeButton, displayState.photo.viewerHasLiked && styles.likedButton]}
               >
                 <Text style={[styles.likeText, displayState.photo.viewerHasLiked && styles.likedText]}>{displayState.photo.viewerHasLiked ? "♥" : "♡"}</Text>

@@ -88,6 +88,28 @@ describe("Supabase mobile client foundation", () => {
     expect(values.size).toBe(0);
   });
 
+  it("uses only key characters accepted by iOS SecureStore", async () => {
+    const acceptedKey = /^[A-Za-z0-9._-]+$/u;
+    const values = new Map<string, string>();
+    const assertKey = (key: string) => {
+      if (!acceptedKey.test(key)) throw new Error("Invalid SecureStore key");
+    };
+    const secureStore = {
+      deleteItemAsync: jest.fn(async (key: string) => { assertKey(key); values.delete(key); }),
+      getItemAsync: jest.fn(async (key: string) => { assertKey(key); return values.get(key) ?? null; }),
+      setItemAsync: jest.fn(async (key: string, value: string) => { assertKey(key); values.set(key, value); })
+    };
+    const storage = createChunkedSecureStorage(secureStore, 8);
+
+    await storage.setItem("sb-project-auth-token", "session-value");
+
+    expect(await storage.getItem("sb-project-auth-token")).toBe("session-value");
+    expect([...values.keys()]).toEqual(expect.arrayContaining([
+      "sb-project-auth-token.chunks",
+      "sb-project-auth-token.chunk.0"
+    ]));
+  });
+
   it("refreshes only while the native app is active and unregisters cleanly", () => {
     let listener: ((state: string) => void) | undefined;
     const remove = jest.fn();

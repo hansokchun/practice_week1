@@ -18,7 +18,7 @@ describe("keyboard-safe mobile layouts", () => {
     );
 
     const scrollView = screen.getByTestId("keyboard-safe-content");
-    expect(scrollView.props["automaticallyAdjustKeyboardInsets"]).toBe(Platform.OS === "ios");
+    expect(scrollView.props["automaticallyAdjustKeyboardInsets"]).toBe(false);
     expect(scrollView.props["keyboardDismissMode"]).toBe(Platform.OS === "ios" ? "interactive" : "on-drag");
     expect(scrollView.props["keyboardShouldPersistTaps"]).toBe("handled");
   });

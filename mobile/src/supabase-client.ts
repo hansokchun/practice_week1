@@ -23,11 +23,11 @@ type AppStateApi = {
 };
 
 const DEFAULT_SECURE_CHUNK_SIZE = 1_800;
-const META_SUFFIX = ":chunks";
+const META_SUFFIX = ".chunks";
 const PRODUCTION_SUPABASE_PROJECT_REF = "pqczcponriukilrtpbdl";
 
 function chunkKey(key: string, index: number) {
-  return `${key}:chunk:${index}`;
+  return `${key}.chunk.${index}`;
 }
 
 function parseChunkCount(value: string | null) {
