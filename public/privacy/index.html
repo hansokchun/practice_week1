@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="description" content="Ikkyee가 사진, 위치, 계정 정보를 처리하는 방법을 안내합니다.">
+    <title>Ikkyee 개인정보 처리방침</title>
+    <link rel="stylesheet" href="/legal.css">
+</head>
+<body>
+    <header class="legal-header">
+        <div class="legal-header__inner">
+            <a class="legal-brand" href="/#/">Ikkyee</a>
+            <nav class="legal-nav" aria-label="정책 탐색">
+                <a href="/privacy/">개인정보</a><a href="/support/">지원</a><a href="/account-deletion/">계정 삭제</a>
+            </nav>
+        </div>
+    </header>
+    <main class="legal-main">
+        <p class="legal-eyebrow">최종 승인 전 초안 · 2026년 8월 30일</p>
+        <h1>Ikkyee 개인정보 처리방침</h1>
+        <p class="legal-lead">Ikkyee는 여행 사진과 장소를 기록하고, 사용자가 선택한 사진만 공개하는 사진 지도 서비스입니다.</p>
+        <p class="legal-status">이 문서는 현재 코드와 데이터 흐름을 반영한 내부 테스트용 초안입니다. 공개 베타 전 운영자의 지원 연락처·보존 문구·법률 검토를 확정합니다.</p>
+
+        <section class="legal-section">
+            <h2>1. 처리하는 정보</h2>
+            <ul>
+                <li><strong>계정:</strong> 이메일, 인증 공급자, 사용자 ID와 세션 상태</li>
+                <li><strong>프로필:</strong> 닉네임, 선택적 소개, 선택적 프로필 사진</li>
+                <li><strong>게시 콘텐츠:</strong> 사용자가 명시적으로 업로드한 사진, 설명, 촬영일, 공개 설정</li>
+                <li><strong>위치:</strong> 사진에서 읽은 위치 또는 사용자가 직접 선택한 위치. 기본값은 숨김입니다.</li>
+                <li><strong>서비스 활동:</strong> 좋아요, 댓글, 차단, 신고, 장소 검색과 지도 상호작용</li>
+            </ul>
+        </section>
+
+        <section class="legal-section">
+            <h2>2. 기기에만 보관하는 정보</h2>
+            <p>기기 사진 원본, 로컬 사진 색인, 썸네일, 수동으로 보정한 위치는 백업에서 제외된 앱 저장소에 두며 자동으로 업로드하지 않습니다. 사용자가 게시를 확인한 경우에만 메타데이터를 제거한 파생 사진을 전송합니다.</p>
+        </section>
+
+        <section class="legal-section">
+            <h2>3. 이용 목적과 외부 처리자</h2>
+            <p>계정 운영, 사진 보관·공개, 지도 표시, 장소 검색, 좋아요·댓글·신고와 서비스 보호를 위해 처리합니다.</p>
+            <ul>
+                <li><strong>Supabase:</strong> 인증, 데이터베이스, 게시 사진 저장소</li>
+                <li><strong>Cloudflare:</strong> 웹 및 연결 페이지 전송</li>
+                <li><strong>Google Maps / Places:</strong> 지도 표시와 사용자가 요청한 장소 검색</li>
+                <li><strong>Google·Kakao:</strong> 사용자가 선택한 로그인과 계정 연결</li>
+            </ul>
+            <p>Ikkyee는 광고를 위해 개인정보를 사용하거나 판매하지 않으며, 교차 앱 추적을 하지 않습니다.</p>
+        </section>
+
+        <section class="legal-section">
+            <h2>4. 공개 범위</h2>
+            <p>새 사진은 기본적으로 비공개입니다. 사용자가 공개를 선택한 사진만 Explore와 공개 프로필에 나타납니다. 위치를 숨긴 사진은 공개 사진이어도 지도 핀으로 표시하지 않습니다.</p>
+        </section>
+
+        <section class="legal-section">
+            <h2>5. 보존과 삭제</h2>
+            <ul>
+                <li>계정·프로필·게시 콘텐츠는 사용자가 해당 콘텐츠 또는 계정을 삭제할 때까지 보존합니다.</li>
+                <li>앱의 임시 게시 파생본은 최대 60분 후, 취소, 실패, 앱 재시작 또는 계정 삭제 시 정리합니다.</li>
+                <li>계정 삭제가 성공하면 Ikkyee가 관리하는 프로필, 사진, 앨범, 댓글, 좋아요와 저장소 파일을 즉시 삭제하며 복구를 제공하지 않습니다.</li>
+                <li>이미 발급된 사진 서명 URL은 최대 5분, 액세스 토큰은 최대 1시간 동안 독립적으로 유효할 수 있지만 삭제된 사용자는 새 요청을 수행할 수 없습니다.</li>
+            </ul>
+            <a href="/account-deletion/">계정 삭제 방법 보기</a>
+        </section>
+
+        <section class="legal-section">
+            <h2>6. 선택과 문의</h2>
+            <p>사용자는 사진의 공개를 회수하고, 프로필을 수정하며, 사진 또는 계정을 삭제할 수 있습니다. 개인정보·공개 위치·액세스·삭제 문의는 <a href="/support/">Ikkyee 지원</a>을 확인하세요.</p>
+        </section>
+    </main>
+    <footer class="legal-footer"><div class="legal-footer__inner"><span>© 2026 Ikkyee</span><a href="/#/">Ikkyee로 돌아가기</a></div></footer>
+</body>
+</html>

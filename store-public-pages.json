@@ -1,0 +1,13 @@
+{
+  "contractVersion": 1,
+  "origin": "https://practice-week1-cws.pages.dev",
+  "paths": {
+    "privacy": "/privacy/",
+    "support": "/support/",
+    "accountDeletion": "/account-deletion/"
+  },
+  "supportContact": {
+    "status": "operator-approval-required",
+    "email": null
+  }
+}

@@ -11,6 +11,7 @@ import {
     fetchProfilesByIds,
     hydratePhotoUrls,
     getCurrentUser,
+    deleteCurrentAccount,
     resetPasswordForEmail,
     signInWithEmail,
     signOut,
@@ -33,6 +34,7 @@ import {
     saveLandingSection,
     upsertPhoto
 } from '../auth.js';
+import { getAccountDeletionControlState } from './account-deletion.mjs';
 import {
     getProviderAccountProfile,
     resolveAccountProfile
@@ -2819,6 +2821,15 @@ function renderAccountNotifications() {
 
 async function handleLogout() {
     await signOut();
+    resetAccountState();
+    closeModals();
+    updateAccountUI();
+    renderSavedPhotoSurfaces();
+    routeTo(APP_SECTIONS.HOME);
+    showToast('로그아웃했습니다.');
+}
+
+function resetAccountState() {
     state.currentUser = null;
     state.savedPhotos = [];
     state.savedAlbums = [];
@@ -2826,11 +2837,54 @@ async function handleLogout() {
     state.hasLoadedSavedPhotos = false;
     state.hasLoadedMyLikes = false;
     state.lastSavedPhotoIds = [];
+}
+
+function syncAccountDeletionControl(deleting = false) {
+    const input = $('#account-deletion-confirmation');
+    const submit = $('#account-deletion-submit');
+    const control = getAccountDeletionControlState(input?.value, deleting);
+    if (input) input.disabled = deleting;
+    if (submit) {
+        submit.disabled = control.submitDisabled;
+        submit.textContent = deleting ? '삭제 중…' : '계정 영구 삭제';
+    }
+}
+
+function openAccountDeletionDialog() {
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        return;
+    }
+    const input = $('#account-deletion-confirmation');
+    const message = $('#account-deletion-message');
+    if (input) input.value = '';
+    if (message) message.textContent = '';
+    syncAccountDeletionControl();
+    openModal('#account-deletion-modal');
+}
+
+async function handleAccountDeletionSubmit(event) {
+    event.preventDefault();
+    const input = $('#account-deletion-confirmation');
+    const message = $('#account-deletion-message');
+    const control = getAccountDeletionControlState(input?.value, false);
+    if (!control.confirmed || !state.currentUser) return;
+
+    syncAccountDeletionControl(true);
+    if (message) message.textContent = '계정을 삭제하는 중입니다…';
+    const { error } = await deleteCurrentAccount();
+    if (error) {
+        syncAccountDeletionControl(false);
+        if (message) message.textContent = '계정을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요.';
+        return;
+    }
+
+    resetAccountState();
     closeModals();
     updateAccountUI();
     renderSavedPhotoSurfaces();
     routeTo(APP_SECTIONS.HOME);
-    showToast('로그아웃했습니다.');
+    showToast('계정이 영구적으로 삭제됐습니다.');
 }
 
 async function ensureCurrentUserPublicProfile() {
@@ -3257,6 +3311,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
     if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
+    if ($('#account-deletion-section')) $('#account-deletion-section').hidden = !isOwnProfile;
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
     const profileHeroImage = $('.profile-cover > img');
@@ -6826,6 +6881,9 @@ function bindEvents() {
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
     $('#profile-avatar-input')?.addEventListener('change', handleAccountProfileAvatarChange);
+    $('#account-deletion-open')?.addEventListener('click', openAccountDeletionDialog);
+    $('#account-deletion-confirmation')?.addEventListener('input', () => syncAccountDeletionControl());
+    $('#account-deletion-form')?.addEventListener('submit', handleAccountDeletionSubmit);
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
     $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));

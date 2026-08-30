@@ -9034,6 +9034,107 @@ body.modal-open {
     gap: 10px;
 }
 
+.account-deletion-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 56px;
+    border-top: 1px solid var(--line);
+    padding: 28px 0 8px;
+}
+
+.account-deletion-section[hidden] {
+    display: none;
+}
+
+.account-deletion-section h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 18px;
+}
+
+.account-deletion-section p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.account-deletion-open {
+    flex: 0 0 auto;
+    min-height: 44px;
+    border: 1px solid #b33a3a;
+    border-radius: 8px;
+    background: transparent;
+    color: #922f2f;
+    font-weight: 800;
+    padding: 0 18px;
+}
+
+.account-deletion-dialog {
+    width: min(480px, calc(100vw - 32px));
+    gap: 16px;
+}
+
+.account-deletion-dialog > label {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.account-deletion-dialog > input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+    padding: 0 14px;
+}
+
+.account-deletion-dialog > input:focus {
+    outline: 3px solid rgba(146, 47, 47, 0.14);
+    border-color: #922f2f;
+}
+
+.account-deletion-message {
+    color: #922f2f;
+}
+
+.account-deletion-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.45fr;
+    gap: 10px;
+}
+
+.account-deletion-submit {
+    min-height: 46px;
+    border: 0;
+    border-radius: 8px;
+    background: #922f2f;
+    color: #fff;
+    font-weight: 800;
+    padding: 0 16px;
+}
+
+.account-deletion-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 640px) {
+    .account-deletion-section {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .account-deletion-open {
+        width: 100%;
+    }
+}
+
 .account-profile-view {
     display: grid;
     gap: 10px;

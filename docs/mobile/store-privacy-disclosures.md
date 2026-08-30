@@ -5,6 +5,14 @@
 
 이 문서는 현재 모바일 코드와 설치된 SDK를 기준으로 만든 제출용 원장이다. 법률 자문이나 콘솔 제출 완료 증명이 아니며, 최종 공개 정책·보존 기간·지원 연락처와 대조한 뒤 운영자가 승인해야 한다. 기계 판독 기준은 `mobile/store-privacy-contract.json`이고 Expo iOS 구성도 같은 파일을 읽는다.
 
+배포 준비된 공개 초안 URL은 다음과 같다.
+
+- 개인정보 처리방침: `https://practice-week1-cws.pages.dev/privacy/`
+- 지원: `https://practice-week1-cws.pages.dev/support/`
+- 계정 삭제 안내: `https://practice-week1-cws.pages.dev/account-deletion/`
+
+지원 이메일은 아직 운영자 승인을 받지 않았으며 `store-public-pages.json`에서 승인 대기 상태로 고정한다. 승인 전 페이지는 검색엔진 색인을 막고 스토어 제출 완료로 판정하지 않는다.
+
 ## 경계
 
 ### 로컬 전용

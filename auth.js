@@ -200,6 +200,20 @@ export async function signOut() {
     }
 }
 
+export async function deleteCurrentAccount() {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb.functions.invoke('delete-account', {
+            body: { confirmation: 'DELETE_ACCOUNT' }
+        });
+        if (error || data?.deleted !== true) throw new Error('delete failed');
+        await sb.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        return { error: null };
+    } catch {
+        return { error: new Error('계정을 삭제하지 못했어요.') };
+    }
+}
+
 export async function getCurrentUser() {
     try {
         const sb = getSupabase();

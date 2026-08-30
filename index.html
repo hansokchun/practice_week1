@@ -662,6 +662,13 @@
                         <article><img src="images/main_bg5.jpg" alt=""><strong>Italian Blue Week</strong><span>86장 · 14곳</span></article>
                     </section>
                 </div>
+                <section id="account-deletion-section" class="account-deletion-section" aria-labelledby="account-deletion-title" hidden>
+                    <div>
+                        <h2 id="account-deletion-title">계정 관리</h2>
+                        <p>프로필과 클라우드에 저장한 여행 기록을 영구적으로 삭제할 수 있습니다.</p>
+                    </div>
+                    <button id="account-deletion-open" class="account-deletion-open" type="button">계정 삭제</button>
+                </section>
             </div>
         </section>
     </main>
@@ -675,6 +682,9 @@
             <nav class="site-footer__nav" aria-label="하단 탐색">
                 <a href="#/">Home</a>
                 <a href="#/explore">Explore</a>
+                <a href="/privacy/">개인정보</a>
+                <a href="/support/">지원</a>
+                <a href="/account-deletion/">계정 삭제</a>
             </nav>
             <div class="site-footer__notes" aria-label="Ikkyee 이용 원칙">
                 <span>사진은 기본 비공개로 보관됩니다.</span>
@@ -683,6 +693,21 @@
             <p class="site-footer__copyright">© 2026 Ikkyee. Travel photos stay with their authors.</p>
         </div>
     </footer>
+
+    <div id="account-deletion-modal" class="modal" aria-hidden="true">
+        <form id="account-deletion-form" class="modal-card account-deletion-dialog" role="dialog" aria-modal="true" aria-labelledby="account-deletion-dialog-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="계정 삭제 창 닫기">×</button>
+            <h2 id="account-deletion-dialog-title">계정을 영구 삭제합니다</h2>
+            <p>프로필, 업로드한 사진, 앨범, 댓글과 저장소 파일이 삭제되며 되돌릴 수 없습니다. 기기의 원본 사진은 유지됩니다.</p>
+            <label for="account-deletion-confirmation">계속하려면 <strong>계정 삭제</strong>를 입력하세요.</label>
+            <input id="account-deletion-confirmation" type="text" autocomplete="off" spellcheck="false" placeholder="계정 삭제">
+            <p id="account-deletion-message" class="auth-message account-deletion-message" aria-live="polite"></p>
+            <div class="account-deletion-actions">
+                <button class="btn-secondary" data-close-modal type="button">취소</button>
+                <button id="account-deletion-submit" class="account-deletion-submit" type="submit" disabled>계정 영구 삭제</button>
+            </div>
+        </form>
+    </div>
 
     <div id="photo-detail-modal" class="modal photo-detail-modal" aria-hidden="true">
         <div class="photo-detail-card" role="dialog" aria-modal="true" aria-label="사진 상세 정보">

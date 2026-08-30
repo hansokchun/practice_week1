@@ -13,6 +13,7 @@ import { ProfileEditor } from "../src/ProfileEditor";
 import { ProfilePublicSummary } from "../src/ProfilePublicSummary";
 import { useContentVisibilityRefreshKey } from "../src/content-visibility-refresh";
 import { AccountIdentitySection } from "../src/AccountIdentitySection";
+import { LegalLinks } from "../src/LegalLinks";
 
 type ProfileScreenProps = { readonly refreshKey?: number };
 
@@ -40,6 +41,7 @@ export function ProfileScreen({ refreshKey = 0 }: ProfileScreenProps) {
               <Text style={styles.buttonText}>이 기기에서 로그아웃</Text>
             </Pressable>
             <BlockedUsersSection />
+            <LegalLinks />
             <AccountDeletionSection />
           </>
         </KeyboardSafeScrollView>
@@ -56,6 +58,7 @@ export function ProfileScreen({ refreshKey = 0 }: ProfileScreenProps) {
             <Pressable accessibilityRole="button" onPress={() => router.push(guestLoginRoute)} style={styles.button}>
               <Text style={styles.buttonText}>로그인하기</Text>
             </Pressable>
+            <LegalLinks />
           </>
           )}
         </View>
