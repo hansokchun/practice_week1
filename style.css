@@ -207,17 +207,16 @@ body {
 #landing-hero-caption {
     display: flex;
     align-items: center;
-    align-self: end;
     gap: 10px;
     margin: 0;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
 
 .landing-hero-caption-pin {
-    font-size: 19px;
+    font-size: 21px;
     font-variation-settings: 'FILL' 1;
 }
 
@@ -237,10 +236,13 @@ body[data-page="landing"] .site-header {
 }
 
 body[data-page="landing"] .brand,
-body[data-page="landing"] .site-primary-nav__item,
 body[data-page="landing"] .account-notification-trigger,
 body[data-page="landing"] .account-menu-chevron {
     color: #ffffff;
+}
+
+body[data-page="landing"] .site-primary-nav {
+    display: none;
 }
 
 body[data-page="landing"] .brand img {
@@ -300,7 +302,6 @@ body[data-page="landing"] .account-avatar {
     }
 
     .brand-korean {
-        display: inline;
         font-size: 15px;
     }
 
@@ -345,9 +346,8 @@ body[data-page="landing"] .account-avatar {
     }
 
     #landing-hero-caption {
-        display: flex;
         gap: 7px;
-        font-size: 13px;
+        font-size: 14px;
     }
 }
 

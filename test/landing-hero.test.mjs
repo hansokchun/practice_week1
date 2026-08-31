@@ -39,6 +39,8 @@ test('landing slideshow advances every five seconds and wraps around', () => {
 test('landing footer shows only a centered location pin and place without photo order controls', () => {
     assert.match(html, /id="landing-hero-caption"[^>]*>[\s\S]*?location_on[\s\S]*?data-landing-caption-place/);
     assert.doesNotMatch(html, /data-landing-caption-position|data-landing-slide-position/);
+    assert.match(css, /body\[data-page="landing"\]\s+\.site-primary-nav\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /#landing-hero-caption\s*\{[^}]*font-size:\s*17px;/s);
     assert.doesNotMatch(html, /landing-hero-dots|data-landing-slide="/);
     assert.doesNotMatch(app, /\$\$\('\[data-landing-slide\]'\)/);
 });
