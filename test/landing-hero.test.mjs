@@ -23,10 +23,13 @@ test('the first route renders a dedicated full-screen landing before the existin
 
 test('landing uses five full-screen sample photos with the requested copy', () => {
     assert.equal((html.match(/class="landing-hero-slide(?: is-active)?"/g) || []).length, 5);
-    assert.match(html, /<h1[^>]*>이건 어디서 찍은 거지\?<\/h1>/);
+    assert.match(html, /<h1[^>]*>이 사진은 어디서 찍은거지\?<\/h1>/);
     assert.match(html, /<p>이끼에서 매력적인 장소와 자세한 위치를 찾아보세요<\/p>/);
     assert.match(css, /\.page-landing\s*\{[^}]*min-height:\s*100svh;/s);
     assert.match(css, /\.landing-hero-slide img\s*\{[^}]*object-fit:\s*cover;/s);
+    assert.match(css, /\.landing-hero-content\s*\{[^}]*top:\s*46%;/s);
+    assert.match(css, /\.landing-hero-content h1\s*\{[^}]*font-size:\s*56px;/s);
+    assert.match(css, /body\[data-page="landing"\]\s+\.site-header\s*\{[^}]*background:\s*transparent;/s);
 });
 
 test('landing slideshow advances every five seconds and wraps around', () => {
