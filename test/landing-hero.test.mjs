@@ -36,8 +36,14 @@ test('landing slideshow advances every five seconds and wraps around', () => {
     assert.equal(getNextLandingSlideIndex(2, 0), 0);
 });
 
-test('landing footer shows a location pin, place, and photo order without page controls', () => {
-    assert.match(html, /id="landing-hero-caption"[^>]*>[\s\S]*?location_on[\s\S]*?data-landing-caption-place[\s\S]*?data-landing-caption-position/);
+test('landing footer shows only a centered location pin and place without photo order controls', () => {
+    assert.match(html, /id="landing-hero-caption"[^>]*>[\s\S]*?location_on[\s\S]*?data-landing-caption-place/);
+    assert.doesNotMatch(html, /data-landing-caption-position|data-landing-slide-position/);
     assert.doesNotMatch(html, /landing-hero-dots|data-landing-slide="/);
     assert.doesNotMatch(app, /\$\$\('\[data-landing-slide\]'\)/);
+});
+
+test('landing brand keeps an Ikkyee wordmark with a Korean 이끼 label', () => {
+    assert.match(html, /class="brand-wordmark">Ikkyee<\/span>[\s\S]*?class="brand-korean"[^>]*>이끼<\/span>/);
+    assert.match(css, /\.brand-wordmark\s*\{[^}]*Cormorant Garamond/s);
 });

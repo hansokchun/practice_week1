@@ -8,7 +8,7 @@ const app = readFileSync('js/app.js', 'utf8');
 const auth = readFileSync('auth.js', 'utf8');
 
 test('brand logo routes to the landing home page', () => {
-    assert.match(html, /<a class="brand" href="#\/landing" data-route="landing" aria-label="Ikkyee landing">/);
+    assert.match(html, /<a class="brand" href="#\/landing" data-route="landing" aria-label="Ikkyee 이끼 landing">/);
     assert.match(app, /const LANDING_ROUTE = 'landing';/);
     assert.match(app, /ROUTES = new Set\(\[LANDING_ROUTE,/);
     assert.match(app, /normalized === LANDING_ROUTE \? '#\/landing'/);

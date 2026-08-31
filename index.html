@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="icon" href="images/logo.png" type="image/png">
     <link rel="stylesheet" href="style.css">
@@ -31,9 +31,10 @@
 <body class="is-logged-out is-app-booting" data-page="landing">
     <header class="site-header">
         <div class="site-header-inner">
-            <a class="brand" href="#/landing" data-route="landing" aria-label="Ikkyee landing">
+            <a class="brand" href="#/landing" data-route="landing" aria-label="Ikkyee 이끼 landing">
                 <img src="images/logo.png" alt="">
-                <span>Ikkyee</span>
+                <span class="brand-wordmark">Ikkyee</span>
+                <span class="brand-korean" lang="ko">이끼</span>
             </a>
             <nav class="site-primary-nav" aria-label="주요 메뉴">
                 <button class="site-primary-nav__item" type="button" data-route="home">
@@ -80,19 +81,19 @@
     <main id="site-main">
         <section id="page-landing" class="page page-landing active" aria-labelledby="landing-hero-title">
             <div class="landing-hero-slides" aria-hidden="true">
-                <figure class="landing-hero-slide is-active" data-landing-slide-label="프랑스 니스" data-landing-slide-position="1 / 5">
+                <figure class="landing-hero-slide is-active" data-landing-slide-label="프랑스 니스">
                     <img src="images/main_bg1.jpg" alt="" fetchpriority="high" decoding="async">
                 </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="일본 교토" data-landing-slide-position="2 / 5">
+                <figure class="landing-hero-slide" data-landing-slide-label="일본 교토">
                     <img src="images/main_bg2.jpg" alt="" loading="lazy" decoding="async">
                 </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="스위스 인터라켄" data-landing-slide-position="3 / 5">
+                <figure class="landing-hero-slide" data-landing-slide-label="스위스 인터라켄">
                     <img src="images/main_bg3.jpg" alt="" loading="lazy" decoding="async">
                 </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="태국 방콕" data-landing-slide-position="4 / 5">
+                <figure class="landing-hero-slide" data-landing-slide-label="태국 방콕">
                     <img src="images/main_bg4.jpg" alt="" loading="lazy" decoding="async">
                 </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="모로코 메르주가" data-landing-slide-position="5 / 5">
+                <figure class="landing-hero-slide" data-landing-slide-label="모로코 메르주가">
                     <img src="images/main_bg5.jpg" alt="" loading="lazy" decoding="async">
                 </figure>
             </div>
@@ -109,7 +110,6 @@
                 <p id="landing-hero-caption" aria-live="polite">
                     <span class="material-symbols-outlined landing-hero-caption-pin" aria-hidden="true">location_on</span>
                     <span data-landing-caption-place>프랑스 니스</span>
-                    <span data-landing-caption-position>1 / 5</span>
                 </p>
             </div>
         </section>

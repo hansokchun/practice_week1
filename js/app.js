@@ -4934,9 +4934,7 @@ function syncLandingHeroSlide(index) {
     const activeSlide = slides[landingHeroIndex];
     slides.forEach((slide, slideIndex) => slide.classList.toggle('is-active', slideIndex === landingHeroIndex));
     const place = $('[data-landing-caption-place]');
-    const position = $('[data-landing-caption-position]');
     if (place) place.textContent = activeSlide.dataset.landingSlideLabel || '';
-    if (position) position.textContent = activeSlide.dataset.landingSlidePosition || '';
     const nextIndex = getNextLandingSlideIndex(landingHeroIndex, slides.length);
     const nextImage = slides[nextIndex]?.querySelector('img');
     if (nextImage) nextImage.loading = 'eager';

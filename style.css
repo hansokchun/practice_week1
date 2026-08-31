@@ -198,6 +198,7 @@ body {
     left: 32px;
     z-index: 3;
     display: flex;
+    justify-content: center;
     align-items: end;
     min-height: 44px;
     pointer-events: none;
@@ -210,18 +211,14 @@ body {
     gap: 10px;
     margin: 0;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 700;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
 
 .landing-hero-caption-pin {
-    font-size: 17px;
+    font-size: 19px;
     font-variation-settings: 'FILL' 1;
-}
-
-[data-landing-caption-position] {
-    color: rgba(255, 255, 255, 0.68);
 }
 
 body[data-page="landing"] {
@@ -298,8 +295,13 @@ body[data-page="landing"] .account-avatar {
         grid-template-columns: 38px minmax(0, 1fr) auto;
     }
 
-    .brand > span {
+    .brand-wordmark {
         display: none;
+    }
+
+    .brand-korean {
+        display: inline;
+        font-size: 15px;
     }
 
     .site-primary-nav {
@@ -345,7 +347,7 @@ body[data-page="landing"] .account-avatar {
     #landing-hero-caption {
         display: flex;
         gap: 7px;
-        font-size: 11px;
+        font-size: 13px;
     }
 }
 
@@ -410,8 +412,33 @@ img {
     text-decoration: none;
     font-family: var(--brand);
     font-size: 26px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0;
+}
+
+.brand-wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.14em;
+    line-height: 1;
+}
+
+.brand-korean {
+    position: relative;
+    padding-left: 9px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.brand-korean::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 1px;
+    height: 15px;
+    background: currentColor;
+    content: '';
+    opacity: 0.42;
+    transform: translateY(-50%);
 }
 
 .brand img {

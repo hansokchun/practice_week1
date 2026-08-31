@@ -16,12 +16,13 @@ test('site loads Google Fonts Nanum Gothic for all public text', () => {
   assert.match(css, /body\s*\{[^}]*font-synthesis:\s*none;/s);
 });
 
-test('only Material Symbols keeps a dedicated non-Nanum icon font', () => {
-  assert.match(css, /\.brand\s*\{[^}]*font-family:\s*var\(--brand\);/s);
-  assert.match(css, /\.home-houses-reference__word\s*\{[^}]*font-family:\s*var\(--brand\);/s);
-  assert.match(css, /\.site-footer__brand h2\s*\{[^}]*font-family:\s*var\(--brand\);/s);
-  assert.match(css, /font-family:\s*"Material Symbols Outlined";/);
-  assert.doesNotMatch(css, /font-family:\s*(?:'SUIT Variable'|'SUIT'|'Inter'|Georgia|'Times New Roman')/);
+test('only the Ikkyee wordmark and Material Symbols use dedicated non-Nanum fonts', () => {
+    assert.match(css, /\.brand\s*\{[^}]*font-family:\s*var\(--brand\);/s);
+    assert.match(css, /\.brand-wordmark\s*\{[^}]*font-family:\s*'Cormorant Garamond',\s*serif;/s);
+    assert.match(css, /\.home-houses-reference__word\s*\{[^}]*font-family:\s*var\(--brand\);/s);
+    assert.match(css, /\.site-footer__brand h2\s*\{[^}]*font-family:\s*var\(--brand\);/s);
+    assert.match(css, /font-family:\s*"Material Symbols Outlined";/);
+    assert.doesNotMatch(css, /font-family:\s*(?:'SUIT Variable'|'SUIT'|'Inter'|Georgia|'Times New Roman')/);
   assert.doesNotMatch(css, /font-family:\s*var\(--font\)/);
   assert.doesNotMatch(css, /letter-spacing:\s*-/);
 });
