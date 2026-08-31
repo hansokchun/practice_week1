@@ -18,7 +18,7 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /id="landing-search"/);
     assert.match(html, /id="landing-search-input"/);
     assert.match(html, /class="landing-search-suggestions"/);
-    assert.match(html, /class="landing-search-globe" src="images\/landing-globe-illustration\.jpg"[^>]*width="1536"[^>]*height="1024"/);
+    assert.match(html, /class="landing-search-globe" src="images\/landing-globe-sprout-route\.jpg"[^>]*width="1536"[^>]*height="1024"/);
     assert.match(html, /id="landing-sections"/);
     assert.match(html, /data-landing-scroll/);
     assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
@@ -37,7 +37,7 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     const searchStart = html.indexOf('id="landing-search"', heroStart);
     const beforeSearch = html.slice(heroStart, searchStart);
     const beforeHero = html.slice(landingStart, heroStart);
-    assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-globe-illustration\.jpg"[^>]*width="1536"[^>]*height="1024"/);
+    assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-globe-sprout-route\.jpg"[^>]*width="1536"[^>]*height="1024"/);
     assert.match(beforeSearch, /<h1 id="home-title">이끼에서 당신만의 장소를 찾아보세요<\/h1>/);
     assert.doesNotMatch(beforeSearch, /<p|eyebrow|공개 여행 사진|다음 여행의 장면/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*break-word;/s);

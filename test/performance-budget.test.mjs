@@ -9,7 +9,7 @@ const appSource = () => readFileSync('js/app.js', 'utf8');
 test('home feature imagery uses the compact JPEG assets directly', () => {
     const source = markup();
     const assets = [
-        'landing-globe-illustration',
+        'landing-globe-sprout-route',
         'home-section-divider',
         'home-map-memory-board',
         'home-travel-replay',
