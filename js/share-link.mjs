@@ -38,8 +38,11 @@ export function parseSharedOwnerId(hash) {
 }
 
 export function getSharedRouteState(hash) {
-    const path = String(hash || '').replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
-    const route = ['landing', 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'admin-landing'].includes(path)
+    const rawHash = String(hash || '');
+    const path = rawHash.replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
+    const route = !rawHash
+        ? 'landing'
+        : ['landing', 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'admin-landing'].includes(path)
         ? path || 'home'
         : 'home';
     return {

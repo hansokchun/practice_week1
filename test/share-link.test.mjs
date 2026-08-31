@@ -65,6 +65,11 @@ test('parseSharedOwnerId reads owner id from profile route hashes', () => {
 });
 
 test('getSharedRouteState returns normalized route and optional album id', () => {
+    assert.deepEqual(getSharedRouteState(''), {
+        route: 'landing',
+        albumId: null,
+        ownerId: null
+    });
     assert.deepEqual(getSharedRouteState('#/landing'), {
         route: 'landing',
         albumId: null,

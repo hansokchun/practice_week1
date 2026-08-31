@@ -198,6 +198,10 @@ import {
     normalizeLandingSections
 } from './landing-sections.mjs';
 import {
+    LANDING_SLIDE_INTERVAL_MS,
+    getNextLandingSlideIndex
+} from './landing-slideshow.mjs';
+import {
     buildLandingTagHash,
     canOpenLandingTagPage,
     parseLandingTagId
@@ -336,6 +340,8 @@ let turnstileWidgetId = null;
 let turnstileToken = '';
 let turnstileLoadPromise = null;
 let lastModalTrigger = null;
+let landingHeroTimer = null;
+let landingHeroIndex = 0;
 const MODAL_FOCUSABLE_SELECTOR = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function renderActionableFailure(copy, action = 'data-retry-saved-library') {
@@ -605,7 +611,8 @@ function showEmailAuthForm() {
 }
 
 function parseRouteHash(hash) {
-    if (!hash || !hash.startsWith('#/')) return APP_SECTIONS.HOME;
+    if (!hash) return LANDING_ROUTE;
+    if (!hash.startsWith('#/')) return APP_SECTIONS.HOME;
     const path = hash.slice(2).split('?')[0].replace(/^\/+|\/+$/g, '');
     if (!path) return APP_SECTIONS.HOME;
     if (path === APP_SECTIONS.MYPHOTO) return APP_SECTIONS.HOME;
@@ -615,14 +622,14 @@ function parseRouteHash(hash) {
 
 function getRenderedRoute(route) {
     if (route === 'tag') return 'trip';
-    return [APP_SECTIONS.MYPHOTO, LANDING_ROUTE].includes(route) ? APP_SECTIONS.HOME : route;
+    return route === APP_SECTIONS.MYPHOTO ? APP_SECTIONS.HOME : route;
 }
 
 function routeTo(section, { replace = false } = {}) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const renderedRoute = getRenderedRoute(normalized);
     if (normalized === 'admin-landing' && !isLandingAdmin(state.currentUser)) {
-        showToast('관리자 계정에서만 랜딩 구성을 편집할 수 있습니다.');
+        showToast('관리자 계정에서만 메인 구성을 편집할 수 있습니다.');
         return;
     }
     const authRequiredRoute = getAuthRequiredRoute(normalized, state.currentUser);
@@ -632,7 +639,7 @@ function routeTo(section, { replace = false } = {}) {
         showToast('사진을 업로드하려면 먼저 로그인해주세요.');
         return;
     }
-    const hash = normalized === LANDING_ROUTE ? '#/landing' : renderedRoute === 'home' ? '#/' : `#/${renderedRoute}`;
+    const hash = normalized === LANDING_ROUTE ? '#/landing' : normalized === APP_SECTIONS.HOME ? '#/' : `#/${renderedRoute}`;
     if (replace) window.history.replaceState(null, '', hash);
     else if (window.location.hash !== hash) window.location.hash = hash;
     renderRoute(normalized);
@@ -706,6 +713,7 @@ function renderRoute(section) {
     document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : normalized === 'tag' ? 'tag' : renderedRoute;
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
+    setLandingHeroSlideshowActive(normalized === LANDING_ROUTE);
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
@@ -1075,7 +1083,7 @@ async function saveLandingAdminForm(event) {
     const message = $('#landing-admin-message');
     if (!isLandingAdmin(state.currentUser)) return;
     const fieldsets = $$('[data-admin-landing-section]');
-    if (message) message.textContent = '랜딩 구성을 저장하는 중입니다…';
+    if (message) message.textContent = '메인 구성을 저장하는 중입니다…';
     for (const [index, fieldset] of fieldsets.entries()) {
         const formData = new FormData();
         fieldset.querySelectorAll('input, textarea, select').forEach((input) => formData.set(input.name, input.value));
@@ -1090,13 +1098,13 @@ async function saveLandingAdminForm(event) {
             is_visible: formData.get('is_visible') === 'true'
         }, photoIds);
         if (error) {
-            if (message) message.textContent = error.message || '랜딩 구성을 저장하지 못했습니다.';
+            if (message) message.textContent = error.message || '메인 구성을 저장하지 못했습니다.';
             return;
         }
     }
     await loadLandingCuration();
     renderLandingAdminForm();
-    if (message) message.textContent = '랜딩 구성을 저장했습니다.';
+    if (message) message.textContent = '메인 구성을 저장했습니다.';
 }
 
 function getDefaultDetailPhoto() {
@@ -4919,36 +4927,43 @@ function setVisibilityMode(mode) {
     if (status) status.textContent = getVisibilityStatusText(state.visibility);
 }
 
-function startHomeHeroSlider() {
-    const slides = $$('.hero-photo-slide');
-    const mapPins = $$('[data-hero-map-pin]');
-    if (slides.length <= 1) return;
-    let currentIndex = slides.findIndex((slide) => slide.classList.contains('is-active'));
-    if (currentIndex < 0) currentIndex = 0;
-    const syncMapPin = (slide) => {
-        const place = slide?.dataset?.heroPlace || '';
-        mapPins.forEach((pin) => {
-            pin.classList.toggle('is-active', pin.dataset.heroMapPin === place);
-        });
-    };
-    slides.forEach((slide, index) => {
-        slide.classList.toggle('is-active', index === currentIndex);
-        slide.classList.remove('is-exiting');
-    });
-    syncMapPin(slides[currentIndex]);
+function syncLandingHeroSlide(index) {
+    const slides = $$('.landing-hero-slide');
+    if (!slides.length) return;
+    landingHeroIndex = Math.min(Math.max(Number(index) || 0, 0), slides.length - 1);
+    const activeSlide = slides[landingHeroIndex];
+    slides.forEach((slide, slideIndex) => slide.classList.toggle('is-active', slideIndex === landingHeroIndex));
+    const place = $('[data-landing-caption-place]');
+    const position = $('[data-landing-caption-position]');
+    if (place) place.textContent = activeSlide.dataset.landingSlideLabel || '';
+    if (position) position.textContent = activeSlide.dataset.landingSlidePosition || '';
+    const nextIndex = getNextLandingSlideIndex(landingHeroIndex, slides.length);
+    const nextImage = slides[nextIndex]?.querySelector('img');
+    if (nextImage) nextImage.loading = 'eager';
+}
 
-    window.setInterval(() => {
-        const currentSlide = slides[currentIndex];
-        const nextIndex = (currentIndex + 1) % slides.length;
-        const nextSlide = slides[nextIndex];
-        currentSlide.classList.remove('is-active');
-        currentSlide.classList.add('is-exiting');
-        nextSlide.classList.remove('is-exiting');
-        nextSlide.classList.add('is-active');
-        syncMapPin(nextSlide);
-        window.setTimeout(() => currentSlide.classList.remove('is-exiting'), 680);
-        currentIndex = nextIndex;
-    }, 3000);
+function stopLandingHeroSlideshow() {
+    if (landingHeroTimer === null) return;
+    window.clearInterval(landingHeroTimer);
+    landingHeroTimer = null;
+}
+
+function startLandingHeroSlideshow() {
+    stopLandingHeroSlideshow();
+    const slides = $$('.landing-hero-slide');
+    syncLandingHeroSlide(landingHeroIndex);
+    if (slides.length <= 1 || document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    landingHeroTimer = window.setInterval(() => {
+        syncLandingHeroSlide(getNextLandingSlideIndex(landingHeroIndex, slides.length));
+    }, LANDING_SLIDE_INTERVAL_MS);
+}
+
+function setLandingHeroSlideshowActive(isActive) {
+    if (!isActive) {
+        stopLandingHeroSlideshow();
+        return;
+    }
+    startLandingHeroSlideshow();
 }
 
 function applyShareSaveState() {
@@ -6908,6 +6923,9 @@ function bindEvents() {
     });
     window.addEventListener('hashchange', () => applyRouteHash(window.location.hash));
     window.addEventListener('resize', () => layoutTripReviewPhotoRows());
+    document.addEventListener('visibilitychange', () => {
+        setLandingHeroSlideshowActive(document.body.dataset.page === LANDING_ROUTE && !document.hidden);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -6936,7 +6954,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadPublicProfileNames();
         ensureProfileHeaderShell();
         showPendingKakaoProfileImport();
-        startHomeHeroSlider();
         renderStagedPhotos();
         renderSavedPhotoSurfaces();
         renderTravelDraftSurfaces();
