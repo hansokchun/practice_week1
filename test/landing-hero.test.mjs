@@ -29,6 +29,7 @@ test('landing uses five full-screen sample photos with the requested copy', () =
     assert.match(css, /\.landing-hero-slide img\s*\{[^}]*object-fit:\s*cover;/s);
     assert.match(css, /\.landing-hero-content\s*\{[^}]*top:\s*46%;/s);
     assert.match(css, /\.landing-hero-content h1\s*\{[^}]*font-size:\s*56px;/s);
+    assert.match(css, /\.landing-hero-content p\s*\{[^}]*margin:\s*34px 0 0;/s);
     assert.match(css, /body\[data-page="landing"\]\s+\.site-header\s*\{[^}]*background:\s*transparent;/s);
 });
 
