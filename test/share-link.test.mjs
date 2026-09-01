@@ -90,6 +90,16 @@ test('getSharedRouteState returns normalized route and optional album id', () =>
         albumId: null,
         ownerId: null
     });
+    assert.deepEqual(getSharedRouteState('#/upload-complete'), {
+        route: 'upload-complete',
+        albumId: null,
+        ownerId: null
+    });
+    assert.deepEqual(getSharedRouteState('#/location-assign'), {
+        route: 'location-assign',
+        albumId: null,
+        ownerId: null
+    });
     assert.deepEqual(getSharedRouteState('#/admin-landing'), {
         route: 'admin-landing',
         albumId: null,

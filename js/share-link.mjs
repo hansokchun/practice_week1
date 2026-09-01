@@ -42,7 +42,7 @@ export function getSharedRouteState(hash) {
     const path = rawHash.replace(/^#\//, '').split('?')[0].replace(/^\/+|\/+$/g, '');
     const route = !rawHash
         ? 'landing'
-        : ['landing', 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing'].includes(path)
+        : ['landing', 'home', 'myphoto', 'explore', 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing'].includes(path)
         ? path || 'home'
         : 'home';
     return {

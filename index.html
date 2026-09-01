@@ -340,7 +340,7 @@
                         <strong></strong>
                     </div>
                     <button id="btn-dismiss-missing-location" type="button">나중에 하기</button>
-                    <button id="btn-direct-missing-location" type="button" class="solid" data-open-photo-editor>직접 지정하기</button>
+                    <button id="btn-direct-missing-location" type="button" class="solid" data-route="location-assign">직접 지정하기</button>
                     <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
                 </section>
                 <section class="dashboard-panel full-panel" data-my-library-panel="photos">
@@ -466,6 +466,116 @@
                     <article><span>1</span><strong>사진 선택</strong><p>여행 중 찍은 사진을 기기에서 선택합니다.</p></article>
                     <article><span>2</span><strong>위치 확인</strong><p>GPS가 있는 사진은 자동으로 지도에 연결됩니다.</p></article>
                     <article><span>3</span><strong>기본 비공개</strong><p>업로드된 사진은 공개 전까지 Home에만 보관됩니다.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-upload-complete" class="page page-upload-complete" aria-labelledby="upload-complete-title">
+            <div class="page-container upload-complete-shell">
+                <div class="upload-complete-icon" aria-hidden="true">
+                    <span class="material-symbols-outlined">check</span>
+                </div>
+                <p class="eyebrow">Upload Complete</p>
+                <h1 id="upload-complete-title">사진을 저장했어요</h1>
+                <p id="upload-complete-summary">사진이 내 보관함에 비공개로 저장됐습니다.</p>
+                <div id="upload-complete-preview" class="upload-complete-preview" aria-label="방금 저장한 사진"></div>
+                <div id="upload-complete-location-prompt" class="upload-complete-location-prompt" hidden>
+                    <span class="material-symbols-outlined" aria-hidden="true">location_off</span>
+                    <div>
+                        <strong id="upload-complete-location-title">위치 정보가 없는 사진이 있어요</strong>
+                        <p>위치를 지정하면 지도에서 사진을 더 쉽게 찾을 수 있어요.</p>
+                    </div>
+                </div>
+                <div class="upload-complete-actions">
+                    <button id="btn-complete-location-assign" class="btn-primary" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span>
+                        <span id="upload-complete-location-action-label">위치 추가하기</span>
+                    </button>
+                    <button class="btn-secondary" data-route="photos" type="button">내 사진 보기</button>
+                    <button class="btn-quiet" data-route="upload" type="button">사진 더 올리기</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-location-assign" class="page page-location-assign" aria-labelledby="location-assignment-title">
+            <div class="page-container location-assignment-shell">
+                <header class="location-assignment-header">
+                    <button class="back-link" data-route="photos" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                        내 사진
+                    </button>
+                    <div>
+                        <p class="eyebrow">Location</p>
+                        <h1 id="location-assignment-title">사진 위치 지정</h1>
+                        <p>사진을 선택하고 검색하거나 지도를 눌러 촬영 위치를 저장하세요.</p>
+                    </div>
+                    <strong id="location-assignment-progress" class="location-assignment-progress">0장 남음</strong>
+                </header>
+
+                <div id="location-assignment-empty" class="location-assignment-empty" hidden>
+                    <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+                    <h2>모든 사진의 위치를 확인했어요</h2>
+                    <p>지도에서 촬영한 장소를 확인해보세요.</p>
+                    <button class="btn-primary" data-route="photos" type="button">내 사진으로 돌아가기</button>
+                </div>
+
+                <div id="location-assignment-workspace" class="location-assignment-workspace">
+                    <aside class="location-assignment-queue" aria-labelledby="location-assignment-queue-title">
+                        <div class="location-assignment-section-heading">
+                            <h2 id="location-assignment-queue-title">위치 확인 필요</h2>
+                            <span id="location-assignment-queue-count">0장</span>
+                        </div>
+                        <div id="location-assignment-thumbnails" class="location-assignment-thumbnails"></div>
+                    </aside>
+
+                    <main class="location-assignment-editor">
+                        <section class="location-assignment-photo" aria-labelledby="location-assignment-photo-title">
+                            <div class="location-assignment-section-heading">
+                                <div>
+                                    <p class="eyebrow">Selected Photo</p>
+                                    <h2 id="location-assignment-photo-title">선택한 사진</h2>
+                                </div>
+                                <time id="location-assignment-photo-date">-- --</time>
+                            </div>
+                            <div class="location-assignment-selected-image">
+                                <img id="location-assignment-image" src="" alt="위치를 지정할 사진">
+                            </div>
+                        </section>
+
+                        <section class="location-assignment-map-panel" aria-labelledby="location-assignment-map-title">
+                            <div class="location-assignment-section-heading">
+                                <div>
+                                    <p class="eyebrow">Map</p>
+                                    <h2 id="location-assignment-map-title">촬영 위치</h2>
+                                </div>
+                                <span id="location-assignment-coordinate" aria-live="polite">지도에서 위치를 선택하세요</span>
+                            </div>
+                            <form id="location-assignment-search" class="location-assignment-search" role="search">
+                                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                                <input id="location-assignment-search-input" type="search" placeholder="장소나 주소 검색" autocomplete="off" aria-label="사진 위치 검색">
+                                <button type="submit">검색</button>
+                            </form>
+                            <div id="location-assignment-map" class="location-assignment-map" aria-label="사진 위치 지정 지도"></div>
+                            <div class="location-assignment-save-row">
+                                <p id="location-assignment-message" aria-live="polite">지도를 누르면 핀이 생깁니다.</p>
+                                <button id="btn-save-location-assignment" class="btn-primary" type="button" disabled>
+                                    <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                                    이 위치로 저장
+                                </button>
+                            </div>
+                        </section>
+                    </main>
+
+                    <section class="location-assignment-nearby" aria-labelledby="location-assignment-nearby-title">
+                        <div class="location-assignment-section-heading">
+                            <div>
+                                <p class="eyebrow">Nearby in time</p>
+                                <h2 id="location-assignment-nearby-title">비슷한 시간에 찍은 사진</h2>
+                            </div>
+                            <p>앞뒤 촬영 위치를 참고할 수 있어요.</p>
+                        </div>
+                        <div id="location-assignment-nearby-list" class="location-assignment-nearby-list"></div>
+                    </section>
                 </div>
             </div>
         </section>

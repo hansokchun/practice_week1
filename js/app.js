@@ -60,6 +60,12 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
+import {
+    getLocationAssignmentPhoto,
+    getMissingLocationAssignmentPhotos,
+    getNearbyLocatedPhotos,
+    getUploadCompletionPhotos
+} from './location-assignment.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { getGoogleMapsLocationUrl } from './location-copy.mjs';
 import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
@@ -321,6 +327,12 @@ const state = {
     locationEditorMarker: null,
     locationEditorMapClickListener: null,
     locationEditorPickMode: false,
+    locationAssignmentMap: null,
+    locationAssignmentMarker: null,
+    locationAssignmentMapClickListener: null,
+    locationAssignmentDraft: null,
+    locationAssignmentSearchResultName: '',
+    isSavingLocationAssignment: false,
     isPersistingUpload: false,
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
@@ -350,7 +362,7 @@ const EXPLORE_PHOTO_SCOPE_META = {
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const LANDING_ROUTE = 'landing';
-const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing']);
+const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing']);
 const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
 const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
@@ -724,7 +736,7 @@ function renderRoute(section) {
         setExploreMobileDiscoveryOpen(false);
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'settings', 'admin-landing'].includes(normalized)
+    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'settings', 'admin-landing'].includes(normalized)
         ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -739,6 +751,11 @@ function renderRoute(section) {
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
     if (normalized === 'liked') renderLikedPhotoSurfaces();
     if (normalized === 'settings') renderAccountSettingsPage();
+    if (normalized === 'upload-complete') renderUploadCompletePage();
+    if (normalized === 'location-assign') {
+        renderLocationAssignmentPage();
+        requestAnimationFrame(() => ensureLocationAssignmentMap());
+    }
     if (normalized === 'upload' && previousRoute !== 'upload' && !state.stagedPhotos.length) {
         setVisibilityMode(state.accountSettings.defaultVisibility);
     }
@@ -4852,10 +4869,258 @@ function renderMissingLocationTasks(photos) {
     }
 
     list.innerHTML = photos.slice(0, 4).map((photo) => `
-        <button class="missing-location-thumb" type="button" data-open-photo-editor data-photo-id="${escapeHtml(photo.id)}" aria-label="위치 직접 지정">
+        <button class="missing-location-thumb" type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" aria-label="${escapeHtml(getPhotoFallbackLabel(photo, '사진'))} 위치 지정">
             <img src="${escapeHtml(photo.url)}" alt="" loading="lazy" decoding="async">
         </button>
     `).join('');
+}
+
+function formatLocationAssignmentDate(value) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return '-- --';
+    return new Intl.DateTimeFormat('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function formatLocationAssignmentTimeDifference(milliseconds) {
+    const minutes = Math.max(1, Math.round(Number(milliseconds || 0) / 60000));
+    if (minutes < 60) return `${minutes}분`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}시간`;
+    return `${Math.round(hours / 24)}일`;
+}
+
+function renderUploadCompletePage() {
+    const uploadedPhotos = getUploadCompletionPhotos(getMySavedPhotos(), state.lastSavedPhotoIds);
+    const missingPhotos = getMissingLocationPhotos(uploadedPhotos);
+    const preview = $('#upload-complete-preview');
+    const summary = $('#upload-complete-summary');
+    const prompt = $('#upload-complete-location-prompt');
+    const promptTitle = $('#upload-complete-location-title');
+    const action = $('#btn-complete-location-assign');
+    const actionLabel = $('#upload-complete-location-action-label');
+
+    if (summary) {
+        summary.textContent = uploadedPhotos.length
+            ? `${uploadedPhotos.length}장이 내 보관함에 비공개로 저장됐습니다.`
+            : '사진 저장이 완료됐습니다.';
+    }
+    if (preview) {
+        preview.innerHTML = uploadedPhotos.slice(0, 6).map((photo) => `
+            <span>${renderPhotoImage(photo, '방금 저장한 사진')}</span>
+        `).join('');
+        preview.hidden = uploadedPhotos.length === 0;
+    }
+    if (prompt) prompt.hidden = missingPhotos.length === 0;
+    if (action) action.hidden = missingPhotos.length === 0;
+    if (promptTitle) promptTitle.textContent = `위치 정보가 없는 사진 ${missingPhotos.length}장이 있어요`;
+    if (actionLabel) actionLabel.textContent = `위치 없는 사진 ${missingPhotos.length}장 추가하기`;
+}
+
+function getCurrentLocationAssignmentPhoto() {
+    return getLocationAssignmentPhoto(
+        getMySavedPhotos(),
+        state.selectedLocationPhotoId,
+        state.currentUser?.id
+    );
+}
+
+function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom = null } = {}) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    state.locationAssignmentDraft = { lat, lng };
+    state.locationAssignmentSearchResultName = name;
+    const coordinate = $('#location-assignment-coordinate');
+    const saveButton = $('#btn-save-location-assignment');
+    const message = $('#location-assignment-message');
+    if (coordinate) coordinate.textContent = name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    if (saveButton) saveButton.disabled = false;
+    if (message) message.textContent = '핀을 끌어 미세 조정하거나 바로 저장하세요.';
+    if (!state.locationAssignmentMap) return;
+    const position = { lat, lng };
+    if (!state.locationAssignmentMarker) {
+        const maps = window.google?.maps;
+        if (!maps) return;
+        state.locationAssignmentMarker = createGoogleMapsMarker(maps, {
+            map: state.locationAssignmentMap,
+            position,
+            draggable: true
+        }, { mapId: state.googleMapsMapId });
+        state.locationAssignmentMarker.addListener('dragend', () => {
+            const next = state.locationAssignmentMarker?.getPosition?.();
+            if (!next) return;
+            setLocationAssignmentDraft(next.lat(), next.lng(), { center: false });
+        });
+    } else {
+        state.locationAssignmentMarker.setMap(state.locationAssignmentMap);
+        state.locationAssignmentMarker.setPosition(position);
+    }
+    if (center) state.locationAssignmentMap.panTo(position);
+    if (Number.isFinite(zoom)) state.locationAssignmentMap.setZoom(zoom);
+}
+
+async function ensureLocationAssignmentMap() {
+    const container = $('#location-assignment-map');
+    const selectedPhoto = getCurrentLocationAssignmentPhoto();
+    if (!container || !selectedPhoto || document.body.dataset.page !== 'location-assign') return null;
+    const maps = await loadGoogleMapsApi();
+    if (!maps || document.body.dataset.page !== 'location-assign') {
+        if (!maps) renderMapUnavailable(container);
+        return null;
+    }
+    const defaultCenter = { lat: 36.45, lng: 127.85 };
+    if (!state.locationAssignmentMap) {
+        state.locationAssignmentMap = new maps.Map(container, getLocationEditorMapOptions(defaultCenter, {
+            mapId: state.googleMapsMapId,
+            zoom: 7
+        }));
+        state.locationAssignmentMapClickListener = state.locationAssignmentMap.addListener('click', (event) => {
+            if (!event.latLng) return;
+            setLocationAssignmentDraft(event.latLng.lat(), event.latLng.lng(), { center: false });
+        });
+    }
+    maps.event.trigger(state.locationAssignmentMap, 'resize');
+    if (state.locationAssignmentDraft) {
+        setLocationAssignmentDraft(
+            state.locationAssignmentDraft.lat,
+            state.locationAssignmentDraft.lng,
+            { name: state.locationAssignmentSearchResultName, center: true }
+        );
+    } else {
+        state.locationAssignmentMarker?.setMap(null);
+        state.locationAssignmentMap.setCenter(defaultCenter);
+        state.locationAssignmentMap.setZoom(7);
+    }
+    return state.locationAssignmentMap;
+}
+
+function renderLocationAssignmentPage() {
+    const missingPhotos = getMissingLocationAssignmentPhotos(getMySavedPhotos(), state.currentUser?.id);
+    const selectedPhoto = getLocationAssignmentPhoto(missingPhotos, state.selectedLocationPhotoId, state.currentUser?.id);
+    const empty = $('#location-assignment-empty');
+    const workspace = $('#location-assignment-workspace');
+    const progress = $('#location-assignment-progress');
+    const count = $('#location-assignment-queue-count');
+    const thumbnails = $('#location-assignment-thumbnails');
+    const image = $('#location-assignment-image');
+    const date = $('#location-assignment-photo-date');
+    const nearbyList = $('#location-assignment-nearby-list');
+
+    if (progress) progress.textContent = `${missingPhotos.length}장 남음`;
+    if (count) count.textContent = `${missingPhotos.length}장`;
+    if (empty) empty.hidden = missingPhotos.length > 0;
+    if (workspace) workspace.hidden = missingPhotos.length === 0;
+    if (!selectedPhoto) return;
+    state.selectedLocationPhotoId = selectedPhoto.id;
+
+    if (thumbnails) {
+        thumbnails.innerHTML = missingPhotos.map((photo) => `
+            <button type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" class="${String(photo.id) === String(selectedPhoto.id) ? 'is-selected' : ''}" aria-pressed="${String(photo.id) === String(selectedPhoto.id)}">
+                ${renderPhotoImage(photo, '위치 확인이 필요한 사진')}
+                <span>${escapeHtml(formatLocationAssignmentDate(photo.date))}</span>
+            </button>
+        `).join('');
+    }
+    if (image) setImageSourceWithFallback(image, getPhotoImageSrc(selectedPhoto));
+    if (date) date.textContent = formatLocationAssignmentDate(selectedPhoto.date);
+
+    const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
+    if (nearbyList) {
+        nearbyList.innerHTML = nearbyPhotos.length
+            ? nearbyPhotos.map((photo) => `
+                <article class="location-assignment-nearby-item">
+                    ${renderPhotoImage(photo, '위치 참고 사진')}
+                    <div>
+                        <span>${photo.relativeDirection === 'before' ? '이전' : '이후'} ${formatLocationAssignmentTimeDifference(photo.timeDifferenceMs)}</span>
+                        <strong>${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</strong>
+                        <button type="button" data-use-nearby-location="${escapeHtml(photo.id)}">이 위치 사용</button>
+                    </div>
+                </article>
+            `).join('')
+            : '<p class="location-assignment-nearby-empty">위치를 참고할 인접 시간대 사진이 없어요.</p>';
+    }
+}
+
+function selectLocationAssignmentPhoto(photoId) {
+    const photo = getLocationAssignmentPhoto(getMySavedPhotos(), photoId, state.currentUser?.id);
+    if (!photo) return;
+    state.selectedLocationPhotoId = photo.id;
+    state.locationAssignmentDraft = null;
+    state.locationAssignmentSearchResultName = '';
+    state.locationAssignmentMarker?.setMap(null);
+    const coordinate = $('#location-assignment-coordinate');
+    const saveButton = $('#btn-save-location-assignment');
+    const message = $('#location-assignment-message');
+    if (coordinate) coordinate.textContent = '지도에서 위치를 선택하세요';
+    if (saveButton) saveButton.disabled = true;
+    if (message) message.textContent = '지도를 누르면 핀이 생깁니다.';
+    renderLocationAssignmentPage();
+    requestAnimationFrame(() => ensureLocationAssignmentMap());
+}
+
+async function searchLocationAssignmentMap(event) {
+    event.preventDefault();
+    const input = $('#location-assignment-search-input');
+    const query = input?.value.trim();
+    const map = await ensureLocationAssignmentMap();
+    const maps = window.google?.maps;
+    if (!query || !map || !maps?.places) return;
+    const message = $('#location-assignment-message');
+    if (message) message.textContent = '장소를 찾는 중입니다...';
+    const service = new maps.places.PlacesService(map);
+    service.findPlaceFromQuery({ query, fields: ['name', 'geometry'] }, (results, status) => {
+        if (status !== maps.places.PlacesServiceStatus.OK || !results?.[0]?.geometry?.location) {
+            if (message) message.textContent = '검색 결과를 찾지 못했어요. 주소를 더 자세히 입력해보세요.';
+            return;
+        }
+        const place = results[0];
+        setLocationAssignmentDraft(
+            place.geometry.location.lat(),
+            place.geometry.location.lng(),
+            { name: place.name || query, center: true, zoom: 15 }
+        );
+    });
+}
+
+async function saveLocationAssignment() {
+    const photo = getCurrentLocationAssignmentPhoto();
+    const draft = state.locationAssignmentDraft;
+    const message = $('#location-assignment-message');
+    const button = $('#btn-save-location-assignment');
+    if (!photo || !state.currentUser || !draft) {
+        if (message) message.textContent = '저장할 위치를 먼저 선택하세요.';
+        return;
+    }
+    if (state.isSavingLocationAssignment) return;
+    state.isSavingLocationAssignment = true;
+    if (button) button.disabled = true;
+    if (message) message.textContent = '위치를 저장하는 중입니다...';
+    const { data, error } = await updatePhotoInfo(photo.id, {
+        lat: draft.lat,
+        lng: draft.lng,
+        geo_source: 'manual',
+        location_precision: photo.location_precision || 'hidden'
+    });
+    state.isSavingLocationAssignment = false;
+    if (error) {
+        if (button) button.disabled = false;
+        if (message) message.textContent = error.message || '위치 저장에 실패했어요.';
+        return;
+    }
+    const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
+    state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
+    state.selectedLocationPhotoId = null;
+    state.locationAssignmentDraft = null;
+    state.locationAssignmentSearchResultName = '';
+    state.locationAssignmentMarker?.setMap(null);
+    renderSavedPhotoSurfaces();
+    renderLocationAssignmentPage();
+    showToast('사진 위치를 저장했습니다.');
+    requestAnimationFrame(() => ensureLocationAssignmentMap());
 }
 
 function getUniqueAlbumCoverSources(sources, limit = 3) {
@@ -6419,6 +6684,10 @@ function bindEvents() {
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
+    $('#btn-complete-location-assign')?.addEventListener('click', () => {
+        state.selectedLocationPhotoId = getMissingLocationAssignmentPhotos(getMySavedPhotos(), state.currentUser?.id)[0]?.id || null;
+        routeTo('location-assign');
+    });
     $('#btn-open-album-from-photos')?.addEventListener('click', startNewAlbum);
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
@@ -6995,6 +7264,28 @@ function bindEvents() {
             return;
         }
 
+        const locationAssignmentPhoto = event.target.closest('[data-location-assignment-photo]');
+        if (locationAssignmentPhoto) {
+            event.preventDefault();
+            state.selectedLocationPhotoId = locationAssignmentPhoto.dataset.locationAssignmentPhoto;
+            if (document.body.dataset.page === 'location-assign') selectLocationAssignmentPhoto(state.selectedLocationPhotoId);
+            else routeTo('location-assign');
+            return;
+        }
+
+        const nearbyLocationButton = event.target.closest('[data-use-nearby-location]');
+        if (nearbyLocationButton) {
+            const referencePhoto = getMySavedPhotos().find((photo) => String(photo.id) === String(nearbyLocationButton.dataset.useNearbyLocation));
+            if (referencePhoto && hasCompleteLocation(referencePhoto)) {
+                setLocationAssignmentDraft(Number(referencePhoto.lat), Number(referencePhoto.lng), {
+                    name: '인접 시간대 사진의 위치',
+                    center: true,
+                    zoom: 15
+                });
+            }
+            return;
+        }
+
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
         if (albumRow) {
             openMyphotoAlbum(albumRow);
@@ -7225,6 +7516,8 @@ function bindEvents() {
         button.addEventListener('click', dismissPendingKakaoProfileImport);
     });
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
+    $('#location-assignment-search')?.addEventListener('submit', searchLocationAssignmentMap);
+    $('#btn-save-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $('#pin-preview-edit-form')?.addEventListener('submit', saveExplorePreviewEdits);
