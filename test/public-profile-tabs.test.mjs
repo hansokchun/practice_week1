@@ -6,9 +6,9 @@ const html = readFileSync('index.html', 'utf8');
 const app = readFileSync('js/app.js', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 
-test('profile exposes map, my photos, and albums tabs in Korean', () => {
+test('profile exposes map, photos, and albums tabs in Korean', () => {
     assert.match(html, /data-profile-tab="map"[^>]*>맵뷰/);
-    assert.match(html, /data-profile-tab="photos"[^>]*>내 사진/);
+    assert.match(html, /data-profile-tab="photos"[^>]*>사진/);
     assert.match(html, /data-profile-tab="albums"[^>]*>앨범/);
     assert.match(html, /id="profile-map"/);
     assert.match(html, /class="profile-photo-panel" data-profile-panel="photos"/);
@@ -80,11 +80,13 @@ test('public profile photo grids omit visible fallback titles without descriptio
     assert.doesNotMatch(selectedBody, /<strong>\$\{escapeHtml\(getPhotoFallbackLabel\(photo/);
 });
 
-test('public profile photo thumbnails preserve original photo ratios', () => {
+test('profile and library photo thumbnails share the same original-ratio masonry grid', () => {
     assert.match(css, /\.profile-photo-panel\.is-active\s*\{[^}]*display:\s*block;/s);
-    assert.match(css, /\.profile-photo-grid\s*\{[^}]*column-count:\s*3;[^}]*column-gap:\s*18px;/s);
-    assert.match(css, /\.profile-photo-grid article\s*\{[^}]*break-inside:\s*avoid;[^}]*margin:\s*0 0 18px;/s);
-    assert.match(css, /\.profile-photo-grid img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
+    assert.match(html, /class="personal-photo-grid photo-masonry-grid"/s);
+    assert.match(html, /class="profile-photo-grid photo-masonry-grid"/s);
+    assert.match(css, /\.photo-masonry-grid,\s*\.landing-tag-gallery-grid\s*\{[^}]*column-count:\s*3;[^}]*column-gap:\s*18px;/s);
+    assert.match(css, /\.photo-masonry-grid[^}]*> article,[\s\S]*\.photo-masonry-grid[^}]*> \.landing-tag-gallery-card\s*\{[^}]*break-inside:\s*avoid;[^}]*margin:\s*0 0 18px;/s);
+    assert.match(css, /\.photo-masonry-grid img,\s*\.landing-tag-gallery-grid img\s*\{[^}]*width:\s*100%;[^}]*height:\s*auto;[^}]*object-fit:\s*contain;/s);
     assert.doesNotMatch(css, /\.profile-photo-grid img,\s*\.profile-album-grid img\s*\{[^}]*height:\s*180px;/s);
 });
 

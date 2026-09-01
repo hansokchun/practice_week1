@@ -4938,9 +4938,6 @@ body[data-page="explore"] .site-footer {
 }
 
 .personal-photo-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
     width: 100%;
 }
 
@@ -8384,9 +8381,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .landing-tag-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 18px;
+    width: 100%;
 }
 
 .landing-tag-gallery-card {
@@ -8468,7 +8463,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 @media (max-width: 760px) {
     .landing-tag-gallery-shell {
-        padding: 22px 14px calc(48px + env(safe-area-inset-bottom));
+        width: 100%;
+        padding: 22px 16px calc(48px + env(safe-area-inset-bottom));
     }
 
     .landing-tag-gallery-header {
@@ -8494,11 +8490,6 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     .landing-tag-region-filters button {
         min-height: 36px;
         padding: 0 14px;
-    }
-
-    .landing-tag-gallery-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
     }
 
     .landing-tag-gallery-card {
@@ -9103,8 +9094,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .profile-photo-grid {
-    column-count: 3;
-    column-gap: 18px;
+    width: 100%;
 }
 
 .profile-photo-grid article {
@@ -9120,6 +9110,59 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     width: 100%;
     height: auto;
     object-fit: contain;
+}
+
+.photo-masonry-grid,
+.landing-tag-gallery-grid {
+    display: block;
+    width: 100%;
+    column-count: 3;
+    column-gap: 18px;
+}
+
+.photo-masonry-grid > article,
+.photo-masonry-grid > .landing-tag-gallery-card,
+.landing-tag-gallery-grid > .landing-tag-gallery-card {
+    display: block;
+    width: 100%;
+    break-inside: avoid;
+    margin: 0 0 18px;
+}
+
+.photo-masonry-grid img,
+.landing-tag-gallery-grid img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.photo-masonry-grid .personal-photo-card img {
+    aspect-ratio: auto;
+}
+
+.landing-tag-gallery-grid .landing-tag-gallery-card {
+    aspect-ratio: auto;
+}
+
+.photo-masonry-grid > .empty-state,
+.photo-masonry-grid > .landing-tag-gallery-empty,
+.landing-tag-gallery-grid > .landing-tag-gallery-empty {
+    column-span: all;
+}
+
+@media (max-width: 860px) {
+    .photo-masonry-grid,
+    .landing-tag-gallery-grid {
+        column-count: 2;
+        column-gap: 12px;
+    }
+
+    .photo-masonry-grid > article,
+    .photo-masonry-grid > .landing-tag-gallery-card,
+    .landing-tag-gallery-grid > .landing-tag-gallery-card {
+        margin-bottom: 12px;
+    }
 }
 
 .profile-album-grid img {

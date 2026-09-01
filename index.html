@@ -353,7 +353,7 @@
                             <button id="btn-upload-more-photos" class="btn-primary compact-action-button" type="button">사진 올리기</button>
                         </div>
                     </div>
-                    <div id="personal-photo-grid" class="personal-photo-grid"></div>
+                    <div id="personal-photo-grid" class="personal-photo-grid photo-masonry-grid"></div>
                     <nav id="personal-photo-pagination" class="photo-pagination" aria-label="내 사진 페이지" hidden></nav>
                 </section>
                 <section class="dashboard-panel full-panel my-library-albums" data-my-library-panel="albums" hidden>
@@ -418,7 +418,7 @@
                             <p id="liked-photo-summary">0장</p>
                         </div>
                     </div>
-                    <div id="liked-photo-full-grid" class="personal-photo-grid liked-photo-full-grid"></div>
+                    <div id="liked-photo-full-grid" class="personal-photo-grid liked-photo-full-grid photo-masonry-grid"></div>
                     <nav id="liked-photo-pagination" class="photo-pagination" aria-label="좋아요한 사진 페이지" hidden></nav>
                 </section>
             </div>
@@ -910,7 +910,7 @@
             <div class="page-container profile-content">
                 <div class="profile-tabs" role="tablist" aria-label="프로필 보기 방식">
                     <button class="active" data-profile-tab="map" type="button">맵뷰</button>
-                    <button data-profile-tab="photos" type="button">내 사진</button>
+                    <button data-profile-tab="photos" type="button">사진</button>
                     <button data-profile-tab="albums" type="button">앨범</button>
                 </div>
                 <div id="profile-owner-map-heading" class="profile-owner-map-heading" hidden>
@@ -921,7 +921,7 @@
                         <div id="profile-map" class="profile-google-map" aria-label="공개 사진 위치 지도"></div>
                     </section>
                     <section class="profile-photo-panel" data-profile-panel="photos">
-                        <div class="profile-photo-grid">
+                        <div class="profile-photo-grid photo-masonry-grid">
                             <article><img src="images/main_bg2.jpg" alt=""><strong>공개 사진</strong><span>사진을 공개하면 이곳에 표시됩니다.</span></article>
                         </div>
                         <div class="profile-panel-more" hidden>
