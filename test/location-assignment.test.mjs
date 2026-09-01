@@ -23,16 +23,24 @@ test('location assignment queue contains only the current owners missing-locatio
     assert.equal(getLocationAssignmentPhoto(photos, 'missing-id', 'me')?.id, 'selected');
 });
 
-test('nearby references contain at most two located photos before and after capture time', () => {
+test('nearby references contain only the closest photo on each side within one day', () => {
     assert.deepEqual(
         getNearbyLocatedPhotos(photos, photos[2]).map((photo) => [photo.id, photo.relativeDirection]),
         [
-            ['before-2', 'before'],
             ['before-1', 'before'],
-            ['after-1', 'after'],
-            ['after-2', 'after']
+            ['after-1', 'after']
         ]
     );
+});
+
+test('nearby references exclude located photos more than one day away', () => {
+    const selected = { id: 'selected', date: '2026-08-10T10:00:00Z' };
+    const distant = [
+        { id: 'too-early', date: '2026-08-09T09:59:59Z', lat: 37, lng: 127 },
+        { id: 'too-late', date: '2026-08-11T10:00:01Z', lat: 35, lng: 129 }
+    ];
+
+    assert.deepEqual(getNearbyLocatedPhotos(distant, selected), []);
 });
 
 test('nearby references are empty when the selected photo has no usable capture time', () => {

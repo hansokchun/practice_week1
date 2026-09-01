@@ -505,9 +505,7 @@
                         내 사진
                     </button>
                     <div>
-                        <p class="eyebrow">Location</p>
                         <h1 id="location-assignment-title">사진 위치 지정</h1>
-                        <p>사진을 선택하고 검색하거나 지도를 눌러 촬영 위치를 저장하세요.</p>
                     </div>
                     <strong id="location-assignment-progress" class="location-assignment-progress">0장 남음</strong>
                 </header>
@@ -532,20 +530,18 @@
                         <section class="location-assignment-photo" aria-labelledby="location-assignment-photo-title">
                             <div class="location-assignment-section-heading">
                                 <div>
-                                    <p class="eyebrow">Selected Photo</p>
                                     <h2 id="location-assignment-photo-title">선택한 사진</h2>
                                 </div>
                                 <time id="location-assignment-photo-date">-- --</time>
                             </div>
                             <div class="location-assignment-selected-image">
-                                <img id="location-assignment-image" src="" alt="위치를 지정할 사진">
+                                <img id="location-assignment-image" src="" alt="위치를 지정할 사진" decoding="async" fetchpriority="high">
                             </div>
                         </section>
 
                         <section class="location-assignment-map-panel" aria-labelledby="location-assignment-map-title">
                             <div class="location-assignment-section-heading">
                                 <div>
-                                    <p class="eyebrow">Map</p>
                                     <h2 id="location-assignment-map-title">촬영 위치</h2>
                                 </div>
                                 <span id="location-assignment-coordinate" aria-live="polite">지도에서 위치를 선택하세요</span>
@@ -569,7 +565,6 @@
                     <section class="location-assignment-nearby" aria-labelledby="location-assignment-nearby-title">
                         <div class="location-assignment-section-heading">
                             <div>
-                                <p class="eyebrow">Nearby in time</p>
                                 <h2 id="location-assignment-nearby-title">비슷한 시간에 찍은 사진</h2>
                             </div>
                             <p>앞뒤 촬영 위치를 참고할 수 있어요.</p>
@@ -939,26 +934,6 @@
                         <article><img src="images/main_bg5.jpg" alt=""><strong>Italian Blue Week</strong><span>86장 · 14곳</span></article>
                     </section>
                 </div>
-                <section id="account-feedback-section" class="account-feedback-section" aria-labelledby="account-feedback-title" hidden>
-                    <div class="account-feedback-icon" aria-hidden="true">
-                        <span class="material-symbols-outlined">rate_review</span>
-                    </div>
-                    <div class="account-feedback-copy">
-                        <h2 id="account-feedback-title">의견 보내기</h2>
-                        <p>사용하며 발견한 오류나 불편함, 새 기능 아이디어를 알려주세요.</p>
-                    </div>
-                    <button id="account-feedback-open" class="account-feedback-open" type="button">
-                        피드백 작성
-                        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-                    </button>
-                </section>
-                <section id="account-deletion-section" class="account-deletion-section" aria-labelledby="account-deletion-title" hidden>
-                    <div>
-                        <h2 id="account-deletion-title">계정 관리</h2>
-                        <p>프로필과 클라우드에 저장한 여행 기록을 영구적으로 삭제할 수 있습니다.</p>
-                    </div>
-                    <button id="account-deletion-open" class="account-deletion-open" type="button">계정 삭제</button>
-                </section>
             </div>
         </section>
     </main>
@@ -1034,6 +1009,7 @@
             <button class="modal-close" data-close-modal type="button" aria-label="계정 삭제 창 닫기">×</button>
             <h2 id="account-deletion-dialog-title">계정을 영구 삭제합니다</h2>
             <p>프로필, 업로드한 사진, 앨범, 댓글과 저장소 파일이 삭제되며 되돌릴 수 없습니다. 기기의 원본 사진은 유지됩니다.</p>
+            <p class="account-deletion-warning"><strong>계정에 저장된 사진과 앨범도 함께 영구 삭제됩니다.</strong> 삭제 후에는 복구할 수 없습니다.</p>
             <label for="account-deletion-confirmation">계속하려면 <strong>계정 삭제</strong>를 입력하세요.</label>
             <input id="account-deletion-confirmation" type="text" autocomplete="off" spellcheck="false" placeholder="계정 삭제">
             <p id="account-deletion-message" class="auth-message account-deletion-message" aria-live="polite"></p>

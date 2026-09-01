@@ -17,7 +17,9 @@ export function getLocationAssignmentPhoto(photos = [], selectedPhotoId = null, 
     return missingPhotos.find((photo) => String(photo.id) === String(selectedPhotoId)) || missingPhotos[0] || null;
 }
 
-export function getNearbyLocatedPhotos(photos = [], selectedPhoto = null, { limitEachSide = 2 } = {}) {
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+export function getNearbyLocatedPhotos(photos = [], selectedPhoto = null) {
     const selectedTime = getTakenAt(selectedPhoto);
     if (!selectedPhoto || selectedTime === null) return [];
 
@@ -28,15 +30,14 @@ export function getNearbyLocatedPhotos(photos = [], selectedPhoto = null, { limi
         .filter((entry) => entry.timestamp !== null);
 
     const before = located
-        .filter((entry) => entry.timestamp < selectedTime)
+        .filter((entry) => entry.timestamp < selectedTime && selectedTime - entry.timestamp <= ONE_DAY_MS)
         .sort((left, right) => right.timestamp - left.timestamp)
-        .slice(0, limitEachSide)
-        .reverse()
+        .slice(0, 1)
         .map((entry) => ({ ...entry.photo, relativeDirection: 'before', timeDifferenceMs: selectedTime - entry.timestamp }));
     const after = located
-        .filter((entry) => entry.timestamp > selectedTime)
+        .filter((entry) => entry.timestamp > selectedTime && entry.timestamp - selectedTime <= ONE_DAY_MS)
         .sort((left, right) => left.timestamp - right.timestamp)
-        .slice(0, limitEachSide)
+        .slice(0, 1)
         .map((entry) => ({ ...entry.photo, relativeDirection: 'after', timeDifferenceMs: entry.timestamp - selectedTime }));
 
     return [...before, ...after];

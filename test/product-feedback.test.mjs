@@ -45,12 +45,13 @@ test('feedback constants match the persisted product workflow', () => {
     assert.deepEqual(Object.keys(FEEDBACK_STATUSES), ['received', 'reviewing', 'planned', 'completed', 'closed']);
 });
 
-test('profile and landing admin expose feedback surfaces', () => {
+test('settings and landing admin expose feedback surfaces without duplicating them on profile', () => {
     const html = readFileSync('index.html', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');
     const auth = readFileSync('auth.js', 'utf8');
 
-    assert.match(html, /id="account-feedback-section"[\s\S]*id="account-deletion-section"/u);
+    assert.doesNotMatch(html, /id="account-feedback-section"/u);
+    assert.match(html, /id="settings-feedback-open"/u);
     assert.match(html, /id="feedback-modal"[\s\S]*id="feedback-form"/u);
     assert.match(html, /id="landing-admin-feedback"/u);
     assert.match(app, /submitProductFeedback/u);

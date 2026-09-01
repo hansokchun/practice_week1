@@ -24,6 +24,8 @@ test('manual location page exposes queue, selected photo, search map, and save a
     assert.match(surface, /id="location-assignment-map"/);
     assert.match(surface, /id="btn-save-location-assignment"/);
     assert.match(surface, /id="location-assignment-nearby-list"/);
+    assert.doesNotMatch(surface, /Location|Selected Photo|Nearby in time/);
+    assert.doesNotMatch(surface, /사진을 선택하고 검색하거나 지도를 눌러 촬영 위치를 저장하세요/);
 });
 
 test('missing-location banner routes to the dedicated page instead of the photo edit modal', () => {
@@ -34,4 +36,15 @@ test('missing-location banner routes to the dedicated page instead of the photo 
 test('location assignment uses a responsive split workspace and mobile horizontal queues', () => {
     assert.match(styles, /\.location-assignment-editor\s*\{[^}]*grid-template-columns:/s);
     assert.match(styles, /@media \(max-width: 720px\)[\s\S]*\.location-assignment-thumbnails\s*\{[^}]*display:\s*flex;[^}]*overflow-x:\s*auto;/s);
+});
+
+test('location assignment loads queue thumbnails lazily and keeps nearby coordinates off the cards', () => {
+    assert.match(app, /renderPhotoImage\(photo, '위치 확인이 필요한 사진', \{ fetchPriority: 'low' \}\)/);
+    assert.doesNotMatch(app, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
+    assert.match(app, /locationAssignmentReferenceMarkers/);
+});
+
+test('dragging the assignment pin updates its coordinate readout continuously', () => {
+    assert.match(app, /locationAssignmentMarker\.addListener\('drag',/);
+    assert.match(app, /updateLocationAssignmentDraftReadout/);
 });

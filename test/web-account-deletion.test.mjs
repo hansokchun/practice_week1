@@ -23,16 +23,19 @@ test('web account deletion requires the exact Korean confirmation while idle', (
     });
 });
 
-test('the web profile exposes a recoverable self-service deletion flow', () => {
+test('settings exposes a recoverable self-service deletion flow with a final warning', () => {
     const html = readFileSync('index.html', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');
     const auth = readFileSync('auth.js', 'utf8');
 
-    assert.match(html, /id="account-deletion-section"[^>]*hidden/u);
+    assert.doesNotMatch(html, /id="account-deletion-section"/u);
+    assert.match(html, /id="settings-delete-account"/u);
     assert.match(html, /id="account-deletion-confirmation"/u);
     assert.match(html, /id="account-deletion-submit"/u);
     assert.match(html, /기기의 원본 사진은 유지/u);
+    assert.match(html, /사진과 앨범도 함께 영구 삭제/u);
     assert.match(app, /deleteCurrentAccount/u);
+    assert.match(app, /window\.confirm\([^)]*사진과 앨범/su);
     assert.match(app, /getAccountDeletionControlState/u);
     assert.match(auth, /functions\.invoke\(['"]delete-account['"]/u);
     assert.match(auth, /confirmation:\s*['"]DELETE_ACCOUNT['"]/u);

@@ -330,6 +330,7 @@ const state = {
     locationEditorPickMode: false,
     locationAssignmentMap: null,
     locationAssignmentMarker: null,
+    locationAssignmentReferenceMarkers: [],
     locationAssignmentMapClickListener: null,
     locationAssignmentDraft: null,
     locationAssignmentSearchResultName: '',
@@ -3160,6 +3161,8 @@ async function handleAccountDeletionSubmit(event) {
     const message = $('#account-deletion-message');
     const control = getAccountDeletionControlState(input?.value, false);
     if (!control.confirmed || !state.currentUser) return;
+    const confirmed = window.confirm('정말 계정을 삭제할까요? 계정에 저장된 사진과 앨범도 모두 영구 삭제되며 복구할 수 없습니다.');
+    if (!confirmed) return;
 
     syncAccountDeletionControl(true);
     if (message) message.textContent = '계정을 삭제하는 중입니다…';
@@ -3623,8 +3626,6 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
     if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
-    if ($('#account-feedback-section')) $('#account-feedback-section').hidden = !isOwnProfile;
-    if ($('#account-deletion-section')) $('#account-deletion-section').hidden = !isOwnProfile;
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
     const profileHeroImage = $('.profile-cover > img');
@@ -4904,12 +4905,10 @@ function formatLocationAssignmentDate(value) {
     }).format(date);
 }
 
-function formatLocationAssignmentTimeDifference(milliseconds) {
-    const minutes = Math.max(1, Math.round(Number(milliseconds || 0) / 60000));
-    if (minutes < 60) return `${minutes}분`;
-    const hours = Math.round(minutes / 60);
-    if (hours < 24) return `${hours}시간`;
-    return `${Math.round(hours / 24)}일`;
+function formatLocationAssignmentRelativeTime(photo) {
+    const minutes = Math.max(1, Math.round(Number(photo?.timeDifferenceMs || 0) / 60000));
+    const difference = minutes < 60 ? `${minutes}분` : `${Math.round(minutes / 60)}시간`;
+    return `${difference} ${photo?.relativeDirection === 'before' ? '전' : '후'}`;
 }
 
 function renderUploadCompletePage() {
@@ -4947,7 +4946,7 @@ function getCurrentLocationAssignmentPhoto() {
     );
 }
 
-function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom = null } = {}) {
+function updateLocationAssignmentDraftReadout(lat, lng, { name = '', message: statusMessage = '핀을 끌어 미세 조정하거나 바로 저장하세요.' } = {}) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     state.locationAssignmentDraft = { lat, lng };
     state.locationAssignmentSearchResultName = name;
@@ -4956,7 +4955,18 @@ function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom =
     const message = $('#location-assignment-message');
     if (coordinate) coordinate.textContent = name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     if (saveButton) saveButton.disabled = false;
-    if (message) message.textContent = '핀을 끌어 미세 조정하거나 바로 저장하세요.';
+    if (message) message.textContent = statusMessage;
+}
+
+function readLocationAssignmentMarkerPosition(statusMessage) {
+    const next = state.locationAssignmentMarker?.getPosition?.();
+    if (!next) return;
+    updateLocationAssignmentDraftReadout(next.lat(), next.lng(), { message: statusMessage });
+}
+
+function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom = null } = {}) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    updateLocationAssignmentDraftReadout(lat, lng, { name });
     if (!state.locationAssignmentMap) return;
     const position = { lat, lng };
     if (!state.locationAssignmentMarker) {
@@ -4967,10 +4977,8 @@ function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom =
             position,
             draggable: true
         }, { mapId: state.googleMapsMapId });
-        state.locationAssignmentMarker.addListener('dragend', () => {
-            const next = state.locationAssignmentMarker?.getPosition?.();
-            if (!next) return;
-            setLocationAssignmentDraft(next.lat(), next.lng(), { center: false });
+        state.locationAssignmentMarker.addListener('drag', () => {
+            readLocationAssignmentMarkerPosition('핀을 움직이는 중입니다.');
         });
     } else {
         state.locationAssignmentMarker.setMap(state.locationAssignmentMap);
@@ -4978,6 +4986,45 @@ function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom =
     }
     if (center) state.locationAssignmentMap.panTo(position);
     if (Number.isFinite(zoom)) state.locationAssignmentMap.setZoom(zoom);
+}
+
+function clearLocationAssignmentReferenceMarkers() {
+    state.locationAssignmentReferenceMarkers.forEach((marker) => marker.setMap?.(null));
+    state.locationAssignmentReferenceMarkers = [];
+}
+
+function renderLocationAssignmentReferenceMarkers(maps, photos = [], { fitViewport = false } = {}) {
+    clearLocationAssignmentReferenceMarkers();
+    const map = state.locationAssignmentMap;
+    if (!map || !maps || !photos.length) return;
+
+    const baseIcon = getExplorePinIcon(maps, { type: 'photo' });
+    const width = 24;
+    const height = 31;
+    const icon = {
+        ...baseIcon,
+        scaledSize: maps.Size ? new maps.Size(width, height) : { width, height },
+        anchor: maps.Point ? new maps.Point(width / 2, height - 1) : undefined
+    };
+    const bounds = typeof maps.LatLngBounds === 'function' ? new maps.LatLngBounds() : null;
+
+    state.locationAssignmentReferenceMarkers = photos.map((photo) => {
+        const position = { lat: Number(photo.lat), lng: Number(photo.lng) };
+        bounds?.extend(position);
+        return createGoogleMapsMarker(maps, {
+            map,
+            position,
+            icon,
+            title: formatLocationAssignmentRelativeTime(photo)
+        }, { mapId: state.googleMapsMapId });
+    });
+
+    if (!fitViewport || !bounds) return;
+    if (state.locationAssignmentDraft) bounds.extend(state.locationAssignmentDraft);
+    map.fitBounds(bounds, 72);
+    maps.event?.addListenerOnce?.(map, 'idle', () => {
+        if ((map.getZoom?.() || 0) > 14) map.setZoom(14);
+    });
 }
 
 async function ensureLocationAssignmentMap() {
@@ -5001,6 +5048,10 @@ async function ensureLocationAssignmentMap() {
         });
     }
     maps.event.trigger(state.locationAssignmentMap, 'resize');
+    const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
+    renderLocationAssignmentReferenceMarkers(maps, nearbyPhotos, {
+        fitViewport: !state.locationAssignmentDraft
+    });
     if (state.locationAssignmentDraft) {
         setLocationAssignmentDraft(
             state.locationAssignmentDraft.lat,
@@ -5009,8 +5060,10 @@ async function ensureLocationAssignmentMap() {
         );
     } else {
         state.locationAssignmentMarker?.setMap(null);
-        state.locationAssignmentMap.setCenter(defaultCenter);
-        state.locationAssignmentMap.setZoom(7);
+        if (!nearbyPhotos.length) {
+            state.locationAssignmentMap.setCenter(defaultCenter);
+            state.locationAssignmentMap.setZoom(7);
+        }
     }
     return state.locationAssignmentMap;
 }
@@ -5037,7 +5090,7 @@ function renderLocationAssignmentPage() {
     if (thumbnails) {
         thumbnails.innerHTML = missingPhotos.map((photo) => `
             <button type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" class="${String(photo.id) === String(selectedPhoto.id) ? 'is-selected' : ''}" aria-pressed="${String(photo.id) === String(selectedPhoto.id)}">
-                ${renderPhotoImage(photo, '위치 확인이 필요한 사진')}
+                ${renderPhotoImage(photo, '위치 확인이 필요한 사진', { fetchPriority: 'low' })}
                 <span>${escapeHtml(formatLocationAssignmentDate(photo.date))}</span>
             </button>
         `).join('');
@@ -5052,8 +5105,7 @@ function renderLocationAssignmentPage() {
                 <article class="location-assignment-nearby-item">
                     ${renderPhotoImage(photo, '위치 참고 사진')}
                     <div>
-                        <span>${photo.relativeDirection === 'before' ? '이전' : '이후'} ${formatLocationAssignmentTimeDifference(photo.timeDifferenceMs)}</span>
-                        <strong>${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</strong>
+                        <strong>${formatLocationAssignmentRelativeTime(photo)}</strong>
                         <button type="button" data-use-nearby-location="${escapeHtml(photo.id)}">이 위치 사용</button>
                     </div>
                 </article>
