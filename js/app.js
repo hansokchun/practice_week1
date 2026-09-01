@@ -6,6 +6,7 @@ import {
     detachPhotosFromAlbum,
     fetchAlbums,
     fetchLandingCuration,
+    fetchProductFeedback,
     fetchMyLikes,
     fetchPhotos,
     fetchProfilesByIds,
@@ -32,6 +33,8 @@ import {
     removeUploadedImage,
     requestPhotoAiAnalysis,
     saveLandingSection,
+    submitProductFeedback,
+    updateProductFeedbackStatus,
     upsertPhoto
 } from '../auth.js';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
@@ -96,6 +99,12 @@ import {
     getPublicOwnerProfilePhotos
 } from './public-owner-profile-photos.mjs';
 import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
+import {
+    FEEDBACK_CATEGORIES,
+    FEEDBACK_STATUSES,
+    isFeedbackDraftValid,
+    normalizeFeedbackDraft
+} from './product-feedback.mjs';
 import { formatRelativeTime } from './relative-time.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
@@ -317,6 +326,9 @@ const state = {
     landingTagRegion: '',
     landingTagPhotos: [],
     landingTagRandomSeeds: {},
+    productFeedback: [],
+    isProductFeedbackLoading: false,
+    hasLoadedProductFeedback: false,
     myLibraryTab: 'photos',
     isAccountMenuOpen: false,
     photoDetailStreetView: null
@@ -723,7 +735,11 @@ function renderRoute(section) {
         renderLandingSections();
     }
     if (normalized === 'photos') setMyLibraryTab(state.myLibraryTab);
-    if (normalized === 'admin-landing') renderLandingAdminForm();
+    if (normalized === 'admin-landing') {
+        renderLandingAdminForm();
+        renderLandingAdminFeedback();
+        void loadLandingAdminFeedback();
+    }
     if (normalized === 'tag') renderLandingTagPage();
     if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
@@ -1105,6 +1121,184 @@ async function saveLandingAdminForm(event) {
     await loadLandingCuration();
     renderLandingAdminForm();
     if (message) message.textContent = '메인 구성을 저장했습니다.';
+}
+
+function getFeedbackAuthorName(feedback) {
+    const userId = String(feedback?.user_id || '');
+    const profile = state.publicProfiles[userId] || null;
+    return state.profileNames[userId]
+        || String(profile?.nickname || '').trim()
+        || `사용자 ${userId.slice(0, 6)}`;
+}
+
+function formatFeedbackDate(value) {
+    const date = new Date(value || '');
+    if (Number.isNaN(date.getTime())) return '--';
+    return new Intl.DateTimeFormat('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function renderLandingAdminFeedback() {
+    const list = $('#landing-admin-feedback-list');
+    const summary = $('#landing-admin-feedback-summary');
+    if (!list || !summary) return;
+    if (state.isProductFeedbackLoading && !state.hasLoadedProductFeedback) {
+        list.innerHTML = '<p class="admin-feedback-empty">피드백을 불러오는 중입니다.</p>';
+        summary.textContent = '';
+        return;
+    }
+    if (!state.productFeedback.length) {
+        list.innerHTML = '<p class="admin-feedback-empty">아직 접수된 피드백이 없습니다.</p>';
+        summary.textContent = '전체 0개';
+        return;
+    }
+
+    const openCount = state.productFeedback.filter((item) => !['completed', 'closed'].includes(item.status)).length;
+    summary.innerHTML = `<strong>전체 ${state.productFeedback.length}개</strong><span>확인 필요 ${openCount}개</span>`;
+    list.innerHTML = state.productFeedback.map((feedback) => {
+        const categoryLabel = FEEDBACK_CATEGORIES[feedback.category] || FEEDBACK_CATEGORIES.other;
+        const statusOptions = Object.entries(FEEDBACK_STATUSES).map(([value, label]) => (
+            `<option value="${value}" ${feedback.status === value ? 'selected' : ''}>${label}</option>`
+        )).join('');
+        const rating = Number(feedback.rating);
+        return `
+            <article class="admin-feedback-item" data-admin-feedback-id="${escapeHtml(feedback.id)}">
+                <div class="admin-feedback-item__topline">
+                    <div>
+                        <span class="admin-feedback-category" data-category="${escapeHtml(feedback.category)}">${escapeHtml(categoryLabel)}</span>
+                        <strong>${escapeHtml(getFeedbackAuthorName(feedback))}</strong>
+                        <time datetime="${escapeHtml(feedback.created_at)}">${escapeHtml(formatFeedbackDate(feedback.created_at))}</time>
+                    </div>
+                    <label>
+                        <span class="sr-only">처리 상태</span>
+                        <select data-admin-feedback-status>${statusOptions}</select>
+                    </label>
+                </div>
+                <p>${escapeHtml(feedback.message)}</p>
+                <div class="admin-feedback-meta">
+                    ${Number.isInteger(rating) ? `<span>만족도 ${rating}/5</span>` : ''}
+                    ${feedback.page_path ? `<span>화면 ${escapeHtml(feedback.page_path)}</span>` : ''}
+                    <span>${feedback.contact_allowed ? '연락 동의' : '연락 미동의'}</span>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
+async function loadLandingAdminFeedback({ force = false } = {}) {
+    if (!isLandingAdmin(state.currentUser) || state.isProductFeedbackLoading) return;
+    if (state.hasLoadedProductFeedback && !force) return;
+    state.isProductFeedbackLoading = true;
+    renderLandingAdminFeedback();
+    const message = $('#landing-admin-feedback-message');
+    if (message) message.textContent = '';
+    const { data, error } = await fetchProductFeedback(100);
+    state.isProductFeedbackLoading = false;
+    if (error) {
+        if (message) message.textContent = '피드백을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
+        renderLandingAdminFeedback();
+        return;
+    }
+    const feedbackUserIds = [...new Set(data.map((item) => item.user_id).filter(Boolean))];
+    const { data: feedbackProfiles } = await fetchProfilesByIds(feedbackUserIds);
+    state.profileNames = feedbackProfiles.reduce((names, profile) => {
+        const userId = getProfileUserId(profile);
+        const displayName = getProfileDisplayName(profile);
+        if (userId && displayName) names[userId] = displayName;
+        return names;
+    }, { ...state.profileNames });
+    state.publicProfiles = feedbackProfiles.reduce((profiles, profile) => {
+        const userId = getProfileUserId(profile);
+        if (userId) profiles[userId] = profile;
+        return profiles;
+    }, { ...state.publicProfiles });
+    state.productFeedback = data;
+    state.hasLoadedProductFeedback = true;
+    renderLandingAdminFeedback();
+}
+
+function openProductFeedbackDialog() {
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        return;
+    }
+    const form = $('#feedback-form');
+    form?.reset();
+    const defaultCategory = form?.querySelector('[name="feedback-category"][value="usability"]');
+    if (defaultCategory) defaultCategory.checked = true;
+    const count = $('#feedback-message-count');
+    const message = $('#feedback-message-status');
+    if (count) count.textContent = '0';
+    if (message) message.textContent = '';
+    openModal('#feedback-modal');
+}
+
+function syncFeedbackMessageCount() {
+    const textarea = $('#feedback-message');
+    const count = $('#feedback-message-count');
+    if (count) count.textContent = String(textarea?.value.length || 0);
+}
+
+async function handleProductFeedbackSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const draft = {
+        category: formData.get('feedback-category'),
+        message: formData.get('feedback-message') || $('#feedback-message')?.value,
+        rating: formData.get('feedback-rating'),
+        pagePath: window.location.hash || '#/',
+        contactAllowed: $('#feedback-contact-allowed')?.checked === true
+    };
+    const message = $('#feedback-message-status');
+    if (!isFeedbackDraftValid(draft)) {
+        if (message) message.textContent = '의견을 3자 이상 입력해주세요.';
+        $('#feedback-message')?.focus();
+        return;
+    }
+
+    const submitButton = $('#feedback-submit');
+    if (submitButton) submitButton.disabled = true;
+    if (message) message.textContent = '의견을 보내는 중입니다.';
+    const { data, error } = await submitProductFeedback(normalizeFeedbackDraft(draft));
+    if (submitButton) submitButton.disabled = false;
+    if (error) {
+        if (message) {
+            message.textContent = error.code === '54000'
+                ? '오늘 보낼 수 있는 의견을 모두 사용했습니다. 내일 다시 보내주세요.'
+                : '의견을 보내지 못했습니다. 잠시 후 다시 시도해주세요.';
+        }
+        return;
+    }
+
+    if (isLandingAdmin(state.currentUser) && data) {
+        state.productFeedback = [data, ...state.productFeedback.filter((item) => item.id !== data.id)];
+    }
+    closeModals();
+    showToast('의견을 보내주셔서 감사합니다.');
+}
+
+async function handleAdminFeedbackStatusChange(select) {
+    const item = select.closest('[data-admin-feedback-id]');
+    const feedbackId = item?.dataset.adminFeedbackId;
+    const nextStatus = select.value;
+    const message = $('#landing-admin-feedback-message');
+    if (!feedbackId || !Object.hasOwn(FEEDBACK_STATUSES, nextStatus)) return;
+    select.disabled = true;
+    if (message) message.textContent = '';
+    const { data, error } = await updateProductFeedbackStatus(feedbackId, nextStatus);
+    select.disabled = false;
+    if (error) {
+        if (message) message.textContent = '피드백 상태를 변경하지 못했습니다.';
+        renderLandingAdminFeedback();
+        return;
+    }
+    state.productFeedback = state.productFeedback.map((feedback) => feedback.id === feedbackId ? data : feedback);
+    renderLandingAdminFeedback();
 }
 
 function getDefaultDetailPhoto() {
@@ -3319,6 +3513,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
     if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
+    if ($('#account-feedback-section')) $('#account-feedback-section').hidden = !isOwnProfile;
     if ($('#account-deletion-section')) $('#account-deletion-section').hidden = !isOwnProfile;
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
@@ -6894,6 +7089,14 @@ function bindEvents() {
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
     $('#profile-avatar-input')?.addEventListener('change', handleAccountProfileAvatarChange);
+    $('#account-feedback-open')?.addEventListener('click', openProductFeedbackDialog);
+    $('#feedback-message')?.addEventListener('input', syncFeedbackMessageCount);
+    $('#feedback-form')?.addEventListener('submit', handleProductFeedbackSubmit);
+    $('#btn-refresh-admin-feedback')?.addEventListener('click', () => loadLandingAdminFeedback({ force: true }));
+    $('#landing-admin-feedback-list')?.addEventListener('change', (event) => {
+        const select = event.target.closest?.('[data-admin-feedback-status]');
+        if (select) void handleAdminFeedbackStatusChange(select);
+    });
     $('#account-deletion-open')?.addEventListener('click', openAccountDeletionDialog);
     $('#account-deletion-confirmation')?.addEventListener('input', () => syncAccountDeletionControl());
     $('#account-deletion-form')?.addEventListener('submit', handleAccountDeletionSubmit);

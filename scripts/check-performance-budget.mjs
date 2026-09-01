@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const budgets = {
     javascriptGzipKb: 65,
-    cssGzipKb: 30,
+    cssGzipKb: 32,
     totalImageKb: 2200,
     largestImageKb: 450
 };

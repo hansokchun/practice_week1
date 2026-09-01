@@ -10,7 +10,7 @@ Run `npm run perf:budget` before a release.
 | Asset group | Budget | Current |
 | --- | ---: | ---: |
 | JavaScript, gzip | 65 KB | 61.28 KB |
-| CSS, gzip | 30 KB | 29.06 KB |
+| CSS, gzip | 32 KB | 30.93 KB |
 | All static images | 2,200 KB | 2,169.90 KB |
 | Largest static image | 450 KB | 348.74 KB |
 
@@ -27,6 +27,8 @@ The four below-the-fold home illustrations now reference their compact JPEG vers
 The images retain explicit dimensions, lazy loading, and asynchronous decoding. Modern browsers already selected the JPEG `<source>` before this change, so the primary user-facing improvement is a smaller, simpler deployment artifact and a guard against PNG fallback downloads.
 
 The landing globe artwork was also converted from a non-transparent 1,133.59 KB PNG to an 82.70 KB JPEG at the same 1536 x 1024 dimensions. The current 65 KB JavaScript ceiling reflects the expanded landing search, tag gallery, Explore clustering, photo-detail, and AI-analysis contracts while preserving less than 4 KB of headroom.
+
+The CSS ceiling increased from 30 KB to 32 KB on 2026-09-01 for the authenticated feedback form and administrator review states. JavaScript and image ceilings remain unchanged.
 
 ## Route Rendering
 

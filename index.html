@@ -391,6 +391,24 @@
                     </div>
                     <p id="landing-admin-message" aria-live="polite"></p>
                 </form>
+                <section id="landing-admin-feedback" class="admin-feedback-panel" aria-labelledby="landing-admin-feedback-title">
+                    <div class="admin-feedback-heading">
+                        <div>
+                            <p class="eyebrow">사용자 의견</p>
+                            <h2 id="landing-admin-feedback-title">피드백 확인</h2>
+                            <p>오류, 불편함, 기능 제안을 확인하고 처리 상태를 정리합니다.</p>
+                        </div>
+                        <button id="btn-refresh-admin-feedback" class="btn-secondary" type="button">
+                            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+                            새로고침
+                        </button>
+                    </div>
+                    <div id="landing-admin-feedback-summary" class="admin-feedback-summary" aria-live="polite"></div>
+                    <div id="landing-admin-feedback-list" class="admin-feedback-list" aria-live="polite">
+                        <p class="admin-feedback-empty">피드백을 불러오는 중입니다.</p>
+                    </div>
+                    <p id="landing-admin-feedback-message" class="auth-message" aria-live="polite"></p>
+                </section>
             </div>
         </section>
 
@@ -706,6 +724,19 @@
                         <article><img src="images/main_bg5.jpg" alt=""><strong>Italian Blue Week</strong><span>86장 · 14곳</span></article>
                     </section>
                 </div>
+                <section id="account-feedback-section" class="account-feedback-section" aria-labelledby="account-feedback-title" hidden>
+                    <div class="account-feedback-icon" aria-hidden="true">
+                        <span class="material-symbols-outlined">rate_review</span>
+                    </div>
+                    <div class="account-feedback-copy">
+                        <h2 id="account-feedback-title">의견 보내기</h2>
+                        <p>사용하며 발견한 오류나 불편함, 새 기능 아이디어를 알려주세요.</p>
+                    </div>
+                    <button id="account-feedback-open" class="account-feedback-open" type="button">
+                        피드백 작성
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                    </button>
+                </section>
                 <section id="account-deletion-section" class="account-deletion-section" aria-labelledby="account-deletion-title" hidden>
                     <div>
                         <h2 id="account-deletion-title">계정 관리</h2>
@@ -737,6 +768,51 @@
             <p class="site-footer__copyright">© 2026 Ikkyee. Travel photos stay with their authors.</p>
         </div>
     </footer>
+
+    <div id="feedback-modal" class="modal" aria-hidden="true">
+        <form id="feedback-form" class="modal-card feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="feedback-dialog-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="피드백 창 닫기">×</button>
+            <div class="feedback-dialog-heading">
+                <span class="material-symbols-outlined" aria-hidden="true">rate_review</span>
+                <div>
+                    <h2 id="feedback-dialog-title">어떤 의견이 있으신가요?</h2>
+                    <p>보내주신 의견은 서비스 개선에만 사용합니다.</p>
+                </div>
+            </div>
+            <fieldset class="feedback-category-options">
+                <legend>의견 유형</legend>
+                <label><input type="radio" name="feedback-category" value="bug"><span class="material-symbols-outlined" aria-hidden="true">bug_report</span><span>오류</span></label>
+                <label><input type="radio" name="feedback-category" value="usability" checked><span class="material-symbols-outlined" aria-hidden="true">sentiment_dissatisfied</span><span>불편함</span></label>
+                <label><input type="radio" name="feedback-category" value="feature_request"><span class="material-symbols-outlined" aria-hidden="true">lightbulb</span><span>기능 제안</span></label>
+                <label><input type="radio" name="feedback-category" value="other"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span><span>기타</span></label>
+            </fieldset>
+            <label class="feedback-message-field" for="feedback-message">
+                <span>자세한 내용</span>
+                <textarea id="feedback-message" name="feedback-message" minlength="3" maxlength="1000" rows="6" required placeholder="어떤 점이 좋았거나 불편했는지 알려주세요."></textarea>
+                <small><span id="feedback-message-count">0</span>/1000</small>
+            </label>
+            <fieldset class="feedback-rating-options">
+                <legend>전반적인 만족도 <span>선택 사항</span></legend>
+                <div>
+                    <label><input type="radio" name="feedback-rating" value="1"><span>1</span></label>
+                    <label><input type="radio" name="feedback-rating" value="2"><span>2</span></label>
+                    <label><input type="radio" name="feedback-rating" value="3"><span>3</span></label>
+                    <label><input type="radio" name="feedback-rating" value="4"><span>4</span></label>
+                    <label><input type="radio" name="feedback-rating" value="5"><span>5</span></label>
+                </div>
+            </fieldset>
+            <label class="feedback-contact-option">
+                <input id="feedback-contact-allowed" type="checkbox">
+                <span>추가 확인이 필요하면 이 계정으로 연락받아도 됩니다.</span>
+            </label>
+            <p class="feedback-context-note"><span class="material-symbols-outlined" aria-hidden="true">info</span>현재 화면 주소만 함께 저장하며 사진과 위치 정보는 수집하지 않습니다.</p>
+            <p id="feedback-message-status" class="auth-message" aria-live="polite"></p>
+            <div class="feedback-actions">
+                <button class="btn-secondary" data-close-modal type="button">취소</button>
+                <button id="feedback-submit" class="btn-primary" type="submit">의견 보내기</button>
+            </div>
+        </form>
+    </div>
 
     <div id="account-deletion-modal" class="modal" aria-hidden="true">
         <form id="account-deletion-form" class="modal-card account-deletion-dialog" role="dialog" aria-modal="true" aria-labelledby="account-deletion-dialog-title">
