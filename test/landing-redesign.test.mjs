@@ -83,36 +83,39 @@ test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이�
     assert.match(css, /\.landing-photo-row\s*\{[^}]*min-width:\s*0;[^}]*width:\s*100%;/s);
 });
 
-test('하단 지도 CTA는 별도 버튼 장식 없이 페이드 배경 전체를 클릭 영역으로 사용한다', async () => {
+test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 편집형 링크다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
     const footer = html.match(/<button id="landing-map-footer"[\s\S]*?<\/button>/)?.[0] ?? '';
-    assert.doesNotMatch(html, /id="landing-map-footer-title"/);
     assert.match(footer, /class="landing-map-footer page-container"[^>]*data-route="explore"/);
-    assert.match(footer, /class="landing-map-footer-content"[\s\S]*?class="material-symbols-outlined"[^>]*>map<\/span>[\s\S]*?class="landing-map-footer-label">지도에서 찾아보기<\/span>/);
+    assert.match(footer, /class="landing-map-footer-eyebrow"[\s\S]*?>지도 탐색<\/span>/);
+    assert.match(footer, /id="landing-map-footer-title"[\s\S]*?지도를 따라,[\s\S]*?마음에 남을 장소를 발견해보세요\./);
+    assert.match(footer, /class="landing-map-footer-action"[\s\S]*?>지도 열기<\/span>[\s\S]*?>arrow_forward<\/span>/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*justify-items:\s*start;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*opacity:\s*0\.68;[^}]*mask-image:\s*radial-gradient/s);
+    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*opacity:\s*0\.92;[^}]*mask-image:\s*radial-gradient/s);
+    assert.match(css, /\.landing-map-footer\.page-container::after\s*\{[^}]*linear-gradient\(90deg,/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-footer\.page-container\s*\{[^}]*place-items:\s*center;/s);
     assert.doesNotMatch(css.match(/\.landing-map-footer\.page-container\s*\{[^}]*\}/s)?.[0] ?? '', /border-radius:/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*#fff;[^}]*cursor:\s*pointer;/s);
     assert.doesNotMatch(css, /\.landing-map-footer \.btn-primary/);
-    assert.match(css, /\.landing-map-footer-content\s*\{[^}]*font-size:\s*clamp\(22px,\s*2vw,\s*28px\);[^}]*text-shadow:/s);
+    assert.match(css, /#landing-map-footer-title\s*\{[^}]*font-size:\s*clamp\(30px,\s*3\.4vw,\s*48px\);/s);
 });
 
-test('하단 지도 CTA 시안은 선택한 편집형 버튼 하나만 반응형으로 제공한다', async () => {
+test('지도 CTA 시안 갤러리는 최종 디자인 적용 후 제거한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
-    const gallery = html.match(/<section class="landing-map-cta-gallery[\s\S]*?<\/section>/)?.[0] ?? '';
-    const demos = [...gallery.matchAll(/class="landing-map-cta-demo landing-map-cta-demo--(floating|editorial|interactive)"/g)];
+    assert.doesNotMatch(html, /landing-map-cta-gallery|landing-map-cta-demo/);
+    assert.doesNotMatch(css, /\.landing-map-cta-gallery|\.landing-map-cta-demo/);
+});
 
-    assert.equal(demos.length, 1);
-    assert.deepEqual(demos.map((match) => match[1]), ['editorial']);
-    assert.equal((gallery.match(/data-route="explore"/g) ?? []).length, 1);
-    assert.equal((gallery.match(/지도에서 찾아보기/g) ?? []).length, 1);
-    assert.doesNotMatch(gallery, /landing-map-cta-demo--(?:floating|interactive)/);
-    assert.match(css, /\.landing-map-cta-gallery\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*760px\);[^}]*justify-content:\s*center;/s);
-    assert.match(css, /\.landing-map-cta-demo\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-cta-gallery\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+test('검색 영역의 지도 진입은 무거운 배경 버튼 대신 간결한 텍스트 동작이다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    const primary = html.match(/<button id="landing-map-primary"[\s\S]*?<\/button>/)?.[0] ?? '';
+
+    assert.match(primary, />지도로 둘러보기<\/span>/);
+    assert.match(primary, />arrow_forward<\/span>/);
+    assert.match(css, /\.landing-map-link\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*var\(--teal\);/s);
 });
 
 test('로그인 모달은 선택 수단만 간결하게 보여준다', async () => {

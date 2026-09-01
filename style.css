@@ -781,20 +781,35 @@ body.is-logged-in #btn-open-auth {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    min-height: 56px;
+    min-height: 44px;
     margin-top: 24px;
     border: 0;
-    border-radius: 8px;
-    background: var(--teal);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 900;
-    padding: 0 28px;
+    border-bottom: 1px solid rgba(26, 77, 78, 0.42);
+    border-radius: 0;
+    background: transparent;
+    color: var(--teal);
+    font-size: 15px;
+    font-weight: 800;
+    padding: 0 2px;
 }
 
 .landing-map-link:hover,
 .landing-map-link:focus-visible {
-    background: var(--teal-dark);
+    border-bottom-color: var(--teal-dark);
+    color: var(--teal-dark);
+}
+
+.landing-map-link .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.landing-map-link-arrow {
+    transition: transform 180ms ease;
+}
+
+.landing-map-link:hover .landing-map-link-arrow,
+.landing-map-link:focus-visible .landing-map-link-arrow {
+    transform: translateX(4px);
 }
 
 .landing-section-toolbar {
@@ -823,7 +838,7 @@ body.is-logged-in #btn-open-auth {
     align-items: center;
     justify-items: start;
     width: min(var(--container), calc(100% - 48px));
-    min-height: 320px;
+    min-height: 360px;
     overflow: hidden;
     margin-top: 8px;
     border: 0;
@@ -831,135 +846,92 @@ body.is-logged-in #btn-open-auth {
     color: #fff;
     cursor: pointer;
     font: inherit;
-    padding: 48px clamp(40px, 10vw, 128px);
+    padding: 56px clamp(40px, 8vw, 104px);
     text-align: left;
 }
 
-.landing-map-footer.page-container::before {
+.landing-map-footer.page-container::before,
+.landing-map-footer.page-container::after {
     content: '';
     position: absolute;
-    z-index: -1;
     inset: 0;
+}
+
+.landing-map-footer.page-container::before {
+    z-index: -2;
     background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
-    opacity: 0.68;
-    -webkit-mask-image: radial-gradient(ellipse at center, #000 58%, transparent 100%);
-    mask-image: radial-gradient(ellipse at center, #000 58%, transparent 100%);
+    opacity: 0.92;
+    transform: scale(1.01);
+    transition: filter 260ms ease, transform 420ms ease;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 66%, transparent 100%);
+    mask-image: radial-gradient(ellipse at center, #000 66%, transparent 100%);
+}
+
+.landing-map-footer.page-container::after {
+    z-index: -1;
+    background: linear-gradient(90deg, rgba(0, 54, 55, 0.8) 0%, rgba(0, 54, 55, 0.42) 48%, rgba(0, 54, 55, 0.06) 100%);
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 64%, transparent 100%);
+    mask-image: radial-gradient(ellipse at center, #000 64%, transparent 100%);
+}
+
+.landing-map-footer:hover::before,
+.landing-map-footer:focus-visible::before {
+    filter: saturate(1.08) contrast(1.04);
+    transform: scale(1.04);
 }
 
 .landing-map-footer-content {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: clamp(22px, 2vw, 28px);
-    font-weight: 900;
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    width: min(660px, 72%);
     text-shadow: 0 2px 14px rgba(0, 35, 36, 0.52);
 }
 
-.landing-map-footer-content .material-symbols-outlined {
-    font-size: 1.2em;
+.landing-map-footer-eyebrow,
+.landing-map-footer-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.landing-map-footer:hover .landing-map-footer-label,
-.landing-map-footer:focus-visible .landing-map-footer-label {
-    text-decoration: underline;
-    text-underline-offset: 6px;
+.landing-map-footer-eyebrow {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.landing-map-footer-eyebrow .material-symbols-outlined {
+    font-size: 19px;
+}
+
+#landing-map-footer-title {
+    font-size: clamp(30px, 3.4vw, 48px);
+    font-weight: 800;
+    line-height: 1.35;
+    word-break: keep-all;
+}
+
+.landing-map-footer-action {
+    min-height: 42px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.78);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.landing-map-footer-action .material-symbols-outlined {
+    font-size: 20px;
+    transition: transform 180ms ease;
+}
+
+.landing-map-footer:hover .landing-map-footer-action .material-symbols-outlined,
+.landing-map-footer:focus-visible .landing-map-footer-action .material-symbols-outlined {
+    transform: translateX(5px);
 }
 
 .landing-map-footer:focus-visible {
     outline: 3px solid var(--teal);
     outline-offset: 4px;
-}
-
-.landing-map-cta-gallery {
-    display: grid;
-    grid-template-columns: minmax(0, 760px);
-    justify-content: center;
-    width: min(var(--container), calc(100% - 48px));
-    margin: 28px auto 96px;
-}
-
-.landing-map-cta-demo {
-    position: relative;
-    isolation: isolate;
-    display: block;
-    aspect-ratio: 16 / 10;
-    overflow: hidden;
-    border: 0;
-    border-radius: 8px;
-    background: #dfe9e4;
-    color: #fff;
-    cursor: pointer;
-    font: inherit;
-    padding: 0;
-    text-align: left;
-}
-
-.landing-map-cta-demo::before,
-.landing-map-cta-demo::after {
-    content: '';
-    position: absolute;
-    z-index: -2;
-    inset: 0;
-}
-
-.landing-map-cta-demo::before {
-    background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
-    transform: scale(1.015);
-    transition: filter 220ms ease, transform 380ms ease;
-}
-
-.landing-map-cta-demo::after {
-    z-index: -1;
-    background: linear-gradient(180deg, rgba(7, 35, 36, 0.02) 35%, rgba(7, 35, 36, 0.54) 100%);
-}
-
-.landing-map-cta-demo:hover::before,
-.landing-map-cta-demo:focus-visible::before {
-    filter: saturate(1.08) contrast(1.04);
-    transform: scale(1.055);
-}
-
-.landing-map-cta-demo:focus-visible {
-    outline: 3px solid var(--teal);
-    outline-offset: 3px;
-}
-
-.landing-map-cta-demo__action {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 900;
-    letter-spacing: 0;
-}
-
-.landing-map-cta-demo__action .material-symbols-outlined {
-    font-size: 22px;
-}
-
-.landing-map-cta-demo--editorial::after {
-    background: linear-gradient(90deg, rgba(5, 31, 32, 0.76) 0%, rgba(5, 31, 32, 0.18) 72%);
-}
-
-.landing-map-cta-demo--editorial .landing-map-cta-demo__action {
-    position: absolute;
-    right: 24px;
-    bottom: 26px;
-    left: 24px;
-    gap: 10px;
-    font-size: clamp(18px, 1.8vw, 24px);
-    text-shadow: 0 2px 14px rgba(0, 24, 25, 0.34);
-}
-
-.landing-map-cta-demo__arrow {
-    margin-left: auto;
-    transition: transform 180ms ease;
-}
-
-.landing-map-cta-demo--editorial:hover .landing-map-cta-demo__arrow,
-.landing-map-cta-demo--editorial:focus-visible .landing-map-cta-demo__arrow {
-    transform: translateX(6px);
 }
 
 .landing-section-heading {
@@ -1618,33 +1590,16 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     .landing-map-footer.page-container {
         place-items: center;
         width: 100%;
-        min-height: 220px;
+        min-height: 300px;
         margin-right: auto;
         margin-left: auto;
         padding: 32px 24px;
     }
 
     .landing-map-footer-content {
-        font-size: 22px;
-        text-align: center;
-    }
-
-    .landing-map-cta-gallery {
-        grid-template-columns: 1fr;
         gap: 14px;
-        width: calc(100% - 32px);
-        margin-top: 20px;
-        margin-bottom: 64px;
-    }
-
-    .landing-map-cta-demo {
-        aspect-ratio: 16 / 9;
-    }
-
-    .landing-map-cta-demo--editorial .landing-map-cta-demo__action {
-        right: 20px;
-        bottom: 20px;
-        left: 20px;
+        width: 100%;
+        text-align: left;
     }
 
     .landing-section-toolbar {
@@ -1697,9 +1652,9 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .landing-map-cta-demo::before,
-    .landing-map-cta-demo__action,
-    .landing-map-cta-demo__arrow {
+    .landing-map-link-arrow,
+    .landing-map-footer.page-container::before,
+    .landing-map-footer-action .material-symbols-outlined {
         transition: none;
     }
 }
