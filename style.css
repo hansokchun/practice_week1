@@ -48,47 +48,9 @@ body {
     letter-spacing: 0;
 }
 
-/* Full-screen entry landing and shared primary navigation */
+/* Full-screen entry landing and shared header */
 .site-header-inner {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-}
-
-.site-primary-nav {
-    display: flex;
-    align-items: center;
-    justify-self: center;
-    gap: 28px;
-}
-
-.site-primary-nav__item {
-    position: relative;
-    min-height: 44px;
-    border: 0;
-    background: transparent;
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 800;
-    padding: 0 2px;
-}
-
-.site-primary-nav__item::after {
-    position: absolute;
-    right: 0;
-    bottom: 4px;
-    left: 0;
-    height: 2px;
-    background: currentColor;
-    content: '';
-    opacity: 0;
-    transform: scaleX(0.5);
-    transition: opacity 160ms ease, transform 160ms ease;
-}
-
-.site-primary-nav__item:hover::after,
-.site-primary-nav__item:focus-visible::after,
-.site-primary-nav__item.active::after {
-    opacity: 1;
-    transform: scaleX(1);
+    grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .page-landing {
@@ -241,10 +203,6 @@ body[data-page="landing"] .account-menu-chevron {
     color: #ffffff;
 }
 
-body[data-page="landing"] .site-primary-nav {
-    display: none;
-}
-
 body[data-page="landing"] .brand img {
     border-radius: 50%;
 }
@@ -262,16 +220,8 @@ body[data-page="landing"] .account-avatar {
 
 @media (max-width: 860px) {
     .site-header-inner {
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 8px;
-    }
-
-    .site-primary-nav {
-        gap: 16px;
-    }
-
-    .site-primary-nav__item {
-        font-size: 14px;
     }
 
     body[data-page="landing"] .site-header {
@@ -294,7 +244,7 @@ body[data-page="landing"] .account-avatar {
 
 @media (max-width: 520px) {
     .site-header-inner {
-        grid-template-columns: 38px minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
     }
 
     .brand-wordmark {
@@ -303,11 +253,6 @@ body[data-page="landing"] .account-avatar {
 
     .brand-korean {
         display: none;
-    }
-
-    .site-primary-nav {
-        justify-self: start;
-        gap: 14px;
     }
 
     #btn-header-upload {
@@ -11880,21 +11825,21 @@ body.modal-open {
     }
 }
 
-/* Keep the three-part header grid after legacy responsive declarations. */
+/* Keep the compact header grid after legacy responsive declarations. */
 .site-header-inner {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
 }
 
 @media (max-width: 860px) {
     .site-header-inner {
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 8px;
     }
 }
 
 @media (max-width: 520px) {
     .site-header-inner {
-        grid-template-columns: 38px minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
     }
 
     #btn-header-upload .material-symbols-outlined {

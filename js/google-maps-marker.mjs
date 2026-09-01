@@ -18,7 +18,7 @@ function getCompatiblePosition(position) {
     };
 }
 
-function wrapAdvancedMarker(marker) {
+function wrapAdvancedMarker(marker, createElement) {
     const nativeAddListener = typeof marker.addListener === 'function'
         ? marker.addListener.bind(marker)
         : null;
@@ -42,6 +42,10 @@ function wrapAdvancedMarker(marker) {
         },
         setDraggable(isDraggable) {
             marker.gmpDraggable = Boolean(isDraggable);
+        },
+        setIcon(icon) {
+            const content = createMarkerImage(icon, createElement);
+            if (content) marker.content = content;
         },
         setMap(map) {
             marker.map = map;
@@ -73,5 +77,5 @@ export function createGoogleMapsMarker(maps, options = {}, config = {}) {
         ...(content ? { content } : {}),
         gmpDraggable: Boolean(draggable)
     });
-    return wrapAdvancedMarker(marker);
+    return wrapAdvancedMarker(marker, createElement);
 }

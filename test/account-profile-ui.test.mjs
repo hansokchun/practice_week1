@@ -71,14 +71,14 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
 });
 
-test('header keeps the landing logo, primary routes, and account actions', () => {
+test('header keeps only the landing logo and account actions', () => {
     assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
-    assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*auto minmax\(0,\s*1fr\) auto;/s);
+    assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
     assert.doesNotMatch(html, /class="top-nav"/);
     assert.match(html, /class="brand"[^>]*href="#\/landing"/);
-    assert.match(html, /class="site-primary-nav"/);
-    assert.match(html, /data-route="home"/);
-    assert.match(html, /data-route="explore"/);
+    assert.doesNotMatch(html, /class="site-primary-nav"/);
+    assert.doesNotMatch(html, />메인<\/span>\s*<\/button>\s*<button class="site-primary-nav__item"/s);
+    assert.doesNotMatch(html, /class="site-primary-nav__item"/);
     assert.match(html, /id="btn-header-upload"/);
 });
 

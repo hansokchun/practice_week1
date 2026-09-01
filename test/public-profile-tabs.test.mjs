@@ -93,4 +93,7 @@ test('public profile map uses Google Maps JS with greedy wheel gestures and iner
     const body = app.slice(fnStart, fnEnd);
 
     assert.doesNotMatch(body, /addListener\('click'/);
+    assert.match(app, /profileMapZoomListener/);
+    assert.match(body, /getProfileMapPinIcon\(maps, map\.getZoom\?\.\(\)\)/);
+    assert.match(body, /updateProfileMapMarkerSizes\(maps, map\)/);
 });

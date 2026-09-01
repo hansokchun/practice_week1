@@ -79,9 +79,16 @@ test('marker factory uses an advanced marker with a compatible app interface', (
     marker.setMap(null);
     marker.setPosition({ lat: 35, lng: 129 });
     marker.setDraggable(false);
+    marker.setIcon({
+        url: 'data:image/svg+xml,small',
+        scaledSize: { width: 16, height: 21 }
+    });
     assert.equal(marker.raw.map, null);
     assert.deepEqual(marker.raw.position, { lat: 35, lng: 129 });
     assert.equal(marker.raw.gmpDraggable, false);
+    assert.equal(marker.raw.content.src, 'data:image/svg+xml,small');
+    assert.equal(marker.raw.content.style.width, '16px');
+    assert.equal(marker.raw.content.style.height, '21px');
     assert.equal(marker.getPosition().lat(), 35);
     assert.equal(marker.getPosition().lng(), 129);
 });

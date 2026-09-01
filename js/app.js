@@ -171,6 +171,7 @@ import {
 } from './oauth-profile-import.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
+import { getProfileMapPinSize } from './profile-map-pin-size.mjs';
 import { getStreetViewStaticImageUrl } from './street-view-static.mjs';
 import {
     getExploreDiscoveryPhotos,
@@ -299,6 +300,7 @@ const state = {
     accountProfileAvatarPreviewUrl: null,
     profileMap: null,
     profileMarkers: [],
+    profileMapZoomListener: null,
     profileMapRenderToken: 0,
     photoDetailMap: null,
     photoDetailMarkers: [],
@@ -1971,6 +1973,21 @@ function getExplorePinIcon(maps, options = {}) {
     return getExplorePinSymbolIcon(maps, options);
 }
 
+function getProfileMapPinIcon(maps, zoom) {
+    const width = getProfileMapPinSize(zoom);
+    const height = Math.round((width * 36) / 28);
+    return {
+        ...getExplorePinIcon(maps, { type: 'photo' }),
+        scaledSize: maps.Size ? new maps.Size(width, height) : { width, height },
+        anchor: new maps.Point(width / 2, height - 1)
+    };
+}
+
+function updateProfileMapMarkerSizes(maps, map) {
+    const icon = getProfileMapPinIcon(maps, map.getZoom?.());
+    state.profileMarkers.forEach((marker) => marker.setIcon?.(icon));
+}
+
 function setExploreMarkerLoading(isLoading) {
     state.isExploreMarkerLoading = Boolean(isLoading);
     $('.explore-map-canvas')?.classList.toggle('is-loading-pins', state.isExploreMarkerLoading);
@@ -2207,6 +2224,10 @@ async function ensureProfileMap() {
         zoom: 7,
         mapId: state.googleMapsMapId
     }));
+    state.profileMapZoomListener?.remove?.();
+    state.profileMapZoomListener = state.profileMap.addListener('zoom_changed', () => {
+        updateProfileMapMarkerSizes(maps, state.profileMap);
+    });
     return state.profileMap;
 }
 
@@ -2226,7 +2247,7 @@ async function renderProfileMap(photos = []) {
         map,
         position: { lat: Number(photo.lat), lng: Number(photo.lng) },
         title: getPhotoFallbackLabel(photo, '사진'),
-        icon: getExplorePinIcon(maps, { type: 'photo' }),
+        icon: getProfileMapPinIcon(maps, map.getZoom?.()),
         label: null,
         zIndex: 10
     }, { mapId: state.googleMapsMapId }));
@@ -2234,6 +2255,7 @@ async function renderProfileMap(photos = []) {
     const bounds = new maps.LatLngBounds();
     locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
     map.fitBounds(bounds, 96);
+    updateProfileMapMarkerSizes(maps, map);
 }
 
 function clearPhotoDetailMapMarkers() {
