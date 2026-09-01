@@ -11,7 +11,7 @@ test('public profile header does not render the numeric stats block', () => {
     assert.doesNotMatch(app, /profile-stats/);
 });
 
-test('public profile card stays inside the cover without negative overlap', () => {
+test('public profile card stays inside the cover as a legible information panel', () => {
     const cardStart = css.indexOf('.profile-card {');
     const cardEnd = css.indexOf('.large-avatar', cardStart);
     const cardCss = css.slice(cardStart, cardEnd);
@@ -19,7 +19,7 @@ test('public profile card stays inside the cover without negative overlap', () =
     assert.match(cardCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
     assert.match(cardCss, /margin:\s*0 auto;/);
     assert.doesNotMatch(cardCss, /-\d+px/);
-    assert.match(css, /\.profile-card\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;[^}]*padding:\s*0;/s);
+    assert.match(css, /\.profile-card\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*16px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.88\);[^}]*box-shadow:\s*0 18px 48px rgba\(26,\s*77,\s*78,\s*0\.12\);[^}]*padding:\s*24px 26px;/s);
 });
 
 test('public profile header supports inline owner metadata and editing actions', () => {
@@ -54,7 +54,11 @@ test('own profile actions use a clear primary edit action and a quieter logout a
     assert.match(staticActions, /class="material-symbols-outlined"[^>]*>logout</);
     assert.match(shell, /class="profile-action profile-action--edit"/);
     assert.match(shell, /class="profile-action profile-action--logout"/);
-    assert.match(css, /\.profile-owner-actions\s*\{[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
+    assert.match(staticActions, />수정<\/span>/);
+    assert.match(shell, />수정<\/span>/);
+    assert.doesNotMatch(staticActions, />프로필 수정<\/span>/);
+    assert.match(css, /\.profile-owner-actions\s*\{[^}]*flex-direction:\s*column;[^}]*align-items:\s*stretch;[^}]*justify-content:\s*flex-start;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
+    assert.match(css, /\.profile-owner-actions \.profile-action\s*\{[^}]*width:\s*100%;/s);
     assert.match(css, /\.profile-action\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*8px;/s);
     assert.match(css, /\.profile-action--edit\s*\{[^}]*background:\s*var\(--teal\);[^}]*color:\s*#ffffff;/s);
     assert.match(css, /\.profile-action--logout\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\);/s);

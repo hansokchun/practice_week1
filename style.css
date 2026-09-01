@@ -1056,14 +1056,13 @@ img {
     right: 4px;
     display: grid;
     place-items: center;
-    width: 8px;
-    height: 8px;
-    border: 1px solid var(--bg);
-    border-radius: 999px;
+    width: 9px;
+    height: 9px;
+    border: 0;
+    border-radius: 50%;
     background: var(--coral);
     color: transparent;
     padding: 0;
-    box-shadow: 0 0 0 3px rgba(244, 140, 113, 0.18);
 }
 
 .account-notification-popover {
@@ -8801,24 +8800,26 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     align-items: start;
     width: min(var(--container), calc(100% - 48px));
     margin: 0 auto;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
+    border: 1px solid rgba(26, 77, 78, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 18px 48px rgba(26, 77, 78, 0.12);
+    padding: 24px 26px;
+    backdrop-filter: blur(10px);
 }
 
 .profile-card-copy {
     display: grid;
-    gap: 14px;
+    gap: 18px;
     min-width: 0;
 }
 
 .profile-card-topline {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     justify-content: space-between;
-    gap: 16px;
+    gap: 24px;
 }
 
 .profile-title-row {
@@ -8849,11 +8850,16 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .profile-owner-actions {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 8px;
     align-self: start;
-    flex-wrap: wrap;
+    min-width: 116px;
+}
+
+.profile-owner-actions .profile-action {
+    width: 100%;
 }
 
 .profile-action {
@@ -10010,7 +10016,7 @@ body.modal-open {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 20px;
+    gap: 0;
     color: rgba(26, 77, 78, 0.78);
     font-size: 14px;
     font-weight: 800;
@@ -10020,6 +10026,14 @@ body.modal-open {
     display: inline-flex;
     align-items: baseline;
     gap: 7px;
+    min-height: 32px;
+    padding-right: 22px;
+}
+
+.account-profile-metrics span + span {
+    border-left: 1px solid rgba(26, 77, 78, 0.18);
+    padding-right: 0;
+    padding-left: 22px;
 }
 
 .account-profile-metrics strong {
@@ -12103,8 +12117,13 @@ body.modal-open {
     }
 
     .profile-card-topline {
-        align-items: flex-start;
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .profile-owner-actions {
+        width: min(180px, 100%);
+        min-width: 0;
     }
 
     .profile-tabs {
