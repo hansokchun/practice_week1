@@ -12,6 +12,30 @@ test('public profile exposes Map View, photos, and albums tabs', () => {
     assert.match(html, /data-profile-tab="albums"[^>]*>앨범/);
     assert.match(html, /id="profile-map"/);
     assert.match(html, /class="profile-photo-grid" data-profile-panel="photos"/);
+    assert.match(html, /id="profile-owner-map-heading"[^>]*hidden/);
+});
+
+test('own profile keeps the map and removes duplicate photo and album navigation', () => {
+    const layoutStart = app.indexOf('function setProfileOwnershipLayout');
+    const layoutEnd = app.indexOf('function renderPublicOwnerProfile', layoutStart);
+    const layout = app.slice(layoutStart, layoutEnd);
+    const ownerStart = app.indexOf('function renderPublicOwnerProfile');
+    const ownerEnd = app.indexOf('function renderTripReviewShell', ownerStart);
+    const ownerBody = app.slice(ownerStart, ownerEnd);
+
+    assert.match(layout, /profileTabs\.hidden = isOwnProfile/);
+    assert.match(layout, /ownerMapHeading\.hidden = !isOwnProfile/);
+    assert.match(layout, /state\.profileTab = 'map'/);
+    assert.match(layout, /panel\.hidden = isOwnProfile && panel\.dataset\.profilePanel !== 'map'/);
+    assert.match(ownerBody, /setProfileOwnershipLayout\(isOwnProfile\)/);
+});
+
+test('public empty-state refresh does not overwrite the active profile ownership layout', () => {
+    const emptyStart = app.indexOf('function renderEmptyPublicSurfaces');
+    const emptyEnd = app.indexOf('function setProfileOwnershipLayout', emptyStart);
+    const emptyBody = app.slice(emptyStart, emptyEnd);
+
+    assert.doesNotMatch(emptyBody, /setProfileOwnershipLayout\(false\)/);
 });
 
 test('profile tab state supports photos separately from albums', () => {

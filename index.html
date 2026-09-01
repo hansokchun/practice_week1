@@ -698,8 +698,14 @@
                                 <h1 id="profile-title">Ikkyee</h1>
                             </div>
                             <div class="profile-owner-actions">
-                                <button id="account-profile-logout" class="btn-secondary danger" type="button" hidden>로그아웃</button>
-                                <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
+                                <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" hidden>
+                                    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                                    <span>프로필 수정</span>
+                                </button>
+                                <button id="account-profile-logout" class="profile-action profile-action--logout" type="button" hidden>
+                                    <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                                    <span>로그아웃</span>
+                                </button>
                             </div>
                         </div>
                 </div>
@@ -710,6 +716,9 @@
                     <button class="active" data-profile-tab="map" type="button">Map View</button>
                     <button data-profile-tab="photos" type="button">사진</button>
                     <button data-profile-tab="albums" type="button">앨범</button>
+                </div>
+                <div id="profile-owner-map-heading" class="profile-owner-map-heading" hidden>
+                    <h2>내 사진 지도</h2>
                 </div>
                 <div class="profile-layout">
                     <section class="profile-map-preview" data-profile-panel="map">

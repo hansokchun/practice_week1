@@ -40,7 +40,7 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.match(css, /\.account-profile-view\s*\{[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;/s);
 });
 
-test('own profile actions sit together at the top right with logout first', () => {
+test('own profile actions use a clear primary edit action and a quieter logout action', () => {
     const staticActionsStart = html.indexOf('class="profile-owner-actions"');
     const staticActionsEnd = html.indexOf('</div>', staticActionsStart);
     const staticActions = html.slice(staticActionsStart, staticActionsEnd);
@@ -48,10 +48,22 @@ test('own profile actions sit together at the top right with logout first', () =
     const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
     const shell = app.slice(shellStart, shellEnd);
 
-    assert.ok(staticActions.indexOf('id="account-profile-logout"') < staticActions.indexOf('id="account-profile-edit"'));
-    assert.ok(shell.indexOf('id="account-profile-logout"') < shell.indexOf('id="account-profile-edit"'));
+    assert.ok(staticActions.indexOf('id="account-profile-edit"') < staticActions.indexOf('id="account-profile-logout"'));
+    assert.ok(shell.indexOf('id="account-profile-edit"') < shell.indexOf('id="account-profile-logout"'));
+    assert.match(staticActions, /class="material-symbols-outlined"[^>]*>edit</);
+    assert.match(staticActions, /class="material-symbols-outlined"[^>]*>logout</);
+    assert.match(shell, /class="profile-action profile-action--edit"/);
+    assert.match(shell, /class="profile-action profile-action--logout"/);
     assert.match(css, /\.profile-owner-actions\s*\{[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
-    assert.match(css, /\.profile-owner-actions \.btn-secondary\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.profile-action\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*8px;/s);
+    assert.match(css, /\.profile-action--edit\s*\{[^}]*background:\s*var\(--teal\);[^}]*color:\s*#ffffff;/s);
+    assert.match(css, /\.profile-action--logout\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\);/s);
+});
+
+test('profile biography and metrics remain legible over the cover image', () => {
+    assert.match(css, /\.profile-card \.account-profile-bio\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*17px;[^}]*font-weight:\s*700;/s);
+    assert.match(css, /\.account-profile-metrics\s*\{[^}]*color:\s*rgba\(26,\s*77,\s*78,\s*0\.78\);[^}]*font-weight:\s*800;/s);
+    assert.match(css, /\.account-profile-metrics strong\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*20px;/s);
 });
 
 test('profile edit form has breathing room above the editing fields', () => {

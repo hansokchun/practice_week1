@@ -2699,8 +2699,14 @@ function ensureProfileHeaderShell() {
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
                 <div class="profile-owner-actions">
-                    <button id="account-profile-logout" class="btn-secondary danger" type="button" hidden>로그아웃</button>
-                    <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
+                    <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                        <span>프로필 수정</span>
+                    </button>
+                    <button id="account-profile-logout" class="profile-action profile-action--logout" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                        <span>로그아웃</span>
+                    </button>
                 </div>
             </div>
             <div id="account-profile-view" class="account-profile-view profile-header-view">
@@ -3481,6 +3487,20 @@ function renderEmptyPublicSurfaces() {
     }
 }
 
+function setProfileOwnershipLayout(isOwnProfile) {
+    const profileTabs = $('.profile-tabs');
+    const ownerMapHeading = $('#profile-owner-map-heading');
+    if (profileTabs) profileTabs.hidden = isOwnProfile;
+    if (ownerMapHeading) ownerMapHeading.hidden = !isOwnProfile;
+    if (isOwnProfile) state.profileTab = 'map';
+
+    $$('[data-profile-panel]').forEach((panel) => {
+        panel.hidden = isOwnProfile && panel.dataset.profilePanel !== 'map';
+        if (isOwnProfile) panel.classList.toggle('is-active', panel.dataset.profilePanel === 'map');
+    });
+    if (!isOwnProfile) setProfileTab(state.profileTab);
+}
+
 function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
     ensureProfileHeaderShell();
     const ownerPhotos = getPublicOwnerProfilePhotos(publicPhotos, ownerId);
@@ -3492,6 +3512,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     const avatarUrl = authorDetails.avatarUrl;
     const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
     const cover = ownerPhotos[0]?.url || MAIN_BG_4_URL;
+    setProfileOwnershipLayout(isOwnProfile);
 
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = authorName;
