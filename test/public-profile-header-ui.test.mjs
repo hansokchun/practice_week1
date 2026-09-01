@@ -19,6 +19,7 @@ test('public profile card stays inside the cover without negative overlap', () =
     assert.match(cardCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
     assert.match(cardCss, /margin:\s*0 auto;/);
     assert.doesNotMatch(cardCss, /-\d+px/);
+    assert.match(css, /\.profile-card\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;[^}]*padding:\s*0;/s);
 });
 
 test('public profile header supports inline owner metadata and editing actions', () => {

@@ -2225,7 +2225,7 @@ async function renderProfileMap(photos = []) {
     state.profileMarkers = locatedPhotos.map((photo) => createGoogleMapsMarker(maps, {
         map,
         position: { lat: Number(photo.lat), lng: Number(photo.lng) },
-        title: getPhotoFallbackLabel(photo, '공개 사진'),
+        title: getPhotoFallbackLabel(photo, '사진'),
         icon: getExplorePinIcon(maps, { type: 'photo' }),
         label: null,
         zIndex: 10

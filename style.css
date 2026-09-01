@@ -8326,6 +8326,11 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     align-items: start;
     width: min(var(--container), calc(100% - 48px));
     margin: 0 auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
 }
 
 .profile-card-copy {
