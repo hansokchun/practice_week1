@@ -92,8 +92,8 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(app, /id="profile-avatar-image"/);
     assert.match(app, /id="profile-avatar-fallback"/);
     assert.match(app, /id="profile-photo-count"/);
-    assert.match(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-public-count"/);
+    assert.doesNotMatch(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-nickname-input"/);
     assert.doesNotMatch(app, /id="profile-bio-input"/);
     assert.match(app, /id="profile-avatar-input"/);

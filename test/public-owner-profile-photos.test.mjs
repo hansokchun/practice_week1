@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+    getOwnerProfileMapPhotos,
     getPublicOwnerProfileMapPhotos,
     getPublicOwnerProfilePhotos
 } from '../js/public-owner-profile-photos.mjs';
@@ -23,6 +24,18 @@ test('public profile keeps public photos even when they have no public map pin',
 test('public profile map keeps only photos allowed by the location policy', () => {
     const profilePhotos = getPublicOwnerProfilePhotos(photos, 'ikkyee');
     const mapPhotos = getPublicOwnerProfileMapPhotos(profilePhotos);
+
+    assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact']);
+});
+
+test('own profile map includes every owned located photo regardless of visibility', () => {
+    const mapPhotos = getOwnerProfileMapPhotos(photos, 'ikkyee', 'ikkyee');
+
+    assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact', 'hidden', 'private']);
+});
+
+test('another viewer profile map keeps the public location boundary', () => {
+    const mapPhotos = getOwnerProfileMapPhotos(photos, 'ikkyee', 'viewer');
 
     assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact']);
 });

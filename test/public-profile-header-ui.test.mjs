@@ -29,11 +29,14 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.doesNotMatch(app, /공개한 사진을 모아 볼 수 있는 프로필입니다/);
     assert.match(app, /id="profile-bio"/);
     assert.match(app, /id="profile-photo-count"/);
-    assert.match(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-public-count"/);
+    assert.doesNotMatch(app, /id="profile-album-count"/);
+    assert.match(app, />총 사진 <strong id="profile-photo-count">0<\/strong></);
+    assert.match(app, />공개 중 <strong id="profile-public-count">0<\/strong></);
     assert.match(app, /class="profile-owner-actions"/);
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.profile-card-copy\s*\{/);
+    assert.match(css, /\.account-profile-view\s*\{[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;/s);
 });
 
 test('own profile actions sit together at the top right with logout first', () => {

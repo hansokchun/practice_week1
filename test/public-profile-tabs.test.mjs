@@ -29,7 +29,8 @@ test('public owner profile renders separate map, photo, and album panels', () =>
     const body = app.slice(fnStart, fnEnd);
 
     assert.match(body, /const ownerAlbums = getSavedPublicAlbums\(\)\.filter/);
-    assert.match(body, /renderProfileMap\(getPublicOwnerProfileMapPhotos\(ownerPhotos\)\)/);
+    assert.match(body, /getOwnerProfileMapPhotos\([\s\S]*state\.savedPhotos\.map\(normalizePhotoMapItem\)[\s\S]*state\.currentUser\?\.id[\s\S]*\)/);
+    assert.match(body, /renderProfileMap\(profileMapPhotos\)/);
     assert.match(body, /const profilePhotoGrid = \$\('\.profile-photo-grid'\)/);
     assert.match(body, /const profileAlbumGrid = \$\('\.profile-album-grid'\)/);
 });

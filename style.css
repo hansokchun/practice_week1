@@ -9442,15 +9442,22 @@ body.modal-open {
 .account-profile-metrics {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 18px;
-    color: var(--text);
+    align-items: center;
+    gap: 8px 20px;
+    color: var(--muted);
     font-size: 14px;
 }
 
+.account-profile-metrics span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
 .account-profile-metrics strong {
-    color: var(--teal);
-    font-family: var(--headline);
-    font-size: 18px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 800;
 }
 
 .account-profile-actions {
@@ -9848,11 +9855,11 @@ body.modal-open {
 
 .account-profile-view {
     display: grid;
-    gap: 10px;
-    padding: 18px 20px;
-    border: 1px solid rgba(26, 77, 78, 0.1);
-    border-radius: 18px;
-    background: rgba(249, 247, 242, 0.92);
+    gap: 12px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
 }
 
 .account-profile-bio {

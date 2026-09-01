@@ -95,7 +95,7 @@ import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import {
-    getPublicOwnerProfileMapPhotos,
+    getOwnerProfileMapPhotos,
     getPublicOwnerProfilePhotos
 } from './public-owner-profile-photos.mjs';
 import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
@@ -2706,9 +2706,8 @@ function ensureProfileHeaderShell() {
             <div id="account-profile-view" class="account-profile-view profile-header-view">
                 <p id="profile-bio" class="account-profile-bio" hidden></p>
                 <div class="account-profile-metrics">
-                    <span><strong id="profile-photo-count">0</strong> posts</span>
-                    <span><strong id="profile-album-count">0</strong> albums</span>
-                    <span><strong id="profile-public-count">0</strong> public</span>
+                    <span>총 사진 <strong id="profile-photo-count">0</strong></span>
+                    <span>공개 중 <strong id="profile-public-count">0</strong></span>
                 </div>
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
@@ -2766,12 +2765,10 @@ function renderAccountProfilePanel() {
     clearAccountProfileAvatarPreview();
     const profile = getCurrentAccountProfile();
     const photoCount = getMySavedPhotos().length;
-    const albumCount = state.savedAlbums.filter((album) => album.owner_id === state.currentUser?.id).length;
     const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
     const title = $('#profile-title');
     const bio = $('#profile-bio');
     const photoCountNode = $('#profile-photo-count');
-    const albumCountNode = $('#profile-album-count');
     const publicCountNode = $('#profile-public-count');
 
     if (title) title.textContent = profile.nickname;
@@ -2780,7 +2777,6 @@ function renderAccountProfilePanel() {
         bio.hidden = !profile.bio;
     }
     if (photoCountNode) photoCountNode.textContent = String(photoCount);
-    if (albumCountNode) albumCountNode.textContent = String(albumCount);
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
@@ -3509,7 +3505,6 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         $('#profile-bio').hidden = !profileBio;
     }
     if ($('#profile-photo-count')) $('#profile-photo-count').textContent = String(ownerPhotos.length);
-    if ($('#profile-album-count')) $('#profile-album-count').textContent = String(ownerAlbums.length);
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
     if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
@@ -3522,7 +3517,14 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         profileHeroImage.src = cover;
         profileHeroImage.alt = `${authorName} public profile cover`;
     }
-    renderProfileMap(getPublicOwnerProfileMapPhotos(ownerPhotos));
+    const profileMapPhotos = getOwnerProfileMapPhotos(
+        state.savedPhotos.map(normalizePhotoMapItem),
+        ownerId,
+        state.currentUser?.id
+    );
+    const profileMap = $('#profile-map');
+    if (profileMap) profileMap.setAttribute('aria-label', isOwnProfile ? '내 사진 위치 지도' : '공개 사진 위치 지도');
+    renderProfileMap(profileMapPhotos);
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
         profilePhotoGrid.innerHTML = ownerPhotos.length
@@ -5241,7 +5243,11 @@ function setProfileTab(tab) {
         panel.classList.toggle('is-active', panel.dataset.profilePanel === state.profileTab);
     });
     if (state.profileTab === 'map' && state.selectedPublicOwnerId) {
-        renderProfileMap(getPublicPhotoMapItems().filter((photo) => photo.owner_id === state.selectedPublicOwnerId || photo.albumOwnerId === state.selectedPublicOwnerId));
+        renderProfileMap(getOwnerProfileMapPhotos(
+            state.savedPhotos.map(normalizePhotoMapItem),
+            state.selectedPublicOwnerId,
+            state.currentUser?.id
+        ));
     }
 }
 
