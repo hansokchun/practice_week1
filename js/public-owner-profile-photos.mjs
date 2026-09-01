@@ -5,7 +5,7 @@ function getPhotoKey(photo = {}) {
 }
 
 function isPublicPhoto(photo = {}) {
-    return Boolean(photo.shared) || ['public', 'link'].includes(photo.visibility);
+    return Boolean(photo.shared) || photo.visibility === 'public';
 }
 
 function hasCoordinates(photo = {}) {

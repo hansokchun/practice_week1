@@ -14,11 +14,19 @@ test('photo detail modal shows visibility only for the current user photo', () =
     assert.equal(html.includes('class="map-expand-button"'), false);
     assert.match(html, /id="photo-detail-visibility"/);
     assert.match(html, /data-show-photo-on-map/);
-    assert.match(html, /data-show-photo-on-map[^>]*>[\s\S]*?location_on[\s\S]*?지도에서 위치 보기/);
+    assert.match(html, /data-show-photo-on-map[^>]*>[\s\S]*?location_on[\s\S]*?지도에서 찾기/);
     assert.doesNotMatch(html, /data-show-photo-on-map[^>]*class="[^"]*nav-create/);
 
     const source = readFileSync('js/app.js', 'utf8');
     assert.match(source, /visibilityValue\.hidden = !canEdit/);
+});
+
+test('photo detail presents a concise AI analysis heading and vertically centered map action', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+
+    assert.match(html, /id="photo-detail-ai-status">AI 분석<\/strong>/);
+    assert.match(css, /\.detail-actions \[data-show-photo-on-map\]\s*\{[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s);
 });
 
 test('photo detail surface leads with description and compact info before the map', () => {

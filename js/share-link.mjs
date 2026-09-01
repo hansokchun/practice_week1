@@ -14,6 +14,18 @@ export function buildOwnerProfileHash(ownerId) {
     return `#/profile?owner=${encodeURIComponent(ownerId)}`;
 }
 
+export function buildOwnerProfilePhotosHash(ownerId) {
+    const ownerQuery = ownerId ? `owner=${encodeURIComponent(ownerId)}&` : '';
+    return `#/profile?${ownerQuery}view=photos`;
+}
+
+export function parseSharedProfileView(hash) {
+    const query = String(hash || '').split('?')[1];
+    if (!query) return null;
+    const view = new URLSearchParams(query).get('view');
+    return ['map', 'photos', 'albums'].includes(view) ? view : null;
+}
+
 export function buildTripShareUrl(origin, albumId) {
     const base = String(origin || '').replace(/\/+$/, '');
     return `${base}/${buildTripHash(albumId)}`;

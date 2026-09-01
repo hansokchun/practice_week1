@@ -109,6 +109,7 @@ import {
     getOwnerProfileMapPhotos,
     getPublicOwnerProfilePhotos
 } from './public-owner-profile-photos.mjs';
+import { getProfilePhotoPreview } from './profile-photo-preview.mjs';
 import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
 import {
     FEEDBACK_CATEGORIES,
@@ -119,7 +120,7 @@ import {
 import { formatRelativeTime } from './relative-time.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
-import { buildAlbumRouteHash, buildOwnerProfileHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
+import { buildAlbumRouteHash, buildOwnerProfileHash, buildOwnerProfilePhotosHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId, parseSharedProfileView } from './share-link.mjs';
 import { getShareSaveControlState } from './share-save-state.mjs';
 import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
@@ -796,6 +797,7 @@ function applyRouteHash(hash, options = {}) {
     if (sharedRoute.ownerId) {
         state.selectedPublicOwnerId = sharedRoute.ownerId;
         state.selectedPublicAlbumId = null;
+        state.profileTab = parseSharedProfileView(hash) || 'map';
     }
     if (sharedRoute.route === 'tag') {
         const nextSectionId = parseLandingTagId(hash);
@@ -2447,7 +2449,8 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         aiAnalysisPanel.hidden = !canEdit;
         aiAnalysisPanel.classList.toggle('is-complete', isComplete);
         aiAnalysisPanel.classList.toggle('is-failed', analysisStatus === 'failed');
-        if (aiAnalysisStatus) aiAnalysisStatus.textContent = statusLabels[analysisStatus] || statusLabels.pending;
+        if (aiAnalysisStatus) aiAnalysisStatus.textContent = 'AI 분석';
+        aiAnalysisPanel.setAttribute('aria-label', statusLabels[analysisStatus] || statusLabels.pending);
         if (aiAnalysisSummary) {
             aiAnalysisSummary.textContent = isComplete ? String(photo.ai_summary || '') : '';
             aiAnalysisSummary.hidden = !isComplete || !photo.ai_summary;
@@ -3574,27 +3577,34 @@ function renderEmptyPublicSurfaces() {
 function setProfileOwnershipLayout(isOwnProfile) {
     const profileTabs = $('.profile-tabs');
     const ownerMapHeading = $('#profile-owner-map-heading');
-    if (profileTabs) profileTabs.hidden = isOwnProfile;
-    if (ownerMapHeading) ownerMapHeading.hidden = !isOwnProfile;
-    if (isOwnProfile) state.profileTab = 'map';
+    if (profileTabs) profileTabs.hidden = false;
+    if (ownerMapHeading) ownerMapHeading.hidden = true;
 
     $$('[data-profile-panel]').forEach((panel) => {
-        panel.hidden = isOwnProfile && panel.dataset.profilePanel !== 'map';
-        if (isOwnProfile) panel.classList.toggle('is-active', panel.dataset.profilePanel === 'map');
+        panel.hidden = false;
     });
-    if (!isOwnProfile) setProfileTab(state.profileTab);
+    setProfileTab(state.profileTab);
 }
 
 function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
     ensureProfileHeaderShell();
-    const ownerPhotos = getPublicOwnerProfilePhotos(publicPhotos, ownerId);
-    const ownerAlbums = getSavedPublicAlbums().filter((album) => album.owner_id === ownerId && ['public', 'link'].includes(album.visibility));
+    const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
+    const ownerPhotos = isOwnProfile
+        ? getMySavedPhotos()
+        : getPublicOwnerProfilePhotos(publicPhotos, ownerId);
+    const ownerAlbums = state.savedAlbums.filter((album) => (
+        album.owner_id === ownerId
+        && (isOwnProfile || album.visibility === 'public')
+    ));
     const authorDetails = getPublicProfileDetails(ownerId);
     const authorName = authorDetails.nickname;
     const authorInitials = getAuthorInitials(authorName);
     const profileBio = authorDetails.bio;
     const avatarUrl = authorDetails.avatarUrl;
-    const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
+    const showAllPublicPhotos = !isOwnProfile && parseSharedProfileView(window.location.hash) === 'photos';
+    const displayedPhotos = showAllPublicPhotos
+        ? ownerPhotos
+        : getProfilePhotoPreview(ownerPhotos, { seed: ownerId, limit: 7 });
     const cover = ownerPhotos[0]?.url || MAIN_BG_4_URL;
     setProfileOwnershipLayout(isOwnProfile);
 
@@ -3632,8 +3642,8 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     renderProfileMap(profileMapPhotos);
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
-        profilePhotoGrid.innerHTML = ownerPhotos.length
-            ? ownerPhotos.slice(0, 12).map((photo) => {
+        profilePhotoGrid.innerHTML = displayedPhotos.length
+            ? displayedPhotos.map((photo) => {
                 const description = getPhotoDescriptionText(photo);
                 return `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
@@ -3647,8 +3657,15 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
                 </article>
             `;
             }).join('')
-            : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개된 사진이 없습니다.</span></article>';
+            : `<article class="empty-state"><strong>${isOwnProfile ? '사진이 없습니다' : '공개 사진이 없습니다'}</strong><span>${isOwnProfile ? '사진을 추가하면 이곳에 표시됩니다.' : '아직 공개된 사진이 없습니다.'}</span></article>`;
     }
+    const profilePhotoMore = $('#profile-photo-more');
+    const profilePhotoMoreWrap = profilePhotoMore?.closest('.profile-panel-more');
+    if (profilePhotoMore) {
+        profilePhotoMore.href = isOwnProfile ? '#/photos' : buildOwnerProfilePhotosHash(ownerId);
+        profilePhotoMore.textContent = isOwnProfile ? '내 사진 더보기' : '공개 사진 더보기';
+    }
+    if (profilePhotoMoreWrap) profilePhotoMoreWrap.hidden = showAllPublicPhotos || !ownerPhotos.length;
     const profileAlbumGrid = $('.profile-album-grid');
     if (profileAlbumGrid) {
         profileAlbumGrid.innerHTML = ownerAlbums.length
@@ -7289,6 +7306,13 @@ function bindEvents() {
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
         if (albumRow) {
             openMyphotoAlbum(albumRow);
+            return;
+        }
+
+        const profileAlbum = event.target.closest('.profile-album-grid [data-public-album-id][data-go-trip]');
+        if (profileAlbum) {
+            event.preventDefault();
+            routeToTrip(profileAlbum.dataset.publicAlbumId);
             return;
         }
 

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
     buildAlbumRouteHash,
     buildOwnerProfileHash,
+    buildOwnerProfilePhotosHash,
     buildTripHash,
     buildTripShareUrl,
     getSharedRouteState,
@@ -24,6 +25,11 @@ test('buildAlbumRouteHash falls back to the route without an album id', () => {
 test('buildOwnerProfileHash keeps owner id on public profile routes', () => {
     assert.equal(buildOwnerProfileHash('owner 1'), '#/profile?owner=owner%201');
     assert.equal(buildOwnerProfileHash(null), '#/profile');
+});
+
+test('buildOwnerProfilePhotosHash opens the selected owners complete public photo view', () => {
+    assert.equal(buildOwnerProfilePhotosHash('owner 1'), '#/profile?owner=owner%201&view=photos');
+    assert.equal(buildOwnerProfilePhotosHash(null), '#/profile?view=photos');
 });
 
 test('getShareUrlAlbumId prefers the explicit selected album id', () => {

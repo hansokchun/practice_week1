@@ -9045,7 +9045,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: grid;
 }
 
-.profile-photo-grid.is-active {
+.profile-photo-panel.is-active {
     display: block;
 }
 
@@ -9121,6 +9121,26 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     margin: 6px 0 18px;
     color: var(--muted);
     font-size: 13px;
+}
+
+.profile-panel-more {
+    margin-top: 26px;
+    text-align: center;
+}
+
+.profile-panel-more[hidden] {
+    display: none;
+}
+
+.profile-panel-more a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    border-bottom: 1px solid currentColor;
+    color: var(--teal);
+    font-weight: 800;
+    text-decoration: none;
 }
 
 .photo-detail-card {
@@ -9697,6 +9717,22 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .detail-actions {
     display: flex;
     gap: 10px;
+}
+
+.detail-actions [data-show-photo-on-map] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    line-height: 1;
+    padding-block: 0;
+}
+
+.detail-actions [data-show-photo-on-map] > span:not(.material-symbols-outlined) {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.2;
 }
 
 .photo-fullscreen-modal {
