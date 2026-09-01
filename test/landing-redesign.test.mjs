@@ -173,7 +173,7 @@ test('랜딩은 상단·고정 하단 메뉴 대신 두 곳에서 지도 둘러�
     assert.match(html, /id="landing-map-footer"[^>]*data-route="explore"/);
 });
 
-test('헤더 사진 추가와 계정 메뉴는 승인된 세 가지 개인 메뉴만 노출한다', async () => {
+test('헤더 사진 추가와 계정 메뉴는 개인 사진 및 설정 메뉴만 노출한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const accountMenuStart = html.indexOf('id="account-menu-popover"');
     const accountMenuEnd = html.indexOf('</div>', accountMenuStart);
@@ -182,6 +182,7 @@ test('헤더 사진 추가와 계정 메뉴는 승인된 세 가지 개인 메�
     assert.match(accountMenu, /내 프로필/);
     assert.match(accountMenu, /내 사진/);
     assert.match(accountMenu, /좋아요한 사진/);
+    assert.match(accountMenu, /설정/);
     assert.doesNotMatch(accountMenu, /여행요약|여행 요약/);
 });
 

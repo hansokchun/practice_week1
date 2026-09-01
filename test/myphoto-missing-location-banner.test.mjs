@@ -82,7 +82,7 @@ test('missing location dismiss also removes the account notification item', () =
     const dismissHandler = source.slice(dismissStart, dismissEnd);
 
     assert.match(body, /isMissingLocationBannerDismissed: state\.isMissingLocationBannerDismissed/);
-    assert.match(notificationSource, /if \(missingLocationCount && !isMissingLocationBannerDismissed\) \{/);
+    assert.match(notificationSource, /if \(missingLocationNotifications && missingLocationCount && !isMissingLocationBannerDismissed\) \{/);
     assert.match(dismissHandler, /state\.isMissingLocationBannerDismissed = true/);
     assert.match(dismissHandler, /renderSavedPhotoSurfaces\(\)/);
     assert.match(dismissHandler, /renderAccountNotifications\(\)/);

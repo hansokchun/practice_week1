@@ -11780,6 +11780,303 @@ body.modal-open {
     }
 }
 
+/* Account settings */
+.account-menu-popover button[data-account-route="settings"] {
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 9px 9px;
+}
+
+.page-settings {
+    min-height: calc(100vh - var(--header-height));
+    background: var(--bg);
+}
+
+.settings-page-shell {
+    width: min(920px, calc(100% - 48px));
+    padding-top: 64px;
+    padding-bottom: 104px;
+}
+
+.settings-page-header {
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--line);
+}
+
+.settings-page-header .eyebrow {
+    margin: 0 0 8px;
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.settings-page-header h1 {
+    margin: 0;
+    color: var(--ink);
+    font-size: 36px;
+    line-height: 1.2;
+}
+
+.settings-section {
+    padding: 32px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.settings-section-heading {
+    margin-bottom: 10px;
+}
+
+.settings-section-heading h2 {
+    margin: 0;
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.settings-section-heading p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.settings-row,
+.settings-link-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    min-height: 72px;
+    border: 0;
+    border-bottom: 1px solid rgba(26, 77, 78, 0.08);
+    background: transparent;
+    color: var(--text);
+    padding: 12px 0;
+}
+
+.settings-section > :last-child {
+    border-bottom: 0;
+}
+
+.settings-profile-avatar {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+}
+
+.settings-row-copy {
+    display: grid;
+    flex: 1 1 auto;
+    gap: 5px;
+    min-width: 0;
+}
+
+.settings-row-copy strong {
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.settings-row-copy span {
+    overflow-wrap: anywhere;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.settings-text-action,
+.settings-account-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--teal-dark);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 0 15px;
+}
+
+.settings-segmented {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex: 0 0 auto;
+    width: 220px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    padding: 3px;
+}
+
+.settings-segmented button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 0 12px;
+}
+
+.settings-segmented button .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.settings-segmented button.active {
+    background: var(--surface);
+    color: var(--teal-dark);
+    box-shadow: 0 2px 8px rgba(26, 77, 78, 0.1);
+}
+
+.settings-toggle-row {
+    cursor: pointer;
+}
+
+.settings-toggle {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 26px;
+}
+
+.settings-toggle input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.settings-toggle > span {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: #b9bfbd;
+    transition: background 160ms ease;
+}
+
+.settings-toggle > span::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    content: '';
+    transition: transform 160ms ease;
+}
+
+.settings-toggle input:checked + span {
+    background: var(--teal);
+}
+
+.settings-toggle input:checked + span::after {
+    transform: translateX(20px);
+}
+
+.settings-toggle input:focus-visible + span {
+    outline: 3px solid rgba(244, 140, 113, 0.36);
+    outline-offset: 3px;
+}
+
+.settings-link-row {
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.settings-link-row > .material-symbols-outlined:first-child {
+    color: var(--teal);
+    font-size: 22px;
+}
+
+.settings-link-row > span:nth-child(2) {
+    flex: 1 1 auto;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.settings-link-row > .material-symbols-outlined:last-child {
+    color: var(--muted);
+    font-size: 20px;
+}
+
+.settings-link-row:hover > span:nth-child(2),
+.settings-link-row:focus-visible > span:nth-child(2) {
+    color: var(--teal);
+}
+
+.settings-account-section {
+    border-bottom: 0;
+}
+
+.settings-account-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 18px;
+}
+
+.settings-account-actions .is-danger {
+    border-color: rgba(146, 47, 47, 0.42);
+    background: transparent;
+    color: #922f2f;
+}
+
+@media (max-width: 640px) {
+    .settings-page-shell {
+        width: calc(100% - 32px);
+        padding-top: 36px;
+        padding-bottom: 72px;
+    }
+
+    .settings-page-header h1 {
+        font-size: 30px;
+    }
+
+    .settings-section {
+        padding: 26px 0;
+    }
+
+    .settings-row {
+        align-items: flex-start;
+    }
+
+    .settings-profile-row {
+        align-items: center;
+    }
+
+    .settings-section .settings-row:not(.settings-profile-row):has(.settings-segmented) {
+        flex-direction: column;
+    }
+
+    .settings-segmented {
+        width: 100%;
+    }
+
+    .settings-account-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 /* Keep the compact header grid after legacy responsive declarations. */
 .site-header-inner {
     grid-template-columns: minmax(0, 1fr) auto;

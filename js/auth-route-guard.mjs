@@ -1,4 +1,4 @@
-const AUTH_REQUIRED_ROUTES = new Set(['upload', 'liked']);
+const AUTH_REQUIRED_ROUTES = new Set(['upload', 'liked', 'settings']);
 
 export function getAuthRequiredRoute(route, currentUser) {
     return AUTH_REQUIRED_ROUTES.has(route) && !currentUser ? route : null;

@@ -35,3 +35,23 @@ test('dismissed missing-location guidance is omitted and an empty state is non-a
     assert.equal(dismissedItems[0].route, '');
     assert.deepEqual(loggedOutItems, []);
 });
+
+test('notification preferences can hide location guidance and library summaries', () => {
+    const photos = [
+        { id: 'missing', owner_id: 'me', lat: null, lng: null },
+        { id: 'public', owner_id: 'me', lat: 37.5, lng: 127, visibility: 'public' }
+    ];
+    const locationOnly = buildAccountNotificationItems({
+        currentUserId: 'me',
+        savedPhotos: photos,
+        librarySummaryNotifications: false
+    });
+    const summaryOnly = buildAccountNotificationItems({
+        currentUserId: 'me',
+        savedPhotos: photos,
+        missingLocationNotifications: false
+    });
+
+    assert.deepEqual(locationOnly.map((item) => item.title), ['위치 정보 없는 사진 1장']);
+    assert.deepEqual(summaryOnly.map((item) => item.title), ['공개 중인 사진 1장']);
+});

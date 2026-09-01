@@ -64,6 +64,7 @@
                         <button data-account-route="profile" type="button"><span class="material-symbols-outlined" aria-hidden="true">person</span>내 프로필</button>
                         <button data-account-route="photos" type="button"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>내 사진</button>
                         <button data-account-route="liked" type="button"><span class="material-symbols-outlined" aria-hidden="true">favorite</span>좋아요한 사진</button>
+                        <button data-account-route="settings" type="button"><span class="material-symbols-outlined" aria-hidden="true">settings</span>설정</button>
                     </div>
                 </div>
             </div>
@@ -669,6 +670,106 @@
                         <article><img src="images/main_bg3.jpg" alt=""><strong>Tokyo Night Walk</strong><span>18장 · 7곳</span></article>
                         <article><img src="images/main_bg5.jpg" alt=""><strong>Italian Blue Week</strong><span>86장 · 14곳</span></article>
                         <article><img src="images/main_bg1.jpg" alt=""><strong>Paris Alley Notes</strong><span>31장 · 9곳</span></article>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <section id="page-settings" class="page page-settings" aria-labelledby="settings-title">
+            <div class="page-container settings-page-shell">
+                <header class="settings-page-header">
+                    <p class="eyebrow">Account</p>
+                    <h1 id="settings-title">설정</h1>
+                </header>
+
+                <section class="settings-section" aria-labelledby="settings-profile-title">
+                    <div class="settings-section-heading">
+                        <h2 id="settings-profile-title">프로필</h2>
+                    </div>
+                    <div class="settings-row settings-profile-row">
+                        <span class="avatar settings-profile-avatar">
+                            <img id="settings-avatar-image" alt="" hidden>
+                            <span id="settings-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
+                        </span>
+                        <div class="settings-row-copy">
+                            <strong id="settings-profile-name">사용자</strong>
+                            <span id="settings-profile-email"></span>
+                        </div>
+                        <button id="settings-profile-edit" class="settings-text-action" type="button">프로필 수정</button>
+                    </div>
+                </section>
+
+                <section class="settings-section" aria-labelledby="settings-upload-title">
+                    <div class="settings-section-heading">
+                        <h2 id="settings-upload-title">새 사진 기본값</h2>
+                        <p>새로 올리는 사진에 먼저 적용됩니다. 공유 전에 언제든 바꿀 수 있어요.</p>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-row-copy">
+                            <strong>공개 범위</strong>
+                            <span>기존 사진의 공개 상태는 바뀌지 않습니다.</span>
+                        </div>
+                        <div class="settings-segmented" role="group" aria-label="새 사진 기본 공개 범위">
+                            <button data-settings-visibility="private" type="button"><span class="material-symbols-outlined" aria-hidden="true">lock</span>비공개</button>
+                            <button data-settings-visibility="public" type="button"><span class="material-symbols-outlined" aria-hidden="true">public</span>공개</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-section" aria-labelledby="settings-notifications-title">
+                    <div class="settings-section-heading">
+                        <h2 id="settings-notifications-title">알림</h2>
+                    </div>
+                    <label class="settings-row settings-toggle-row" for="settings-missing-location-notifications">
+                        <div class="settings-row-copy">
+                            <strong>위치 정보 알림</strong>
+                            <span>위치가 없는 내 사진을 상단 알림에서 알려줍니다.</span>
+                        </div>
+                        <span class="settings-toggle">
+                            <input id="settings-missing-location-notifications" type="checkbox">
+                            <span aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    <label class="settings-row settings-toggle-row" for="settings-library-summary-notifications">
+                        <div class="settings-row-copy">
+                            <strong>사진 활동 요약</strong>
+                            <span>좋아요한 사진과 공개 중인 사진을 상단 알림에서 요약합니다.</span>
+                        </div>
+                        <span class="settings-toggle">
+                            <input id="settings-library-summary-notifications" type="checkbox">
+                            <span aria-hidden="true"></span>
+                        </span>
+                    </label>
+                </section>
+
+                <section class="settings-section" aria-labelledby="settings-support-title">
+                    <div class="settings-section-heading">
+                        <h2 id="settings-support-title">개인정보 및 도움말</h2>
+                    </div>
+                    <a class="settings-link-row" href="/privacy/">
+                        <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+                        <span>개인정보 처리방침</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </a>
+                    <a class="settings-link-row" href="/support/">
+                        <span class="material-symbols-outlined" aria-hidden="true">help</span>
+                        <span>도움말 및 지원</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </a>
+                    <button id="settings-feedback-open" class="settings-link-row" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">rate_review</span>
+                        <span>의견 보내기</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </button>
+                </section>
+
+                <section class="settings-section settings-account-section" aria-labelledby="settings-account-title">
+                    <div class="settings-section-heading">
+                        <h2 id="settings-account-title">계정</h2>
+                    </div>
+                    <div class="settings-account-actions">
+                        <button id="settings-logout" type="button"><span class="material-symbols-outlined" aria-hidden="true">logout</span>로그아웃</button>
+                        <button id="settings-delete-account" class="is-danger" type="button">계정 삭제</button>
                     </div>
                 </section>
             </div>

@@ -9,6 +9,8 @@ import {
 test('upload route requires login before rendering', () => {
     assert.equal(getAuthRequiredRoute('upload', null), 'upload');
     assert.equal(getAuthRequiredRoute('upload', { id: 'user-1' }), null);
+    assert.equal(getAuthRequiredRoute('settings', null), 'settings');
+    assert.equal(getAuthRequiredRoute('settings', { id: 'user-1' }), null);
 });
 
 test('public routes do not require login', () => {

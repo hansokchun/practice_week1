@@ -39,6 +39,11 @@ import {
 } from '../auth.js';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
 import {
+    DEFAULT_ACCOUNT_SETTINGS,
+    loadAccountSettings,
+    saveAccountSettings
+} from './account-settings.mjs';
+import {
     getProviderAccountProfile,
     resolveAccountProfile
 } from './account-profile.mjs';
@@ -331,6 +336,7 @@ const state = {
     productFeedback: [],
     isProductFeedbackLoading: false,
     hasLoadedProductFeedback: false,
+    accountSettings: { ...DEFAULT_ACCOUNT_SETTINGS },
     myLibraryTab: 'photos',
     isAccountMenuOpen: false,
     photoDetailStreetView: null
@@ -344,7 +350,7 @@ const EXPLORE_PHOTO_SCOPE_META = {
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const LANDING_ROUTE = 'landing';
-const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'admin-landing']);
+const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing']);
 const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
 const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
@@ -650,7 +656,7 @@ function routeTo(section, { replace = false } = {}) {
     if (authRequiredRoute) {
         state.pendingAuthRoute = authRequiredRoute;
         openModal('#auth-modal');
-        showToast('사진을 업로드하려면 먼저 로그인해주세요.');
+        showToast(normalized === 'settings' ? '설정은 로그인 후 확인할 수 있어요.' : '사진을 업로드하려면 먼저 로그인해주세요.');
         return;
     }
     const hash = normalized === LANDING_ROUTE ? '#/landing' : normalized === APP_SECTIONS.HOME ? '#/' : `#/${renderedRoute}`;
@@ -718,7 +724,7 @@ function renderRoute(section) {
         setExploreMobileDiscoveryOpen(false);
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'admin-landing'].includes(normalized)
+    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'settings', 'admin-landing'].includes(normalized)
         ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -732,6 +738,10 @@ function renderRoute(section) {
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
     if (normalized === 'liked') renderLikedPhotoSurfaces();
+    if (normalized === 'settings') renderAccountSettingsPage();
+    if (normalized === 'upload' && previousRoute !== 'upload' && !state.stagedPhotos.length) {
+        setVisibilityMode(state.accountSettings.defaultVisibility);
+    }
     if (renderedRoute === APP_SECTIONS.HOME) {
         renderSavedPhotoSurfaces();
         renderLandingSections();
@@ -780,6 +790,10 @@ function applyRouteHash(hash, options = {}) {
     }
     const route = sharedRoute.route || parseRouteHash(hash);
     const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
+    if (getAuthRequiredRoute(normalized, state.currentUser)) {
+        routeTo(normalized, options);
+        return;
+    }
     if (options.replace) {
         const renderedRoute = getRenderedRoute(normalized);
         const nextHash = hash && hash.startsWith('#/')
@@ -2964,6 +2978,7 @@ async function saveAccountProfile(event) {
 }
 
 function updateAccountUI() {
+    state.accountSettings = loadAccountSettings(window.localStorage, state.currentUser?.id || '');
     const profile = getCurrentAccountProfile();
     const button = $('#btn-open-auth');
     const profileButton = $('#btn-open-profile');
@@ -2979,6 +2994,33 @@ function updateAccountUI() {
     }
     setAvatarDisplay($('#account-avatar-image'), $('#account-avatar-fallback'), profile.avatarUrl, profile.nickname);
     renderAccountNotifications();
+    if (document.body.dataset.page === 'settings') renderAccountSettingsPage();
+}
+
+function renderAccountSettingsPage() {
+    if (!state.currentUser) return;
+    const profile = getCurrentAccountProfile();
+    setAvatarDisplay($('#settings-avatar-image'), $('#settings-avatar-fallback'), profile.avatarUrl, profile.nickname);
+    if ($('#settings-profile-name')) $('#settings-profile-name').textContent = profile.nickname;
+    if ($('#settings-profile-email')) $('#settings-profile-email').textContent = state.currentUser.email || '';
+    $$('[data-settings-visibility]').forEach((button) => {
+        const active = button.dataset.settingsVisibility === state.accountSettings.defaultVisibility;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+    if ($('#settings-missing-location-notifications')) {
+        $('#settings-missing-location-notifications').checked = state.accountSettings.missingLocationNotifications;
+    }
+    if ($('#settings-library-summary-notifications')) {
+        $('#settings-library-summary-notifications').checked = state.accountSettings.librarySummaryNotifications;
+    }
+}
+
+function updateAccountSettings(patch = {}) {
+    if (!state.currentUser?.id) return;
+    state.accountSettings = saveAccountSettings(window.localStorage, state.currentUser.id, { ...state.accountSettings, ...patch });
+    renderAccountSettingsPage();
+    renderAccountNotifications();
 }
 
 function setAppBooting(isBooting) {
@@ -2990,7 +3032,9 @@ function getAccountNotificationItems() {
         currentUserId: state.currentUser?.id || '',
         savedPhotos: state.savedPhotos,
         likedPhotoIds: state.likedPhotoIds,
-        isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed
+        isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed,
+        missingLocationNotifications: state.accountSettings.missingLocationNotifications,
+        librarySummaryNotifications: state.accountSettings.librarySummaryNotifications
     });
 }
 
@@ -3063,6 +3107,7 @@ function resetAccountState() {
     state.hasLoadedSavedPhotos = false;
     state.hasLoadedMyLikes = false;
     state.lastSavedPhotoIds = [];
+    state.accountSettings = { ...DEFAULT_ACCOUNT_SETTINGS };
 }
 
 function syncAccountDeletionControl(deleting = false) {
@@ -7138,6 +7183,24 @@ function bindEvents() {
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
     $('#profile-avatar-input')?.addEventListener('change', handleAccountProfileAvatarChange);
+    $('#settings-profile-edit')?.addEventListener('click', () => {
+        openAccountProfilePage();
+        setAccountProfileEditMode(true);
+    });
+    $$('[data-settings-visibility]').forEach((button) => {
+        button.addEventListener('click', () => updateAccountSettings({
+            defaultVisibility: button.dataset.settingsVisibility
+        }));
+    });
+    $('#settings-missing-location-notifications')?.addEventListener('change', (event) => {
+        updateAccountSettings({ missingLocationNotifications: event.currentTarget.checked });
+    });
+    $('#settings-library-summary-notifications')?.addEventListener('change', (event) => {
+        updateAccountSettings({ librarySummaryNotifications: event.currentTarget.checked });
+    });
+    $('#settings-feedback-open')?.addEventListener('click', openProductFeedbackDialog);
+    $('#settings-logout')?.addEventListener('click', handleLogout);
+    $('#settings-delete-account')?.addEventListener('click', openAccountDeletionDialog);
     $('#account-feedback-open')?.addEventListener('click', openProductFeedbackDialog);
     $('#feedback-message')?.addEventListener('input', syncFeedbackMessageCount);
     $('#feedback-form')?.addEventListener('submit', handleProductFeedbackSubmit);
