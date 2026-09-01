@@ -136,6 +136,10 @@ test('getSharedRouteState preserves the authenticated liked photos route', () =>
     });
 });
 
+test('getSharedRouteState preserves the authenticated settings route', () => {
+    assert.equal(getSharedRouteState('#/settings').route, 'settings');
+});
+
 test('getSharedRouteState preserves refreshable landing tag pages', () => {
     assert.deepEqual(getSharedRouteState('#/tag?section=korea'), {
         route: 'tag',
