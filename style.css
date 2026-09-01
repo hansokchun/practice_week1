@@ -8517,6 +8517,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     margin-bottom: 18px;
 }
 
+.profile-tabs[hidden] {
+    display: none;
+}
+
 .profile-tabs button {
     min-height: 42px;
     border: 1px solid var(--line);

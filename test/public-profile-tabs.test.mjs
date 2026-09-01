@@ -28,6 +28,7 @@ test('own profile keeps the map and removes duplicate photo and album navigation
     assert.match(layout, /state\.profileTab = 'map'/);
     assert.match(layout, /panel\.hidden = isOwnProfile && panel\.dataset\.profilePanel !== 'map'/);
     assert.match(ownerBody, /setProfileOwnershipLayout\(isOwnProfile\)/);
+    assert.match(css, /\.profile-tabs\[hidden\]\s*\{[^}]*display:\s*none;/s);
 });
 
 test('public empty-state refresh does not overwrite the active profile ownership layout', () => {
