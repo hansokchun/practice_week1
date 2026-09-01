@@ -11831,4 +11831,8 @@ body.modal-open {
     .site-header-inner {
         grid-template-columns: 38px minmax(0, 1fr) auto;
     }
+
+    #btn-header-upload .material-symbols-outlined {
+        display: inline-block;
+    }
 }
