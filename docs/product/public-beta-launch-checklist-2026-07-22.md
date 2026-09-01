@@ -1,6 +1,6 @@
 # Ikkyee 웹 공개 베타 출시 체크리스트
 
-**최종 갱신:** 2026-08-30
+**최종 갱신:** 2026-09-02
 **출시 목표:** 누구나 가입할 수 있는 제한된 범위의 공개 베타
 **제품 약속:** 사진을 고르면 여행 지도가 만들어진다.
 **P0 상태:** 활성 기술 관문은 모두 완료했다. 유료 요금제 안전 기능 1개는 보류 중이며 최종 지원·개인정보 문구는 사람의 승인이 필요하다.
@@ -22,6 +22,8 @@
 - 랜딩 관리 테이블의 RLS 정책을 질의당 JWT 1회 평가 형태로 최적화하고, 사진 역참조 인덱스를 운영 Supabase에 적용했다.
 - 주변 사진 제거 기능 커밋 `e0a6799`를 `dev`와 `main`에 반영하고 Cloudflare Pages 운영 환경에 배포했다.
 - 360×800, 390×844, 844×390 반응형 재검수에서 사진 상세를 하나의 세로 스크롤로 정리하고 닫기·더보기 겹침, 날짜·위치 문구 밀림, 검색 초기화, Explore 로딩 안내, 44px 터치 영역을 보강했다.
+- 마이페이지의 계정 삭제 위에 피드백 제출을 추가하고, 랜딩 관리자 화면에서 유형·만족도·작성 화면·연락 동의·처리 상태를 확인하도록 구현했다. 사용자별 RLS와 일 5회 제출 제한을 운영 Supabase에 적용했다.
+- 390×844·360×800 미리보기에서 모바일 헤더, 지도, 로그인 모달, Google OAuth 복귀, 피드백 제출·관리자 상태 변경을 검증했다. 실기기 전용 항목은 별도 QA로 유지한다.
 
 ### 웹 랜딩 개편 진행 상황
 
@@ -228,6 +230,7 @@
 - `docs/product/public-beta-privacy-and-support-draft-2026-07-24.md`
 - `docs/product/public-beta-metrics-2026-07-26.md`
 - `docs/qa/photo-lifecycle-preview-qa-2026-07-25.md`
+- `docs/qa/mobile-web-feedback-qa-2026-09-02.md`
 - `docs/qa/authentication-preview-qa-2026-07-26.md`
 - `docs/qa/public-location-privacy-role-qa-2026-07-26.md`
 - `docs/qa/private-storage-cutover-2026-07-28.md`
