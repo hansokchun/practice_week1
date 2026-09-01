@@ -302,12 +302,26 @@ body[data-page="landing"] .account-avatar {
     }
 
     .brand-korean {
-        font-size: 15px;
+        display: none;
     }
 
     .site-primary-nav {
         justify-self: start;
         gap: 14px;
+    }
+
+    #btn-header-upload {
+        width: 44px;
+        padding: 0;
+    }
+
+    #btn-header-upload > span:not(.material-symbols-outlined) {
+        display: none;
+    }
+
+    #btn-header-upload .material-symbols-outlined {
+        display: inline-block;
+        font-size: 22px;
     }
 
     body[data-page="landing"] #btn-header-upload {
