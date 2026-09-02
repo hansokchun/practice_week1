@@ -531,9 +531,10 @@ body[data-page="landing"] .account-avatar {
 
 .location-assignment-thumbnails {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: auto;
     align-content: start;
-    gap: 14px;
+    gap: 18px;
     max-height: 700px;
     margin-top: 17px;
     overflow-y: auto;
@@ -551,11 +552,60 @@ body[data-page="landing"] .account-avatar {
     border: 2px solid transparent;
     border-radius: 7px;
     background: var(--surface-muted);
-    contain: layout paint;
-    content-visibility: auto;
-    contain-intrinsic-size: 174px 174px;
+    isolation: isolate;
     margin: 0;
     padding: 0;
+}
+
+.location-assignment-reference-marker {
+    display: grid;
+    justify-items: center;
+    width: max-content;
+    pointer-events: none;
+    transform: translateY(-5px);
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.location-assignment-reference-marker img {
+    display: block;
+    width: var(--reference-marker-size, 52px);
+    height: var(--reference-marker-size, 52px);
+    border: 2px solid rgba(255, 255, 255, 0.94);
+    border-radius: 50%;
+    background: var(--surface-muted);
+    box-shadow: 0 4px 12px rgba(0, 54, 55, 0.24);
+    object-fit: cover;
+    transition: width 160ms ease, height 160ms ease;
+}
+
+.location-assignment-reference-marker strong {
+    margin-top: 4px;
+    border-radius: 4px;
+    background: rgba(0, 54, 55, 0.88);
+    color: #fff;
+    font-size: 10px;
+    line-height: 1;
+    padding: 5px 7px;
+    white-space: nowrap;
+}
+
+.location-assignment-map[data-reference-marker="compact"] .location-assignment-reference-marker,
+.location-assignment-map[data-reference-marker="detail"] .location-assignment-reference-marker {
+    opacity: 0.82;
+    transform: translateY(-2px);
+}
+
+.location-assignment-map[data-reference-marker="compact"] .location-assignment-reference-marker img {
+    --reference-marker-size: 36px;
+}
+
+.location-assignment-map[data-reference-marker="detail"] .location-assignment-reference-marker img {
+    --reference-marker-size: 30px;
+}
+
+.location-assignment-map[data-reference-marker="compact"] .location-assignment-reference-marker strong,
+.location-assignment-map[data-reference-marker="detail"] .location-assignment-reference-marker strong {
+    display: none;
 }
 
 .location-assignment-thumbnails button.is-selected {
@@ -853,11 +903,15 @@ body[data-page="landing"] .account-avatar {
         max-height: none;
         overflow-x: auto;
         overflow-y: hidden;
-        padding: 3px;
+        gap: 12px;
+        padding: 3px 3px 7px;
+        scroll-snap-type: x proximity;
     }
 
     .location-assignment-thumbnails button {
         flex: 0 0 92px;
+        width: 92px;
+        scroll-snap-align: start;
     }
 
     .location-assignment-editor {
@@ -5190,6 +5244,10 @@ body[data-page="liked"] .dashboard-panel {
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 14px;
+}
+
+.page-photos [data-my-library-panel="photos"] > .panel-topline {
+    justify-content: flex-end;
 }
 
 .photo-grid {

@@ -4803,12 +4803,10 @@ function renderPhotoPagination(container, page, pageKey) {
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const grid = $('#personal-photo-grid');
-    const summary = $('#personal-photo-summary');
     const deleteButton = $('#btn-delete-selected-photos');
     const pagination = $('#personal-photo-pagination');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
-    if (summary) summary.textContent = formatPhotoCount(photos.length);
     if (deleteButton) {
         deleteButton.hidden = selectedCount === 0;
         deleteButton.disabled = selectedCount === 0;
@@ -4907,9 +4905,8 @@ function formatLocationAssignmentDate(value) {
 }
 
 function formatLocationAssignmentRelativeTime(photo) {
-    const minutes = Math.max(1, Math.round(Number(photo?.timeDifferenceMs || 0) / 60000));
-    const difference = minutes < 60 ? `${minutes}분` : `${Math.round(minutes / 60)}시간`;
-    return `${difference} ${photo?.relativeDirection === 'before' ? '전' : '후'}`;
+    const minutes = Math.max(1, Math.round((photo.timeDifferenceMs || 0) / 60000));
+    return `${minutes < 60 ? `${minutes}분` : `${Math.round(minutes / 60)}시간`} ${photo.relativeDirection === 'before' ? '전' : '후'}`;
 }
 
 function renderUploadCompletePage() {
@@ -4989,38 +4986,32 @@ function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom =
     if (Number.isFinite(zoom)) state.locationAssignmentMap.setZoom(zoom);
 }
 
-function clearLocationAssignmentReferenceMarkers() {
-    state.locationAssignmentReferenceMarkers.forEach((marker) => marker.setMap?.(null));
-    state.locationAssignmentReferenceMarkers = [];
+function syncNearbyPins() {
+    const zoom = state.locationAssignmentMap?.getZoom?.();
+    $('#location-assignment-map').dataset.referenceMarker = zoom >= 18 ? 'detail' : zoom >= 15 ? 'compact' : 'overview';
 }
 
 function renderLocationAssignmentReferenceMarkers(maps, photos = [], { fitViewport = false } = {}) {
-    clearLocationAssignmentReferenceMarkers();
+    state.locationAssignmentReferenceMarkers.forEach((marker) => marker.setMap?.(null));
+    state.locationAssignmentReferenceMarkers = [];
     const map = state.locationAssignmentMap;
     if (!map || !maps || !photos.length) return;
 
-    const baseIcon = getExplorePinIcon(maps, { type: 'photo' });
-    const width = 24;
-    const height = 31;
-    const icon = {
-        ...baseIcon,
-        scaledSize: maps.Size ? new maps.Size(width, height) : { width, height },
-        anchor: maps.Point ? new maps.Point(width / 2, height - 1) : undefined
-    };
-    const bounds = typeof maps.LatLngBounds === 'function' ? new maps.LatLngBounds() : null;
+    const bounds = new maps.LatLngBounds();
 
     state.locationAssignmentReferenceMarkers = photos.map((photo) => {
         const position = { lat: Number(photo.lat), lng: Number(photo.lng) };
-        bounds?.extend(position);
+        const content = document.createElement('div');
+        content.className = 'location-assignment-reference-marker';
+        content.innerHTML = `${renderPhotoImage(photo, '')}<strong>${formatLocationAssignmentRelativeTime(photo)}</strong>`;
+        bounds.extend(position);
         return createGoogleMapsMarker(maps, {
             map,
             position,
-            icon,
-            title: formatLocationAssignmentRelativeTime(photo)
+            content
         }, { mapId: state.googleMapsMapId });
     });
-
-    if (!fitViewport || !bounds) return;
+    if (!fitViewport) return;
     if (state.locationAssignmentDraft) bounds.extend(state.locationAssignmentDraft);
     map.fitBounds(bounds, 72);
     maps.event?.addListenerOnce?.(map, 'idle', () => {
@@ -5047,6 +5038,7 @@ async function ensureLocationAssignmentMap() {
             if (!event.latLng) return;
             setLocationAssignmentDraft(event.latLng.lat(), event.latLng.lng(), { center: false });
         });
+        state.locationAssignmentMap.addListener('zoom_changed', syncNearbyPins);
     }
     maps.event.trigger(state.locationAssignmentMap, 'resize');
     const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
