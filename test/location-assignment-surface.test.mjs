@@ -88,3 +88,27 @@ test('switching to a photo without nearby references preserves the current map v
     assert.match(mapSetup, /new maps\.Map\(container, getLocationEditorMapOptions\(defaultCenter,/);
     assert.doesNotMatch(mapSetup, /if \(!nearbyPhotos\.length\)\s*\{[^}]*setCenter\(defaultCenter\)[^}]*setZoom\(7\)/s);
 });
+
+test('location assignment offers an on-demand stationary Street View reference', () => {
+    const start = html.indexOf('id="page-location-assign"');
+    const end = html.indexOf('id="page-album"', start);
+    const surface = html.slice(start, end);
+
+    assert.match(surface, /id="btn-open-location-assignment-street-view"[^>]*disabled/);
+    assert.match(surface, /id="location-assignment-street-view"[^>]*hidden/);
+    assert.match(surface, /id="location-assignment-street-view-canvas"/);
+    assert.match(surface, /id="location-assignment-street-view-message"[^>]*aria-live="polite"/);
+    assert.match(surface, /id="btn-close-location-assignment-street-view"/);
+    assert.match(app, /LOCATION_ASSIGNMENT_STREET_VIEW_RADII/);
+    assert.match(app, /new maps\.StreetViewService\(\)/);
+    assert.match(app, /new maps\.StreetViewPanorama\(canvas,\s*\{[^}]*clickToGo:\s*false[^}]*linksControl:\s*false/s);
+    assert.match(app, /btn-open-location-assignment-street-view[^\n]+loadLocationAssignmentStreetView/);
+    assert.match(app, /btn-close-location-assignment-street-view[^\n]+closeLocationAssignmentStreetView/);
+    const loaderStart = app.indexOf('async function loadLocationAssignmentStreetView()');
+    const loaderEnd = app.indexOf('function updateLocationAssignmentDraftReadout(', loaderStart);
+    const loader = app.slice(loaderStart, loaderEnd);
+    assert.doesNotMatch(loader, /locationAssignmentMarker\?*\.?setPosition/);
+    assert.doesNotMatch(loader, /locationAssignmentMap\.(?:panTo|setCenter|setZoom)/);
+    assert.match(styles, /\.location-assignment-street-view\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;/s);
+    assert.match(styles, /@media \(max-width:\s*720px\)[\s\S]*\.location-assignment-map-stage,\s*\.location-assignment-map,\s*\.location-assignment-street-view-canvas\s*\{[^}]*min-height:\s*420px;/s);
+});

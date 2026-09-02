@@ -66,6 +66,11 @@ import {
     getNearbyLocatedPhotos,
     getUploadCompletionPhotos
 } from './location-assignment.mjs';
+import {
+    formatStreetViewDistance,
+    getCoordinateDistanceMeters,
+    LOCATION_ASSIGNMENT_STREET_VIEW_RADII
+} from './location-assignment-street-view.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { getGoogleMapsLocationUrl } from './location-copy.mjs';
 import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
@@ -334,6 +339,8 @@ const state = {
     locationAssignmentMapClickListener: null,
     locationAssignmentDraft: null,
     locationAssignmentSearchResultName: '',
+    locationAssignmentStreetView: null,
+    locationAssignmentStreetViewRequestToken: 0,
     isPersistingUpload: false,
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
@@ -734,6 +741,9 @@ function renderRoute(section) {
     }
     if (normalized !== APP_SECTIONS.EXPLORE && state.isExploreMobileDiscoveryOpen) {
         setExploreMobileDiscoveryOpen(false);
+    }
+    if (previousRoute === 'location-assign' && normalized !== 'location-assign') {
+        closeLocationAssignmentStreetView();
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
     const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'settings', 'admin-landing'].includes(normalized)
@@ -4939,6 +4949,127 @@ function getCurrentLocationAssignmentPhoto() {
     );
 }
 
+function setLocationAssignmentStreetViewButtonLabel(label) {
+    const labelNode = $('#btn-open-location-assignment-street-view span:last-child');
+    if (labelNode) labelNode.textContent = label;
+}
+
+function syncLocationAssignmentStreetViewControl() {
+    const button = $('#btn-open-location-assignment-street-view');
+    if (!button) return;
+    button.disabled = !state.locationAssignmentDraft;
+    button.title = state.locationAssignmentDraft
+        ? '선택한 위치 주변의 360도 거리뷰 확인'
+        : '지도에서 위치를 먼저 선택하세요';
+    setLocationAssignmentStreetViewButtonLabel('주변 거리뷰로 확인');
+}
+
+function closeLocationAssignmentStreetView() {
+    state.locationAssignmentStreetViewRequestToken += 1;
+    state.locationAssignmentStreetView?.setVisible?.(false);
+    state.locationAssignmentStreetView = null;
+    $('#location-assignment-map-stage')?.classList.remove('is-street-view-open');
+    const section = $('#location-assignment-street-view');
+    const canvas = $('#location-assignment-street-view-canvas');
+    if (section) section.hidden = true;
+    if (canvas) canvas.replaceChildren();
+    syncLocationAssignmentStreetViewControl();
+}
+
+function requestLocationAssignmentStreetView(service, maps, position, radius) {
+    return new Promise((resolve) => {
+        service.getPanorama({
+            location: position,
+            radius,
+            sources: [maps.StreetViewSource.OUTDOOR],
+            preference: maps.StreetViewPreference.NEAREST
+        }, (data, status) => {
+            resolve(status === maps.StreetViewStatus.OK && data?.location?.latLng ? data : null);
+        });
+    });
+}
+
+async function loadLocationAssignmentStreetView() {
+    const draft = state.locationAssignmentDraft;
+    const button = $('#btn-open-location-assignment-street-view');
+    const mapMessage = $('#location-assignment-message');
+    if (!draft || !button) return;
+
+    const selectedPhotoId = state.selectedLocationPhotoId;
+    const requestToken = ++state.locationAssignmentStreetViewRequestToken;
+    const position = { lat: Number(draft.lat), lng: Number(draft.lng) };
+    button.disabled = true;
+    setLocationAssignmentStreetViewButtonLabel('거리뷰 찾는 중...');
+    if (mapMessage) mapMessage.textContent = '선택한 위치 주변의 거리뷰를 찾고 있어요.';
+
+    const maps = await loadGoogleMapsApi();
+    if (requestToken !== state.locationAssignmentStreetViewRequestToken) return;
+    if (!maps) {
+        button.disabled = false;
+        setLocationAssignmentStreetViewButtonLabel('다시 확인');
+        if (mapMessage) mapMessage.textContent = '지금은 거리뷰를 불러올 수 없어요.';
+        return;
+    }
+
+    const service = new maps.StreetViewService();
+    let panoramaData = null;
+    for (const radius of LOCATION_ASSIGNMENT_STREET_VIEW_RADII) {
+        try {
+            panoramaData = await requestLocationAssignmentStreetView(service, maps, position, radius);
+        } catch {
+            panoramaData = null;
+        }
+        if (panoramaData || requestToken !== state.locationAssignmentStreetViewRequestToken) break;
+    }
+
+    const activeDraft = state.locationAssignmentDraft;
+    const isStale = requestToken !== state.locationAssignmentStreetViewRequestToken
+        || String(selectedPhotoId) !== String(state.selectedLocationPhotoId)
+        || !activeDraft
+        || Number(activeDraft.lat) !== position.lat
+        || Number(activeDraft.lng) !== position.lng;
+    if (isStale) return;
+
+    if (!panoramaData) {
+        button.disabled = false;
+        setLocationAssignmentStreetViewButtonLabel('주변 거리뷰로 확인');
+        if (mapMessage) mapMessage.textContent = '선택한 위치 주변 200m 안에서 거리뷰를 찾지 못했어요.';
+        return;
+    }
+
+    const stage = $('#location-assignment-map-stage');
+    const section = $('#location-assignment-street-view');
+    const canvas = $('#location-assignment-street-view-canvas');
+    const streetViewMessage = $('#location-assignment-street-view-message');
+    if (!stage || !section || !canvas) return;
+
+    const panoramaPosition = {
+        lat: panoramaData.location.latLng.lat(),
+        lng: panoramaData.location.latLng.lng()
+    };
+    const distance = getCoordinateDistanceMeters(position, panoramaPosition);
+    canvas.replaceChildren();
+    section.hidden = false;
+    stage.classList.add('is-street-view-open');
+    if (streetViewMessage) streetViewMessage.textContent = formatStreetViewDistance(distance);
+    state.locationAssignmentStreetView = new maps.StreetViewPanorama(canvas, {
+        pano: panoramaData.location.pano,
+        clickToGo: false,
+        linksControl: false,
+        pov: { heading: 0, pitch: 0 },
+        zoom: 0,
+        addressControl: false,
+        fullscreenControl: true,
+        motionTracking: false,
+        motionTrackingControl: false,
+        panControl: true,
+        scrollwheel: false,
+        zoomControl: true
+    });
+    requestAnimationFrame(() => maps.event?.trigger(state.locationAssignmentStreetView, 'resize'));
+    if (mapMessage) mapMessage.textContent = '거리뷰는 위치 확인을 위한 참고 화면이며 핀은 움직이지 않아요.';
+}
+
 function updateLocationAssignmentDraftReadout(lat, lng, { name = '', message: statusMessage = '핀을 끌어 미세 조정하거나 바로 저장하세요.' } = {}) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     state.locationAssignmentDraft = { lat, lng };
@@ -4949,6 +5080,7 @@ function updateLocationAssignmentDraftReadout(lat, lng, { name = '', message: st
     if (coordinate) coordinate.textContent = name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     if (saveButton) saveButton.disabled = false;
     if (message) message.textContent = statusMessage;
+    syncLocationAssignmentStreetViewControl();
 }
 
 function readLocationAssignmentMarkerPosition(statusMessage) {
@@ -4970,6 +5102,7 @@ function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom =
             position,
             draggable: true
         }, { mapId: state.googleMapsMapId });
+        state.locationAssignmentMarker.addListener('dragstart', closeLocationAssignmentStreetView);
         state.locationAssignmentMarker.addListener('drag', () => {
             readLocationAssignmentMarkerPosition('핀을 움직이는 중입니다.');
         });
@@ -5031,6 +5164,7 @@ async function ensureLocationAssignmentMap() {
         }));
         state.locationAssignmentMapClickListener = state.locationAssignmentMap.addListener('click', (event) => {
             if (!event.latLng) return;
+            closeLocationAssignmentStreetView();
             setLocationAssignmentDraft(event.latLng.lat(), event.latLng.lng(), { center: false });
         });
         state.locationAssignmentMap.addListener('zoom_changed', syncNearbyPins);
@@ -5095,11 +5229,13 @@ function renderLocationAssignmentPage() {
             `).join('')
             : '<p class="location-assignment-nearby-empty">위치를 참고할 인접 시간대 사진이 없어요.</p>';
     }
+    syncLocationAssignmentStreetViewControl();
 }
 
 function selectLocationAssignmentPhoto(photoId) {
     const photo = getLocationAssignmentPhoto(getMySavedPhotos(), photoId, state.currentUser?.id);
     if (!photo) return;
+    closeLocationAssignmentStreetView();
     state.selectedLocationPhotoId = photo.id;
     state.locationAssignmentDraft = null;
     state.locationAssignmentSearchResultName = '';
@@ -5130,6 +5266,7 @@ async function searchLocationAssignmentMap(event) {
             return;
         }
         const place = results[0];
+        closeLocationAssignmentStreetView();
         setLocationAssignmentDraft(
             place.geometry.location.lat(),
             place.geometry.location.lng(),
@@ -5165,6 +5302,7 @@ async function saveLocationAssignment(event) {
     const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
     state.selectedLocationPhotoId = state.locationAssignmentDraft = null;
+    closeLocationAssignmentStreetView();
     state.locationAssignmentMarker?.setMap(null);
     renderSavedPhotoSurfaces();
     renderLocationAssignmentPage();
@@ -7325,6 +7463,7 @@ function bindEvents() {
         if (nearbyLocationButton) {
             const referencePhoto = getMySavedPhotos().find((photo) => String(photo.id) === String(nearbyLocationButton.dataset.useNearbyLocation));
             if (referencePhoto && hasCompleteLocation(referencePhoto)) {
+                closeLocationAssignmentStreetView();
                 setLocationAssignmentDraft(Number(referencePhoto.lat), Number(referencePhoto.lng), {
                     name: '인접 시간대 사진의 위치',
                     center: true,
@@ -7572,6 +7711,8 @@ function bindEvents() {
     });
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#location-assignment-search')?.addEventListener('submit', searchLocationAssignmentMap);
+    $('#btn-open-location-assignment-street-view')?.addEventListener('click', loadLocationAssignmentStreetView);
+    $('#btn-close-location-assignment-street-view')?.addEventListener('click', closeLocationAssignmentStreetView);
     $('#btn-save-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-skip-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
