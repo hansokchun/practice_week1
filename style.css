@@ -1455,23 +1455,25 @@ body.is-logged-in #btn-open-auth {
 .landing-map-footer.page-container::before {
     z-index: -2;
     background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
-    opacity: 0.92;
+    filter: saturate(1.08) contrast(1.08) brightness(0.88);
     transform: scale(1.01);
     transition: filter 260ms ease, transform 420ms ease;
-    -webkit-mask-image: radial-gradient(ellipse at center, #000 66%, transparent 100%);
-    mask-image: radial-gradient(ellipse at center, #000 66%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
 }
 
 .landing-map-footer.page-container::after {
     z-index: -1;
-    background: linear-gradient(90deg, rgba(0, 54, 55, 0.8) 0%, rgba(0, 54, 55, 0.42) 48%, rgba(0, 54, 55, 0.06) 100%);
-    -webkit-mask-image: radial-gradient(ellipse at center, #000 64%, transparent 100%);
-    mask-image: radial-gradient(ellipse at center, #000 64%, transparent 100%);
+    background:
+        linear-gradient(90deg, rgba(0, 44, 45, 0.82) 0%, rgba(0, 54, 55, 0.48) 52%, rgba(0, 54, 55, 0.12) 100%),
+        linear-gradient(180deg, rgba(0, 25, 26, 0.04) 0%, rgba(0, 25, 26, 0.32) 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
 }
 
 .landing-map-footer:hover::before,
 .landing-map-footer:focus-visible::before {
-    filter: saturate(1.08) contrast(1.04);
+    filter: saturate(1.16) contrast(1.12) brightness(0.94);
     transform: scale(1.04);
 }
 
@@ -1484,20 +1486,10 @@ body.is-logged-in #btn-open-auth {
     text-shadow: 0 2px 14px rgba(0, 35, 36, 0.52);
 }
 
-.landing-map-footer-eyebrow,
 .landing-map-footer-action {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-}
-
-.landing-map-footer-eyebrow {
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.landing-map-footer-eyebrow .material-symbols-outlined {
-    font-size: 19px;
 }
 
 #landing-map-footer-title {
@@ -2113,11 +2105,11 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search {
-        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-columns: auto minmax(0, 1fr) auto;
         gap: 10px;
         min-height: 56px;
         margin-top: 22px;
-        padding: 6px 16px 6px 18px;
+        padding: 6px 7px 6px 16px;
     }
 
     .landing-search > .material-symbols-outlined {
@@ -2129,7 +2121,10 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search button {
-        display: none;
+        min-height: 42px;
+        border-radius: 10px;
+        font-size: 13px;
+        padding: 0 14px;
     }
 
     .landing-search-suggestions {

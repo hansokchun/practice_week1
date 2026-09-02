@@ -300,7 +300,7 @@ const state = {
     exploreMarkerRefreshTimer: null,
     isExploreMapCameraAnimating: false,
     isExploreMarkerLoading: false,
-    explorePhotoScope: 'mine',
+    explorePhotoScope: 'others',
     exploreInitializedUserId: null,
     isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
@@ -727,7 +727,7 @@ function renderRoute(section) {
     if (normalized === APP_SECTIONS.EXPLORE && previousRoute !== APP_SECTIONS.EXPLORE && !routeSharedState.albumId) {
         resetExploreSelectionState();
         if (state.currentUser?.id && state.exploreInitializedUserId !== state.currentUser.id) {
-            state.explorePhotoScope = 'mine';
+            state.explorePhotoScope = 'others';
             state.exploreInitializedUserId = state.currentUser.id;
         }
         state.exploreLastBoundsKey = null;
@@ -1122,6 +1122,7 @@ function loadMoreLandingSectionPhotos(row) {
 function submitLandingSearch(event) {
     event.preventDefault();
     syncLandingSearchQuery();
+    if (state.landingSearchQuery.trim()) $('#landing-sections')?.scrollIntoView({ behavior: 'smooth' });
 }
 
 function syncLandingSearchQuery() {
@@ -6768,8 +6769,6 @@ function bindEvents() {
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
     $$('[data-my-library-tab]').forEach((button) => button.addEventListener('click', () => setMyLibraryTab(button.dataset.myLibraryTab)));
     $('#landing-search')?.addEventListener('submit', submitLandingSearch);
-    $('#landing-search-input')?.addEventListener('input', syncLandingSearchQuery);
-    $('#landing-search-input')?.addEventListener('search', syncLandingSearchQuery);
     $$('[data-landing-query]').forEach((button) => button.addEventListener('click', () => {
         const input = $('#landing-search-input');
         if (input) input.value = button.dataset.landingQuery || '';
@@ -7624,10 +7623,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentUser = await getCurrentUser();
         await ensureCurrentUserPublicProfile();
         updateAccountUI();
-        if (state.currentUser?.id && requestedInitialRoute === APP_SECTIONS.EXPLORE) {
-            state.explorePhotoScope = 'mine';
-            state.exploreInitializedUserId = state.currentUser.id;
-        }
         bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
