@@ -5198,7 +5198,8 @@ body[data-page="explore"] .site-footer {
     background: transparent;
     box-shadow: none;
     cursor: pointer;
-    transition: background 120ms ease-out, border-color 120ms ease-out, box-shadow 120ms ease-out;
+    transform-origin: center;
+    transition: background 120ms ease-out, border-color 120ms ease-out, box-shadow 120ms ease-out, transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .personal-photo-card::before {
@@ -5227,6 +5228,7 @@ body[data-page="explore"] .site-footer {
 .personal-photo-card.is-selected {
     background: transparent;
     box-shadow: none;
+    transform: scale(0.96);
 }
 
 .photo-select-button {
@@ -5349,11 +5351,7 @@ body[data-page="liked"] .dashboard-panel {
     padding: 0;
 }
 
-.personal-photo-card.is-selected img {
-    transform: scale(0.88);
-}
-
-.personal-photo-card.is-selection-animated img {
+.personal-photo-card.is-selection-animated {
     animation: selectedPhotoSettle 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -5362,10 +5360,10 @@ body[data-page="liked"] .dashboard-panel {
         transform: scale(1);
     }
     58% {
-        transform: scale(0.84);
+        transform: scale(0.94);
     }
     100% {
-        transform: scale(0.88);
+        transform: scale(0.96);
     }
 }
 
@@ -11861,10 +11859,6 @@ body.modal-open {
         height: 30px;
         opacity: 1;
         transform: scale(1);
-    }
-
-    .personal-photo-card.is-selected img {
-        transform: scale(0.92);
     }
 
     .album-row {
