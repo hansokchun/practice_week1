@@ -44,11 +44,10 @@ test('recent photo selection controls use Google Photos style hover and selected
     assert.match(styles, /\.photo-select-button::before\s*\{[^}]*content:\s*"선택됨";[^}]*opacity:\s*0;/s);
     assert.match(styles, /\.photo-select-button\[aria-pressed="true"\]::before\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.selection-clear-button\[hidden\]\s*\{[^}]*display:\s*none;/s);
-    assert.match(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:\s*scale\(0\.88\);/s);
-    assert.doesNotMatch(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*animation:/s);
-    assert.match(styles, /\.personal-photo-card\.is-selection-animated\s+img\s*\{[^}]*animation:\s*selectedPhotoSettle 220ms cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\);/s);
-    assert.match(styles, /@keyframes selectedPhotoSettle\s*\{[\s\S]*58%\s*\{[\s\S]*transform:\s*scale\(0\.84\);[\s\S]*100%\s*\{[\s\S]*transform:\s*scale\(0\.88\);/s);
-    assert.match(styles, /\.personal-photo-card\.is-selected\s*\{[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
+    assert.match(styles, /\.personal-photo-card\.is-selected\s*\{[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;[^}]*transform:\s*scale\(0\.96\);/s);
+    assert.doesNotMatch(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:/s);
+    assert.match(styles, /\.personal-photo-card\.is-selection-animated\s*\{[^}]*animation:\s*selectedPhotoSettle 220ms cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\);/s);
+    assert.match(styles, /@keyframes selectedPhotoSettle\s*\{[\s\S]*58%\s*\{[\s\S]*transform:\s*scale\(0\.94\);[\s\S]*100%\s*\{[\s\S]*transform:\s*scale\(0\.96\);/s);
 });
 
 test('getSelectedPersonalPhotos returns selected photos in page order', () => {
