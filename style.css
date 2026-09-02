@@ -5192,6 +5192,10 @@ body[data-page="explore"] .site-footer {
     gap: 4px;
 }
 
+.selection-clear-button[hidden] {
+    display: none;
+}
+
 .selection-clear-button .material-symbols-outlined {
     font-size: 18px;
 }
