@@ -1091,7 +1091,7 @@ img {
     top: 48px;
     right: 0;
     z-index: 65;
-    width: min(292px, calc(100vw - 32px));
+    width: min(260px, calc(100vw - 32px));
     border: 1px solid rgba(26, 77, 78, 0.14);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.98);
@@ -4755,17 +4755,16 @@ body[data-page="explore"] .site-footer {
 
 .attention-banner {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    width: 100%;
-    max-width: none;
-    gap: 12px;
-    margin: 0 0 24px;
-    border: 1px solid #e8d7ad;
+    width: min(100%, 480px);
+    gap: 12px 16px;
+    margin: 4px 0 24px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
     border-radius: 8px;
-    background: #fffaf0;
+    background: #f4f8f6;
     color: var(--ink);
-    padding: 14px 16px;
+    padding: 14px;
 }
 
 .attention-banner[hidden] {
@@ -4775,18 +4774,34 @@ body[data-page="explore"] .site-footer {
 .attention-banner strong {
     color: var(--ink);
     font-family: var(--body);
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.35;
 }
 
+.attention-banner-copy > span {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.attention-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .attention-banner button {
-    min-height: 34px;
+    min-height: 32px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: #ffffff;
     color: var(--teal);
     font-weight: 800;
-    padding: 0 12px;
+    font-size: 12px;
+    padding: 0 10px;
 }
 
 .attention-banner button.solid {
@@ -4803,14 +4818,15 @@ body[data-page="explore"] .site-footer {
 .missing-location-list {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, 64px);
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, 44px);
+    gap: 7px;
+    padding-top: 2px;
 }
 
 .missing-location-list button {
     display: block;
-    width: 64px;
-    height: 64px;
+    width: 44px;
+    height: 44px;
     min-height: 0;
     padding: 0;
     overflow: hidden;
@@ -11560,8 +11576,12 @@ body.modal-open {
     .attention-banner {
         grid-template-columns: 1fr;
         justify-items: start;
-        margin-left: auto;
+        width: 100%;
         padding: 12px;
+    }
+
+    .attention-banner-actions {
+        grid-row: 3;
     }
 
     .missing-location-list {

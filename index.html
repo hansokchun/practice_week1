@@ -335,14 +335,6 @@
                     <button class="active" data-my-library-tab="photos" type="button" role="tab" aria-selected="true">사진</button>
                     <button data-my-library-tab="albums" type="button" role="tab" aria-selected="false">앨범</button>
                 </div>
-                <section class="attention-banner" role="status" hidden>
-                    <div>
-                        <strong></strong>
-                    </div>
-                    <button id="btn-dismiss-missing-location" type="button">나중에 하기</button>
-                    <button id="btn-direct-missing-location" type="button" class="solid" data-route="location-assign">직접 지정하기</button>
-                    <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
-                </section>
                 <section class="dashboard-panel full-panel" data-my-library-panel="photos">
                     <div class="panel-topline">
                         <div>
@@ -353,6 +345,17 @@
                             <button id="btn-upload-more-photos" class="btn-primary compact-action-button" type="button">사진 올리기</button>
                         </div>
                     </div>
+                    <section class="attention-banner" role="status" hidden>
+                        <div class="attention-banner-copy">
+                            <strong></strong>
+                            <span>위치를 추가하면 지도에서 사진을 다시 찾기 쉬워져요.</span>
+                        </div>
+                        <div class="attention-banner-actions">
+                            <button id="btn-dismiss-missing-location" type="button">나중에</button>
+                            <button id="btn-direct-missing-location" type="button" class="solid" data-route="location-assign">위치 지정</button>
+                        </div>
+                        <div id="missing-location-list" class="missing-location-list" aria-label="위치 지정이 필요한 사진"></div>
+                    </section>
                     <div id="personal-photo-grid" class="personal-photo-grid photo-masonry-grid"></div>
                     <nav id="personal-photo-pagination" class="photo-pagination" aria-label="내 사진 페이지" hidden></nav>
                 </section>
