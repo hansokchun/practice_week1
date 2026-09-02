@@ -1511,7 +1511,7 @@ body.is-logged-in #btn-open-auth {
     background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
     filter: saturate(1.08) contrast(1.08) brightness(0.88);
     transform: scale(1.01);
-    transition: filter 260ms ease, transform 420ms ease;
+    transition: filter 520ms ease-out, transform 700ms ease-out;
     -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
 }
@@ -1527,8 +1527,8 @@ body.is-logged-in #btn-open-auth {
 
 .landing-map-footer:hover::before,
 .landing-map-footer:focus-visible::before {
-    filter: saturate(1.16) contrast(1.12) brightness(0.94);
-    transform: scale(1.04);
+    filter: saturate(1.1) contrast(1.09) brightness(0.9);
+    transform: scale(1.018);
 }
 
 .landing-map-footer-content {
@@ -1562,12 +1562,12 @@ body.is-logged-in #btn-open-auth {
 
 .landing-map-footer-action .material-symbols-outlined {
     font-size: 20px;
-    transition: transform 180ms ease;
+    transition: transform 300ms ease-out;
 }
 
 .landing-map-footer:hover .landing-map-footer-action .material-symbols-outlined,
 .landing-map-footer:focus-visible .landing-map-footer-action .material-symbols-outlined {
-    transform: translateX(5px);
+    transform: translateX(2px);
 }
 
 .landing-map-footer:focus-visible {
