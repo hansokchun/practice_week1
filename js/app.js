@@ -4891,6 +4891,7 @@ async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const grid = $('#personal-photo-grid');
+    const selectAllButton = $('#btn-select-all-photos');
     const clearButton = $('#btn-clear-selected-photos');
     const publishButton = $('#btn-publish-selected-photos');
     const privateButton = $('#btn-private-selected-photos');
@@ -4901,6 +4902,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const selectedPhotos = getSelectedPersonalPhotos(photos, state.selectedPersonalPhotoIds);
     const hasNonPublicPhoto = selectedPhotos.some((photo) => photo.visibility !== 'public' && !photo.shared);
     const hasNonPrivatePhoto = selectedPhotos.some((photo) => photo.visibility !== 'private' || photo.shared);
+    selectAllButton.hidden = !photos.length || selectedCount === photos.length;
     clearButton.hidden = publishButton.hidden = privateButton.hidden = deleteButton.hidden = !selectedCount;
     publishButton.disabled = !hasNonPublicPhoto;
     privateButton.disabled = !hasNonPrivatePhoto;
@@ -7586,11 +7588,11 @@ function bindEvents() {
         if (personalPhotoToggle) {
             event.preventDefault();
             event.stopPropagation();
-            state.selectedPersonalPhotoIds = togglePersonalPhotoSelection(
-                state.selectedPersonalPhotoIds,
-                personalPhotoToggle.dataset.togglePersonalPhoto
-            );
-            state.lastToggledPersonalPhotoId = personalPhotoToggle.dataset.togglePersonalPhoto || null;
+            const photoId = personalPhotoToggle.dataset.togglePersonalPhoto;
+            state.selectedPersonalPhotoIds = photoId === 'all'
+                ? getMySavedPhotos().map((photo) => photo.id)
+                : togglePersonalPhotoSelection(state.selectedPersonalPhotoIds, photoId);
+            state.lastToggledPersonalPhotoId = photoId || null;
             renderPersonalPhotosPage();
             return;
         }

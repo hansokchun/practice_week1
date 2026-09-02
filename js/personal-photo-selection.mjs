@@ -5,6 +5,10 @@ export function togglePersonalPhotoSelection(selectedIds = [], photoId) {
         : [...selectedIds, photoId];
 }
 
+export function selectAllPersonalPhotoIds(photos = []) {
+    return [...new Set(photos.map((photo) => photo.id).filter(Boolean))];
+}
+
 export function prunePersonalPhotoSelection(selectedIds = [], photos = []) {
     const photoIds = new Set(photos.map((photo) => photo.id).filter(Boolean));
     return selectedIds.filter((id) => photoIds.has(id));

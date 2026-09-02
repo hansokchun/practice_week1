@@ -5,6 +5,7 @@ import {
     getSelectedPersonalPhotos,
     prunePersonalPhotoSelection,
     removeSelectedPersonalPhotos,
+    selectAllPersonalPhotoIds,
     togglePersonalPhotoSelection
 } from '../js/personal-photo-selection.mjs';
 
@@ -20,6 +21,10 @@ test('togglePersonalPhotoSelection adds and removes one photo id', () => {
     assert.deepEqual(togglePersonalPhotoSelection(['a', 'b']), []);
 });
 
+test('select all includes every valid personal photo across pages once', () => {
+    assert.deepEqual(selectAllPersonalPhotoIds([...photos, { id: 'b' }, { id: null }]), ['a', 'b', 'c']);
+});
+
 test('recent photo selection controls use Google Photos style hover and selected states', () => {
     const markup = readFileSync('index.html', 'utf8');
     const source = readFileSync('js/app.js', 'utf8');
@@ -29,13 +34,15 @@ test('recent photo selection controls use Google Photos style hover and selected
     assert.match(markup, /id="btn-publish-selected-photos"[^>]*disabled hidden/);
     assert.match(markup, /id="btn-private-selected-photos"[^>]*disabled hidden/);
     assert.match(markup, /id="btn-clear-selected-photos"[^>]*data-toggle-personal-photo[^>]*hidden/);
+    assert.match(markup, /id="btn-select-all-photos"[^>]*data-toggle-personal-photo="all"[^>]*hidden[\s\S]*select_all[\s\S]*모두 선택/);
     assert.match(source, /clearButton\.hidden = publishButton\.hidden = privateButton\.hidden = deleteButton\.hidden = !selectedCount;/);
     assert.match(source, /publishButton\.disabled = !hasNonPublicPhoto;/);
     assert.match(source, /privateButton\.disabled = !hasNonPrivatePhoto;/);
     assert.match(source, /lastToggledPersonalPhotoId:\s*null/);
     assert.match(source, /class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{isSelected && state\.lastToggledPersonalPhotoId === photo\.id \? 'is-selection-animated' : ''\}"/);
     assert.match(source, /state\.lastToggledPersonalPhotoId = null;/);
-    assert.match(source, /state\.lastToggledPersonalPhotoId = personalPhotoToggle\.dataset\.togglePersonalPhoto \|\| null;/);
+    assert.match(source, /state\.lastToggledPersonalPhotoId = photoId \|\| null;/);
+    assert.match(source, /photoId === 'all'[\s\S]*getMySavedPhotos\(\)\.map\(\(photo\) => photo\.id\)[\s\S]*togglePersonalPhotoSelection\(state\.selectedPersonalPhotoIds, photoId\)/);
     assert.match(source, /data-toggle-personal-photo="\$\{escapeHtml\(photo\.id\)\}"/);
     assert.match(source, /selectedCount \? `data-toggle-personal-photo="\$\{escapeHtml\(photo\.id\)\}"` : ''/);
     assert.match(styles, /\.personal-photo-card::before\s*\{[^}]*height:\s*46%;[^}]*linear-gradient\(180deg,\s*rgba\(0,\s*0,\s*0,\s*0\.42\)/s);
