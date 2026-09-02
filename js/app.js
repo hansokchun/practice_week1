@@ -514,9 +514,9 @@ function setImageSourceWithFallback(image, primarySrc, fallbackSrc = MAIN_BG_2_U
 function showToast(message) {
     const toast = $('#toast');
     toast.textContent = message;
-    toast.classList.remove('is-visible');
+    toast.className = 'toast';
     void toast.offsetWidth;
-    toast.classList.add('is-visible');
+    toast.className = 'toast is-visible';
 }
 
 function getTurnstileToken() {
@@ -4806,11 +4806,9 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const pagination = $('#personal-photo-pagination');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
-    if (deleteButton) {
-        deleteButton.hidden = selectedCount === 0;
-        deleteButton.disabled = selectedCount === 0;
-        deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
-    }
+    deleteButton.hidden = $('#btn-clear-selected-photos').hidden = !selectedCount;
+    deleteButton.disabled = !selectedCount;
+    deleteButton.textContent = `선택 ${selectedCount}장 삭제`;
 
     if (state.savedPhotosLoadError) {
         grid.innerHTML = renderActionableFailure(
@@ -4835,9 +4833,8 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     state.personalPhotoPage = personalPage.currentPage;
     grid.innerHTML = personalPage.items.map((photo) => {
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
-        const shouldAnimateSelection = isSelected && state.lastToggledPersonalPhotoId === photo.id;
         return `
-            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${shouldAnimateSelection ? 'is-selection-animated' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${isSelected && state.lastToggledPersonalPhotoId === photo.id ? 'is-selection-animated' : ''}" ${selectedCount ? `data-toggle-personal-photo="${escapeHtml(photo.id)}"` : ''} data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
                 ${renderPhotoImage(photo)}
             </article>
@@ -4855,8 +4852,7 @@ async function deleteSelectedPersonalPhotos() {
     const confirmed = window.confirm(`선택한 사진 ${selectedPhotos.length}장을 정말 삭제할까요? 삭제한 사진은 복구할 수 없습니다.`);
     if (!confirmed) return;
 
-    const deleteButton = $('#btn-delete-selected-photos');
-    if (deleteButton) deleteButton.disabled = true;
+    $('#btn-delete-selected-photos').disabled = true;
 
     try {
         for (const photo of selectedPhotos) {

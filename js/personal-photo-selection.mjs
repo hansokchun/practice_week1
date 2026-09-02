@@ -1,5 +1,5 @@
 export function togglePersonalPhotoSelection(selectedIds = [], photoId) {
-    if (!photoId) return [...selectedIds];
+    if (!photoId) return [];
     return selectedIds.includes(photoId)
         ? selectedIds.filter((id) => id !== photoId)
         : [...selectedIds, photoId];

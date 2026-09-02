@@ -17,6 +17,7 @@ const photos = [
 test('togglePersonalPhotoSelection adds and removes one photo id', () => {
     assert.deepEqual(togglePersonalPhotoSelection(['a'], 'b'), ['a', 'b']);
     assert.deepEqual(togglePersonalPhotoSelection(['a', 'b'], 'a'), ['b']);
+    assert.deepEqual(togglePersonalPhotoSelection(['a', 'b']), []);
 });
 
 test('recent photo selection controls use Google Photos style hover and selected states', () => {
@@ -25,19 +26,23 @@ test('recent photo selection controls use Google Photos style hover and selected
     const styles = readFileSync('style.css', 'utf8');
 
     assert.match(markup, /id="btn-delete-selected-photos"[^>]*disabled hidden/);
-    assert.match(source, /deleteButton\.hidden = selectedCount === 0;/);
+    assert.match(markup, /id="btn-clear-selected-photos"[^>]*data-toggle-personal-photo[^>]*hidden/);
+    assert.match(source, /deleteButton\.hidden = \$\('#btn-clear-selected-photos'\)\.hidden = !selectedCount;/);
     assert.match(source, /lastToggledPersonalPhotoId:\s*null/);
-    assert.match(source, /const shouldAnimateSelection = isSelected && state\.lastToggledPersonalPhotoId === photo\.id;/);
-    assert.match(source, /class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{shouldAnimateSelection \? 'is-selection-animated' : ''\}"/);
+    assert.match(source, /class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{isSelected && state\.lastToggledPersonalPhotoId === photo\.id \? 'is-selection-animated' : ''\}"/);
     assert.match(source, /state\.lastToggledPersonalPhotoId = null;/);
     assert.match(source, /state\.lastToggledPersonalPhotoId = personalPhotoToggle\.dataset\.togglePersonalPhoto \|\| null;/);
     assert.match(source, /data-toggle-personal-photo="\$\{escapeHtml\(photo\.id\)\}"/);
+    assert.match(source, /selectedCount \? `data-toggle-personal-photo="\$\{escapeHtml\(photo\.id\)\}"` : ''/);
     assert.match(styles, /\.personal-photo-card::before\s*\{[^}]*height:\s*46%;[^}]*linear-gradient\(180deg,\s*rgba\(0,\s*0,\s*0,\s*0\.42\)/s);
     assert.match(styles, /\.personal-photo-card:hover::before,[\s\S]*\.personal-photo-card\.is-selected::before\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.photo-select-button\s*\{[^}]*left:\s*12px;[^}]*width:\s*28px;[^}]*height:\s*28px;[^}]*opacity:\s*0;[^}]*transform:\s*scale\(0\.78\);/s);
     assert.match(styles, /\.photo-select-button\s*\{[^}]*cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\)/s);
     assert.match(styles, /\.photo-select-button::after\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*scale\(0\.72\);/s);
     assert.match(styles, /\.personal-photo-card:hover\s+\.photo-select-button,[\s\S]*\.personal-photo-card\.is-selected\s+\.photo-select-button\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scale\(1\);/s);
+    assert.match(styles, /\.photo-select-button\[aria-pressed="true"\]\s*\{[^}]*width:\s*76px;/s);
+    assert.match(styles, /\.photo-select-button::before\s*\{[^}]*content:\s*"선택됨";[^}]*opacity:\s*0;/s);
+    assert.match(styles, /\.photo-select-button\[aria-pressed="true"\]::before\s*\{[^}]*opacity:\s*1;/s);
     assert.match(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:\s*scale\(0\.88\);/s);
     assert.doesNotMatch(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*animation:/s);
     assert.match(styles, /\.personal-photo-card\.is-selection-animated\s+img\s*\{[^}]*animation:\s*selectedPhotoSettle 220ms cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\);/s);
