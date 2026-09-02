@@ -79,3 +79,12 @@ test('dragging the assignment pin updates its coordinate readout continuously', 
     assert.match(app, /locationAssignmentMarker\.addListener\('drag',/);
     assert.match(app, /updateLocationAssignmentDraftReadout/);
 });
+
+test('switching to a photo without nearby references preserves the current map viewport', () => {
+    const start = app.indexOf('async function ensureLocationAssignmentMap()');
+    const end = app.indexOf('function renderLocationAssignmentPage()', start);
+    const mapSetup = app.slice(start, end);
+
+    assert.match(mapSetup, /new maps\.Map\(container, getLocationEditorMapOptions\(defaultCenter,/);
+    assert.doesNotMatch(mapSetup, /if \(!nearbyPhotos\.length\)\s*\{[^}]*setCenter\(defaultCenter\)[^}]*setZoom\(7\)/s);
+});

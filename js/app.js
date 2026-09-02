@@ -5048,10 +5048,6 @@ async function ensureLocationAssignmentMap() {
         );
     } else {
         state.locationAssignmentMarker?.setMap(null);
-        if (!nearbyPhotos.length) {
-            state.locationAssignmentMap.setCenter(defaultCenter);
-            state.locationAssignmentMap.setZoom(7);
-        }
     }
     return state.locationAssignmentMap;
 }
