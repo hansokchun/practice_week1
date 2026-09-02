@@ -26,8 +26,12 @@ test('recent photo selection controls use Google Photos style hover and selected
     const styles = readFileSync('style.css', 'utf8');
 
     assert.match(markup, /id="btn-delete-selected-photos"[^>]*disabled hidden/);
+    assert.match(markup, /id="btn-publish-selected-photos"[^>]*disabled hidden/);
+    assert.match(markup, /id="btn-private-selected-photos"[^>]*disabled hidden/);
     assert.match(markup, /id="btn-clear-selected-photos"[^>]*data-toggle-personal-photo[^>]*hidden/);
-    assert.match(source, /deleteButton\.hidden = \$\('#btn-clear-selected-photos'\)\.hidden = !selectedCount;/);
+    assert.match(source, /clearButton\.hidden = publishButton\.hidden = privateButton\.hidden = deleteButton\.hidden = !selectedCount;/);
+    assert.match(source, /publishButton\.disabled = !hasNonPublicPhoto;/);
+    assert.match(source, /privateButton\.disabled = !hasNonPrivatePhoto;/);
     assert.match(source, /lastToggledPersonalPhotoId:\s*null/);
     assert.match(source, /class="personal-photo-card \$\{isSelected \? 'is-selected' : ''\} \$\{isSelected && state\.lastToggledPersonalPhotoId === photo\.id \? 'is-selection-animated' : ''\}"/);
     assert.match(source, /state\.lastToggledPersonalPhotoId = null;/);
@@ -48,6 +52,26 @@ test('recent photo selection controls use Google Photos style hover and selected
     assert.doesNotMatch(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:/s);
     assert.match(styles, /\.personal-photo-card\.is-selection-animated\s*\{[^}]*animation:\s*selectedPhotoSettle 220ms cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\);/s);
     assert.match(styles, /@keyframes selectedPhotoSettle\s*\{[\s\S]*58%\s*\{[\s\S]*transform:\s*scale\(0\.94\);[\s\S]*100%\s*\{[\s\S]*transform:\s*scale\(0\.96\);/s);
+});
+
+test('selected personal photos can be published or made private in one guarded action', () => {
+    const markup = readFileSync('index.html', 'utf8');
+    const source = readFileSync('js/app.js', 'utf8');
+    const functionStart = source.indexOf('async function updateSelectedPersonalPhotosVisibility(');
+    const functionEnd = source.indexOf('async function deleteSelectedPersonalPhotos()', functionStart);
+    const body = source.slice(functionStart, functionEnd);
+
+    assert.match(markup, /id="btn-publish-selected-photos"[\s\S]*public[\s\S]*공개로 전환/);
+    assert.match(markup, /id="btn-private-selected-photos"[\s\S]*lock[\s\S]*비공개로 전환/);
+    assert.match(body, /enforceVerifiedAccount\('publish'\)/);
+    assert.match(body, /incomingPublicCount:\s*getPhotosBecomingPublic\(selectedPhotoIds\)/);
+    assert.match(body, /window\.confirm\([\s\S]*대략 위치/);
+    assert.match(body, /const publicLocationPrecision = nextVisibility === 'public' \? 'approximate' : undefined;/);
+    assert.match(body, /updatePhotosVisibility\(selectedPhotoIds, nextVisibility, publicLocationPrecision\)/);
+    assert.match(body, /state\.selectedPersonalPhotoIds = \[\];/);
+    assert.match(body, /renderSavedPhotoSurfaces\(\);[\s\S]*renderPublicSurfaces\(\);/);
+    assert.match(source, /btn-publish-selected-photos[^\n]+updateSelectedPersonalPhotosVisibility\('public'\)/);
+    assert.match(source, /btn-private-selected-photos[^\n]+updateSelectedPersonalPhotosVisibility\('private'\)/);
 });
 
 test('getSelectedPersonalPhotos returns selected photos in page order', () => {
