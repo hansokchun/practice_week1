@@ -5326,6 +5326,28 @@ body[data-page="explore"] .site-footer {
     font-size: 18px;
 }
 
+.selection-visibility-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.selection-visibility-button[hidden] {
+    display: none;
+}
+
+.selection-visibility-button .material-symbols-outlined {
+    font-size: 18px;
+}
+
+#btn-publish-selected-photos:not(:disabled) {
+    border-color: var(--teal);
+    background: var(--teal);
+    color: #ffffff;
+}
+
 .personal-photo-card img {
     position: relative;
     z-index: 0;
@@ -11748,6 +11770,10 @@ body.modal-open {
     .panel-actions button {
         flex: 1;
         min-height: 42px;
+    }
+
+    .page-photos [data-my-library-panel="photos"] .panel-actions button {
+        flex: 1 1 calc(50% - 8px);
     }
 
     .process-grid,

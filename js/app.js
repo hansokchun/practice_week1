@@ -4812,11 +4812,19 @@ function renderPhotoPagination(container, page, pageKey) {
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const grid = $('#personal-photo-grid');
+    const clearButton = $('#btn-clear-selected-photos');
+    const publishButton = $('#btn-publish-selected-photos');
+    const privateButton = $('#btn-private-selected-photos');
     const deleteButton = $('#btn-delete-selected-photos');
     const pagination = $('#personal-photo-pagination');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
-    deleteButton.hidden = $('#btn-clear-selected-photos').hidden = !selectedCount;
+    const selectedPhotos = getSelectedPersonalPhotos(photos, state.selectedPersonalPhotoIds);
+    const hasNonPublicPhoto = selectedPhotos.some((photo) => photo.visibility !== 'public' && !photo.shared);
+    const hasNonPrivatePhoto = selectedPhotos.some((photo) => photo.visibility !== 'private' || photo.shared);
+    clearButton.hidden = publishButton.hidden = privateButton.hidden = deleteButton.hidden = !selectedCount;
+    publishButton.disabled = !hasNonPublicPhoto;
+    privateButton.disabled = !hasNonPrivatePhoto;
     deleteButton.disabled = !selectedCount;
     deleteButton.textContent = `선택 ${selectedCount}장 삭제`;
 
@@ -4853,6 +4861,60 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     revealPhotoThumbnailGridWhenReady(grid);
     renderPhotoPagination(pagination, personalPage, 'personal');
     state.lastToggledPersonalPhotoId = null;
+}
+
+async function updateSelectedPersonalPhotosVisibility(visibility) {
+    const nextVisibility = visibility === 'public' ? 'public' : 'private';
+    const selectedPhotoIds = getSelectedPersonalPhotos(
+        getMySavedPhotos(),
+        state.selectedPersonalPhotoIds
+    ).map((photo) => photo.id);
+    if (!selectedPhotoIds.length) return;
+
+    if (nextVisibility === 'public') {
+        if (!enforceVerifiedAccount('publish')) return;
+        if (!enforceNewAccountLimit('publish', {
+            requestedVisibility: 'public',
+            incomingPublicCount: getPhotosBecomingPublic(selectedPhotoIds)
+        })) return;
+        const confirmed = window.confirm(`선택한 사진 ${selectedPhotoIds.length}장을 공개할까요? 위치가 있는 사진은 대략 위치로 공개됩니다.`);
+        if (!confirmed) return;
+    }
+
+    const publicLocationPrecision = nextVisibility === 'public' ? 'approximate' : undefined;
+    const actionButtons = [
+        $('#btn-publish-selected-photos'),
+        $('#btn-private-selected-photos'),
+        $('#btn-delete-selected-photos')
+    ].filter(Boolean);
+    actionButtons.forEach((button) => { button.disabled = true; });
+
+    try {
+        const { data: updatedPhotos, error } = await updatePhotosVisibility(selectedPhotoIds, nextVisibility, publicLocationPrecision);
+        if (error) throw error;
+        const updatedById = new Map((updatedPhotos || []).map((photo) => [String(photo.id), photo]));
+        const selectedIds = new Set(selectedPhotoIds.map(String));
+        state.savedPhotos = state.savedPhotos.map((photo) => {
+            if (!selectedIds.has(String(photo.id))) return photo;
+            const persistedPhoto = updatedById.get(String(photo.id));
+            return normalizeSavedPhoto({
+                ...photo,
+                ...persistedPhoto,
+                url: photo.url,
+                storage_path: persistedPhoto?.storage_path || photo.storage_path,
+                visibility: nextVisibility,
+                shared: nextVisibility === 'public',
+                location_precision: publicLocationPrecision || persistedPhoto?.location_precision || photo.location_precision
+            });
+        });
+        state.selectedPersonalPhotoIds = [];
+        renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+        showToast(`${selectedPhotoIds.length}장을 ${nextVisibility === 'public' ? '공개' : '비공개'}로 전환했습니다.`);
+    } catch (error) {
+        showToast(error?.message || '사진 공개 상태를 변경하지 못했습니다.');
+        renderPersonalPhotosPage();
+    }
 }
 
 async function deleteSelectedPersonalPhotos() {
@@ -6877,6 +6939,8 @@ function bindEvents() {
         routeTo('location-assign');
     });
     $('#btn-open-album-from-photos')?.addEventListener('click', startNewAlbum);
+    $('#btn-publish-selected-photos')?.addEventListener('click', () => updateSelectedPersonalPhotosVisibility('public'));
+    $('#btn-private-selected-photos')?.addEventListener('click', () => updateSelectedPersonalPhotosVisibility('private'));
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
         state.isMissingLocationBannerDismissed = true;
