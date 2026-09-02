@@ -15,6 +15,7 @@ test('photo select columns match the live photos schema used by saved photo surf
 
     assert.ok(columns.includes('title'));
     assert.ok(columns.includes('storage_path'));
+    assert.ok(columns.includes('location_assignment_skipped'));
     assert.equal(columns.includes('uploaded_at'), false);
 });
 

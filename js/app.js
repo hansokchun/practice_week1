@@ -3298,6 +3298,7 @@ function normalizeSavedPhoto(photo) {
         album_id: photo.album_id || null,
         visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
         location_precision: normalizeLocationPrecision(photo.location_precision),
+        location_assignment_skipped: !!photo.location_assignment_skipped,
         album: photo.album || null,
         tags: Array.isArray(photo.ai_tags) ? photo.ai_tags : (Array.isArray(photo.tags) ? photo.tags : []),
         ai_tags: Array.isArray(photo.ai_tags) ? photo.ai_tags : [],
@@ -5084,7 +5085,6 @@ function renderLocationAssignmentPage() {
         thumbnails.innerHTML = missingPhotos.map((photo) => `
             <button type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" class="${String(photo.id) === String(selectedPhoto.id) ? 'is-selected' : ''}" aria-pressed="${String(photo.id) === String(selectedPhoto.id)}">
                 ${renderPhotoImage(photo, '위치 확인이 필요한 사진', { fetchPriority: 'low' })}
-                <span>${escapeHtml(formatLocationAssignmentDate(photo.date))}</span>
             </button>
         `).join('');
     }
@@ -5148,40 +5148,39 @@ async function searchLocationAssignmentMap(event) {
     });
 }
 
-async function saveLocationAssignment() {
+async function saveLocationAssignment(event) {
     const photo = getCurrentLocationAssignmentPhoto();
     const draft = state.locationAssignmentDraft;
+    const button = event.currentTarget;
+    const skip = button.dataset.skip;
     const message = $('#location-assignment-message');
-    const button = $('#btn-save-location-assignment');
-    if (!photo || !state.currentUser || !draft) {
+    if (!photo || !state.currentUser || (!skip && !draft)) {
         if (message) message.textContent = '저장할 위치를 먼저 선택하세요.';
         return;
     }
     if (state.isSavingLocationAssignment) return;
     state.isSavingLocationAssignment = true;
-    if (button) button.disabled = true;
-    if (message) message.textContent = '위치를 저장하는 중입니다...';
-    const { data, error } = await updatePhotoInfo(photo.id, {
+    if (!skip && button) button.disabled = true;
+    const { data, error } = await updatePhotoInfo(photo.id, skip ? { location_assignment_skipped: true } : {
         lat: draft.lat,
         lng: draft.lng,
         geo_source: 'manual',
-        location_precision: photo.location_precision || 'hidden'
+        location_precision: photo.location_precision || 'hidden',
+        location_assignment_skipped: false
     });
     state.isSavingLocationAssignment = false;
     if (error) {
         if (button) button.disabled = false;
-        if (message) message.textContent = error.message || '위치 저장에 실패했어요.';
+        if (message) message.textContent = '저장 실패';
         return;
     }
     const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
     state.selectedLocationPhotoId = null;
     state.locationAssignmentDraft = null;
-    state.locationAssignmentSearchResultName = '';
     state.locationAssignmentMarker?.setMap(null);
     renderSavedPhotoSurfaces();
     renderLocationAssignmentPage();
-    showToast('사진 위치를 저장했습니다.');
     requestAnimationFrame(() => ensureLocationAssignmentMap());
 }
 
@@ -6538,7 +6537,8 @@ async function saveManualLocation(event) {
         lng,
         visibility: state.editingPhotoVisibility,
         location_precision: state.editingPhotoLocationPrecision,
-        geo_source: 'manual'
+        geo_source: 'manual',
+        location_assignment_skipped: false
     });
     if (error) {
         if (message) message.textContent = error.message || '위치 저장에 실패했습니다.';
@@ -7585,6 +7585,7 @@ function bindEvents() {
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
     $('#location-assignment-search')?.addEventListener('submit', searchLocationAssignmentMap);
     $('#btn-save-location-assignment')?.addEventListener('click', saveLocationAssignment);
+    $('#btn-skip-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $('#pin-preview-edit-form')?.addEventListener('submit', saveExplorePreviewEdits);

@@ -296,6 +296,7 @@ CREATE TABLE IF NOT EXISTS "public"."photos" (
     "geo_source" "text" DEFAULT 'unknown'::"text" NOT NULL,
     "storage_path" "text",
     "location_precision" "text" DEFAULT 'hidden'::"text" NOT NULL,
+    "location_assignment_skipped" boolean DEFAULT false NOT NULL,
     CONSTRAINT "photos_geo_source_check" CHECK (("geo_source" = ANY (ARRAY['exif'::"text", 'manual'::"text", 'gpx'::"text", 'unknown'::"text"]))),
     CONSTRAINT "photos_location_precision_check" CHECK (("location_precision" = ANY (ARRAY['exact'::"text", 'approximate'::"text", 'hidden'::"text"]))),
     CONSTRAINT "photos_visibility_check" CHECK (("visibility" = ANY (ARRAY['private'::"text", 'link'::"text", 'public'::"text"])))

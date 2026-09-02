@@ -9,6 +9,7 @@ export function getMissingLocationAssignmentPhotos(photos = [], ownerId = null) 
     return photos
         .filter((photo) => (!ownerId || photo?.owner_id === ownerId))
         .filter((photo) => !hasUsableCoordinates(photo?.lat, photo?.lng))
+        .filter((photo) => photo?.location_assignment_skipped !== true)
         .sort((left, right) => (getTakenAt(left) ?? Number.MAX_SAFE_INTEGER) - (getTakenAt(right) ?? Number.MAX_SAFE_INTEGER));
 }
 

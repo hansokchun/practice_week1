@@ -10,7 +10,7 @@ export function hasCompleteLocation(photo) {
 }
 
 export function getMissingLocationPhotos(photos = []) {
-    return photos.filter((photo) => !hasCompleteLocation(photo));
+    return photos.filter((photo) => !hasCompleteLocation(photo) && photo?.location_assignment_skipped !== true);
 }
 
 export function getLocationEditorPhoto(photos = [], selectedPhotoId = null) {

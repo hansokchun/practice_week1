@@ -22,6 +22,8 @@ test('manual location page exposes queue, selected photo, search map, and save a
     assert.match(surface, /id="location-assignment-image"/);
     assert.match(surface, /id="location-assignment-search-input"/);
     assert.match(surface, /id="location-assignment-map"/);
+    assert.match(surface, /id="btn-skip-location-assignment"/);
+    assert.match(surface, /위치 없이 보관/);
     assert.match(surface, /id="btn-save-location-assignment"/);
     assert.match(surface, /id="location-assignment-nearby-list"/);
     assert.doesNotMatch(surface, /Location|Selected Photo|Nearby in time/);
@@ -42,10 +44,19 @@ test('location assignment uses a responsive split workspace and mobile horizonta
 
 test('location assignment loads queue thumbnails lazily and keeps nearby coordinates off the cards', () => {
     assert.match(app, /renderPhotoImage\(photo, '위치 확인이 필요한 사진', \{ fetchPriority: 'low' \}\)/);
+    const queueRenderer = app.slice(app.indexOf('thumbnails.innerHTML'), app.indexOf("if (image)", app.indexOf('thumbnails.innerHTML')));
+    assert.doesNotMatch(queueRenderer, /formatLocationAssignmentDate/);
+    assert.doesNotMatch(styles, /\.location-assignment-thumbnails span/);
     assert.doesNotMatch(app, /Number\(photo\.lat\)\.toFixed\(4\), \$\{Number\(photo\.lng\)\.toFixed\(4\)\}/);
     assert.match(app, /locationAssignmentReferenceMarkers/);
     assert.match(app, /location-assignment-reference-marker/);
     assert.match(app, /formatLocationAssignmentRelativeTime\(photo\)/);
+});
+
+test('photos can leave the queue without a location and return when one is saved later', () => {
+    assert.match(app, /skip \? \{ location_assignment_skipped: true \}/);
+    assert.match(app, /async function saveLocationAssignment\(event\)[\s\S]*location_assignment_skipped: false/);
+    assert.match(app, /async function saveManualLocation\(event\)[\s\S]*location_assignment_skipped: false/);
 });
 
 test('my photos page does not show a redundant total photo count', () => {

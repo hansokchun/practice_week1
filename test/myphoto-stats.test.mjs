@@ -38,6 +38,16 @@ test('getMyphotoStats falls back to grouped photo albums when no saved albums ex
     assert.equal(getMyphotoStats(photos, []).albumCount, 2);
 });
 
+test('a photo kept without a location is neither located nor still awaiting attention', () => {
+    const stats = getMyphotoStats([
+        { id: 'located', lat: 37, lng: 127 },
+        { id: 'skipped', lat: null, lng: null, location_assignment_skipped: true }
+    ]);
+
+    assert.equal(stats.locatedCount, 1);
+    assert.equal(stats.missingLocationCount, 0);
+});
+
 test('formatMissingLocationSummary reflects the current missing-location count', () => {
     assert.equal(formatMissingLocationSummary(0), '');
     assert.match(formatMissingLocationSummary(3), /3/);

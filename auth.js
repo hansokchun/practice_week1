@@ -18,7 +18,7 @@ import {
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url';
-const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
+const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,location_assignment_skipped,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
@@ -531,11 +531,9 @@ export async function updatePhotoInfo(photoId, updates = {}) {
         const sb = getSupabase();
         const payload = {};
         if ('description' in updates) payload.description = updates.description || '';
-        if ('date' in updates) payload.date = updates.date;
-        if ('lat' in updates) payload.lat = updates.lat;
-        if ('lng' in updates) payload.lng = updates.lng;
-        if ('geo_source' in updates) payload.geo_source = updates.geo_source;
-        if ('location_precision' in updates) payload.location_precision = updates.location_precision;
+        for (const key of ['date', 'lat', 'lng', 'geo_source', 'location_precision', 'location_assignment_skipped']) {
+            if (key in updates) payload[key] = updates[key];
+        }
         if ('visibility' in updates) {
             payload.visibility = updates.visibility;
             payload.shared = updates.visibility === 'public';

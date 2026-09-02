@@ -13,7 +13,8 @@ const photos = [
     { id: 'b', name: 'Seongsan', lat: 33.4507, lng: 126.5707 },
     { id: 'c', name: 'Night walk', lat: null, lng: 127.0321 },
     { id: 'd', name: 'Forest road', lat: 37.55, lng: null },
-    { id: 'e', name: 'Zero island', lat: 0, lng: 0 }
+    { id: 'e', name: 'Zero island', lat: 0, lng: 0 },
+    { id: 'f', name: 'Unknown place', lat: null, lng: null, location_assignment_skipped: true }
 ];
 
 test('getMissingLocationPhotos returns photos missing either coordinate', () => {
