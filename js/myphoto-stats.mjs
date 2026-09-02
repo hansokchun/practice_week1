@@ -1,4 +1,4 @@
-import { getMissingLocationPhotos } from './location-workflow.mjs';
+import { getMissingLocationPhotos, hasCompleteLocation } from './location-workflow.mjs';
 
 export function getMyphotoStats(photos = [], albums = []) {
     const missingLocationPhotos = getMissingLocationPhotos(photos);
@@ -7,7 +7,7 @@ export function getMyphotoStats(photos = [], albums = []) {
 
     return {
         photoCount: photos.length,
-        locatedCount: photos.length - missingLocationPhotos.length,
+        locatedCount: photos.filter(hasCompleteLocation).length,
         missingLocationCount: missingLocationPhotos.length,
         albumCount
     };

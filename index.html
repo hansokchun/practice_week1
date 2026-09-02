@@ -508,8 +508,8 @@
 
                 <div id="location-assignment-empty" class="location-assignment-empty" hidden>
                     <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
-                    <h2>모든 사진의 위치를 확인했어요</h2>
-                    <p>지도에서 촬영한 장소를 확인해보세요.</p>
+                    <h2>위치 확인이 필요한 사진이 없어요</h2>
+                    <p>필요하면 내 사진에서 위치를 다시 추가할 수 있어요.</p>
                     <button class="btn-primary" data-route="photos" type="button">내 사진으로 돌아가기</button>
                 </div>
 
@@ -550,10 +550,16 @@
                             <div id="location-assignment-map" class="location-assignment-map" aria-label="사진 위치 지정 지도"></div>
                             <div class="location-assignment-save-row">
                                 <p id="location-assignment-message" aria-live="polite">지도를 누르면 핀이 생깁니다.</p>
-                                <button id="btn-save-location-assignment" class="btn-primary" type="button" disabled>
-                                    <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
-                                    이 위치로 저장
-                                </button>
+                                <div class="location-assignment-save-actions">
+                                    <button id="btn-skip-location-assignment" class="btn-secondary" data-skip="true" type="button">
+                                        <span class="material-symbols-outlined" aria-hidden="true">location_off</span>
+                                        위치 없이 보관
+                                    </button>
+                                    <button id="btn-save-location-assignment" class="btn-primary" type="button" disabled>
+                                        <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                                        이 위치로 저장
+                                    </button>
+                                </div>
                             </div>
                         </section>
                     </main>

@@ -12,6 +12,7 @@ const photos = [
     { id: 'before-2', owner_id: 'me', date: '2026-08-10T08:00:00Z', lat: 37.1, lng: 127.1 },
     { id: 'before-1', owner_id: 'me', date: '2026-08-10T09:00:00Z', lat: 37.2, lng: 127.2 },
     { id: 'selected', owner_id: 'me', date: '2026-08-10T10:00:00Z', lat: null, lng: null },
+    { id: 'skipped', owner_id: 'me', date: '2026-08-10T10:15:00Z', lat: null, lng: null, location_assignment_skipped: true },
     { id: 'after-1', owner_id: 'me', date: '2026-08-10T11:00:00Z', lat: 37.3, lng: 127.3 },
     { id: 'after-2', owner_id: 'me', date: '2026-08-10T12:00:00Z', lat: 37.4, lng: 127.4 },
     { id: 'after-3', owner_id: 'me', date: '2026-08-10T13:00:00Z', lat: 37.5, lng: 127.5 },
@@ -21,6 +22,13 @@ const photos = [
 test('location assignment queue contains only the current owners missing-location photos', () => {
     assert.deepEqual(getMissingLocationAssignmentPhotos(photos, 'me').map((photo) => photo.id), ['selected']);
     assert.equal(getLocationAssignmentPhoto(photos, 'missing-id', 'me')?.id, 'selected');
+});
+
+test('location assignment queue excludes photos intentionally kept without a location', () => {
+    const unresolved = { id: 'unresolved', owner_id: 'me', lat: null, lng: null };
+    const skipped = { ...unresolved, id: 'skipped', location_assignment_skipped: true };
+
+    assert.deepEqual(getMissingLocationAssignmentPhotos([unresolved, skipped], 'me'), [unresolved]);
 });
 
 test('nearby references contain only the closest photo on each side within one day', () => {
