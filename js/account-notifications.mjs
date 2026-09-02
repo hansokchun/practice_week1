@@ -6,7 +6,9 @@ export function buildAccountNotificationItems({
     currentUserId = '',
     savedPhotos = [],
     likedPhotoIds = [],
-    isMissingLocationBannerDismissed = false
+    isMissingLocationBannerDismissed = false,
+    missingLocationNotifications = true,
+    librarySummaryNotifications = true
 } = {}) {
     const viewerId = String(currentUserId || '');
     if (!viewerId) return [];
@@ -22,7 +24,7 @@ export function buildAccountNotificationItems({
     )).length;
     const items = [];
 
-    if (missingLocationCount && !isMissingLocationBannerDismissed) {
+    if (missingLocationNotifications && missingLocationCount && !isMissingLocationBannerDismissed) {
         items.push({
             icon: 'location_on',
             title: `위치 정보 없는 사진 ${missingLocationCount}장`,
@@ -30,7 +32,7 @@ export function buildAccountNotificationItems({
             route: 'photos'
         });
     }
-    if (likedPhotoCount) {
+    if (librarySummaryNotifications && likedPhotoCount) {
         items.push({
             icon: 'favorite',
             title: `좋아요한 사진 ${likedPhotoCount}장`,
@@ -38,7 +40,7 @@ export function buildAccountNotificationItems({
             route: 'liked'
         });
     }
-    if (publicPhotoCount) {
+    if (librarySummaryNotifications && publicPhotoCount) {
         items.push({
             icon: 'public',
             title: `공개 중인 사진 ${publicPhotoCount}장`,

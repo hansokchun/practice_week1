@@ -25,8 +25,9 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /data-landing-query="일본"/);
     assert.doesNotMatch(html, /data-landing-query="부산"/);
     assert.match(app, /function syncLandingSearchQuery\(\)/);
-    assert.match(app, /'input', syncLandingSearchQuery/);
-    assert.match(app, /'search', syncLandingSearchQuery/);
+    assert.match(app, /#landing-search'\)\?\.addEventListener\('submit', submitLandingSearch\)/);
+    assert.doesNotMatch(app, /'input', syncLandingSearchQuery/);
+    assert.doesNotMatch(app, /'search', syncLandingSearchQuery/);
 });
 
 test('검색창 위에는 지정한 제목만 표시한다', async () => {
@@ -55,6 +56,8 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     assert.match(html, /id="btn-header-upload"[^>]*aria-label="사진 추가"/);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload \.material-symbols-outlined\s*\{[^}]*display:\s*inline-block;/s);
+    assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*\.brand-korean\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
     assert.doesNotMatch(html, /지금 둘러보기|data-landing-query="도쿄 골목"|data-landing-query="벚꽃"/);
 });
 
@@ -81,36 +84,54 @@ test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이�
     assert.match(css, /\.landing-photo-row\s*\{[^}]*min-width:\s*0;[^}]*width:\s*100%;/s);
 });
 
-test('하단 지도 CTA는 별도 버튼 장식 없이 페이드 배경 전체를 클릭 영역으로 사용한다', async () => {
+test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 편집형 링크다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
     const footer = html.match(/<button id="landing-map-footer"[\s\S]*?<\/button>/)?.[0] ?? '';
-    assert.doesNotMatch(html, /id="landing-map-footer-title"/);
     assert.match(footer, /class="landing-map-footer page-container"[^>]*data-route="explore"/);
-    assert.match(footer, /class="landing-map-footer-content"[\s\S]*?class="material-symbols-outlined"[^>]*>map<\/span>[\s\S]*?class="landing-map-footer-label">지도에서 찾아보기<\/span>/);
+    assert.doesNotMatch(footer, /landing-map-footer-eyebrow|지도 탐색/);
+    assert.match(footer, /id="landing-map-footer-title"[\s\S]*?지도에서,[\s\S]*?기억에 남을 장소를 발견해보세요\./);
+    assert.match(footer, /class="landing-map-footer-action"[\s\S]*?>지도에서 보기<\/span>[\s\S]*?>arrow_forward<\/span>/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*justify-items:\s*start;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*opacity:\s*0\.68;[^}]*mask-image:\s*radial-gradient/s);
+    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*filter:\s*saturate\(1\.08\) contrast\(1\.08\) brightness\(0\.88\);[^}]*mask-image:\s*linear-gradient/s);
+    assert.match(css, /\.landing-map-footer\.page-container::after\s*\{[^}]*linear-gradient\(90deg,[^}]*linear-gradient\(180deg,/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-footer\.page-container\s*\{[^}]*place-items:\s*center;/s);
     assert.doesNotMatch(css.match(/\.landing-map-footer\.page-container\s*\{[^}]*\}/s)?.[0] ?? '', /border-radius:/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*#fff;[^}]*cursor:\s*pointer;/s);
     assert.doesNotMatch(css, /\.landing-map-footer \.btn-primary/);
-    assert.match(css, /\.landing-map-footer-content\s*\{[^}]*font-size:\s*clamp\(22px,\s*2vw,\s*28px\);[^}]*text-shadow:/s);
+    assert.match(css, /#landing-map-footer-title\s*\{[^}]*font-size:\s*clamp\(30px,\s*3\.4vw,\s*48px\);/s);
 });
 
-test('하단 지도 CTA 시안은 선택한 편집형 버튼 하나만 반응형으로 제공한다', async () => {
+test('지도 CTA 시안 갤러리는 최종 디자인 적용 후 제거한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
-    const gallery = html.match(/<section class="landing-map-cta-gallery[\s\S]*?<\/section>/)?.[0] ?? '';
-    const demos = [...gallery.matchAll(/class="landing-map-cta-demo landing-map-cta-demo--(floating|editorial|interactive)"/g)];
+    assert.doesNotMatch(html, /landing-map-cta-gallery|landing-map-cta-demo/);
+    assert.doesNotMatch(css, /\.landing-map-cta-gallery|\.landing-map-cta-demo/);
+});
 
-    assert.equal(demos.length, 1);
-    assert.deepEqual(demos.map((match) => match[1]), ['editorial']);
-    assert.equal((gallery.match(/data-route="explore"/g) ?? []).length, 1);
-    assert.equal((gallery.match(/지도에서 찾아보기/g) ?? []).length, 1);
-    assert.doesNotMatch(gallery, /landing-map-cta-demo--(?:floating|interactive)/);
-    assert.match(css, /\.landing-map-cta-gallery\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*760px\);[^}]*justify-content:\s*center;/s);
-    assert.match(css, /\.landing-map-cta-demo\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-cta-gallery\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+test('검색 영역의 지도 진입은 무거운 배경 버튼 대신 간결한 텍스트 동작이다', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    const primary = html.match(/<button id="landing-map-primary"[\s\S]*?<\/button>/)?.[0] ?? '';
+
+    assert.match(primary, />지도로 둘러보기<\/span>/);
+    assert.match(primary, />arrow_forward<\/span>/);
+    assert.match(css, /\.landing-map-link\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*var\(--teal\);/s);
+});
+
+test('메인 검색은 제출할 때 결과를 렌더링하고 결과 목록으로 이동한다', async () => {
+    const source = await readFile(new URL('js/app.js', root), 'utf8');
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    const submitStart = source.indexOf('function submitLandingSearch');
+    const submitEnd = source.indexOf('function syncLandingSearchQuery', submitStart);
+    const submit = source.slice(submitStart, submitEnd);
+
+    assert.match(submit, /syncLandingSearchQuery\(\)/);
+    assert.match(submit, /#landing-sections/);
+    assert.match(submit, /scrollIntoView\(\{ behavior: 'smooth' \}\)/);
+    assert.doesNotMatch(source, /landing-search-input'\)\?\.addEventListener\('input'/);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto;/s);
+    assert.doesNotMatch(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search button\s*\{[^}]*display:\s*none;/s);
 });
 
 test('로그인 모달은 선택 수단만 간결하게 보여준다', async () => {
@@ -168,7 +189,7 @@ test('랜딩은 상단·고정 하단 메뉴 대신 두 곳에서 지도 둘러�
     assert.match(html, /id="landing-map-footer"[^>]*data-route="explore"/);
 });
 
-test('헤더 사진 추가와 계정 메뉴는 승인된 세 가지 개인 메뉴만 노출한다', async () => {
+test('헤더 사진 추가와 계정 메뉴는 개인 사진 및 설정 메뉴만 노출한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const accountMenuStart = html.indexOf('id="account-menu-popover"');
     const accountMenuEnd = html.indexOf('</div>', accountMenuStart);
@@ -177,6 +198,7 @@ test('헤더 사진 추가와 계정 메뉴는 승인된 세 가지 개인 메�
     assert.match(accountMenu, /내 프로필/);
     assert.match(accountMenu, /내 사진/);
     assert.match(accountMenu, /좋아요한 사진/);
+    assert.match(accountMenu, /설정/);
     assert.doesNotMatch(accountMenu, /여행요약|여행 요약/);
 });
 

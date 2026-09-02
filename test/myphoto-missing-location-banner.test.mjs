@@ -15,12 +15,16 @@ test('missing location banner has direct assign and dismiss actions only', () =>
     const homeEnd = html.indexOf('id="page-photos"', homeStart);
     const home = html.slice(homeStart, homeEnd);
     const bannerStart = photosPage.indexOf('class="attention-banner"');
-    const bannerEnd = photosPage.indexOf('class="dashboard-panel full-panel"', bannerStart);
+    const bannerEnd = photosPage.indexOf('id="personal-photo-grid"', bannerStart);
     const banner = photosPage.slice(bannerStart, bannerEnd);
 
     assert.doesNotMatch(home, /class="attention-banner"/);
     assert.ok(bannerStart > -1);
     assert.match(html, /<section class="attention-banner" role="status" hidden>/);
+    assert.ok(bannerStart > photosPage.indexOf('class="panel-topline"'));
+    assert.match(banner, /class="attention-banner-copy"/);
+    assert.match(banner, /위치를 추가하면 지도에서 사진을 다시 찾기 쉬워져요\./);
+    assert.match(banner, /class="attention-banner-actions"/);
     assert.match(css, /\.attention-banner\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
     assert.match(banner, /id="btn-direct-missing-location"/);
     assert.match(banner, /id="btn-dismiss-missing-location"/);
@@ -47,14 +51,14 @@ test('missing location banner uses a conventional alert treatment without status
     const photosPageEnd = html.indexOf('id="page-liked"', photosPageStart);
     const photosPage = html.slice(photosPageStart, photosPageEnd);
     const bannerStart = photosPage.indexOf('class="attention-banner"');
-    const bannerEnd = photosPage.indexOf('class="dashboard-panel full-panel"', bannerStart);
+    const bannerEnd = photosPage.indexOf('id="personal-photo-grid"', bannerStart);
     const banner = photosPage.slice(bannerStart, bannerEnd);
 
-    assert.doesNotMatch(banner, /<p>/);
     assert.doesNotMatch(banner, /wrong_location/);
     assert.doesNotMatch(css, /content:\s*"처리필요"/);
-    assert.match(css, /\.attention-banner\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) auto auto;[^}]*border:\s*1px solid #e8d7ad;[^}]*border-radius:\s*8px;[^}]*background:\s*#fffaf0;[^}]*padding:\s*14px 16px;/s);
-    assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*16px;/s);
+    assert.match(css, /\.attention-banner\s*\{[^}]*width:\s*min\(100%, 480px\);[^}]*border:\s*1px solid rgba\(26, 77, 78, 0\.12\);[^}]*background:\s*#f4f8f6;[^}]*padding:\s*14px;/s);
+    assert.match(css, /\.attention-banner strong\s*\{[^}]*font-size:\s*14px;/s);
+    assert.match(css, /\.attention-banner-copy > span\s*\{[^}]*font-size:\s*12px;/s);
 });
 
 test('missing location task list renders thumbnails without photo names', () => {
@@ -82,7 +86,7 @@ test('missing location dismiss also removes the account notification item', () =
     const dismissHandler = source.slice(dismissStart, dismissEnd);
 
     assert.match(body, /isMissingLocationBannerDismissed: state\.isMissingLocationBannerDismissed/);
-    assert.match(notificationSource, /if \(missingLocationCount && !isMissingLocationBannerDismissed\) \{/);
+    assert.match(notificationSource, /if \(missingLocationNotifications && missingLocationCount && !isMissingLocationBannerDismissed\) \{/);
     assert.match(dismissHandler, /state\.isMissingLocationBannerDismissed = true/);
     assert.match(dismissHandler, /renderSavedPhotoSurfaces\(\)/);
     assert.match(dismissHandler, /renderAccountNotifications\(\)/);

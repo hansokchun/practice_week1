@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
     buildAlbumRouteHash,
     buildOwnerProfileHash,
+    buildOwnerProfilePhotosHash,
     buildTripHash,
     buildTripShareUrl,
     getSharedRouteState,
@@ -24,6 +25,11 @@ test('buildAlbumRouteHash falls back to the route without an album id', () => {
 test('buildOwnerProfileHash keeps owner id on public profile routes', () => {
     assert.equal(buildOwnerProfileHash('owner 1'), '#/profile?owner=owner%201');
     assert.equal(buildOwnerProfileHash(null), '#/profile');
+});
+
+test('buildOwnerProfilePhotosHash opens the selected owners complete public photo view', () => {
+    assert.equal(buildOwnerProfilePhotosHash('owner 1'), '#/profile?owner=owner%201&view=photos');
+    assert.equal(buildOwnerProfilePhotosHash(null), '#/profile?view=photos');
 });
 
 test('getShareUrlAlbumId prefers the explicit selected album id', () => {
@@ -90,6 +96,16 @@ test('getSharedRouteState returns normalized route and optional album id', () =>
         albumId: null,
         ownerId: null
     });
+    assert.deepEqual(getSharedRouteState('#/upload-complete'), {
+        route: 'upload-complete',
+        albumId: null,
+        ownerId: null
+    });
+    assert.deepEqual(getSharedRouteState('#/location-assign'), {
+        route: 'location-assign',
+        albumId: null,
+        ownerId: null
+    });
     assert.deepEqual(getSharedRouteState('#/admin-landing'), {
         route: 'admin-landing',
         albumId: null,
@@ -134,6 +150,10 @@ test('getSharedRouteState preserves the authenticated liked photos route', () =>
         albumId: null,
         ownerId: null
     });
+});
+
+test('getSharedRouteState preserves the authenticated settings route', () => {
+    assert.equal(getSharedRouteState('#/settings').route, 'settings');
 });
 
 test('getSharedRouteState preserves refreshable landing tag pages', () => {

@@ -24,6 +24,7 @@ const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_s
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
 const LANDING_SECTION_SELECT_COLUMNS = 'id,title,description,sort_order,is_visible,created_at,updated_at';
 const LANDING_SECTION_PHOTO_SELECT_COLUMNS = 'section_id,photo_id,sort_order';
+const PRODUCT_FEEDBACK_SELECT_COLUMNS = 'id,user_id,category,message,rating,page_path,contact_allowed,status,created_at,updated_at';
 
 let _supabaseClient = null;
 
@@ -379,6 +380,62 @@ export async function deleteLandingSection(sectionId) {
         return { error: null };
     } catch (error) {
         return { error };
+    }
+}
+
+export async function submitProductFeedback(payload) {
+    try {
+        const sb = getSupabase();
+        const { data: { user }, error: userError } = await sb.auth.getUser();
+        if (userError || !user) throw userError || new Error('login_required');
+        const { data, error } = await sb
+            .from('product_feedback')
+            .insert({
+                user_id: user.id,
+                category: payload.category,
+                message: payload.message,
+                rating: payload.rating,
+                page_path: payload.page_path,
+                contact_allowed: payload.contact_allowed,
+                status: 'received'
+            })
+            .select(PRODUCT_FEEDBACK_SELECT_COLUMNS)
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
+export async function fetchProductFeedback(limit = 100) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('product_feedback')
+            .select(PRODUCT_FEEDBACK_SELECT_COLUMNS)
+            .order('created_at', { ascending: false })
+            .limit(Math.min(Math.max(Number(limit) || 100, 1), 100));
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
+}
+
+export async function updateProductFeedbackStatus(feedbackId, status) {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('product_feedback')
+            .update({ status })
+            .eq('id', feedbackId)
+            .select(PRODUCT_FEEDBACK_SELECT_COLUMNS)
+            .single();
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
     }
 }
 

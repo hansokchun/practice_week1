@@ -6,6 +6,7 @@ import {
     detachPhotosFromAlbum,
     fetchAlbums,
     fetchLandingCuration,
+    fetchProductFeedback,
     fetchMyLikes,
     fetchPhotos,
     fetchProfilesByIds,
@@ -32,9 +33,16 @@ import {
     removeUploadedImage,
     requestPhotoAiAnalysis,
     saveLandingSection,
+    submitProductFeedback,
+    updateProductFeedbackStatus,
     upsertPhoto
 } from '../auth.js';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
+import {
+    DEFAULT_ACCOUNT_SETTINGS,
+    loadAccountSettings,
+    saveAccountSettings
+} from './account-settings.mjs';
 import {
     getProviderAccountProfile,
     resolveAccountProfile
@@ -52,6 +60,12 @@ import {
     getMissingLocationPhotos,
     normalizeLocationDraft
 } from './location-workflow.mjs';
+import {
+    getLocationAssignmentPhoto,
+    getMissingLocationAssignmentPhotos,
+    getNearbyLocatedPhotos,
+    getUploadCompletionPhotos
+} from './location-assignment.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { getGoogleMapsLocationUrl } from './location-copy.mjs';
 import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
@@ -92,14 +106,21 @@ import { getProfileHeroImage } from './public-profile-hero.mjs';
 import { getPublicTripDayCards } from './public-trip-days.mjs';
 import { getPublicTripRouteMeta } from './public-trip-meta.mjs';
 import {
-    getPublicOwnerProfileMapPhotos,
+    getOwnerProfileMapPhotos,
     getPublicOwnerProfilePhotos
 } from './public-owner-profile-photos.mjs';
+import { getProfilePhotoPreview } from './profile-photo-preview.mjs';
 import { getProfileDisplayName, getProfileUserId, normalizeNickname } from './profile-names.mjs';
+import {
+    FEEDBACK_CATEGORIES,
+    FEEDBACK_STATUSES,
+    isFeedbackDraftValid,
+    normalizeFeedbackDraft
+} from './product-feedback.mjs';
 import { formatRelativeTime } from './relative-time.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
-import { buildAlbumRouteHash, buildOwnerProfileHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId } from './share-link.mjs';
+import { buildAlbumRouteHash, buildOwnerProfileHash, buildOwnerProfilePhotosHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId, parseSharedProfileView } from './share-link.mjs';
 import { getShareSaveControlState } from './share-save-state.mjs';
 import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
@@ -162,6 +183,7 @@ import {
 } from './oauth-profile-import.mjs';
 import { getExploreMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
+import { getProfileMapPinSize } from './profile-map-pin-size.mjs';
 import { getStreetViewStaticImageUrl } from './street-view-static.mjs';
 import {
     getExploreDiscoveryPhotos,
@@ -278,7 +300,7 @@ const state = {
     exploreMarkerRefreshTimer: null,
     isExploreMapCameraAnimating: false,
     isExploreMarkerLoading: false,
-    explorePhotoScope: 'mine',
+    explorePhotoScope: 'others',
     exploreInitializedUserId: null,
     isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
@@ -290,6 +312,7 @@ const state = {
     accountProfileAvatarPreviewUrl: null,
     profileMap: null,
     profileMarkers: [],
+    profileMapZoomListener: null,
     profileMapRenderToken: 0,
     photoDetailMap: null,
     photoDetailMarkers: [],
@@ -305,6 +328,13 @@ const state = {
     locationEditorMarker: null,
     locationEditorMapClickListener: null,
     locationEditorPickMode: false,
+    locationAssignmentMap: null,
+    locationAssignmentMarker: null,
+    locationAssignmentReferenceMarkers: [],
+    locationAssignmentMapClickListener: null,
+    locationAssignmentDraft: null,
+    locationAssignmentSearchResultName: '',
+    isSavingLocationAssignment: false,
     isPersistingUpload: false,
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
@@ -317,6 +347,10 @@ const state = {
     landingTagRegion: '',
     landingTagPhotos: [],
     landingTagRandomSeeds: {},
+    productFeedback: [],
+    isProductFeedbackLoading: false,
+    hasLoadedProductFeedback: false,
+    accountSettings: { ...DEFAULT_ACCOUNT_SETTINGS },
     myLibraryTab: 'photos',
     isAccountMenuOpen: false,
     photoDetailStreetView: null
@@ -330,7 +364,7 @@ const EXPLORE_PHOTO_SCOPE_META = {
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const LANDING_ROUTE = 'landing';
-const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'admin-landing']);
+const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing']);
 const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
 const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
@@ -636,7 +670,7 @@ function routeTo(section, { replace = false } = {}) {
     if (authRequiredRoute) {
         state.pendingAuthRoute = authRequiredRoute;
         openModal('#auth-modal');
-        showToast('사진을 업로드하려면 먼저 로그인해주세요.');
+        showToast(normalized === 'settings' ? '설정은 로그인 후 확인할 수 있어요.' : '사진을 업로드하려면 먼저 로그인해주세요.');
         return;
     }
     const hash = normalized === LANDING_ROUTE ? '#/landing' : normalized === APP_SECTIONS.HOME ? '#/' : `#/${renderedRoute}`;
@@ -693,7 +727,7 @@ function renderRoute(section) {
     if (normalized === APP_SECTIONS.EXPLORE && previousRoute !== APP_SECTIONS.EXPLORE && !routeSharedState.albumId) {
         resetExploreSelectionState();
         if (state.currentUser?.id && state.exploreInitializedUserId !== state.currentUser.id) {
-            state.explorePhotoScope = 'mine';
+            state.explorePhotoScope = 'others';
             state.exploreInitializedUserId = state.currentUser.id;
         }
         state.exploreLastBoundsKey = null;
@@ -704,7 +738,7 @@ function renderRoute(section) {
         setExploreMobileDiscoveryOpen(false);
     }
     if (normalized !== 'trip') state.albumDetailEditMode = false;
-    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'admin-landing'].includes(normalized)
+    const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'settings', 'admin-landing'].includes(normalized)
         ? APP_SECTIONS.HOME
         : ['profile'].includes(normalized)
             ? APP_SECTIONS.EXPLORE
@@ -718,12 +752,25 @@ function renderRoute(section) {
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
     if (normalized === 'liked') renderLikedPhotoSurfaces();
+    if (normalized === 'settings') renderAccountSettingsPage();
+    if (normalized === 'upload-complete') renderUploadCompletePage();
+    if (normalized === 'location-assign') {
+        renderLocationAssignmentPage();
+        requestAnimationFrame(() => ensureLocationAssignmentMap());
+    }
+    if (normalized === 'upload' && previousRoute !== 'upload' && !state.stagedPhotos.length) {
+        setVisibilityMode(state.accountSettings.defaultVisibility);
+    }
     if (renderedRoute === APP_SECTIONS.HOME) {
         renderSavedPhotoSurfaces();
         renderLandingSections();
     }
     if (normalized === 'photos') setMyLibraryTab(state.myLibraryTab);
-    if (normalized === 'admin-landing') renderLandingAdminForm();
+    if (normalized === 'admin-landing') {
+        renderLandingAdminForm();
+        renderLandingAdminFeedback();
+        void loadLandingAdminFeedback();
+    }
     if (normalized === 'tag') renderLandingTagPage();
     if (normalized === APP_SECTIONS.EXPLORE || normalized === 'trip' || normalized === 'profile') renderPublicSurfaces();
     if (normalized === APP_SECTIONS.EXPLORE) {
@@ -751,6 +798,7 @@ function applyRouteHash(hash, options = {}) {
     if (sharedRoute.ownerId) {
         state.selectedPublicOwnerId = sharedRoute.ownerId;
         state.selectedPublicAlbumId = null;
+        state.profileTab = parseSharedProfileView(hash) || 'map';
     }
     if (sharedRoute.route === 'tag') {
         const nextSectionId = parseLandingTagId(hash);
@@ -762,6 +810,10 @@ function applyRouteHash(hash, options = {}) {
     }
     const route = sharedRoute.route || parseRouteHash(hash);
     const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
+    if (getAuthRequiredRoute(normalized, state.currentUser)) {
+        routeTo(normalized, options);
+        return;
+    }
     if (options.replace) {
         const renderedRoute = getRenderedRoute(normalized);
         const nextHash = hash && hash.startsWith('#/')
@@ -1070,6 +1122,7 @@ function loadMoreLandingSectionPhotos(row) {
 function submitLandingSearch(event) {
     event.preventDefault();
     syncLandingSearchQuery();
+    if (state.landingSearchQuery.trim()) $('#landing-sections')?.scrollIntoView({ behavior: 'smooth' });
 }
 
 function syncLandingSearchQuery() {
@@ -1105,6 +1158,184 @@ async function saveLandingAdminForm(event) {
     await loadLandingCuration();
     renderLandingAdminForm();
     if (message) message.textContent = '메인 구성을 저장했습니다.';
+}
+
+function getFeedbackAuthorName(feedback) {
+    const userId = String(feedback?.user_id || '');
+    const profile = state.publicProfiles[userId] || null;
+    return state.profileNames[userId]
+        || String(profile?.nickname || '').trim()
+        || `사용자 ${userId.slice(0, 6)}`;
+}
+
+function formatFeedbackDate(value) {
+    const date = new Date(value || '');
+    if (Number.isNaN(date.getTime())) return '--';
+    return new Intl.DateTimeFormat('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function renderLandingAdminFeedback() {
+    const list = $('#landing-admin-feedback-list');
+    const summary = $('#landing-admin-feedback-summary');
+    if (!list || !summary) return;
+    if (state.isProductFeedbackLoading && !state.hasLoadedProductFeedback) {
+        list.innerHTML = '<p class="admin-feedback-empty">피드백을 불러오는 중입니다.</p>';
+        summary.textContent = '';
+        return;
+    }
+    if (!state.productFeedback.length) {
+        list.innerHTML = '<p class="admin-feedback-empty">아직 접수된 피드백이 없습니다.</p>';
+        summary.textContent = '전체 0개';
+        return;
+    }
+
+    const openCount = state.productFeedback.filter((item) => !['completed', 'closed'].includes(item.status)).length;
+    summary.innerHTML = `<strong>전체 ${state.productFeedback.length}개</strong><span>확인 필요 ${openCount}개</span>`;
+    list.innerHTML = state.productFeedback.map((feedback) => {
+        const categoryLabel = FEEDBACK_CATEGORIES[feedback.category] || FEEDBACK_CATEGORIES.other;
+        const statusOptions = Object.entries(FEEDBACK_STATUSES).map(([value, label]) => (
+            `<option value="${value}" ${feedback.status === value ? 'selected' : ''}>${label}</option>`
+        )).join('');
+        const rating = Number(feedback.rating);
+        return `
+            <article class="admin-feedback-item" data-admin-feedback-id="${escapeHtml(feedback.id)}">
+                <div class="admin-feedback-item__topline">
+                    <div>
+                        <span class="admin-feedback-category" data-category="${escapeHtml(feedback.category)}">${escapeHtml(categoryLabel)}</span>
+                        <strong>${escapeHtml(getFeedbackAuthorName(feedback))}</strong>
+                        <time datetime="${escapeHtml(feedback.created_at)}">${escapeHtml(formatFeedbackDate(feedback.created_at))}</time>
+                    </div>
+                    <label>
+                        <span class="sr-only">처리 상태</span>
+                        <select data-admin-feedback-status>${statusOptions}</select>
+                    </label>
+                </div>
+                <p>${escapeHtml(feedback.message)}</p>
+                <div class="admin-feedback-meta">
+                    ${Number.isInteger(rating) ? `<span>만족도 ${rating}/5</span>` : ''}
+                    ${feedback.page_path ? `<span>화면 ${escapeHtml(feedback.page_path)}</span>` : ''}
+                    <span>${feedback.contact_allowed ? '연락 동의' : '연락 미동의'}</span>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
+async function loadLandingAdminFeedback({ force = false } = {}) {
+    if (!isLandingAdmin(state.currentUser) || state.isProductFeedbackLoading) return;
+    if (state.hasLoadedProductFeedback && !force) return;
+    state.isProductFeedbackLoading = true;
+    renderLandingAdminFeedback();
+    const message = $('#landing-admin-feedback-message');
+    if (message) message.textContent = '';
+    const { data, error } = await fetchProductFeedback(100);
+    state.isProductFeedbackLoading = false;
+    if (error) {
+        if (message) message.textContent = '피드백을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
+        renderLandingAdminFeedback();
+        return;
+    }
+    const feedbackUserIds = [...new Set(data.map((item) => item.user_id).filter(Boolean))];
+    const { data: feedbackProfiles } = await fetchProfilesByIds(feedbackUserIds);
+    state.profileNames = feedbackProfiles.reduce((names, profile) => {
+        const userId = getProfileUserId(profile);
+        const displayName = getProfileDisplayName(profile);
+        if (userId && displayName) names[userId] = displayName;
+        return names;
+    }, { ...state.profileNames });
+    state.publicProfiles = feedbackProfiles.reduce((profiles, profile) => {
+        const userId = getProfileUserId(profile);
+        if (userId) profiles[userId] = profile;
+        return profiles;
+    }, { ...state.publicProfiles });
+    state.productFeedback = data;
+    state.hasLoadedProductFeedback = true;
+    renderLandingAdminFeedback();
+}
+
+function openProductFeedbackDialog() {
+    if (!state.currentUser) {
+        openModal('#auth-modal');
+        return;
+    }
+    const form = $('#feedback-form');
+    form?.reset();
+    const defaultCategory = form?.querySelector('[name="feedback-category"][value="usability"]');
+    if (defaultCategory) defaultCategory.checked = true;
+    const count = $('#feedback-message-count');
+    const message = $('#feedback-message-status');
+    if (count) count.textContent = '0';
+    if (message) message.textContent = '';
+    openModal('#feedback-modal');
+}
+
+function syncFeedbackMessageCount() {
+    const textarea = $('#feedback-message');
+    const count = $('#feedback-message-count');
+    if (count) count.textContent = String(textarea?.value.length || 0);
+}
+
+async function handleProductFeedbackSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const draft = {
+        category: formData.get('feedback-category'),
+        message: formData.get('feedback-message') || $('#feedback-message')?.value,
+        rating: formData.get('feedback-rating'),
+        pagePath: window.location.hash || '#/',
+        contactAllowed: $('#feedback-contact-allowed')?.checked === true
+    };
+    const message = $('#feedback-message-status');
+    if (!isFeedbackDraftValid(draft)) {
+        if (message) message.textContent = '의견을 3자 이상 입력해주세요.';
+        $('#feedback-message')?.focus();
+        return;
+    }
+
+    const submitButton = $('#feedback-submit');
+    if (submitButton) submitButton.disabled = true;
+    if (message) message.textContent = '의견을 보내는 중입니다.';
+    const { data, error } = await submitProductFeedback(normalizeFeedbackDraft(draft));
+    if (submitButton) submitButton.disabled = false;
+    if (error) {
+        if (message) {
+            message.textContent = error.code === '54000'
+                ? '오늘 보낼 수 있는 의견을 모두 사용했습니다. 내일 다시 보내주세요.'
+                : '의견을 보내지 못했습니다. 잠시 후 다시 시도해주세요.';
+        }
+        return;
+    }
+
+    if (isLandingAdmin(state.currentUser) && data) {
+        state.productFeedback = [data, ...state.productFeedback.filter((item) => item.id !== data.id)];
+    }
+    closeModals();
+    showToast('의견을 보내주셔서 감사합니다.');
+}
+
+async function handleAdminFeedbackStatusChange(select) {
+    const item = select.closest('[data-admin-feedback-id]');
+    const feedbackId = item?.dataset.adminFeedbackId;
+    const nextStatus = select.value;
+    const message = $('#landing-admin-feedback-message');
+    if (!feedbackId || !Object.hasOwn(FEEDBACK_STATUSES, nextStatus)) return;
+    select.disabled = true;
+    if (message) message.textContent = '';
+    const { data, error } = await updateProductFeedbackStatus(feedbackId, nextStatus);
+    select.disabled = false;
+    if (error) {
+        if (message) message.textContent = '피드백 상태를 변경하지 못했습니다.';
+        renderLandingAdminFeedback();
+        return;
+    }
+    state.productFeedback = state.productFeedback.map((feedback) => feedback.id === feedbackId ? data : feedback);
+    renderLandingAdminFeedback();
 }
 
 function getDefaultDetailPhoto() {
@@ -1777,6 +2008,21 @@ function getExplorePinIcon(maps, options = {}) {
     return getExplorePinSymbolIcon(maps, options);
 }
 
+function getProfileMapPinIcon(maps, zoom) {
+    const width = getProfileMapPinSize(zoom);
+    const height = Math.round((width * 36) / 28);
+    return {
+        ...getExplorePinIcon(maps, { type: 'photo' }),
+        scaledSize: maps.Size ? new maps.Size(width, height) : { width, height },
+        anchor: new maps.Point(width / 2, height - 1)
+    };
+}
+
+function updateProfileMapMarkerSizes(maps, map) {
+    const icon = getProfileMapPinIcon(maps, map.getZoom?.());
+    state.profileMarkers.forEach((marker) => marker.setIcon?.(icon));
+}
+
 function setExploreMarkerLoading(isLoading) {
     state.isExploreMarkerLoading = Boolean(isLoading);
     $('.explore-map-canvas')?.classList.toggle('is-loading-pins', state.isExploreMarkerLoading);
@@ -2013,6 +2259,10 @@ async function ensureProfileMap() {
         zoom: 7,
         mapId: state.googleMapsMapId
     }));
+    state.profileMapZoomListener?.remove?.();
+    state.profileMapZoomListener = state.profileMap.addListener('zoom_changed', () => {
+        updateProfileMapMarkerSizes(maps, state.profileMap);
+    });
     return state.profileMap;
 }
 
@@ -2031,8 +2281,8 @@ async function renderProfileMap(photos = []) {
     state.profileMarkers = locatedPhotos.map((photo) => createGoogleMapsMarker(maps, {
         map,
         position: { lat: Number(photo.lat), lng: Number(photo.lng) },
-        title: getPhotoFallbackLabel(photo, '공개 사진'),
-        icon: getExplorePinIcon(maps, { type: 'photo' }),
+        title: getPhotoFallbackLabel(photo, '사진'),
+        icon: getProfileMapPinIcon(maps, map.getZoom?.()),
         label: null,
         zIndex: 10
     }, { mapId: state.googleMapsMapId }));
@@ -2040,6 +2290,7 @@ async function renderProfileMap(photos = []) {
     const bounds = new maps.LatLngBounds();
     locatedPhotos.forEach((photo) => bounds.extend({ lat: Number(photo.lat), lng: Number(photo.lng) }));
     map.fitBounds(bounds, 96);
+    updateProfileMapMarkerSizes(maps, map);
 }
 
 function clearPhotoDetailMapMarkers() {
@@ -2200,7 +2451,8 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         aiAnalysisPanel.hidden = !canEdit;
         aiAnalysisPanel.classList.toggle('is-complete', isComplete);
         aiAnalysisPanel.classList.toggle('is-failed', analysisStatus === 'failed');
-        if (aiAnalysisStatus) aiAnalysisStatus.textContent = statusLabels[analysisStatus] || statusLabels.pending;
+        if (aiAnalysisStatus) aiAnalysisStatus.textContent = 'AI 분석';
+        aiAnalysisPanel.setAttribute('aria-label', statusLabels[analysisStatus] || statusLabels.pending);
         if (aiAnalysisSummary) {
             aiAnalysisSummary.textContent = isComplete ? String(photo.ai_summary || '') : '';
             aiAnalysisSummary.hidden = !isComplete || !photo.ai_summary;
@@ -2505,16 +2757,21 @@ function ensureProfileHeaderShell() {
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
                 <div class="profile-owner-actions">
-                    <button id="account-profile-logout" class="btn-secondary danger" type="button" hidden>로그아웃</button>
-                    <button id="account-profile-edit" class="btn-secondary" type="button" hidden>수정하기</button>
+                    <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                        <span>수정</span>
+                    </button>
+                    <button id="account-profile-logout" class="profile-action profile-action--logout" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                        <span>로그아웃</span>
+                    </button>
                 </div>
             </div>
             <div id="account-profile-view" class="account-profile-view profile-header-view">
                 <p id="profile-bio" class="account-profile-bio" hidden></p>
                 <div class="account-profile-metrics">
-                    <span><strong id="profile-photo-count">0</strong> posts</span>
-                    <span><strong id="profile-album-count">0</strong> albums</span>
-                    <span><strong id="profile-public-count">0</strong> public</span>
+                    <span>총 사진 <strong id="profile-photo-count">0</strong></span>
+                    <span>공개 중 <strong id="profile-public-count">0</strong></span>
                 </div>
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
@@ -2572,12 +2829,10 @@ function renderAccountProfilePanel() {
     clearAccountProfileAvatarPreview();
     const profile = getCurrentAccountProfile();
     const photoCount = getMySavedPhotos().length;
-    const albumCount = state.savedAlbums.filter((album) => album.owner_id === state.currentUser?.id).length;
     const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
     const title = $('#profile-title');
     const bio = $('#profile-bio');
     const photoCountNode = $('#profile-photo-count');
-    const albumCountNode = $('#profile-album-count');
     const publicCountNode = $('#profile-public-count');
 
     if (title) title.textContent = profile.nickname;
@@ -2586,7 +2841,6 @@ function renderAccountProfilePanel() {
         bio.hidden = !profile.bio;
     }
     if (photoCountNode) photoCountNode.textContent = String(photoCount);
-    if (albumCountNode) albumCountNode.textContent = String(albumCount);
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
@@ -2746,6 +3000,7 @@ async function saveAccountProfile(event) {
 }
 
 function updateAccountUI() {
+    state.accountSettings = loadAccountSettings(window.localStorage, state.currentUser?.id || '');
     const profile = getCurrentAccountProfile();
     const button = $('#btn-open-auth');
     const profileButton = $('#btn-open-profile');
@@ -2761,6 +3016,33 @@ function updateAccountUI() {
     }
     setAvatarDisplay($('#account-avatar-image'), $('#account-avatar-fallback'), profile.avatarUrl, profile.nickname);
     renderAccountNotifications();
+    if (document.body.dataset.page === 'settings') renderAccountSettingsPage();
+}
+
+function renderAccountSettingsPage() {
+    if (!state.currentUser) return;
+    const profile = getCurrentAccountProfile();
+    setAvatarDisplay($('#settings-avatar-image'), $('#settings-avatar-fallback'), profile.avatarUrl, profile.nickname);
+    if ($('#settings-profile-name')) $('#settings-profile-name').textContent = profile.nickname;
+    if ($('#settings-profile-email')) $('#settings-profile-email').textContent = state.currentUser.email || '';
+    $$('[data-settings-visibility]').forEach((button) => {
+        const active = button.dataset.settingsVisibility === state.accountSettings.defaultVisibility;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+    if ($('#settings-missing-location-notifications')) {
+        $('#settings-missing-location-notifications').checked = state.accountSettings.missingLocationNotifications;
+    }
+    if ($('#settings-library-summary-notifications')) {
+        $('#settings-library-summary-notifications').checked = state.accountSettings.librarySummaryNotifications;
+    }
+}
+
+function updateAccountSettings(patch = {}) {
+    if (!state.currentUser?.id) return;
+    state.accountSettings = saveAccountSettings(window.localStorage, state.currentUser.id, { ...state.accountSettings, ...patch });
+    renderAccountSettingsPage();
+    renderAccountNotifications();
 }
 
 function setAppBooting(isBooting) {
@@ -2772,7 +3054,9 @@ function getAccountNotificationItems() {
         currentUserId: state.currentUser?.id || '',
         savedPhotos: state.savedPhotos,
         likedPhotoIds: state.likedPhotoIds,
-        isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed
+        isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed,
+        missingLocationNotifications: state.accountSettings.missingLocationNotifications,
+        librarySummaryNotifications: state.accountSettings.librarySummaryNotifications
     });
 }
 
@@ -2845,6 +3129,7 @@ function resetAccountState() {
     state.hasLoadedSavedPhotos = false;
     state.hasLoadedMyLikes = false;
     state.lastSavedPhotoIds = [];
+    state.accountSettings = { ...DEFAULT_ACCOUNT_SETTINGS };
 }
 
 function syncAccountDeletionControl(deleting = false) {
@@ -2877,6 +3162,8 @@ async function handleAccountDeletionSubmit(event) {
     const message = $('#account-deletion-message');
     const control = getAccountDeletionControlState(input?.value, false);
     if (!control.confirmed || !state.currentUser) return;
+    const confirmed = window.confirm('정말 계정을 삭제할까요? 계정에 저장된 사진과 앨범도 모두 영구 삭제되며 복구할 수 없습니다.');
+    if (!confirmed) return;
 
     syncAccountDeletionControl(true);
     if (message) message.textContent = '계정을 삭제하는 중입니다…';
@@ -3291,17 +3578,39 @@ function renderEmptyPublicSurfaces() {
     }
 }
 
+function setProfileOwnershipLayout(isOwnProfile) {
+    const profileTabs = $('.profile-tabs');
+    const ownerMapHeading = $('#profile-owner-map-heading');
+    if (profileTabs) profileTabs.hidden = false;
+    if (ownerMapHeading) ownerMapHeading.hidden = true;
+
+    $$('[data-profile-panel]').forEach((panel) => {
+        panel.hidden = false;
+    });
+    setProfileTab(state.profileTab);
+}
+
 function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems()) {
     ensureProfileHeaderShell();
-    const ownerPhotos = getPublicOwnerProfilePhotos(publicPhotos, ownerId);
-    const ownerAlbums = getSavedPublicAlbums().filter((album) => album.owner_id === ownerId && ['public', 'link'].includes(album.visibility));
+    const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
+    const ownerPhotos = isOwnProfile
+        ? getMySavedPhotos()
+        : getPublicOwnerProfilePhotos(publicPhotos, ownerId);
+    const ownerAlbums = state.savedAlbums.filter((album) => (
+        album.owner_id === ownerId
+        && (isOwnProfile || album.visibility === 'public')
+    ));
     const authorDetails = getPublicProfileDetails(ownerId);
     const authorName = authorDetails.nickname;
     const authorInitials = getAuthorInitials(authorName);
     const profileBio = authorDetails.bio;
     const avatarUrl = authorDetails.avatarUrl;
-    const isOwnProfile = Boolean(ownerId && ownerId === state.currentUser?.id);
+    const showAllPublicPhotos = !isOwnProfile && parseSharedProfileView(window.location.hash) === 'photos';
+    const displayedPhotos = showAllPublicPhotos
+        ? ownerPhotos
+        : getProfilePhotoPreview(ownerPhotos, { seed: ownerId, limit: 7 });
     const cover = ownerPhotos[0]?.url || MAIN_BG_4_URL;
+    setProfileOwnershipLayout(isOwnProfile);
 
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
         node.textContent = authorName;
@@ -3315,11 +3624,9 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         $('#profile-bio').hidden = !profileBio;
     }
     if ($('#profile-photo-count')) $('#profile-photo-count').textContent = String(ownerPhotos.length);
-    if ($('#profile-album-count')) $('#profile-album-count').textContent = String(ownerAlbums.length);
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
     if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
-    if ($('#account-deletion-section')) $('#account-deletion-section').hidden = !isOwnProfile;
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
     const profileHeroImage = $('.profile-cover > img');
@@ -3327,11 +3634,18 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         profileHeroImage.src = cover;
         profileHeroImage.alt = `${authorName} public profile cover`;
     }
-    renderProfileMap(getPublicOwnerProfileMapPhotos(ownerPhotos));
+    const profileMapPhotos = getOwnerProfileMapPhotos(
+        state.savedPhotos.map(normalizePhotoMapItem),
+        ownerId,
+        state.currentUser?.id
+    );
+    const profileMap = $('#profile-map');
+    if (profileMap) profileMap.setAttribute('aria-label', isOwnProfile ? '내 사진 위치 지도' : '공개 사진 위치 지도');
+    renderProfileMap(profileMapPhotos);
     const profilePhotoGrid = $('.profile-photo-grid');
     if (profilePhotoGrid) {
-        profilePhotoGrid.innerHTML = ownerPhotos.length
-            ? ownerPhotos.slice(0, 12).map((photo) => {
+        profilePhotoGrid.innerHTML = displayedPhotos.length
+            ? displayedPhotos.map((photo) => {
                 const description = getPhotoDescriptionText(photo);
                 return `
                 <article data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
@@ -3345,8 +3659,15 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
                 </article>
             `;
             }).join('')
-            : '<article class="empty-state"><strong>공개 사진이 없습니다</strong><span>아직 공개된 사진이 없습니다.</span></article>';
+            : `<article class="empty-state"><strong>${isOwnProfile ? '사진이 없습니다' : '공개 사진이 없습니다'}</strong><span>${isOwnProfile ? '사진을 추가하면 이곳에 표시됩니다.' : '아직 공개된 사진이 없습니다.'}</span></article>`;
     }
+    const profilePhotoMore = $('#profile-photo-more');
+    const profilePhotoMoreWrap = profilePhotoMore?.closest('.profile-panel-more');
+    if (profilePhotoMore) {
+        profilePhotoMore.href = isOwnProfile ? '#/photos' : buildOwnerProfilePhotosHash(ownerId);
+        profilePhotoMore.textContent = isOwnProfile ? '내 사진 더보기' : '공개 사진 더보기';
+    }
+    if (profilePhotoMoreWrap) profilePhotoMoreWrap.hidden = showAllPublicPhotos || !ownerPhotos.length;
     const profileAlbumGrid = $('.profile-album-grid');
     if (profileAlbumGrid) {
         profileAlbumGrid.innerHTML = ownerAlbums.length
@@ -4482,12 +4803,10 @@ function renderPhotoPagination(container, page, pageKey) {
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const grid = $('#personal-photo-grid');
-    const summary = $('#personal-photo-summary');
     const deleteButton = $('#btn-delete-selected-photos');
     const pagination = $('#personal-photo-pagination');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
-    if (summary) summary.textContent = formatPhotoCount(photos.length);
     if (deleteButton) {
         deleteButton.hidden = selectedCount === 0;
         deleteButton.disabled = selectedCount === 0;
@@ -4567,10 +4886,303 @@ function renderMissingLocationTasks(photos) {
     }
 
     list.innerHTML = photos.slice(0, 4).map((photo) => `
-        <button class="missing-location-thumb" type="button" data-open-photo-editor data-photo-id="${escapeHtml(photo.id)}" aria-label="위치 직접 지정">
+        <button class="missing-location-thumb" type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" aria-label="${escapeHtml(getPhotoFallbackLabel(photo, '사진'))} 위치 지정">
             <img src="${escapeHtml(photo.url)}" alt="" loading="lazy" decoding="async">
         </button>
     `).join('');
+}
+
+function formatLocationAssignmentDate(value) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return '-- --';
+    return new Intl.DateTimeFormat('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function formatLocationAssignmentRelativeTime(photo) {
+    const minutes = Math.max(1, Math.round((photo.timeDifferenceMs || 0) / 60000));
+    return `${minutes < 60 ? `${minutes}분` : `${Math.round(minutes / 60)}시간`} ${photo.relativeDirection === 'before' ? '전' : '후'}`;
+}
+
+function renderUploadCompletePage() {
+    const uploadedPhotos = getUploadCompletionPhotos(getMySavedPhotos(), state.lastSavedPhotoIds);
+    const missingPhotos = getMissingLocationPhotos(uploadedPhotos);
+    const preview = $('#upload-complete-preview');
+    const summary = $('#upload-complete-summary');
+    const prompt = $('#upload-complete-location-prompt');
+    const promptTitle = $('#upload-complete-location-title');
+    const action = $('#btn-complete-location-assign');
+    const actionLabel = $('#upload-complete-location-action-label');
+
+    if (summary) {
+        summary.textContent = uploadedPhotos.length
+            ? `${uploadedPhotos.length}장이 내 보관함에 비공개로 저장됐습니다.`
+            : '사진 저장이 완료됐습니다.';
+    }
+    if (preview) {
+        preview.innerHTML = uploadedPhotos.slice(0, 6).map((photo) => `
+            <span>${renderPhotoImage(photo, '방금 저장한 사진')}</span>
+        `).join('');
+        preview.hidden = uploadedPhotos.length === 0;
+    }
+    if (prompt) prompt.hidden = missingPhotos.length === 0;
+    if (action) action.hidden = missingPhotos.length === 0;
+    if (promptTitle) promptTitle.textContent = `위치 정보가 없는 사진 ${missingPhotos.length}장이 있어요`;
+    if (actionLabel) actionLabel.textContent = `위치 없는 사진 ${missingPhotos.length}장 추가하기`;
+}
+
+function getCurrentLocationAssignmentPhoto() {
+    return getLocationAssignmentPhoto(
+        getMySavedPhotos(),
+        state.selectedLocationPhotoId,
+        state.currentUser?.id
+    );
+}
+
+function updateLocationAssignmentDraftReadout(lat, lng, { name = '', message: statusMessage = '핀을 끌어 미세 조정하거나 바로 저장하세요.' } = {}) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    state.locationAssignmentDraft = { lat, lng };
+    state.locationAssignmentSearchResultName = name;
+    const coordinate = $('#location-assignment-coordinate');
+    const saveButton = $('#btn-save-location-assignment');
+    const message = $('#location-assignment-message');
+    if (coordinate) coordinate.textContent = name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    if (saveButton) saveButton.disabled = false;
+    if (message) message.textContent = statusMessage;
+}
+
+function readLocationAssignmentMarkerPosition(statusMessage) {
+    const next = state.locationAssignmentMarker?.getPosition?.();
+    if (!next) return;
+    updateLocationAssignmentDraftReadout(next.lat(), next.lng(), { message: statusMessage });
+}
+
+function setLocationAssignmentDraft(lat, lng, { name = '', center = true, zoom = null } = {}) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    updateLocationAssignmentDraftReadout(lat, lng, { name });
+    if (!state.locationAssignmentMap) return;
+    const position = { lat, lng };
+    if (!state.locationAssignmentMarker) {
+        const maps = window.google?.maps;
+        if (!maps) return;
+        state.locationAssignmentMarker = createGoogleMapsMarker(maps, {
+            map: state.locationAssignmentMap,
+            position,
+            draggable: true
+        }, { mapId: state.googleMapsMapId });
+        state.locationAssignmentMarker.addListener('drag', () => {
+            readLocationAssignmentMarkerPosition('핀을 움직이는 중입니다.');
+        });
+    } else {
+        state.locationAssignmentMarker.setMap(state.locationAssignmentMap);
+        state.locationAssignmentMarker.setPosition(position);
+    }
+    if (center) state.locationAssignmentMap.panTo(position);
+    if (Number.isFinite(zoom)) state.locationAssignmentMap.setZoom(zoom);
+}
+
+function syncNearbyPins() {
+    const zoom = state.locationAssignmentMap?.getZoom?.();
+    $('#location-assignment-map').dataset.referenceMarker = zoom >= 18 ? 'detail' : zoom >= 15 ? 'compact' : 'overview';
+}
+
+function renderLocationAssignmentReferenceMarkers(maps, photos = [], { fitViewport = false } = {}) {
+    state.locationAssignmentReferenceMarkers.forEach((marker) => marker.setMap?.(null));
+    state.locationAssignmentReferenceMarkers = [];
+    const map = state.locationAssignmentMap;
+    if (!map || !maps || !photos.length) return;
+
+    const bounds = new maps.LatLngBounds();
+
+    state.locationAssignmentReferenceMarkers = photos.map((photo) => {
+        const position = { lat: Number(photo.lat), lng: Number(photo.lng) };
+        const content = document.createElement('div');
+        content.className = 'location-assignment-reference-marker';
+        content.innerHTML = `${renderPhotoImage(photo, '')}<strong>${formatLocationAssignmentRelativeTime(photo)}</strong>`;
+        bounds.extend(position);
+        return createGoogleMapsMarker(maps, {
+            map,
+            position,
+            content
+        }, { mapId: state.googleMapsMapId });
+    });
+    if (!fitViewport) return;
+    if (state.locationAssignmentDraft) bounds.extend(state.locationAssignmentDraft);
+    map.fitBounds(bounds, 72);
+    maps.event?.addListenerOnce?.(map, 'idle', () => {
+        if ((map.getZoom?.() || 0) > 14) map.setZoom(14);
+    });
+}
+
+async function ensureLocationAssignmentMap() {
+    const container = $('#location-assignment-map');
+    const selectedPhoto = getCurrentLocationAssignmentPhoto();
+    if (!container || !selectedPhoto || document.body.dataset.page !== 'location-assign') return null;
+    const maps = await loadGoogleMapsApi();
+    if (!maps || document.body.dataset.page !== 'location-assign') {
+        if (!maps) renderMapUnavailable(container);
+        return null;
+    }
+    const defaultCenter = { lat: 36.45, lng: 127.85 };
+    if (!state.locationAssignmentMap) {
+        state.locationAssignmentMap = new maps.Map(container, getLocationEditorMapOptions(defaultCenter, {
+            mapId: state.googleMapsMapId,
+            zoom: 7
+        }));
+        state.locationAssignmentMapClickListener = state.locationAssignmentMap.addListener('click', (event) => {
+            if (!event.latLng) return;
+            setLocationAssignmentDraft(event.latLng.lat(), event.latLng.lng(), { center: false });
+        });
+        state.locationAssignmentMap.addListener('zoom_changed', syncNearbyPins);
+    }
+    maps.event.trigger(state.locationAssignmentMap, 'resize');
+    const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
+    renderLocationAssignmentReferenceMarkers(maps, nearbyPhotos, {
+        fitViewport: !state.locationAssignmentDraft
+    });
+    if (state.locationAssignmentDraft) {
+        setLocationAssignmentDraft(
+            state.locationAssignmentDraft.lat,
+            state.locationAssignmentDraft.lng,
+            { name: state.locationAssignmentSearchResultName, center: true }
+        );
+    } else {
+        state.locationAssignmentMarker?.setMap(null);
+        if (!nearbyPhotos.length) {
+            state.locationAssignmentMap.setCenter(defaultCenter);
+            state.locationAssignmentMap.setZoom(7);
+        }
+    }
+    return state.locationAssignmentMap;
+}
+
+function renderLocationAssignmentPage() {
+    const missingPhotos = getMissingLocationAssignmentPhotos(getMySavedPhotos(), state.currentUser?.id);
+    const selectedPhoto = getLocationAssignmentPhoto(missingPhotos, state.selectedLocationPhotoId, state.currentUser?.id);
+    const empty = $('#location-assignment-empty');
+    const workspace = $('#location-assignment-workspace');
+    const progress = $('#location-assignment-progress');
+    const count = $('#location-assignment-queue-count');
+    const thumbnails = $('#location-assignment-thumbnails');
+    const image = $('#location-assignment-image');
+    const date = $('#location-assignment-photo-date');
+    const nearbyList = $('#location-assignment-nearby-list');
+
+    if (progress) progress.textContent = `${missingPhotos.length}장 남음`;
+    if (count) count.textContent = `${missingPhotos.length}장`;
+    if (empty) empty.hidden = missingPhotos.length > 0;
+    if (workspace) workspace.hidden = missingPhotos.length === 0;
+    if (!selectedPhoto) return;
+    state.selectedLocationPhotoId = selectedPhoto.id;
+
+    if (thumbnails) {
+        thumbnails.innerHTML = missingPhotos.map((photo) => `
+            <button type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" class="${String(photo.id) === String(selectedPhoto.id) ? 'is-selected' : ''}" aria-pressed="${String(photo.id) === String(selectedPhoto.id)}">
+                ${renderPhotoImage(photo, '위치 확인이 필요한 사진', { fetchPriority: 'low' })}
+                <span>${escapeHtml(formatLocationAssignmentDate(photo.date))}</span>
+            </button>
+        `).join('');
+    }
+    if (image) setImageSourceWithFallback(image, getPhotoImageSrc(selectedPhoto));
+    if (date) date.textContent = formatLocationAssignmentDate(selectedPhoto.date);
+
+    const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
+    if (nearbyList) {
+        nearbyList.innerHTML = nearbyPhotos.length
+            ? nearbyPhotos.map((photo) => `
+                <article class="location-assignment-nearby-item">
+                    ${renderPhotoImage(photo, '위치 참고 사진')}
+                    <div>
+                        <strong>${formatLocationAssignmentRelativeTime(photo)}</strong>
+                        <button type="button" data-use-nearby-location="${escapeHtml(photo.id)}">이 위치 사용</button>
+                    </div>
+                </article>
+            `).join('')
+            : '<p class="location-assignment-nearby-empty">위치를 참고할 인접 시간대 사진이 없어요.</p>';
+    }
+}
+
+function selectLocationAssignmentPhoto(photoId) {
+    const photo = getLocationAssignmentPhoto(getMySavedPhotos(), photoId, state.currentUser?.id);
+    if (!photo) return;
+    state.selectedLocationPhotoId = photo.id;
+    state.locationAssignmentDraft = null;
+    state.locationAssignmentSearchResultName = '';
+    state.locationAssignmentMarker?.setMap(null);
+    const coordinate = $('#location-assignment-coordinate');
+    const saveButton = $('#btn-save-location-assignment');
+    const message = $('#location-assignment-message');
+    if (coordinate) coordinate.textContent = '지도에서 위치를 선택하세요';
+    if (saveButton) saveButton.disabled = true;
+    if (message) message.textContent = '지도를 누르면 핀이 생깁니다.';
+    renderLocationAssignmentPage();
+    requestAnimationFrame(() => ensureLocationAssignmentMap());
+}
+
+async function searchLocationAssignmentMap(event) {
+    event.preventDefault();
+    const input = $('#location-assignment-search-input');
+    const query = input?.value.trim();
+    const map = await ensureLocationAssignmentMap();
+    const maps = window.google?.maps;
+    if (!query || !map || !maps?.places) return;
+    const message = $('#location-assignment-message');
+    if (message) message.textContent = '장소를 찾는 중입니다...';
+    const service = new maps.places.PlacesService(map);
+    service.findPlaceFromQuery({ query, fields: ['name', 'geometry'] }, (results, status) => {
+        if (status !== maps.places.PlacesServiceStatus.OK || !results?.[0]?.geometry?.location) {
+            if (message) message.textContent = '검색 결과를 찾지 못했어요. 주소를 더 자세히 입력해보세요.';
+            return;
+        }
+        const place = results[0];
+        setLocationAssignmentDraft(
+            place.geometry.location.lat(),
+            place.geometry.location.lng(),
+            { name: place.name || query, center: true, zoom: 15 }
+        );
+    });
+}
+
+async function saveLocationAssignment() {
+    const photo = getCurrentLocationAssignmentPhoto();
+    const draft = state.locationAssignmentDraft;
+    const message = $('#location-assignment-message');
+    const button = $('#btn-save-location-assignment');
+    if (!photo || !state.currentUser || !draft) {
+        if (message) message.textContent = '저장할 위치를 먼저 선택하세요.';
+        return;
+    }
+    if (state.isSavingLocationAssignment) return;
+    state.isSavingLocationAssignment = true;
+    if (button) button.disabled = true;
+    if (message) message.textContent = '위치를 저장하는 중입니다...';
+    const { data, error } = await updatePhotoInfo(photo.id, {
+        lat: draft.lat,
+        lng: draft.lng,
+        geo_source: 'manual',
+        location_precision: photo.location_precision || 'hidden'
+    });
+    state.isSavingLocationAssignment = false;
+    if (error) {
+        if (button) button.disabled = false;
+        if (message) message.textContent = error.message || '위치 저장에 실패했어요.';
+        return;
+    }
+    const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
+    state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
+    state.selectedLocationPhotoId = null;
+    state.locationAssignmentDraft = null;
+    state.locationAssignmentSearchResultName = '';
+    state.locationAssignmentMarker?.setMap(null);
+    renderSavedPhotoSurfaces();
+    renderLocationAssignmentPage();
+    showToast('사진 위치를 저장했습니다.');
+    requestAnimationFrame(() => ensureLocationAssignmentMap());
 }
 
 function getUniqueAlbumCoverSources(sources, limit = 3) {
@@ -5046,7 +5658,11 @@ function setProfileTab(tab) {
         panel.classList.toggle('is-active', panel.dataset.profilePanel === state.profileTab);
     });
     if (state.profileTab === 'map' && state.selectedPublicOwnerId) {
-        renderProfileMap(getPublicPhotoMapItems().filter((photo) => photo.owner_id === state.selectedPublicOwnerId || photo.albumOwnerId === state.selectedPublicOwnerId));
+        renderProfileMap(getOwnerProfileMapPhotos(
+            state.savedPhotos.map(normalizePhotoMapItem),
+            state.selectedPublicOwnerId,
+            state.currentUser?.id
+        ));
     }
 }
 
@@ -6130,6 +6746,10 @@ function bindEvents() {
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
+    $('#btn-complete-location-assign')?.addEventListener('click', () => {
+        state.selectedLocationPhotoId = getMissingLocationAssignmentPhotos(getMySavedPhotos(), state.currentUser?.id)[0]?.id || null;
+        routeTo('location-assign');
+    });
     $('#btn-open-album-from-photos')?.addEventListener('click', startNewAlbum);
     $('#btn-delete-selected-photos')?.addEventListener('click', deleteSelectedPersonalPhotos);
     $('#btn-dismiss-missing-location')?.addEventListener('click', () => {
@@ -6141,8 +6761,6 @@ function bindEvents() {
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
     $$('[data-my-library-tab]').forEach((button) => button.addEventListener('click', () => setMyLibraryTab(button.dataset.myLibraryTab)));
     $('#landing-search')?.addEventListener('submit', submitLandingSearch);
-    $('#landing-search-input')?.addEventListener('input', syncLandingSearchQuery);
-    $('#landing-search-input')?.addEventListener('search', syncLandingSearchQuery);
     $$('[data-landing-query]').forEach((button) => button.addEventListener('click', () => {
         const input = $('#landing-search-input');
         if (input) input.value = button.dataset.landingQuery || '';
@@ -6706,9 +7324,38 @@ function bindEvents() {
             return;
         }
 
+        const locationAssignmentPhoto = event.target.closest('[data-location-assignment-photo]');
+        if (locationAssignmentPhoto) {
+            event.preventDefault();
+            state.selectedLocationPhotoId = locationAssignmentPhoto.dataset.locationAssignmentPhoto;
+            if (document.body.dataset.page === 'location-assign') selectLocationAssignmentPhoto(state.selectedLocationPhotoId);
+            else routeTo('location-assign');
+            return;
+        }
+
+        const nearbyLocationButton = event.target.closest('[data-use-nearby-location]');
+        if (nearbyLocationButton) {
+            const referencePhoto = getMySavedPhotos().find((photo) => String(photo.id) === String(nearbyLocationButton.dataset.useNearbyLocation));
+            if (referencePhoto && hasCompleteLocation(referencePhoto)) {
+                setLocationAssignmentDraft(Number(referencePhoto.lat), Number(referencePhoto.lng), {
+                    name: '인접 시간대 사진의 위치',
+                    center: true,
+                    zoom: 15
+                });
+            }
+            return;
+        }
+
         const albumRow = event.target.closest('[data-myphoto-album-id], [data-myphoto-album-name], [data-myphoto-album-draft]');
         if (albumRow) {
             openMyphotoAlbum(albumRow);
+            return;
+        }
+
+        const profileAlbum = event.target.closest('.profile-album-grid [data-public-album-id][data-go-trip]');
+        if (profileAlbum) {
+            event.preventDefault();
+            routeToTrip(profileAlbum.dataset.publicAlbumId);
             return;
         }
 
@@ -6894,6 +7541,32 @@ function bindEvents() {
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
     $('#profile-avatar-input')?.addEventListener('change', handleAccountProfileAvatarChange);
+    $('#settings-profile-edit')?.addEventListener('click', () => {
+        openAccountProfilePage();
+        setAccountProfileEditMode(true);
+    });
+    $$('[data-settings-visibility]').forEach((button) => {
+        button.addEventListener('click', () => updateAccountSettings({
+            defaultVisibility: button.dataset.settingsVisibility
+        }));
+    });
+    $('#settings-missing-location-notifications')?.addEventListener('change', (event) => {
+        updateAccountSettings({ missingLocationNotifications: event.currentTarget.checked });
+    });
+    $('#settings-library-summary-notifications')?.addEventListener('change', (event) => {
+        updateAccountSettings({ librarySummaryNotifications: event.currentTarget.checked });
+    });
+    $('#settings-feedback-open')?.addEventListener('click', openProductFeedbackDialog);
+    $('#settings-logout')?.addEventListener('click', handleLogout);
+    $('#settings-delete-account')?.addEventListener('click', openAccountDeletionDialog);
+    $('#account-feedback-open')?.addEventListener('click', openProductFeedbackDialog);
+    $('#feedback-message')?.addEventListener('input', syncFeedbackMessageCount);
+    $('#feedback-form')?.addEventListener('submit', handleProductFeedbackSubmit);
+    $('#btn-refresh-admin-feedback')?.addEventListener('click', () => loadLandingAdminFeedback({ force: true }));
+    $('#landing-admin-feedback-list')?.addEventListener('change', (event) => {
+        const select = event.target.closest?.('[data-admin-feedback-status]');
+        if (select) void handleAdminFeedbackStatusChange(select);
+    });
     $('#account-deletion-open')?.addEventListener('click', openAccountDeletionDialog);
     $('#account-deletion-confirmation')?.addEventListener('input', () => syncAccountDeletionControl());
     $('#account-deletion-form')?.addEventListener('submit', handleAccountDeletionSubmit);
@@ -6910,6 +7583,8 @@ function bindEvents() {
         button.addEventListener('click', dismissPendingKakaoProfileImport);
     });
     $('#explore-map-search')?.addEventListener('submit', searchExploreMap);
+    $('#location-assignment-search')?.addEventListener('submit', searchLocationAssignmentMap);
+    $('#btn-save-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $('#pin-preview-edit-form')?.addEventListener('submit', saveExplorePreviewEdits);
@@ -6940,10 +7615,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentUser = await getCurrentUser();
         await ensureCurrentUserPublicProfile();
         updateAccountUI();
-        if (state.currentUser?.id && requestedInitialRoute === APP_SECTIONS.EXPLORE) {
-            state.explorePhotoScope = 'mine';
-            state.exploreInitializedUserId = state.currentUser.id;
-        }
         bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });

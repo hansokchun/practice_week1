@@ -14,8 +14,7 @@ const app = readFileSync('js/app.js', 'utf8');
 test('the first route renders a dedicated full-screen landing before the existing main page', () => {
     assert.match(html, /id="page-landing" class="page page-landing active"/);
     assert.match(html, /id="page-home" class="page page-home"/);
-    assert.match(html, /data-route="home"[^>]*>\s*<span>메인<\/span>/s);
-    assert.match(html, /data-route="explore"[^>]*>\s*<span>지도<\/span>/s);
+    assert.doesNotMatch(html, /class="site-primary-nav"/);
     assert.match(html, /data-landing-enter[^>]*data-route="home"/);
     assert.match(app, /if \(!hash\) return LANDING_ROUTE;/);
     assert.match(app, /const hash = normalized === LANDING_ROUTE \? '#\/landing' : normalized === APP_SECTIONS\.HOME \? '#\/'/);
@@ -43,7 +42,6 @@ test('landing slideshow advances every five seconds and wraps around', () => {
 test('landing footer shows only a centered location pin and place without photo order controls', () => {
     assert.match(html, /id="landing-hero-caption"[^>]*>[\s\S]*?location_on[\s\S]*?data-landing-caption-place/);
     assert.doesNotMatch(html, /data-landing-caption-position|data-landing-slide-position/);
-    assert.match(css, /body\[data-page="landing"\]\s+\.site-primary-nav\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /#landing-hero-caption\s*\{[^}]*font-size:\s*17px;/s);
     assert.doesNotMatch(html, /landing-hero-dots|data-landing-slide="/);
     assert.doesNotMatch(app, /\$\$\('\[data-landing-slide\]'\)/);

@@ -57,7 +57,8 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(html, /id="account-notification-list"/);
     assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*36px;[^}]*height:\s*40px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
     assert.match(css, /\.account-notification-trigger \.material-symbols-outlined\s*\{[^}]*font-size:\s*25px;/s);
-    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*4px;[^}]*right:\s*4px;[^}]*width:\s*8px;[^}]*height:\s*8px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*4px;[^}]*right:\s*4px;[^}]*width:\s*9px;[^}]*height:\s*9px;[^}]*border:\s*0;[^}]*border-radius:\s*50%;/s);
+    assert.doesNotMatch(css, /\.account-notification-badge\s*\{[^}]*box-shadow:/s);
     assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /isNotificationPopoverOpen:\s*false/);
@@ -71,14 +72,14 @@ test('logged-in header exposes compact recommended notifications beside profile'
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);
 });
 
-test('header keeps the landing logo, primary routes, and account actions', () => {
+test('header keeps only the landing logo and account actions', () => {
     assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
-    assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*auto minmax\(0,\s*1fr\) auto;/s);
+    assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
     assert.doesNotMatch(html, /class="top-nav"/);
     assert.match(html, /class="brand"[^>]*href="#\/landing"/);
-    assert.match(html, /class="site-primary-nav"/);
-    assert.match(html, /data-route="home"/);
-    assert.match(html, /data-route="explore"/);
+    assert.doesNotMatch(html, /class="site-primary-nav"/);
+    assert.doesNotMatch(html, />메인<\/span>\s*<\/button>\s*<button class="site-primary-nav__item"/s);
+    assert.doesNotMatch(html, /class="site-primary-nav__item"/);
     assert.match(html, /id="btn-header-upload"/);
 });
 
@@ -92,8 +93,8 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(app, /id="profile-avatar-image"/);
     assert.match(app, /id="profile-avatar-fallback"/);
     assert.match(app, /id="profile-photo-count"/);
-    assert.match(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-public-count"/);
+    assert.doesNotMatch(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-nickname-input"/);
     assert.doesNotMatch(app, /id="profile-bio-input"/);
     assert.match(app, /id="profile-avatar-input"/);

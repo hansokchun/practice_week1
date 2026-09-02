@@ -11,7 +11,7 @@ test('public profile header does not render the numeric stats block', () => {
     assert.doesNotMatch(app, /profile-stats/);
 });
 
-test('public profile card stays inside the cover without negative overlap', () => {
+test('public profile card stays inside the cover as a legible information panel', () => {
     const cardStart = css.indexOf('.profile-card {');
     const cardEnd = css.indexOf('.large-avatar', cardStart);
     const cardCss = css.slice(cardStart, cardEnd);
@@ -19,6 +19,7 @@ test('public profile card stays inside the cover without negative overlap', () =
     assert.match(cardCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
     assert.match(cardCss, /margin:\s*0 auto;/);
     assert.doesNotMatch(cardCss, /-\d+px/);
+    assert.match(css, /\.profile-card\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*16px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.88\);[^}]*box-shadow:\s*0 18px 48px rgba\(26,\s*77,\s*78,\s*0\.12\);[^}]*padding:\s*24px 26px;/s);
 });
 
 test('public profile header supports inline owner metadata and editing actions', () => {
@@ -29,14 +30,17 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.doesNotMatch(app, /공개한 사진을 모아 볼 수 있는 프로필입니다/);
     assert.match(app, /id="profile-bio"/);
     assert.match(app, /id="profile-photo-count"/);
-    assert.match(app, /id="profile-album-count"/);
     assert.match(app, /id="profile-public-count"/);
+    assert.doesNotMatch(app, /id="profile-album-count"/);
+    assert.match(app, />총 사진 <strong id="profile-photo-count">0<\/strong></);
+    assert.match(app, />공개 중 <strong id="profile-public-count">0<\/strong></);
     assert.match(app, /class="profile-owner-actions"/);
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.profile-card-copy\s*\{/);
+    assert.match(css, /\.account-profile-view\s*\{[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;/s);
 });
 
-test('own profile actions sit together at the top right with logout first', () => {
+test('own profile actions use a clear primary edit action and a quieter logout action', () => {
     const staticActionsStart = html.indexOf('class="profile-owner-actions"');
     const staticActionsEnd = html.indexOf('</div>', staticActionsStart);
     const staticActions = html.slice(staticActionsStart, staticActionsEnd);
@@ -44,10 +48,26 @@ test('own profile actions sit together at the top right with logout first', () =
     const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
     const shell = app.slice(shellStart, shellEnd);
 
-    assert.ok(staticActions.indexOf('id="account-profile-logout"') < staticActions.indexOf('id="account-profile-edit"'));
-    assert.ok(shell.indexOf('id="account-profile-logout"') < shell.indexOf('id="account-profile-edit"'));
-    assert.match(css, /\.profile-owner-actions\s*\{[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
-    assert.match(css, /\.profile-owner-actions \.btn-secondary\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*999px;/s);
+    assert.ok(staticActions.indexOf('id="account-profile-edit"') < staticActions.indexOf('id="account-profile-logout"'));
+    assert.ok(shell.indexOf('id="account-profile-edit"') < shell.indexOf('id="account-profile-logout"'));
+    assert.match(staticActions, /class="material-symbols-outlined"[^>]*>edit</);
+    assert.match(staticActions, /class="material-symbols-outlined"[^>]*>logout</);
+    assert.match(shell, /class="profile-action profile-action--edit"/);
+    assert.match(shell, /class="profile-action profile-action--logout"/);
+    assert.match(staticActions, />수정<\/span>/);
+    assert.match(shell, />수정<\/span>/);
+    assert.doesNotMatch(staticActions, />프로필 수정<\/span>/);
+    assert.match(css, /\.profile-owner-actions\s*\{[^}]*flex-direction:\s*column;[^}]*align-items:\s*stretch;[^}]*justify-content:\s*flex-start;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
+    assert.match(css, /\.profile-owner-actions \.profile-action\s*\{[^}]*width:\s*100%;/s);
+    assert.match(css, /\.profile-action\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*8px;/s);
+    assert.match(css, /\.profile-action--edit\s*\{[^}]*background:\s*var\(--teal\);[^}]*color:\s*#ffffff;/s);
+    assert.match(css, /\.profile-action--logout\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\);/s);
+});
+
+test('profile biography and metrics remain legible over the cover image', () => {
+    assert.match(css, /\.profile-card \.account-profile-bio\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*17px;[^}]*font-weight:\s*700;/s);
+    assert.match(css, /\.account-profile-metrics\s*\{[^}]*color:\s*rgba\(26,\s*77,\s*78,\s*0\.78\);[^}]*font-weight:\s*800;/s);
+    assert.match(css, /\.account-profile-metrics strong\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*20px;/s);
 });
 
 test('profile edit form has breathing room above the editing fields', () => {

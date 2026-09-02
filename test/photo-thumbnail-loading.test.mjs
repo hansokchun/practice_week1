@@ -19,3 +19,9 @@ test('personal and liked photo grids use the full panel width without frames', (
     assert.match(css, /\.personal-photo-card\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s);
     assert.match(css, /body\[data-page="photos"\] \.dashboard-panel,[\s\S]*body\[data-page="liked"\] \.dashboard-panel\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;[^}]*padding:\s*0;/s);
 });
+
+test('personal and liked full pages use the profile masonry layout', async () => {
+    const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+    assert.match(html, /id="personal-photo-grid" class="personal-photo-grid photo-masonry-grid"/);
+    assert.match(html, /id="liked-photo-full-grid" class="personal-photo-grid liked-photo-full-grid photo-masonry-grid"/);
+});

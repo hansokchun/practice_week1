@@ -53,9 +53,9 @@ test('landing topic page is a map-free regional gallery with thirty desktop phot
     assert.doesNotMatch(pageSource, /trip-review-map|renderTripReviewMap|IntersectionObserver|landing-tag-load-sentinel/);
     assert.match(appSource, /function renderPublicSurfaces\(\)\s*\{\s*if \(document\.body\.dataset\.page === 'tag'\)\s*\{\s*renderLandingTagPage\(\);\s*return;/s);
     assert.match(cssSource, /\.landing-tag-gallery-shell\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100% - 48px\)\);/s);
-    assert.match(cssSource, /\.landing-tag-gallery-grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);[^}]*gap:\s*18px;/s);
-    assert.match(cssSource, /\.landing-tag-gallery-card\s*\{[^}]*aspect-ratio:\s*4 \/ 5;/s);
-    assert.match(cssSource, /@media \(max-width:\s*760px\)[\s\S]*\.landing-tag-gallery-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);[^}]*gap:\s*10px;/s);
+    assert.match(cssSource, /\.photo-masonry-grid,\s*\.landing-tag-gallery-grid\s*\{[^}]*column-count:\s*3;[^}]*column-gap:\s*18px;/s);
+    assert.match(cssSource, /\.landing-tag-gallery-grid \.landing-tag-gallery-card\s*\{[^}]*aspect-ratio:\s*auto;/s);
+    assert.match(cssSource, /@media \(max-width:\s*860px\)[\s\S]*\.photo-masonry-grid,\s*\.landing-tag-gallery-grid\s*\{[^}]*column-count:\s*2;[^}]*column-gap:\s*12px;/s);
 });
 
 test('landing admin limits the manually ordered tag lead to twenty photos', () => {
