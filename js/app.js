@@ -334,7 +334,6 @@ const state = {
     locationAssignmentMapClickListener: null,
     locationAssignmentDraft: null,
     locationAssignmentSearchResultName: '',
-    isSavingLocationAssignment: false,
     isPersistingUpload: false,
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
@@ -514,11 +513,10 @@ function setImageSourceWithFallback(image, primarySrc, fallbackSrc = MAIN_BG_2_U
 
 function showToast(message) {
     const toast = $('#toast');
-    if (!toast) return;
     toast.textContent = message;
-    toast.classList.add('is-visible');
-    window.clearTimeout(showToast._timer);
-    showToast._timer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
+    toast.className = 'toast';
+    void toast.offsetWidth;
+    toast.className = 'toast is-visible';
 }
 
 function getTurnstileToken() {
@@ -4808,11 +4806,9 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     const pagination = $('#personal-photo-pagination');
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
-    if (deleteButton) {
-        deleteButton.hidden = selectedCount === 0;
-        deleteButton.disabled = selectedCount === 0;
-        deleteButton.textContent = selectedCount ? `선택 ${selectedCount}장 삭제` : '선택 삭제';
-    }
+    deleteButton.hidden = $('#btn-clear-selected-photos').hidden = !selectedCount;
+    deleteButton.disabled = !selectedCount;
+    deleteButton.textContent = `선택 ${selectedCount}장 삭제`;
 
     if (state.savedPhotosLoadError) {
         grid.innerHTML = renderActionableFailure(
@@ -4837,9 +4833,8 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
     state.personalPhotoPage = personalPage.currentPage;
     grid.innerHTML = personalPage.items.map((photo) => {
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
-        const shouldAnimateSelection = isSelected && state.lastToggledPersonalPhotoId === photo.id;
         return `
-            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${shouldAnimateSelection ? 'is-selection-animated' : ''}" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
+            <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${isSelected && state.lastToggledPersonalPhotoId === photo.id ? 'is-selection-animated' : ''}" ${selectedCount ? `data-toggle-personal-photo="${escapeHtml(photo.id)}"` : ''} data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
                 ${renderPhotoImage(photo)}
             </article>
@@ -4857,8 +4852,7 @@ async function deleteSelectedPersonalPhotos() {
     const confirmed = window.confirm(`선택한 사진 ${selectedPhotos.length}장을 정말 삭제할까요? 삭제한 사진은 복구할 수 없습니다.`);
     if (!confirmed) return;
 
-    const deleteButton = $('#btn-delete-selected-photos');
-    if (deleteButton) deleteButton.disabled = true;
+    $('#btn-delete-selected-photos').disabled = true;
 
     try {
         for (const photo of selectedPhotos) {
@@ -5155,12 +5149,10 @@ async function saveLocationAssignment(event) {
     const skip = button.dataset.skip;
     const message = $('#location-assignment-message');
     if (!photo || !state.currentUser || (!skip && !draft)) {
-        if (message) message.textContent = '저장할 위치를 먼저 선택하세요.';
+        message.textContent = '저장할 위치를 먼저 선택하세요.';
         return;
     }
-    if (state.isSavingLocationAssignment) return;
-    state.isSavingLocationAssignment = true;
-    if (!skip && button) button.disabled = true;
+    button.disabled = true;
     const { data, error } = await updatePhotoInfo(photo.id, skip ? { location_assignment_skipped: true } : {
         lat: draft.lat,
         lng: draft.lng,
@@ -5168,20 +5160,20 @@ async function saveLocationAssignment(event) {
         location_precision: photo.location_precision || 'hidden',
         location_assignment_skipped: false
     });
-    state.isSavingLocationAssignment = false;
+    button.disabled = !skip;
     if (error) {
-        if (button) button.disabled = false;
-        if (message) message.textContent = '저장 실패';
+        button.disabled = false;
+        message.textContent = '저장 실패';
         return;
     }
     const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
-    state.selectedLocationPhotoId = null;
-    state.locationAssignmentDraft = null;
+    state.selectedLocationPhotoId = state.locationAssignmentDraft = null;
     state.locationAssignmentMarker?.setMap(null);
     renderSavedPhotoSurfaces();
     renderLocationAssignmentPage();
-    requestAnimationFrame(() => ensureLocationAssignmentMap());
+    showToast(button.dataset.toast);
+    requestAnimationFrame(ensureLocationAssignmentMap);
 }
 
 function getUniqueAlbumCoverSources(sources, limit = 3) {

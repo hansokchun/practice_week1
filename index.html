@@ -334,6 +334,10 @@
                 <section class="dashboard-panel full-panel" data-my-library-panel="photos">
                     <div class="panel-topline">
                         <div class="panel-actions">
+                            <button id="btn-clear-selected-photos" class="btn-secondary selection-clear-button" data-toggle-personal-photo type="button" hidden>
+                                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                                선택 해제
+                            </button>
                             <button id="btn-delete-selected-photos" class="btn-secondary danger" type="button" disabled hidden>선택 삭제</button>
                             <button id="btn-upload-more-photos" class="btn-primary compact-action-button" type="button">사진 올리기</button>
                         </div>
@@ -551,11 +555,11 @@
                             <div class="location-assignment-save-row">
                                 <p id="location-assignment-message" aria-live="polite">지도를 누르면 핀이 생깁니다.</p>
                                 <div class="location-assignment-save-actions">
-                                    <button id="btn-skip-location-assignment" class="btn-secondary" data-skip="true" type="button">
+                                    <button id="btn-skip-location-assignment" class="btn-secondary" data-skip="true" data-toast="위치 없이 보관했어요" type="button">
                                         <span class="material-symbols-outlined" aria-hidden="true">location_off</span>
                                         위치 없이 보관
                                     </button>
-                                    <button id="btn-save-location-assignment" class="btn-primary" type="button" disabled>
+                                    <button id="btn-save-location-assignment" class="btn-primary" data-toast="위치를 저장했어요" type="button" disabled>
                                         <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
                                         이 위치로 저장
                                     </button>

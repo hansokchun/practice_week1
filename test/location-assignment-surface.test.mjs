@@ -23,8 +23,8 @@ test('manual location page exposes queue, selected photo, search map, and save a
     assert.match(surface, /id="location-assignment-search-input"/);
     assert.match(surface, /id="location-assignment-map"/);
     assert.match(surface, /id="btn-skip-location-assignment"/);
-    assert.match(surface, /위치 없이 보관/);
-    assert.match(surface, /id="btn-save-location-assignment"/);
+    assert.match(surface, /id="btn-skip-location-assignment"[^>]+data-toast="위치 없이 보관했어요"/);
+    assert.match(surface, /id="btn-save-location-assignment"[^>]+data-toast="위치를 저장했어요"/);
     assert.match(surface, /id="location-assignment-nearby-list"/);
     assert.doesNotMatch(surface, /Location|Selected Photo|Nearby in time/);
     assert.doesNotMatch(surface, /사진을 선택하고 검색하거나 지도를 눌러 촬영 위치를 저장하세요/);
@@ -57,6 +57,13 @@ test('photos can leave the queue without a location and return when one is saved
     assert.match(app, /skip \? \{ location_assignment_skipped: true \}/);
     assert.match(app, /async function saveLocationAssignment\(event\)[\s\S]*location_assignment_skipped: false/);
     assert.match(app, /async function saveManualLocation\(event\)[\s\S]*location_assignment_skipped: false/);
+});
+
+test('location assignment confirms either save action with a short bottom-center notice', () => {
+    assert.match(app, /showToast\(button\.dataset\.toast\)/);
+    assert.match(styles, /\.toast\s*\{[^}]*left:\s*50%;[^}]*bottom:/s);
+    assert.match(styles, /\.toast\.is-visible\s*\{[^}]*animation:\s*toast-visibility 1800ms/s);
+    assert.match(styles, /@keyframes toast-visibility[\s\S]*transform:\s*translate\(-50%,\s*0\)/);
 });
 
 test('my photos page does not show a redundant total photo count', () => {
