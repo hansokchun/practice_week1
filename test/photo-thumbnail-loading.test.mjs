@@ -5,13 +5,17 @@ import test from 'node:test';
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = await readFile(new URL('../style.css', import.meta.url), 'utf8');
 
-test('photo thumbnail grids stay hidden until every image settles', () => {
+test('photo thumbnail grids reveal each image independently without waiting forever', () => {
     assert.match(app, /function revealPhotoThumbnailGridWhenReady\(container\)/);
-    assert.match(app, /Promise\.all\(images\.map/);
-    assert.match(app, /image\.loading = 'eager'/);
-    assert.match(app, /image\.addEventListener\('load', resolve/);
-    assert.match(app, /image\.addEventListener\('error', resolve/);
-    assert.match(css, /\.personal-photo-grid\.is-loading-thumbnails img\s*\{[^}]*visibility:\s*hidden;/s);
+    assert.match(app, /PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000/);
+    assert.match(app, /images\.slice\(0, PHOTO_THUMBNAIL_EAGER_COUNT\)/);
+    assert.match(app, /image\.decode\(\)/);
+    assert.match(app, /image\.classList\.add\('is-thumbnail-ready'\)/);
+    assert.match(app, /image\.classList\.add\('is-thumbnail-error'\)/);
+    assert.match(app, /window\.setTimeout/);
+    assert.doesNotMatch(app, /Promise\.all\(images\.map/);
+    assert.doesNotMatch(css, /\.personal-photo-grid\.is-loading-thumbnails img\s*\{[^}]*visibility:\s*hidden;/s);
+    assert.match(css, /\.personal-photo-grid img\.is-thumbnail-pending,[^}]*opacity:\s*0;/s);
 });
 
 test('personal and liked photo grids use the full panel width without frames', () => {

@@ -86,6 +86,7 @@ import {
     getPhotoDetailOwnerMapItems
 } from './photo-detail-map.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
+import { shouldRefreshPhotoSignedUrl } from './photo-signed-url-freshness.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
@@ -476,28 +477,74 @@ function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'au
     return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async"${priority}>`;
 }
 
+const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
+const PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000;
+
 function revealPhotoThumbnailGridWhenReady(container) {
     if (!container) return;
     const images = [...container.querySelectorAll('img')];
-    if (!images.length) {
-        container.classList.remove('is-loading-thumbnails');
-        return;
-    }
+    if (!images.length) return;
 
     const loadId = String(Date.now() + Math.random());
     container.dataset.thumbnailLoadId = loadId;
-    container.classList.add('is-loading-thumbnails');
-    Promise.all(images.map((image) => {
+
+    images.slice(0, PHOTO_THUMBNAIL_EAGER_COUNT).forEach((image) => {
         image.loading = 'eager';
-        if (image.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-            image.addEventListener('load', resolve, { once: true });
-            image.addEventListener('error', resolve, { once: true });
-        });
-    })).then(() => {
-        if (container.dataset.thumbnailLoadId !== loadId) return;
-        container.classList.remove('is-loading-thumbnails');
+        image.fetchPriority = 'high';
     });
+
+    let remaining = images.length;
+    let timeoutId = null;
+    const settleImage = (image, isReady) => {
+        if (container.dataset.thumbnailLoadId !== loadId) return;
+        const host = image.closest('article, figure, button');
+        image.classList.remove('is-thumbnail-pending');
+        if (isReady) {
+            image.classList.remove('is-thumbnail-error');
+            image.classList.add('is-thumbnail-ready');
+            host?.classList.remove('is-thumbnail-loading');
+        } else if (!image.classList.contains('is-thumbnail-ready')) {
+            image.classList.add('is-thumbnail-error');
+        }
+
+        if (image.dataset.thumbnailSettled === loadId) return;
+        image.dataset.thumbnailSettled = loadId;
+        remaining -= 1;
+        if (remaining > 0) return;
+        if (timeoutId) window.clearTimeout(timeoutId);
+    };
+    const revealLoadedImage = async (image) => {
+        if (container.dataset.thumbnailLoadId !== loadId) return;
+        if (typeof image.decode === 'function') {
+            try {
+                await image.decode();
+            } catch {
+                // naturalWidth below decides whether decoding produced a usable image.
+            }
+        }
+        settleImage(image, image.complete && image.naturalWidth > 0);
+    };
+
+    images.forEach((image) => {
+        const host = image.closest('article, figure, button');
+        image.classList.remove('is-thumbnail-ready', 'is-thumbnail-error');
+        image.classList.add('is-thumbnail-pending');
+        host?.classList.add('is-thumbnail-loading');
+        if (image.complete) {
+            void revealLoadedImage(image);
+            return;
+        }
+        image.addEventListener('load', () => { void revealLoadedImage(image); }, { once: true });
+        image.addEventListener('error', () => settleImage(image, false), { once: true });
+    });
+
+    timeoutId = window.setTimeout(() => {
+        if (container.dataset.thumbnailLoadId !== loadId) return;
+        images.forEach((image) => {
+            if (image.dataset.thumbnailSettled === loadId) return;
+            settleImage(image, image.complete && image.naturalWidth > 0);
+        });
+    }, PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS);
 }
 
 function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
@@ -3295,6 +3342,7 @@ function normalizeSavedPhoto(photo) {
         id: photo.id,
         description: photo.description || '',
         url: photo.url,
+        signed_url_expires_at: Number(photo.signed_url_expires_at) || null,
         storage_path: photo.storage_path || null,
         date: photo.date || photo.created_at || new Date().toISOString(),
         created_at: photo.created_at || photo.uploaded_at || photo.createdAt || null,
@@ -4526,7 +4574,11 @@ async function loadSavedPhotos({ render = true } = {}) {
     const hydratedById = new Map((hydratedPhotos || []).map((photo) => [String(photo.id), photo]));
     state.savedPhotos = state.savedPhotos.map((photo) => {
         const hydrated = hydratedById.get(String(photo.id));
-        return hydrated?.url ? { ...photo, url: hydrated.url } : photo;
+        return hydrated?.url ? {
+            ...photo,
+            url: hydrated.url,
+            signed_url_expires_at: hydrated.signed_url_expires_at || photo.signed_url_expires_at
+        } : photo;
     });
     if (render) {
         renderSavedPhotoSurfaces();
@@ -4808,6 +4860,33 @@ function renderPhotoPagination(container, page, pageKey) {
             <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
         </button>
     `;
+}
+
+async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
+    const sourcePhotos = pageKey === 'liked' ? getLikedPhotos() : getMySavedPhotos();
+    const page = getPhotoPage(sourcePhotos, requestedPage);
+    const expiringPhotos = page.items.filter((photo) => shouldRefreshPhotoSignedUrl(photo));
+    if (!expiringPhotos.length) return;
+
+    const { data: hydratedPhotos } = await hydratePhotoUrls(expiringPhotos);
+    const refreshedById = new Map((hydratedPhotos || [])
+        .filter((photo) => !shouldRefreshPhotoSignedUrl(photo))
+        .map((photo) => [String(photo.id), photo]));
+    if (!refreshedById.size) return;
+
+    state.savedPhotos = state.savedPhotos.map((photo) => {
+        const refreshed = refreshedById.get(String(photo.id));
+        return refreshed ? {
+            ...photo,
+            url: refreshed.url,
+            signed_url_expires_at: refreshed.signed_url_expires_at
+        } : photo;
+    });
+
+    const currentPage = pageKey === 'liked' ? state.likedPhotoPage : state.personalPhotoPage;
+    if (currentPage !== requestedPage) return;
+    if (pageKey === 'liked') renderLikedPhotoSurfaces();
+    else renderPersonalPhotosPage();
 }
 
 function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
@@ -7191,10 +7270,12 @@ function bindEvents() {
             if (photoPageButton.dataset.photoPage === 'liked') {
                 state.likedPhotoPage += pageOffset;
                 renderLikedPhotoSurfaces();
+                void refreshVisiblePhotoPageUrls('liked', state.likedPhotoPage);
                 $('#liked-photo-full-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
                 state.personalPhotoPage += pageOffset;
                 renderPersonalPhotosPage();
+                void refreshVisiblePhotoPageUrls('personal', state.personalPhotoPage);
                 $('#personal-photo-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
             return;

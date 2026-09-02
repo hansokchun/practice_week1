@@ -5359,9 +5359,21 @@ body[data-page="explore"] .site-footer {
     transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), filter 110ms ease-out;
 }
 
-.recent-photo-grid.is-loading-thumbnails img,
-.personal-photo-grid.is-loading-thumbnails img {
-    visibility: hidden;
+.recent-photo-grid img,
+.personal-photo-grid img {
+    transition: opacity 180ms ease-out, transform 140ms cubic-bezier(0.16, 1, 0.3, 1), filter 110ms ease-out;
+}
+
+.recent-photo-grid img.is-thumbnail-pending,
+.personal-photo-grid img.is-thumbnail-pending,
+.recent-photo-grid img.is-thumbnail-error,
+.personal-photo-grid img.is-thumbnail-error {
+    opacity: 0;
+}
+
+.recent-photo-grid .is-thumbnail-loading,
+.personal-photo-grid .is-thumbnail-loading {
+    background: var(--surface-soft);
 }
 
 body[data-page="photos"] .dashboard-panel,

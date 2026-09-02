@@ -14,6 +14,9 @@ import {
     applySignedPhotoUrls,
     getPhotoStoragePath
 } from './js/photo-storage.mjs';
+import {
+    PHOTO_SIGNED_URL_TTL_SECONDS
+} from './js/photo-signed-url-freshness.mjs';
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
@@ -57,7 +60,7 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
 
     const { data, error } = await sb.storage
         .from('photos')
-        .createSignedUrls(paths, 900);
+        .createSignedUrls(paths, PHOTO_SIGNED_URL_TTL_SECONDS);
     if (error) return photos;
 
     const signedUrlByPath = new Map(
@@ -65,7 +68,12 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
             .filter((item) => item?.path && item?.signedUrl)
             .map((item) => [item.path, item.signedUrl])
     );
-    return applySignedPhotoUrls(photos, signedUrlByPath);
+    const expiresAt = Date.now() + (PHOTO_SIGNED_URL_TTL_SECONDS * 1000);
+    return applySignedPhotoUrls(photos, signedUrlByPath).map((photo) => (
+        signedUrlByPath.has(getPhotoStoragePath(photo))
+            ? { ...photo, signed_url_expires_at: expiresAt }
+            : photo
+    ));
 }
 
 async function hydrateSignedAlbumCoverUrls(sb, albums = []) {
