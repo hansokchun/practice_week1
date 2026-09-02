@@ -334,7 +334,6 @@ const state = {
     locationAssignmentMapClickListener: null,
     locationAssignmentDraft: null,
     locationAssignmentSearchResultName: '',
-    isSavingLocationAssignment: false,
     isPersistingUpload: false,
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
@@ -514,11 +513,10 @@ function setImageSourceWithFallback(image, primarySrc, fallbackSrc = MAIN_BG_2_U
 
 function showToast(message) {
     const toast = $('#toast');
-    if (!toast) return;
     toast.textContent = message;
+    toast.classList.remove('is-visible');
+    void toast.offsetWidth;
     toast.classList.add('is-visible');
-    window.clearTimeout(showToast._timer);
-    showToast._timer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
 }
 
 function getTurnstileToken() {
@@ -5155,12 +5153,10 @@ async function saveLocationAssignment(event) {
     const skip = button.dataset.skip;
     const message = $('#location-assignment-message');
     if (!photo || !state.currentUser || (!skip && !draft)) {
-        if (message) message.textContent = '저장할 위치를 먼저 선택하세요.';
+        message.textContent = '저장할 위치를 먼저 선택하세요.';
         return;
     }
-    if (state.isSavingLocationAssignment) return;
-    state.isSavingLocationAssignment = true;
-    if (!skip && button) button.disabled = true;
+    button.disabled = true;
     const { data, error } = await updatePhotoInfo(photo.id, skip ? { location_assignment_skipped: true } : {
         lat: draft.lat,
         lng: draft.lng,
@@ -5168,20 +5164,20 @@ async function saveLocationAssignment(event) {
         location_precision: photo.location_precision || 'hidden',
         location_assignment_skipped: false
     });
-    state.isSavingLocationAssignment = false;
+    button.disabled = !skip;
     if (error) {
-        if (button) button.disabled = false;
-        if (message) message.textContent = '저장 실패';
+        button.disabled = false;
+        message.textContent = '저장 실패';
         return;
     }
     const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
-    state.selectedLocationPhotoId = null;
-    state.locationAssignmentDraft = null;
+    state.selectedLocationPhotoId = state.locationAssignmentDraft = null;
     state.locationAssignmentMarker?.setMap(null);
     renderSavedPhotoSurfaces();
     renderLocationAssignmentPage();
-    requestAnimationFrame(() => ensureLocationAssignmentMap());
+    showToast(button.dataset.toast);
+    requestAnimationFrame(ensureLocationAssignmentMap);
 }
 
 function getUniqueAlbumCoverSources(sources, limit = 3) {

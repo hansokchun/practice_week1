@@ -10796,23 +10796,28 @@ body.modal-open {
 
 .toast {
     position: fixed;
-    right: 20px;
-    bottom: 20px;
+    left: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 120;
     max-width: 360px;
     border-radius: 14px;
     background: var(--teal);
     color: #ffffff;
     opacity: 0;
-    transform: translateY(10px);
+    transform: translate(-50%, 10px);
     pointer-events: none;
     padding: 12px 16px;
-    transition: opacity 160ms ease, transform 160ms ease;
 }
 
 .toast.is-visible {
-    opacity: 1;
-    transform: translateY(0);
+    animation: toast-visibility 1800ms ease both;
+}
+
+@keyframes toast-visibility {
+    12%, 78% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 @media (max-width: 860px) {
