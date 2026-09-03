@@ -467,14 +467,16 @@ function getPhotoDescriptionText(photo) {
 }
 
 function getPhotoImageSrc(photo = {}) {
-    return photo?.url || photo?.albumCoverUrl || MAIN_BG_2_URL;
+    return photo.url || photo.albumCoverUrl || (!photo.storage_path && MAIN_BG_2_URL) || '';
 }
 
 function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'auto' } = {}) {
     const src = escapeHtml(getPhotoImageSrc(photo));
     const alt = escapeHtml(getPhotoFallbackLabel(photo, fallback));
+    const photoId = escapeHtml(photo.id || photo.localId || '');
     const priority = ['high', 'low'].includes(fetchPriority) ? ` fetchpriority="${fetchPriority}"` : '';
-    return `<img src="${src}" alt="${alt}" loading="lazy" decoding="async"${priority}>`;
+    const source = src ? ` src="${src}"` : '';
+    return `<img${source} data-i="${photoId}" alt="${alt}" loading="lazy" decoding="async"${priority}>`;
 }
 
 const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
@@ -547,22 +549,30 @@ function revealPhotoThumbnailGridWhenReady(container) {
     }, PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS);
 }
 
-function getPhotoImageFallbackSrc(photo = {}, primarySrc = '') {
-    if (photo?.albumCoverUrl && photo.albumCoverUrl !== primarySrc) return photo.albumCoverUrl;
-    return MAIN_BG_2_URL;
+function setPhotoImageSource(image, photo = {}) {
+    if (!image) return;
+    image.dataset.i = String(photo.id || '');
+    const source = getPhotoImageSrc(photo);
+    if (source) image.src = source;
+    else {
+        image.removeAttribute('src');
+        void recoverPhotoImageUrl(image);
+    }
 }
 
-function setImageSourceWithFallback(image, primarySrc, fallbackSrc = MAIN_BG_2_URL) {
-    if (!image) return;
-    const source = primarySrc || fallbackSrc || MAIN_BG_2_URL;
-    const fallback = fallbackSrc && fallbackSrc !== source ? fallbackSrc : MAIN_BG_2_URL;
-    image.dataset.fallbackApplied = 'false';
-    image.onerror = () => {
-        if (image.dataset.fallbackApplied === 'true') return;
-        image.dataset.fallbackApplied = 'true';
-        image.src = fallback;
-    };
-    image.src = source;
+async function recoverPhotoImageUrl(image) {
+    const photoId = image.dataset.i;
+    const photo = state.savedPhotos.find((item) => String(item.id) === photoId);
+    if (!photo?.storage_path || image.dataset.r === image.src) return;
+    image.dataset.r = image.src;
+
+    const refreshed = (await hydratePhotoUrls([photo])).data?.[0];
+    if (!refreshed?.url) return;
+    photo.url = refreshed.url;
+    photo.signed_url_expires_at = refreshed.signed_url_expires_at;
+    image.dataset.r = refreshed.url;
+    image.onload = () => { delete image.dataset.r; };
+    image.src = refreshed.url;
 }
 
 function showToast(message) {
@@ -983,7 +993,7 @@ function renderLandingPhotoCard(photo) {
     const label = getLandingPhotoLabel(photo);
     return `
         <button class="landing-photo-card" data-landing-photo-id="${escapeHtml(photoId)}" type="button" aria-label="${escapeHtml(label)} 상세 보기">
-            <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
+            <img src="${escapeHtml(getPhotoImageSrc(photo))}" data-i="${escapeHtml(photoId)}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
         </button>
     `;
 }
@@ -1597,8 +1607,7 @@ function updateExplorePhotoPreview(photo) {
         : '';
     if (photoButton) photoButton.dataset.photoId = photo.id || '';
     if (image) {
-        const photoImageSrc = getPhotoImageSrc(photo);
-        setImageSourceWithFallback(image, photoImageSrc, getPhotoImageFallbackSrc(photo, photoImageSrc));
+        setPhotoImageSource(image, photo);
         image.alt = description || '공개 사진';
     }
     if (story) {
@@ -1739,7 +1748,7 @@ async function saveExplorePreviewEdits(event) {
         return;
     }
 
-    const updated = normalizeSavedPhoto(data || { ...photo, description, visibility, shared: visibility === 'public' });
+    const updated = normalizePhotoUpdate(photo, data || { description, visibility, shared: visibility === 'public' });
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => savedPhoto.id === updated.id ? updated : savedPhoto);
     setExplorePreviewEditMode(false);
     renderSavedPhotoSurfaces();
@@ -2456,7 +2465,6 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const placeName = String(photo.placeName || '').trim();
     const ownerId = String(photo.owner_id || '');
     const authorProfile = getPublicProfileDetails(ownerId);
-    const photoImageSrc = getPhotoImageSrc(photo);
     const locationLabel = placeName || (hasPhotoLocation(photo)
         ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
         : '위치 정보 없음');
@@ -2464,12 +2472,9 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
 
     if (modal) {
         modal.dataset.photoDetailContext = context;
-        modal.dataset.photoDetailImageSrc = photoImageSrc;
-        modal.dataset.photoDetailImageFallbackSrc = getPhotoImageFallbackSrc(photo, photoImageSrc);
-        modal.dataset.photoDetailImageAlt = description || '여행 사진 상세';
     }
     if (image) {
-        setImageSourceWithFallback(image, photoImageSrc, getPhotoImageFallbackSrc(photo, photoImageSrc));
+        setPhotoImageSource(image, photo);
         image.alt = description || '여행 사진 상세';
     }
     const mediaColumn = modal?.querySelector('.photo-detail-media-column');
@@ -2706,13 +2711,9 @@ function openPhotoFullscreenFromDetail() {
     const sourceImage = detailModal?.querySelector('[data-photo-detail-image]');
     const fullscreenImage = $('[data-photo-fullscreen-image]');
     const renderedSource = sourceImage?.currentSrc || sourceImage?.src || '';
-    const source = sourceImage?.dataset.fallbackApplied === 'true'
-        ? renderedSource
-        : detailModal?.dataset.photoDetailImageSrc || renderedSource || MAIN_BG_2_URL;
-    const fallbackSource = detailModal?.dataset.photoDetailImageFallbackSrc || renderedSource || MAIN_BG_2_URL;
-    const alt = sourceImage?.alt || detailModal?.dataset.photoDetailImageAlt || '여행 사진 크게보기';
+    const alt = sourceImage?.alt || '여행 사진 크게보기';
     if (fullscreenImage) {
-        setImageSourceWithFallback(fullscreenImage, source, fallbackSource);
+        setPhotoImageSource(fullscreenImage, { id: state.selectedPhotoId, url: renderedSource });
         fullscreenImage.alt = alt;
     }
     setPhotoDetailMoreMenuOpen(false);
@@ -3367,6 +3368,15 @@ function normalizeSavedPhoto(photo) {
     };
 }
 
+function normalizePhotoUpdate(photo, update) {
+    return normalizeSavedPhoto({
+        ...photo,
+        ...update,
+        url: photo.url,
+        storage_path: update.storage_path || photo.storage_path
+    });
+}
+
 let photoAiAnalysisQueue = Promise.resolve();
 
 function queuePhotoAiAnalysis(photos = [], { notifyOnComplete = false } = {}) {
@@ -3383,7 +3393,7 @@ function queuePhotoAiAnalysis(photos = [], { notifyOnComplete = false } = {}) {
             const [result] = await Promise.allSettled([requestPhotoAiAnalysis(photo.id)]);
             if (result.status !== 'fulfilled' || result.value.error || !result.value.data) continue;
 
-            const normalized = normalizeSavedPhoto({ ...photo, ...result.value.data });
+            const normalized = normalizePhotoUpdate(photo, result.value.data);
             state.savedPhotos = state.savedPhotos.map((savedPhoto) => (
                 String(savedPhoto.id) === String(normalized.id) ? normalized : savedPhoto
             ));
@@ -4978,11 +4988,8 @@ async function updateSelectedPersonalPhotosVisibility(visibility) {
         state.savedPhotos = state.savedPhotos.map((photo) => {
             if (!selectedIds.has(String(photo.id))) return photo;
             const persistedPhoto = updatedById.get(String(photo.id));
-            return normalizeSavedPhoto({
-                ...photo,
+            return normalizePhotoUpdate(photo, {
                 ...persistedPhoto,
-                url: photo.url,
-                storage_path: persistedPhoto?.storage_path || photo.storage_path,
                 visibility: nextVisibility,
                 shared: nextVisibility === 'public',
                 location_precision: publicLocationPrecision || persistedPhoto?.location_precision || photo.location_precision
@@ -5355,7 +5362,7 @@ function renderLocationAssignmentPage() {
             </button>
         `).join('');
     }
-    if (image) setImageSourceWithFallback(image, getPhotoImageSrc(selectedPhoto));
+    if (image) setPhotoImageSource(image, selectedPhoto);
     if (date) date.textContent = formatLocationAssignmentDate(selectedPhoto.date);
 
     const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
@@ -5442,7 +5449,7 @@ async function saveLocationAssignment(event) {
         message.textContent = '저장 실패';
         return;
     }
-    const updated = normalizeSavedPhoto({ ...photo, ...data, url: photo.url, storage_path: data?.storage_path || photo.storage_path });
+    const updated = normalizePhotoUpdate(photo, data);
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
     state.selectedLocationPhotoId = state.locationAssignmentDraft = null;
     closeLocationAssignmentStreetView();
@@ -5890,8 +5897,13 @@ async function saveShareSettings() {
         const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(photoIds, state.visibility, publicLocationPrecision);
         if (photoVisibilityError) throw photoVisibilityError;
         if (updatedPhotos?.length) {
-            const normalized = updatedPhotos.map(normalizeSavedPhoto);
-            state.savedPhotos = state.savedPhotos.map((photo) => normalized.find((next) => next.id === photo.id) || photo);
+            const updatedById = new Map(updatedPhotos.map((photo) => [String(photo.id), photo]));
+            state.savedPhotos = state.savedPhotos.map((photo) => {
+                const persistedPhoto = updatedById.get(String(photo.id));
+                return persistedPhoto
+                    ? normalizePhotoUpdate(photo, persistedPhoto)
+                    : photo;
+            });
         }
         const shareTargetAlbumId = getShareTargetAlbumId(updatedAlbum, latestOwnAlbum);
         if (shareTargetAlbumId) state.selectedPublicAlbumId = shareTargetAlbumId;
@@ -6813,12 +6825,7 @@ async function saveManualLocation(event) {
         if (message) message.textContent = error.message || '위치 저장에 실패했습니다.';
         return;
     }
-    const updated = normalizeSavedPhoto({
-        ...photo,
-        ...data,
-        url: photo.url,
-        storage_path: data?.storage_path || photo.storage_path
-    });
+    const updated = normalizePhotoUpdate(photo, data);
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => savedPhoto.id === updated.id ? updated : savedPhoto);
     state.selectedLocationPhotoId = null;
     renderSavedPhotoSurfaces();
@@ -7000,6 +7007,10 @@ async function runPendingAuthAction() {
 }
 
 function bindEvents() {
+    document.addEventListener('error', (event) => {
+        const image = event.target;
+        if (image?.dataset?.i) void recoverPhotoImageUrl(image);
+    }, true);
     $('#btn-open-liked-photos')?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopImmediatePropagation();

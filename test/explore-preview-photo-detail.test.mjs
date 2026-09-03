@@ -43,7 +43,7 @@ test('Explore pin preview stores the selected photo id on the preview image acti
     assert.match(body, /photoButton\.dataset\.photoId = photo\.id \|\| ''/);
 });
 
-test('Explore photo preview image falls back when the public image URL fails', () => {
+test('Explore photo preview marks stored images for signed URL recovery', () => {
     const helperStart = source.indexOf('function getPhotoImageSrc');
     const helperEnd = source.indexOf('function showToast', helperStart);
     const helpers = source.slice(helperStart, helperEnd);
@@ -52,11 +52,9 @@ test('Explore photo preview image falls back when the public image URL fails', (
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(helpers, /function getPhotoImageSrc\(photo = \{\}\)/);
-    assert.match(helpers, /function getPhotoImageFallbackSrc\(photo = \{\}, primarySrc = ''\)/);
-    assert.match(helpers, /function setImageSourceWithFallback\(image, primarySrc, fallbackSrc = MAIN_BG_2_URL\)/);
-    assert.match(helpers, /image\.onerror = \(\) => \{/);
-    assert.match(body, /const photoImageSrc = getPhotoImageSrc\(photo\);/);
-    assert.match(body, /setImageSourceWithFallback\(image, photoImageSrc, getPhotoImageFallbackSrc\(photo, photoImageSrc\)\)/);
+    assert.match(helpers, /function setPhotoImageSource\(image, photo = \{\}\)/);
+    assert.match(helpers, /image\.dataset\.i = String\(photo\.id \|\| ''\)/);
+    assert.match(body, /setPhotoImageSource\(image, photo\)/);
 });
 
 test('Explore photo preview only shows visibility for the current user photo', () => {

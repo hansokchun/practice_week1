@@ -9,6 +9,15 @@ test('saving location preserves the working signed thumbnail URL', () => {
     const end = app.indexOf('async function searchExploreMap', start);
     const body = app.slice(start, end);
 
-    assert.match(body, /const updated = normalizeSavedPhoto\(\{[\s\S]*\.\.\.photo,[\s\S]*\.\.\.data,[\s\S]*url: photo\.url/);
+    assert.match(body, /const updated = normalizePhotoUpdate\(photo, data\)/);
     assert.match(body, /state\.savedPhotos = state\.savedPhotos\.map/);
+});
+
+test('photo database updates preserve the current signed URL centrally', () => {
+    const start = app.indexOf('function normalizePhotoUpdate(photo, update)');
+    const end = app.indexOf('let photoAiAnalysisQueue', start);
+    const body = app.slice(start, end);
+
+    assert.match(body, /\.\.\.photo,[\s\S]*\.\.\.update,[\s\S]*url: photo\.url/);
+    assert.match(body, /storage_path: update\.storage_path \|\| photo\.storage_path/);
 });
