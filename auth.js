@@ -471,7 +471,7 @@ export async function upsertPhoto(photo) {
                 album_id: photo.album_id || null,
                 visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
                 geo_source: photo.geo_source || 'unknown',
-                location_precision: photo.location_precision || 'hidden'
+                location_precision: photo.location_precision || 'approximate'
             }, { onConflict: 'id' });
         if (error) throw error;
         return { data, error: null };

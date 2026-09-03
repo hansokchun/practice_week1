@@ -8,6 +8,12 @@ export function normalizeLocationPrecision(value, fallback = 'hidden') {
     return LOCATION_PRECISIONS.has(value) ? value : fallback;
 }
 
+// Legacy hidden rows remain readable, but the owner-facing editor now offers
+// only the two publishable location levels.
+export function getEditableLocationPrecision(value) {
+    return value === 'exact' ? 'exact' : 'approximate';
+}
+
 export function canShowPhotoOnPublicMap(photo = {}) {
     const precision = normalizeLocationPrecision(photo.location_precision);
     return precision !== 'hidden'

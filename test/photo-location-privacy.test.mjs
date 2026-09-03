@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
     canShowPhotoOnPublicMap,
     canShowPhotoInExploreScope,
+    getEditableLocationPrecision,
     getLocationPrecisionLabel,
     normalizeLocationPrecision
 } from '../js/photo-location-privacy.mjs';
@@ -61,6 +62,23 @@ test('location precision labels describe the selected public boundary', () => {
 test('Explore filters hidden locations and the editor persists the selected precision', () => {
     assert.match(appSource, /canShowPhotoOnPublicMap\(photo\)/);
     assert.match(appSource, /location_precision: state\.editingPhotoLocationPrecision/);
+});
+
+test('photo settings separate public visibility from the two location precision choices', () => {
+    const locationEditor = appMarkup.slice(
+        appMarkup.indexOf('id="location-editor-modal"'),
+        appMarkup.indexOf('id="auth-modal"')
+    );
+    assert.match(locationEditor, /data-photo-visibility="private"/);
+    assert.match(locationEditor, /data-photo-visibility="public"/);
+    assert.match(locationEditor, /data-photo-location-precision="exact"/);
+    assert.match(locationEditor, /data-photo-location-precision="approximate"/);
+    assert.doesNotMatch(locationEditor, /data-photo-location-precision="hidden"/);
+    assert.match(appSource, /editingPhotoLocationPrecision:\s*'approximate'/);
+    assert.match(appSource, /getEditableLocationPrecision\(photo\.location_precision\)/);
+    assert.equal(getEditableLocationPrecision('exact'), 'exact');
+    assert.equal(getEditableLocationPrecision('approximate'), 'approximate');
+    assert.equal(getEditableLocationPrecision('hidden'), 'approximate');
 });
 
 test('publication review explains exposed fields and immediate revocation behavior', () => {

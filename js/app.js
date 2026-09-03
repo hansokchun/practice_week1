@@ -208,6 +208,7 @@ import { getPublicSurfaceAlbums } from './public-surface-albums.mjs';
 import {
     canShowPhotoInExploreScope,
     canShowPhotoOnPublicMap,
+    getEditableLocationPrecision,
     normalizeLocationPrecision
 } from './photo-location-privacy.mjs';
 import {
@@ -282,7 +283,7 @@ const state = {
     tripReviewFocusPhotoId: null,
     removedAlbumPhotoKeys: {},
     editingPhotoVisibility: 'private',
-    editingPhotoLocationPrecision: 'hidden',
+    editingPhotoLocationPrecision: 'approximate',
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     pendingAuthRoute: null,
@@ -5440,7 +5441,7 @@ async function saveLocationAssignment(event) {
         lat: draft.lat,
         lng: draft.lng,
         geo_source: 'manual',
-        location_precision: photo.location_precision || 'hidden',
+        location_precision: getEditableLocationPrecision(photo.location_precision),
         location_assignment_skipped: false
     });
     button.disabled = !skip;
@@ -6376,7 +6377,7 @@ async function persistStagedPhotos() {
                 album: null,
                 visibility: 'private',
                 geo_source: hasExifLocation ? 'exif' : 'unknown',
-                location_precision: 'hidden'
+                location_precision: 'approximate'
             };
             const { error: dbError } = await upsertPhoto(record);
             if (dbError) throw dbError;
@@ -6739,7 +6740,7 @@ function setLocationEditorPhoto(photoId) {
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
     updateLocationEditorMap(Number(draft.lat), Number(draft.lng), { zoom: hasSavedLocation ? 13 : 7 });
     state.editingPhotoVisibility = photo?.visibility === 'public' || photo?.shared ? 'public' : 'private';
-    state.editingPhotoLocationPrecision = normalizeLocationPrecision(photo?.location_precision);
+    state.editingPhotoLocationPrecision = getEditableLocationPrecision(photo?.location_precision);
     $$('[data-photo-visibility]').forEach((button) => {
         button.classList.toggle('active', button.dataset.photoVisibility === state.editingPhotoVisibility);
     });
