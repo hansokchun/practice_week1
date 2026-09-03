@@ -22,7 +22,11 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /id="landing-sections"/);
     assert.match(html, /data-landing-scroll/);
     assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
-    assert.match(html, /data-landing-query="일본"/);
+    assert.match(html, /data-landing-query="도로"/);
+    assert.match(html, /data-landing-query="바다"/);
+    assert.match(html, /data-landing-query="나무"/);
+    assert.doesNotMatch(html, /data-landing-query="제주 바다"/);
+    assert.doesNotMatch(html, /data-landing-query="서울 야경"/);
     assert.doesNotMatch(html, /data-landing-query="부산"/);
     assert.match(app, /function syncLandingSearchQuery\(\)/);
     assert.match(app, /#landing-search'\)\?\.addEventListener\('submit', submitLandingSearch\)/);
@@ -58,17 +62,17 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload \.material-symbols-outlined\s*\{[^}]*display:\s*inline-block;/s);
     assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*\.brand-korean\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
-    assert.doesNotMatch(html, /지금 둘러보기|data-landing-query="도쿄 골목"|data-landing-query="벚꽃"/);
+    assert.doesNotMatch(html, /지금 둘러보기|data-landing-query="도쿄 골목"|data-landing-query="벚꽃"|data-landing-query="일본"/);
 });
 
-test('기본 랜딩 소제목은 추천, 한국, 일본, 풍경, 도시 순서로만 구성한다', () => {
+test('기본 랜딩 소제목은 현재 공개 사진의 주요 태그와 같은 순서를 사용한다', () => {
     const sections = getDefaultLandingSections();
-    assert.deepEqual(sections.map(({ title }) => title), ['추천', '한국', '일본', '풍경', '도시']);
-    assert.equal(sections.every(({ description }) => description === ''), true);
+    assert.deepEqual(sections.map(({ title }) => title), ['추천', '일본', '길과 거리', '바다와 물가', '나무와 초록', '도시의 장면']);
+    assert.equal(sections.every(({ description }) => description.length > 0), true);
 
-    const photos = Array.from({ length: 5 }, (_, index) => ({ id: String(index), visibility: 'public' }));
-    assert.equal(getLandingSectionPhotos(sections[0], photos, 0).length, 5);
-    assert.equal(getLandingSectionPhotos(sections[4], photos, 4).length, 5);
+    const photos = Array.from({ length: 6 }, (_, index) => ({ id: String(index), visibility: 'public' }));
+    assert.equal(getLandingSectionPhotos(sections[0], photos, 0).length, 6);
+    assert.equal(getLandingSectionPhotos(sections[5], photos, 5).length, 6);
 });
 
 test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이를 두지 않는다', async () => {
