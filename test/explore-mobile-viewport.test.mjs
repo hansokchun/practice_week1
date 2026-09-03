@@ -3,12 +3,31 @@ import { test } from 'node:test';
 
 import {
     getExploreMapFitPadding,
+    getExploreMapFocusPanX,
     getExploreMapFocusPanY,
     getExploreMapPreviewFocusPanY
 } from '../js/explore-mobile-viewport.mjs';
 
-test('desktop Explore keeps its existing even map padding', () => {
-    assert.equal(getExploreMapFitPadding({ isMobile: false }), 96);
+test('desktop Explore reserves the discovery panel and shifts photo bounds left', () => {
+    const padding = getExploreMapFitPadding({
+        isMobile: false,
+        isPanelOpen: true,
+        panelWidth: 390
+    });
+
+    assert.deepEqual(padding, { top: 72, right: 430, bottom: 72, left: 48 });
+    assert.equal(getExploreMapFocusPanX(padding), 191);
+});
+
+test('collapsed desktop Explore uses balanced map padding', () => {
+    const padding = getExploreMapFitPadding({
+        isMobile: false,
+        isPanelOpen: false,
+        panelWidth: 390
+    });
+
+    assert.deepEqual(padding, { top: 72, right: 48, bottom: 72, left: 48 });
+    assert.equal(getExploreMapFocusPanX(padding), 0);
 });
 
 test('open mobile photo list reserves the lower map and lifts pin focus upward', () => {
@@ -20,6 +39,7 @@ test('open mobile photo list reserves the lower map and lifts pin focus upward',
     });
 
     assert.deepEqual(padding, { top: 72, right: 28, bottom: 464, left: 28 });
+    assert.equal(getExploreMapFocusPanX(padding), 0);
     assert.equal(getExploreMapFocusPanY(padding), 196);
 });
 

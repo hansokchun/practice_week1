@@ -6,10 +6,17 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 
-test('photo info editor no longer shows a selected-photo picker block', () => {
+test('photo info editor identifies the selected photo without restoring a picker', () => {
     assert.equal(html.includes('class="location-photo-picker"'), false);
     assert.equal(html.includes('id="location-photo-list"'), false);
-    assert.equal(html.includes('id="location-selected-photo-title"'), false);
+    assert.match(html, /data-location-editor-image/);
+    assert.match(html, /id="location-editor-photo-title"/);
+    assert.match(html, /id="location-editor-location-status"/);
+});
+
+test('photo info editor imports and uses the complete-location guard', () => {
+    assert.match(app, /getLocationEditorCoordinateUpdate,\s*hasCompleteLocation,/s);
+    assert.match(app, /const hasSavedLocation = hasCompleteLocation\(photo\)/);
 });
 
 test('photo info editor uses compact photo-detail style visibility chips', () => {
@@ -59,4 +66,15 @@ test('map editing expands to a large picker with an in-map save action', () => {
     assert.match(html, /class="map-location-save-button btn-primary"[^>]*form="location-editor-form"[^>]*>이 위치로 저장<\/button>/);
     assert.match(styles, /#location-editor-modal\.is-map-picking \.modal-card\s*\{[^}]*width:\s*min\(1120px,[^}]*height:\s*calc\(100dvh - 32px\);/s);
     assert.match(styles, /#location-editor-modal\.is-map-picking \.location-editor-map\s*\{[^}]*height:\s*100%;/s);
+});
+
+test('location precision controls expose only exact and approximate choices', () => {
+    const editorStart = html.indexOf('id="location-editor-modal"');
+    const editorEnd = html.indexOf('id="auth-modal"', editorStart);
+    const editorMarkup = html.slice(editorStart, editorEnd);
+
+    assert.match(editorMarkup, /data-photo-location-precision="exact"/);
+    assert.match(editorMarkup, /data-photo-location-precision="approximate"/);
+    assert.doesNotMatch(editorMarkup, /data-photo-location-precision="hidden"/);
+    assert.match(app, /button\.disabled = !hasLocation/);
 });

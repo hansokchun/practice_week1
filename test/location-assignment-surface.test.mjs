@@ -56,7 +56,7 @@ test('location assignment loads queue thumbnails lazily and keeps nearby coordin
 test('photos can leave the queue without a location and return when one is saved later', () => {
     assert.match(app, /skip \? \{ location_assignment_skipped: true \}/);
     assert.match(app, /async function saveLocationAssignment\(event\)[\s\S]*location_assignment_skipped: false/);
-    assert.match(app, /async function saveManualLocation\(event\)[\s\S]*location_assignment_skipped: false/);
+    assert.match(app, /async function saveManualLocation\(event\)[\s\S]*hasPickedLocation: state\.locationEditorHasPickedLocation/);
 });
 
 test('location assignment confirms either save action with a short bottom-center notice', () => {

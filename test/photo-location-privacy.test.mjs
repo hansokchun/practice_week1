@@ -24,14 +24,16 @@ const launchChecklist = readFileSync(
     'utf8'
 );
 
-test('location precision defaults to hidden until an owner chooses a public precision', () => {
-    assert.equal(normalizeLocationPrecision(), 'hidden');
+test('location precision defaults unknown values to approximate while preserving legacy privacy', () => {
+    assert.equal(normalizeLocationPrecision(), 'approximate');
     assert.equal(normalizeLocationPrecision('approximate'), 'approximate');
-    assert.equal(normalizeLocationPrecision('unexpected'), 'hidden');
+    assert.equal(normalizeLocationPrecision('unexpected'), 'approximate');
+    assert.equal(normalizeLocationPrecision('hidden'), 'hidden');
 });
 
-test('hidden photo locations never produce public map pins', () => {
+test('public map pins require coordinates and preserve legacy hidden privacy', () => {
     assert.equal(canShowPhotoOnPublicMap({ lat: 37.5665, lng: 126.978, location_precision: 'hidden' }), false);
+    assert.equal(canShowPhotoOnPublicMap({ lat: null, lng: 126.978, location_precision: 'approximate' }), false);
     assert.equal(canShowPhotoOnPublicMap({ lat: 37.5665, lng: 126.978, location_precision: 'approximate' }), true);
 });
 
@@ -56,10 +58,10 @@ test('Explore others scope keeps public location privacy rules', () => {
 test('location precision labels describe the selected public boundary', () => {
     assert.equal(getLocationPrecisionLabel('exact'), '정확한 위치');
     assert.equal(getLocationPrecisionLabel('approximate'), '대략 위치');
-    assert.equal(getLocationPrecisionLabel('hidden'), '위치 숨김');
+    assert.equal(getLocationPrecisionLabel('hidden'), '대략 위치');
 });
 
-test('Explore filters hidden locations and the editor persists the selected precision', () => {
+test('Explore filters missing coordinates and the editor persists the selected precision', () => {
     assert.match(appSource, /canShowPhotoOnPublicMap\(photo\)/);
     assert.match(appSource, /location_precision: state\.editingPhotoLocationPrecision/);
 });

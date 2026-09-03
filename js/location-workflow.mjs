@@ -9,6 +9,21 @@ export function hasCompleteLocation(photo) {
     return hasUsableCoordinates(photo?.lat, photo?.lng);
 }
 
+export function getLocationEditorCoordinateUpdate(photo, draft = {}, { hasPickedLocation = false } = {}) {
+    if (!hasPickedLocation) return {};
+
+    const lat = Number(draft.lat);
+    const lng = Number(draft.lng);
+    if (!hasUsableCoordinates(lat, lng)) return {};
+
+    return {
+        lat,
+        lng,
+        geo_source: 'manual',
+        location_assignment_skipped: false
+    };
+}
+
 export function getMissingLocationPhotos(photos = []) {
     return photos.filter((photo) => !hasCompleteLocation(photo) && photo?.location_assignment_skipped !== true);
 }

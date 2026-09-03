@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    getLocationEditorCoordinateUpdate,
     hasCompleteLocation,
     getLocationEditorPhoto,
     getMissingLocationPhotos,
@@ -28,6 +29,30 @@ test('Gyeongbokgung editor defaults do not turn a missing location into saved co
     assert.deepEqual(draft, { lat: '37.579617', lng: '126.977041' });
     assert.equal(hasCompleteLocation(photo), false);
     assert.deepEqual(photo, { id: 'missing', lat: null, lng: null });
+    assert.deepEqual(getLocationEditorCoordinateUpdate(photo, draft), {});
+    assert.deepEqual(getLocationEditorCoordinateUpdate(photo, draft, { hasPickedLocation: true }), {
+        lat: 37.579617,
+        lng: 126.977041,
+        geo_source: 'manual',
+        location_assignment_skipped: false
+    });
+});
+
+test('existing coordinates are only rewritten after the user picks a new position', () => {
+    assert.deepEqual(getLocationEditorCoordinateUpdate(
+        { id: 'located', lat: 33.45, lng: 126.57 },
+        { lat: '33.460000', lng: '126.580000' }
+    ), {});
+    assert.deepEqual(getLocationEditorCoordinateUpdate(
+        { id: 'located', lat: 33.45, lng: 126.57 },
+        { lat: '33.460000', lng: '126.580000' },
+        { hasPickedLocation: true }
+    ), {
+        lat: 33.46,
+        lng: 126.58,
+        geo_source: 'manual',
+        location_assignment_skipped: false
+    });
 });
 
 test('getLocationEditorPhoto prefers the selected missing-location photo', () => {

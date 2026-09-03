@@ -9890,6 +9890,48 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     margin: 14px 0 18px;
 }
 
+.location-editor-photo-summary {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    border-radius: 8px;
+    background: var(--surface-muted);
+    padding: 10px;
+}
+
+.location-editor-photo-summary img {
+    width: 88px;
+    height: 88px;
+    border-radius: 6px;
+    background: var(--line);
+    object-fit: cover;
+}
+
+.location-editor-photo-summary div {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.location-editor-photo-summary strong,
+.location-editor-photo-summary span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.location-editor-photo-summary strong {
+    color: var(--ink);
+    font-size: 15px;
+}
+
+.location-editor-photo-summary span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
 .map-pick-button {
     position: absolute;
     right: 12px;
@@ -10162,6 +10204,14 @@ body.photo-fullscreen-open {
 
 .photo-visibility-editor button.active .material-symbols-outlined {
     color: #ffffff;
+}
+
+.photo-visibility-editor.is-disabled {
+    opacity: 0.62;
+}
+
+.photo-visibility-editor button:disabled {
+    cursor: not-allowed;
 }
 
 .publication-review {

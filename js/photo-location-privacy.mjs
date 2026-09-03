@@ -4,7 +4,7 @@ function hasCoordinate(value) {
     return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
 }
 
-export function normalizeLocationPrecision(value, fallback = 'hidden') {
+export function normalizeLocationPrecision(value, fallback = 'approximate') {
     return LOCATION_PRECISIONS.has(value) ? value : fallback;
 }
 
@@ -15,8 +15,7 @@ export function getEditableLocationPrecision(value) {
 }
 
 export function canShowPhotoOnPublicMap(photo = {}) {
-    const precision = normalizeLocationPrecision(photo.location_precision);
-    return precision !== 'hidden'
+    return normalizeLocationPrecision(photo.location_precision) !== 'hidden'
         && hasCoordinate(photo.lat)
         && hasCoordinate(photo.lng);
 }
@@ -37,5 +36,5 @@ export function getLocationPrecisionLabel(value) {
     const precision = normalizeLocationPrecision(value);
     if (precision === 'exact') return '정확한 위치';
     if (precision === 'approximate') return '대략 위치';
-    return '위치 숨김';
+    return '대략 위치';
 }
