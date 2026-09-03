@@ -21,7 +21,9 @@ type ThumbnailIndex = {
 
 const CACHE_DIRECTORY_NAME = "ikkyee-thumbnails";
 const INDEX_FILE_NAME = "index.json";
-const THUMBNAIL_LONG_EDGE = 512;
+const THUMBNAIL_CACHE_VERSION = "v2";
+const THUMBNAIL_LONG_EDGE = 640;
+const THUMBNAIL_JPEG_QUALITY = 0.78;
 
 function emptyIndex(): ThumbnailIndex {
   return { version: 1, entries: {} };
@@ -174,7 +176,7 @@ const expoThumbnailRenderer: ThumbnailRenderer = {
     }
     const image = await context.renderAsync();
     try {
-      const result = await image.saveAsync({ compress: 0.72, format: SaveFormat.JPEG });
+      const result = await image.saveAsync({ compress: THUMBNAIL_JPEG_QUALITY, format: SaveFormat.JPEG });
       const file = new File(result.uri);
       return { uri: result.uri, byteSize: file.size };
     } finally {
@@ -185,7 +187,7 @@ const expoThumbnailRenderer: ThumbnailRenderer = {
 };
 
 export const devicePhotoThumbnailCache = createThumbnailCache({
-  keyForAsset: (assetId) => digestStringAsync(CryptoDigestAlgorithm.SHA256, assetId),
+  keyForAsset: (assetId) => digestStringAsync(CryptoDigestAlgorithm.SHA256, `${THUMBNAIL_CACHE_VERSION}:${assetId}`),
   renderer: expoThumbnailRenderer,
   storage: new ExpoThumbnailCacheStorage()
 });

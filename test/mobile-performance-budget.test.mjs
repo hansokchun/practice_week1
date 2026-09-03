@@ -70,7 +70,7 @@ test("mobile performance budget is wired to package scripts and CI production ex
   assert.match(workflow, /npm run export:all[\s\S]*npm run performance:verify/u);
   assert.equal(policy.version, 1);
   assert.equal(policy.runtime.thumbnailCacheBytes, 512 * 1024 * 1024);
-  assert.equal(policy.runtime.thumbnailLongEdge, 512);
+  assert.equal(policy.runtime.thumbnailLongEdge, 640);
   assert.equal(policy.runtime.publicationLongEdge, 2048);
   assert.equal(policy.runtime.explorePageSize, 20);
 });

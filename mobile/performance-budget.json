@@ -9,7 +9,7 @@
   },
   "runtime": {
     "thumbnailCacheBytes": 536870912,
-    "thumbnailLongEdge": 512,
+    "thumbnailLongEdge": 640,
     "publicationLongEdge": 2048,
     "thumbnailConcurrency": 4,
     "thumbnailMaximumConcurrency": 8,
