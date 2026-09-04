@@ -59,7 +59,7 @@ test('email start choice reveals the email form while auth modal opens collapsed
     assert.match(appSource, /function resetAuthModal\(\)/);
     assert.match(appSource, /function showEmailAuthForm\(\)/);
     assert.match(appSource, /function setAuthMode\(mode\)/);
-    assert.match(appSource, /if \(id === '#auth-modal'\) resetAuthModal\(\);/);
+    assert.match(appSource, /if \(id === '#auth-modal'\) \{[^}]*resetAuthModal\(\);[^}]*\}/s);
     assert.match(appSource, /#btn-email-start'\)\?\.addEventListener\('click', showEmailAuthForm\)/);
     assert.match(appSource, /#btn-signup'\)\?\.addEventListener\('click', \(\) => setAuthMode\('signup'\)\)/);
     assert.match(appSource, /#btn-switch-login'\)\?\.addEventListener\('click', \(\) => setAuthMode\('login'\)\)/);
@@ -72,6 +72,13 @@ test('email form submit logs in or signs up based on the selected auth mode', ()
 
     assert.match(body, /if \(state\.authMode === 'signup'\) \{\s*await handleSignup\(\);\s*return;\s*\}/s);
     assert.match(body, /await signInWithEmail\(email, password, \{/s);
+    assert.match(body, /await runPendingAuthAction\(\)/);
+});
+
+test('auth modal and every successful login preserve the page that opened login', () => {
+    assert.match(appSource, /if \(id === '#auth-modal'\) \{\s*setPendingAuthReturnRoute\(state, getCurrentRoute\(\)\);\s*resetAuthModal\(\);\s*\}/s);
+    assert.match(appSource, /const returnRoute = takePendingAuthReturnRoute\(state\);/);
+    assert.match(appSource, /if \(returnRoute\) routeTo\(returnRoute\);/);
 });
 
 test('email signup waits for verification instead of opening the app as a logged-in user', () => {

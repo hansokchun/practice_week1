@@ -6,8 +6,22 @@ const PENDING_AUTH_TTL_MS = 15 * 60 * 1000;
 export function createPendingAuthState() {
     return {
         pendingAuthAction: null,
-        pendingAuthRoute: null
+        pendingAuthRoute: null,
+        pendingAuthReturnRoute: null
     };
+}
+
+export function setPendingAuthReturnRoute(state, route) {
+    state.pendingAuthReturnRoute = typeof route === 'string' && route ? route : null;
+    return state.pendingAuthReturnRoute;
+}
+
+export function takePendingAuthReturnRoute(state) {
+    const route = typeof state.pendingAuthReturnRoute === 'string' && state.pendingAuthReturnRoute
+        ? state.pendingAuthReturnRoute
+        : null;
+    state.pendingAuthReturnRoute = null;
+    return route;
 }
 
 export function setPendingAuthAction(state, action) {
@@ -64,6 +78,7 @@ export function restorePendingAuthContext(storage, state, now = Date.now()) {
         if (!action && !pendingRoute && !route) return null;
         state.pendingAuthAction = action;
         state.pendingAuthRoute = pendingRoute;
+        state.pendingAuthReturnRoute = route;
         return {
             action,
             route,

@@ -96,8 +96,10 @@ import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
     restorePendingAuthContext,
+    setPendingAuthReturnRoute,
     setPendingAuthAction,
     storePendingAuthContext,
+    takePendingAuthReturnRoute,
     takePendingAuthAction
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
@@ -300,6 +302,7 @@ const state = {
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     pendingAuthRoute: null,
+    pendingAuthReturnRoute: null,
     exploreZoom: 7,
     exploreMap: null,
     exploreMapResizeObserver: null,
@@ -931,7 +934,10 @@ function getModalFocusableElements(modal) {
 function openModal(id) {
     const modal = $(id);
     if (!modal) return;
-    if (id === '#auth-modal') resetAuthModal();
+    if (id === '#auth-modal') {
+        setPendingAuthReturnRoute(state, getCurrentRoute());
+        resetAuthModal();
+    }
     if (document.activeElement instanceof HTMLElement && !document.activeElement.closest('.modal')) {
         lastModalTrigger = document.activeElement;
     }
@@ -7382,6 +7388,7 @@ async function handleSocialLogin(provider) {
 }
 
 async function runPendingAuthAction() {
+    const returnRoute = takePendingAuthReturnRoute(state);
     const route = takePendingAuthRoute(state);
     if (route) {
         routeTo(route);
@@ -7396,7 +7403,11 @@ async function runPendingAuthAction() {
         await saveAlbumAndOpenDetail();
         return;
     }
-    if (action === 'save-share') await saveShareSettings();
+    if (action === 'save-share') {
+        await saveShareSettings();
+        return;
+    }
+    if (returnRoute) routeTo(returnRoute);
 }
 
 function bindEvents() {

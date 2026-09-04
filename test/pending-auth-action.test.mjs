@@ -6,8 +6,10 @@ import {
     createPendingAuthState,
     getPendingAuthAction,
     restorePendingAuthContext,
+    setPendingAuthReturnRoute,
     setPendingAuthAction,
     storePendingAuthContext,
+    takePendingAuthReturnRoute,
     takePendingAuthAction
 } from '../js/pending-auth-action.mjs';
 
@@ -29,6 +31,14 @@ test('takePendingAuthAction returns and clears the saved action', () => {
 
     assert.equal(takePendingAuthAction(state), 'save-share');
     assert.equal(takePendingAuthAction(state), null);
+});
+
+test('login return route preserves the page where the auth modal opened', () => {
+    const state = createPendingAuthState();
+
+    assert.equal(setPendingAuthReturnRoute(state, 'home'), 'home');
+    assert.equal(takePendingAuthReturnRoute(state), 'home');
+    assert.equal(takePendingAuthReturnRoute(state), null);
 });
 
 test('pending auth context can be stored and restored after OAuth redirect', () => {
@@ -96,6 +106,7 @@ test('OAuth login preserves the current public route without a pending action', 
         albumId: null,
         pendingRoute: null
     });
+    assert.equal(restored.pendingAuthReturnRoute, 'explore');
 });
 
 test('stale OAuth context is discarded after the mobile handoff window', () => {
