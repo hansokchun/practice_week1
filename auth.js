@@ -27,7 +27,7 @@ const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_s
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
 const LANDING_SECTION_SELECT_COLUMNS = 'id,title,description,sort_order,is_visible,created_at,updated_at';
 const LANDING_SECTION_PHOTO_SELECT_COLUMNS = 'section_id,photo_id,sort_order';
-const LANDING_HERO_PHOTO_SELECT_COLUMNS = 'photo_id,sort_order';
+const LANDING_HERO_PHOTO_SELECT_COLUMNS = 'photo_id,sort_order,location_label';
 const PRODUCT_FEEDBACK_SELECT_COLUMNS = 'id,user_id,category,message,rating,page_path,contact_allowed,status,created_at,updated_at';
 
 let _supabaseClient = null;
@@ -328,20 +328,41 @@ export async function fetchLandingCuration() {
         return {
             sections: sections || [],
             assignments: assignments || [],
+            heroSlides: (heroPhotos || []).map((item) => ({
+                photoId: String(item.photo_id),
+                locationLabel: String(item.location_label || '').trim()
+            })),
             heroPhotoIds: (heroPhotos || []).map((item) => String(item.photo_id)),
             error: null
         };
     } catch (error) {
-        return { sections: [], assignments: [], heroPhotoIds: [], error };
+        return { sections: [], assignments: [], heroSlides: [], heroPhotoIds: [], error };
     }
 }
 
-export async function saveLandingHeroSlides(photoIds = []) {
+export async function saveLandingHeroSlides(slides = []) {
     try {
         const sb = getSupabase();
-        const normalizedIds = [...new Set(photoIds.map(String).filter(Boolean))].slice(0, 5);
+        const seen = new Set();
+        const normalizedSlides = slides.map((slide) => (
+            typeof slide === 'string'
+                ? { photoId: slide, locationLabel: '' }
+                : { photoId: slide?.photoId || slide?.photo_id, locationLabel: slide?.locationLabel || slide?.location_label }
+        )).map((slide) => ({
+            photoId: String(slide.photoId || '').trim(),
+            locationLabel: String(slide.locationLabel || '').trim().slice(0, 80)
+        })).filter((slide) => {
+            if (!slide.photoId || seen.has(slide.photoId)) return false;
+            seen.add(slide.photoId);
+            return true;
+        }).slice(0, 5);
+        const normalizedIds = normalizedSlides.map((slide) => slide.photoId);
         if (normalizedIds.length) {
-            const rows = normalizedIds.map((photoId, sortOrder) => ({ photo_id: photoId, sort_order: sortOrder }));
+            const rows = normalizedSlides.map((slide, sortOrder) => ({
+                photo_id: slide.photoId,
+                sort_order: sortOrder,
+                location_label: String(slide?.locationLabel || '').trim().slice(0, 80)
+            }));
             const { error: upsertError } = await sb
                 .from('landing_hero_photos')
                 .upsert(rows, { onConflict: 'photo_id' });

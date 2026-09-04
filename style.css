@@ -171,10 +171,33 @@ body {
     align-items: center;
     gap: 10px;
     margin: 0;
+    pointer-events: auto;
+    border: 0;
+    background: transparent;
     color: rgba(255, 255, 255, 0.9);
+    font-family: inherit;
     font-size: 17px;
     font-weight: 700;
+    padding: 6px 8px;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: color 160ms ease, transform 160ms ease;
+}
+
+#landing-hero-caption:hover,
+#landing-hero-caption:focus-visible {
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+#landing-hero-caption:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 3px;
+}
+
+#landing-hero-caption:disabled {
+    opacity: 0;
+    cursor: default;
 }
 
 .landing-hero-caption-pin {
@@ -1922,6 +1945,28 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
 #landing-admin-hero-photos .admin-selected-photo {
     grid-template-columns: 48px minmax(0, 1fr) auto auto auto;
+}
+
+.admin-hero-location-field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.admin-hero-location-field > span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.admin-hero-location-field input {
+    width: 100%;
+    min-height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--text);
+    padding: 0 9px;
 }
 
 .admin-landing-section {

@@ -362,6 +362,7 @@ const state = {
     landingSections: getDefaultLandingSections(),
     landingAssignments: [],
     landingHeroPhotoIds: [],
+    landingHeroLocationLabels: {},
     hasLoadedLandingCuration: false,
     landingVisibleCounts: {},
     landingSearchQuery: '',
@@ -1032,7 +1033,7 @@ function renderLandingHeroSlides() {
         const photoId = String(photo.id || photo.localId || '');
         const priority = index === 0 ? 'fetchpriority="high"' : 'loading="lazy"';
         return `
-            <figure class="landing-hero-slide ${index === 0 ? 'is-active' : ''}" data-landing-slide-label="${escapeHtml(getLandingPhotoLabel(photo))}">
+            <figure class="landing-hero-slide ${index === 0 ? 'is-active' : ''}" data-landing-slide-photo-id="${escapeHtml(photoId)}" data-landing-slide-location="${escapeHtml(getLandingHeroLocationLabel(photo))}">
                 <img src="${escapeHtml(getPhotoImageSrc(photo))}" data-i="${escapeHtml(photoId)}" alt="" ${priority} decoding="async">
             </figure>`;
     }).join('');
@@ -1044,6 +1045,18 @@ function renderLandingHeroSlides() {
 
 function getLandingPhotoLabel(photo) {
     return String(photo.placeName || photo.description || photo.title || photo.album || '여행 사진').trim();
+}
+
+function getLandingHeroLocationLabel(photo = {}) {
+    const photoId = String(photo.id || photo.localId || '');
+    return String(
+        state.landingHeroLocationLabels[photoId]
+        || photo.placeName
+        || photo.title
+        || photo.description
+        || photo.album
+        || (hasPhotoLocation(photo) ? '위치가 기록된 사진' : '위치 정보 없음')
+    ).trim();
 }
 
 function renderLandingPhotoCard(photo) {
@@ -1114,9 +1127,12 @@ function centerLandingRowsOnMobile() {
 }
 
 async function loadLandingCuration() {
-    const { sections, assignments, heroPhotoIds, error } = await fetchLandingCuration();
+    const { sections, assignments, heroSlides, heroPhotoIds, error } = await fetchLandingCuration();
     if (!error) {
         state.landingHeroPhotoIds = heroPhotoIds;
+        state.landingHeroLocationLabels = Object.fromEntries(
+            (heroSlides || []).map((slide) => [String(slide.photoId), String(slide.locationLabel || '').trim()])
+        );
     }
     if (!error && sections.length) {
         state.landingAssignments = assignments;
@@ -1231,7 +1247,10 @@ function renderLandingAdminHeroForm() {
         return `
             <div class="admin-selected-photo" data-admin-hero-selected="${escapeHtml(photoId)}">
                 <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
-                <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
+                <label class="admin-hero-location-field">
+                    <span>지역명</span>
+                    <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 도쿄 분쿄">
+                </label>
                 <button data-admin-hero-move="previous" type="button" aria-label="슬라이드를 앞으로 이동" ${index === 0 ? 'disabled' : ''}>↑</button>
                 <button data-admin-hero-move="next" type="button" aria-label="슬라이드를 뒤로 이동" ${index === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
                 <button data-admin-hero-remove type="button" aria-label="슬라이드에서 제거">삭제</button>
@@ -1254,6 +1273,18 @@ function renderLandingAdminHeroForm() {
         <div class="admin-photo-picker" aria-label="첫 화면에 사용할 좋아요한 공개 사진 선택">
             ${pickerMarkup || '<p>지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다.</p>'}
         </div>`;
+    container.querySelectorAll('[data-admin-hero-location-label]').forEach((input) => {
+        input.addEventListener('input', () => {
+            state.landingHeroLocationLabels[input.dataset.adminHeroLocationLabel] = input.value.slice(0, 80);
+        });
+    });
+}
+
+function getLandingHeroSlidesToSave() {
+    return state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT).map((photoId) => ({
+        photoId,
+        locationLabel: state.landingHeroLocationLabels[photoId] || ''
+    }));
 }
 
 function syncLandingAdminDrafts() {
@@ -1294,7 +1325,7 @@ async function saveLandingAdminForm(event) {
     if (!isLandingAdmin(state.currentUser)) return;
     const fieldsets = $$('[data-admin-landing-section]');
     if (message) message.textContent = '메인 구성을 저장하는 중입니다…';
-    const { error: heroError } = await saveLandingHeroSlides(state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT));
+    const { error: heroError } = await saveLandingHeroSlides(getLandingHeroSlidesToSave());
     if (heroError) {
         if (message) message.textContent = heroError.message || '첫 화면 슬라이드를 저장하지 못했습니다.';
         return;
@@ -6060,8 +6091,15 @@ function syncLandingHeroSlide(index) {
     landingHeroIndex = Math.min(Math.max(Number(index) || 0, 0), slides.length - 1);
     const activeSlide = slides[landingHeroIndex];
     slides.forEach((slide, slideIndex) => slide.classList.toggle('is-active', slideIndex === landingHeroIndex));
+    const caption = $('#landing-hero-caption');
     const place = $('[data-landing-caption-place]');
-    if (place) place.textContent = activeSlide.dataset.landingSlideLabel || '';
+    const locationLabel = activeSlide.dataset.landingSlideLocation || '';
+    if (place) place.textContent = locationLabel;
+    if (caption) {
+        caption.dataset.landingCaptionPhotoId = activeSlide.dataset.landingSlidePhotoId || '';
+        caption.disabled = !caption.dataset.landingCaptionPhotoId;
+        caption.setAttribute('aria-label', `${locationLabel || '현재 사진'} 상세 보기`);
+    }
     const nextIndex = getNextLandingSlideIndex(landingHeroIndex, slides.length);
     const nextImage = slides[nextIndex]?.querySelector('img');
     if (nextImage) nextImage.loading = 'eager';
@@ -7556,6 +7594,18 @@ function bindEvents() {
             setAccountMenuOpen(false);
             if (accountRouteButton.dataset.accountRoute === 'profile') openAccountProfilePage();
             else routeTo(accountRouteButton.dataset.accountRoute);
+            return;
+        }
+
+        const landingCaptionButton = event.target.closest('[data-landing-caption-photo-id]');
+        if (landingCaptionButton) {
+            const photo = getLandingPublicPhotos().find((candidate) => (
+                String(candidate.id || candidate.localId) === landingCaptionButton.dataset.landingCaptionPhotoId
+            ));
+            if (photo) {
+                updatePhotoDetailModal(photo, { context: 'explore' });
+                openModal('#photo-detail-modal');
+            }
             return;
         }
 
