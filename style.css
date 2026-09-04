@@ -48,6 +48,19 @@ body {
     letter-spacing: 0;
 }
 
+img[data-photo-reveal] {
+    opacity: 1;
+    transition: opacity 180ms ease-out;
+}
+
+img[data-photo-reveal]:not(.is-photo-ready) {
+    opacity: 0;
+}
+
+img[data-photo-reveal].is-photo-ready {
+    opacity: 1;
+}
+
 /* Full-screen entry landing and shared header */
 .site-header-inner {
     grid-template-columns: minmax(0, 1fr) auto;

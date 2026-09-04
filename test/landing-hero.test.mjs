@@ -42,8 +42,8 @@ test('landing waits for curated photos instead of flashing sample slides', () =>
     assert.match(css, /body\[data-page="landing"\]\s+\.site-header\s*\{[^}]*background:\s*transparent;/s);
 });
 
-test('landing slideshow advances every five seconds and wraps around', () => {
-    assert.equal(LANDING_SLIDE_INTERVAL_MS, 5_000);
+test('landing slideshow advances every ten seconds and wraps around', () => {
+    assert.equal(LANDING_SLIDE_INTERVAL_MS, 10_000);
     assert.equal(getNextLandingSlideIndex(0, 5), 1);
     assert.equal(getNextLandingSlideIndex(4, 5), 0);
     assert.equal(getNextLandingSlideIndex(2, 0), 0);
@@ -56,6 +56,7 @@ test('admins can select and order up to five server photos for the landing slide
     assert.match(app, /function renderLandingAdminHeroForm\(\)/);
     assert.match(app, /function renderLandingHeroSlides\(\)/);
     assert.match(app, /saveLandingHeroSlides\(getLandingHeroSlidesToSave\(\)\)/);
+    assert.match(app, /data-admin-hero-location-label="\$\{escapeHtml\(photoId\)\}"[^>]*placeholder="예: 일본 · 도쿄" required/);
     assert.match(auth, /from\('landing_hero_photos'\)/);
     assert.match(auth, /LANDING_HERO_PHOTO_SELECT_COLUMNS = 'photo_id,sort_order,location_label'/);
     assert.match(auth, /location_label:\s*String\(slide\?\.locationLabel/);

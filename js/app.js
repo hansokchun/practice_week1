@@ -501,12 +501,80 @@ function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'au
     const photoId = escapeHtml(photo.id || photo.localId || '');
     const priority = ['high', 'low'].includes(fetchPriority) ? ` fetchpriority="${fetchPriority}"` : '';
     const source = src ? ` src="${src}"` : '';
-    return `<img${source} data-i="${photoId}" alt="${alt}" loading="lazy" decoding="async"${priority}>`;
+    return `<img${source} data-i="${photoId}" data-photo-reveal alt="${alt}" loading="lazy" decoding="async"${priority}>`;
 }
 
 const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
 const PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000;
 const LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS = 15000;
+
+function isPhotoImageRevealCandidate(image) {
+    return image instanceof HTMLImageElement
+        && !image.hasAttribute('aria-hidden')
+        && Boolean(image.closest('.page, .modal'));
+}
+
+function preparePhotoImageReveal(image) {
+    if (!isPhotoImageRevealCandidate(image)) return;
+    image.setAttribute('data-photo-reveal', '');
+    const source = image.getAttribute('src') || '';
+    const loadId = `${Date.now()}-${Math.random()}`;
+    image.dataset.photoRevealLoadId = loadId;
+    image.classList.remove('is-photo-ready', 'is-photo-error');
+
+    const settle = async () => {
+        if (image.dataset.photoRevealLoadId !== loadId) return;
+        if (typeof image.decode === 'function') {
+            try {
+                await image.decode();
+            } catch {
+                // The dimensions below determine whether the current source is usable.
+            }
+        }
+        if (image.dataset.photoRevealLoadId !== loadId || image.getAttribute('src') !== source) return;
+        const isReady = image.complete && image.naturalWidth > 0;
+        if (isReady) {
+            image.classList.remove('is-photo-error');
+            image.classList.add('is-photo-ready');
+        } else {
+            image.classList.remove('is-photo-ready');
+            image.classList.add('is-photo-error');
+        }
+    };
+
+    if (!source) return;
+    if (image.complete) {
+        void settle();
+        return;
+    }
+    image.addEventListener('load', () => { void settle(); }, { once: true });
+    image.addEventListener('error', () => { void settle(); }, { once: true });
+}
+
+function preparePhotoImagesInNode(node) {
+    if (!(node instanceof Element)) return;
+    if (node instanceof HTMLImageElement) preparePhotoImageReveal(node);
+    node.querySelectorAll?.('img').forEach(preparePhotoImageReveal);
+}
+
+function initializePhotoImageReveal() {
+    preparePhotoImagesInNode(document.body);
+    const observer = new MutationObserver((records) => {
+        records.forEach((record) => {
+            if (record.type === 'attributes') {
+                preparePhotoImageReveal(record.target);
+                return;
+            }
+            record.addedNodes.forEach(preparePhotoImagesInNode);
+        });
+    });
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['src']
+    });
+}
 
 function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
     if (!container) return;
@@ -1257,7 +1325,7 @@ function renderLandingAdminHeroForm() {
                 <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
                 <label class="admin-hero-location-field">
                     <span>지역명</span>
-                    <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 일본 · 도쿄">
+                    <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 일본 · 도쿄" required>
                 </label>
                 <button data-admin-hero-move="previous" type="button" aria-label="슬라이드를 앞으로 이동" ${index === 0 ? 'disabled' : ''}>↑</button>
                 <button data-admin-hero-move="next" type="button" aria-label="슬라이드를 뒤로 이동" ${index === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
@@ -8463,6 +8531,7 @@ function bindEvents() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    initializePhotoImageReveal();
     try {
         const restoredAuthContext = restorePendingAuthContext(window.localStorage, state);
         if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
