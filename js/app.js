@@ -241,6 +241,7 @@ import {
     LANDING_SLIDE_INTERVAL_MS,
     getNextLandingSlideIndex
 } from './landing-slideshow.mjs';
+import { normalizeLandingHeroLocationLabel } from './landing-location-label.mjs';
 import {
     buildLandingTagHash,
     canOpenLandingTagPage,
@@ -1058,14 +1059,12 @@ function getLandingPhotoLabel(photo) {
 
 function getLandingHeroLocationLabel(photo = {}) {
     const photoId = String(photo.id || photo.localId || '');
-    return String(
+    const locationLabel = normalizeLandingHeroLocationLabel(
         state.landingHeroLocationLabels[photoId]
         || photo.placeName
-        || photo.title
-        || photo.description
-        || photo.album
-        || (hasPhotoLocation(photo) ? '위치가 기록된 사진' : '위치 정보 없음')
-    ).trim();
+    );
+    if (locationLabel) return locationLabel;
+    return hasPhotoLocation(photo) ? '위치가 기록된 사진' : '위치 정보 없음';
 }
 
 function renderLandingPhotoCard(photo) {
@@ -1258,7 +1257,7 @@ function renderLandingAdminHeroForm() {
                 <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
                 <label class="admin-hero-location-field">
                     <span>지역명</span>
-                    <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 도쿄 분쿄">
+                    <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 일본 · 도쿄">
                 </label>
                 <button data-admin-hero-move="previous" type="button" aria-label="슬라이드를 앞으로 이동" ${index === 0 ? 'disabled' : ''}>↑</button>
                 <button data-admin-hero-move="next" type="button" aria-label="슬라이드를 뒤로 이동" ${index === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
@@ -1292,7 +1291,7 @@ function renderLandingAdminHeroForm() {
 function getLandingHeroSlidesToSave() {
     return state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT).map((photoId) => ({
         photoId,
-        locationLabel: state.landingHeroLocationLabels[photoId] || ''
+        locationLabel: normalizeLandingHeroLocationLabel(state.landingHeroLocationLabels[photoId] || '')
     }));
 }
 

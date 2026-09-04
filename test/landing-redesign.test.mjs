@@ -50,7 +50,7 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
     assert.match(css, /\.landing-search-hero h1\s*\{[^}]*font-size:\s*clamp\(40px,\s*4vw,\s*56px\);/s);
     assert.match(css, /\.landing-search-hero h1\s*\{[^}]*word-break:\s*keep-all;/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*filter:\s*blur\(0\.6px\) saturate\(0\.92\) brightness\(0\.96\) contrast\(1\.04\)/s);
+    assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*blur\(0\.35px\) saturate\(1\.02\) brightness\(0\.94\) contrast\(1\.13\);[^}]*mix-blend-mode:\s*multiply;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*mask-image:\s*linear-gradient\(to bottom,/s);
     assert.match(css, /linear-gradient\(to right, transparent 0%, #000 8%, #000 92%, transparent 100%\)/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*84px 16px 44px;/s);
