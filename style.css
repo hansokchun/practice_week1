@@ -1672,10 +1672,20 @@ body.is-logged-in #btn-open-auth {
 }
 
 #landing-map-footer-title {
+    display: grid;
+    width: max-content;
     font-size: clamp(30px, 3.4vw, 48px);
     font-weight: 800;
     line-height: 1.35;
     word-break: keep-all;
+}
+
+#landing-map-footer-title > span {
+    display: block;
+}
+
+#landing-map-footer-title > span:last-child {
+    padding-left: clamp(32px, 5vw, 72px);
 }
 
 .landing-map-footer-action {
@@ -2403,6 +2413,15 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
         gap: 14px;
         width: 100%;
         text-align: left;
+    }
+
+    #landing-map-footer-title {
+        max-width: 100%;
+        font-size: clamp(26px, 8vw, 30px);
+    }
+
+    #landing-map-footer-title > span:last-child {
+        padding-left: clamp(20px, 8vw, 32px);
     }
 
     .landing-section-toolbar {
@@ -8619,13 +8638,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .landing-tag-gallery-title-line {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
     min-width: 0;
-    color: var(--muted);
-    font-size: 16px;
-    font-weight: 800;
 }
 
 .landing-tag-gallery-title-line h1 {
@@ -8772,13 +8785,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     }
 
     .landing-tag-gallery-title-line {
-        flex-wrap: wrap;
-        gap: 7px;
-        font-size: 13px;
+        min-width: 0;
     }
 
     .landing-tag-gallery-title-line h1 {
-        flex-basis: 100%;
         font-size: 42px;
     }
 

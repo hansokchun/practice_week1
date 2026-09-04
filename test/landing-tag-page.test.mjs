@@ -51,6 +51,8 @@ test('landing topic page is a map-free regional gallery with thirty desktop phot
     assert.match(pageSource, /data-landing-tag-page="previous"/);
     assert.match(pageSource, /data-landing-tag-page="next"/);
     assert.match(pageSource, /class="back-link" data-route="\$\{APP_SECTIONS\.HOME\}"/);
+    assert.doesNotMatch(pageSource, /regionPhotos\.length\}장의 사진/);
+    assert.doesNotMatch(pageSource, /regions\.length\}개 지역/);
     assert.match(pageSource, /page\.setAttribute\('data-landing-tag-section'/);
     assert.doesNotMatch(pageSource, /page\.setAttribute\('data-landing-tag-page'/);
     assert.match(pageSource, /revealPhotoThumbnailGridWhenReady\(grid, \{ atomic: true \}\)/);

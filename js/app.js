@@ -4081,10 +4081,6 @@ function renderLandingTagPage() {
                 </button>
                 <div class="landing-tag-gallery-title-line">
                     <h1>${escapeHtml(section.title)}</h1>
-                    <span aria-hidden="true">·</span>
-                    <span>${regionPhotos.length}장의 사진</span>
-                    <span aria-hidden="true">·</span>
-                    <span>${regions.length}개 지역</span>
                 </div>
                 <nav class="landing-tag-region-filters" aria-label="지역별 사진 필터">
                     ${renderLandingTagRegionButton('', '전체')}

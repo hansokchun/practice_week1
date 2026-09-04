@@ -105,7 +105,8 @@ test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 �
     const footer = html.match(/<button id="landing-map-footer"[\s\S]*?<\/button>/)?.[0] ?? '';
     assert.match(footer, /class="landing-map-footer page-container"[^>]*data-route="explore"/);
     assert.doesNotMatch(footer, /landing-map-footer-eyebrow|지도 탐색/);
-    assert.match(footer, /id="landing-map-footer-title"[\s\S]*?지도에서,[\s\S]*?기억에 남을 장소를 발견해보세요\./);
+    assert.match(footer, /id="landing-map-footer-title"[\s\S]*?<span>기억에 남을<\/span>[\s\S]*?<span>장소를 발견해보세요\.<\/span>/);
+    assert.doesNotMatch(footer, /지도에서,/);
     assert.match(footer, /class="landing-map-footer-action"[\s\S]*?>지도에서 보기<\/span>[\s\S]*?>arrow_forward<\/span>/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*justify-items:\s*start;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*filter:\s*saturate\(1\.08\) contrast\(1\.08\) brightness\(0\.88\);[^}]*mask-image:\s*linear-gradient/s);
@@ -118,6 +119,7 @@ test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 �
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*#fff;[^}]*cursor:\s*pointer;/s);
     assert.doesNotMatch(css, /\.landing-map-footer \.btn-primary/);
     assert.match(css, /#landing-map-footer-title\s*\{[^}]*font-size:\s*clamp\(30px,\s*3\.4vw,\s*48px\);/s);
+    assert.match(css, /#landing-map-footer-title > span:last-child\s*\{[^}]*padding-left:\s*clamp\(32px,\s*5vw,\s*72px\);/s);
 });
 
 test('지도 CTA 시안 갤러리는 최종 디자인 적용 후 제거한다', async () => {
