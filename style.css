@@ -9843,6 +9843,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-meta > span,
 .photo-detail-meta > a {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 12px;
@@ -9871,6 +9872,35 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .photo-detail-meta > a.is-link:hover .material-symbols-outlined,
 .photo-detail-meta > a.is-link:focus-visible .material-symbols-outlined {
     color: var(--primary);
+}
+
+.photo-detail-meta > a.is-link::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% - 2px);
+    left: 32px;
+    z-index: 6;
+    width: max-content;
+    max-width: min(220px, calc(100vw - 48px));
+    border-radius: 6px;
+    background: var(--teal-dark);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 54, 55, 0.18);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0;
+    padding: 8px 10px;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 140ms ease, transform 140ms ease;
+    white-space: nowrap;
+}
+
+.photo-detail-meta > a.is-link:hover::after,
+.photo-detail-meta > a.is-link:focus-visible::after {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .photo-detail-meta .material-symbols-outlined {
@@ -10197,16 +10227,24 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    height: 44px;
     gap: 7px;
     min-height: 42px;
     line-height: 1;
-    padding-block: 0;
+    padding: 0 18px;
 }
 
-.detail-actions [data-show-photo-on-map] > span:not(.material-symbols-outlined) {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1.2;
+.detail-actions [data-show-photo-on-map] > span {
+    display: grid;
+    place-items: center;
+    height: 20px;
+    line-height: 1;
+}
+
+.detail-actions [data-show-photo-on-map] > .material-symbols-outlined {
+    width: 20px;
+    font-size: 20px;
 }
 
 .photo-fullscreen-modal {

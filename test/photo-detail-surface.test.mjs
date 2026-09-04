@@ -26,7 +26,19 @@ test('photo detail presents a concise AI analysis heading and vertically centere
     const css = readFileSync('style.css', 'utf8');
 
     assert.match(html, /id="photo-detail-ai-status">AI 분석<\/strong>/);
-    assert.match(css, /\.detail-actions \[data-show-photo-on-map\]\s*\{[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s);
+    assert.match(css, /\.detail-actions \[data-show-photo-on-map\]\s*\{[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*width:\s*100%;[^}]*height:\s*44px;/s);
+    assert.match(css, /\.detail-actions \[data-show-photo-on-map\] > span\s*\{[^}]*display:\s*grid;[^}]*place-items:\s*center;[^}]*height:\s*20px;/s);
+});
+
+test('photo detail coordinate link previews its Google Maps destination on hover and focus', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const css = readFileSync('style.css', 'utf8');
+
+    assert.match(source, /placeMeta\.dataset\.tooltip = 'Google 지도에서 보기'/);
+    assert.match(source, /placeMeta\.setAttribute\('aria-label', `\$\{locationLabel\}, Google 지도에서 보기`\)/);
+    assert.match(source, /delete placeMeta\.dataset\.tooltip/);
+    assert.match(css, /\.photo-detail-meta > a\.is-link::after\s*\{[^}]*content:\s*attr\(data-tooltip\);[^}]*opacity:\s*0;/s);
+    assert.match(css, /\.photo-detail-meta > a\.is-link:hover::after,[\s\S]*\.photo-detail-meta > a\.is-link:focus-visible::after\s*\{[^}]*opacity:\s*1;/s);
 });
 
 test('photo detail surface leads with description and compact info before the map', () => {

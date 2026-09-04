@@ -2607,11 +2607,13 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         if (googleMapsLocationUrl) {
             placeMeta.href = googleMapsLocationUrl;
             placeMeta.tabIndex = 0;
+            placeMeta.dataset.tooltip = 'Google 지도에서 보기';
             placeMeta.removeAttribute('aria-disabled');
-            placeMeta.setAttribute('aria-label', `${locationLabel} Google 지도에서 열기`);
+            placeMeta.setAttribute('aria-label', `${locationLabel}, Google 지도에서 보기`);
         } else {
             placeMeta.removeAttribute('href');
             placeMeta.tabIndex = -1;
+            delete placeMeta.dataset.tooltip;
             placeMeta.setAttribute('aria-disabled', 'true');
             placeMeta.removeAttribute('aria-label');
         }
