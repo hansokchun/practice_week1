@@ -1629,10 +1629,11 @@ body.is-logged-in #btn-open-auth {
     content: '';
     position: absolute;
     inset: 0;
+    pointer-events: none;
 }
 
 .landing-map-footer.page-container::before {
-    z-index: -2;
+    z-index: 0;
     background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
     filter: saturate(1.08) contrast(1.08) brightness(0.88);
     transform: scale(1.01);
@@ -1642,7 +1643,7 @@ body.is-logged-in #btn-open-auth {
 }
 
 .landing-map-footer.page-container::after {
-    z-index: -1;
+    z-index: 1;
     background:
         linear-gradient(90deg, rgba(0, 44, 45, 0.82) 0%, rgba(0, 54, 55, 0.48) 52%, rgba(0, 54, 55, 0.12) 100%),
         linear-gradient(180deg, rgba(0, 25, 26, 0.04) 0%, rgba(0, 25, 26, 0.32) 100%);
@@ -1658,6 +1659,7 @@ body.is-logged-in #btn-open-auth {
 
 .landing-map-footer-content {
     position: relative;
+    z-index: 2;
     display: grid;
     justify-items: start;
     gap: 18px;

@@ -111,6 +111,9 @@ test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 �
     assert.match(footer, /class="landing-map-footer-action"[\s\S]*?>지도에서 보기<\/span>[\s\S]*?>arrow_forward<\/span>/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*justify-items:\s*start;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*filter:\s*saturate\(1\.08\) contrast\(1\.08\) brightness\(0\.88\);[^}]*mask-image:\s*linear-gradient/s);
+    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*z-index:\s*0;/s);
+    assert.match(css, /\.landing-map-footer\.page-container::after\s*\{[^}]*z-index:\s*1;/s);
+    assert.match(css, /\.landing-map-footer-content\s*\{[^}]*z-index:\s*2;/s);
     assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*transition:\s*filter 520ms ease-out, transform 700ms ease-out;/s);
     assert.match(css, /\.landing-map-footer:hover::before,[\s\S]*?filter:\s*saturate\(1\.1\) contrast\(1\.09\) brightness\(0\.9\);[^}]*transform:\s*scale\(1\.018\);/s);
     assert.match(css, /\.landing-map-footer-action \.material-symbols-outlined\s*\{[^}]*transition:\s*transform 300ms ease-out;[^}]*\}[\s\S]*?\.landing-map-footer:hover \.landing-map-footer-action \.material-symbols-outlined,[\s\S]*?transform:\s*translateX\(2px\);/s);
