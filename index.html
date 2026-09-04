@@ -383,10 +383,18 @@
                 <button class="back-link" data-route="home" type="button"><span class="material-symbols-outlined">arrow_back</span>메인으로 돌아가기</button>
                 <div class="page-intro">
                     <p class="eyebrow">관리자 전용</p>
-                    <h1 id="admin-landing-title">메인 사진 섹션 구성</h1>
-                    <p>소제목과 설명을 수정하고, 공개 사진 ID를 원하는 순서대로 입력하세요.</p>
+                    <h1 id="admin-landing-title">메인 사진 구성</h1>
+                    <p>첫 화면 슬라이드와 주제별 공개 사진을 선택하고 순서를 조정하세요.</p>
                 </div>
                 <form id="landing-admin-form" class="admin-landing-form">
+                    <section id="landing-admin-hero" class="admin-landing-hero" aria-labelledby="landing-admin-hero-title">
+                        <div>
+                            <p class="eyebrow">첫 화면</p>
+                            <h2 id="landing-admin-hero-title">배경 슬라이드</h2>
+                            <p>서버의 공개 사진 중 최대 5장을 선택할 수 있습니다.</p>
+                        </div>
+                        <div id="landing-admin-hero-photos"></div>
+                    </section>
                     <div id="landing-admin-sections"></div>
                     <div class="admin-landing-actions">
                         <button id="btn-add-landing-section" class="btn-secondary" type="button">섹션 추가</button>

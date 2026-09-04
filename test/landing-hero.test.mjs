@@ -10,6 +10,9 @@ import {
 const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 const app = readFileSync('js/app.js', 'utf8');
+const auth = readFileSync('auth.js', 'utf8');
+const migration = readFileSync('supabase/migrations/20260904100942_add_landing_hero_curation.sql', 'utf8');
+const optimizedRlsMigration = readFileSync('supabase/migrations/20260904101737_optimize_landing_hero_rls.sql', 'utf8');
 
 test('the first route renders a dedicated full-screen landing before the existing main page', () => {
     assert.match(html, /id="page-landing" class="page page-landing active"/);
@@ -37,6 +40,19 @@ test('landing slideshow advances every five seconds and wraps around', () => {
     assert.equal(getNextLandingSlideIndex(0, 5), 1);
     assert.equal(getNextLandingSlideIndex(4, 5), 0);
     assert.equal(getNextLandingSlideIndex(2, 0), 0);
+});
+
+test('admins can select and order up to five server photos for the landing slideshow', () => {
+    assert.match(html, /id="landing-admin-hero"/);
+    assert.match(html, /id="landing-admin-hero-photos"/);
+    assert.match(app, /function renderLandingAdminHeroForm\(\)/);
+    assert.match(app, /function renderLandingHeroSlides\(\)/);
+    assert.match(app, /saveLandingHeroSlides\(state\.landingHeroPhotoIds\.slice\(0, LANDING_HERO_SLIDE_LIMIT\)\)/);
+    assert.match(auth, /from\('landing_hero_photos'\)/);
+    assert.match(migration, /create table if not exists public\.landing_hero_photos/i);
+    assert.match(migration, /alter table public\.landing_hero_photos enable row level security/i);
+    assert.match(migration, /coalesce\(auth\.jwt\(\) -> 'app_metadata' ->> 'role', ''\) = 'admin'/i);
+    assert.match(optimizedRlsMigration, /coalesce\(\(select auth\.jwt\(\)\) -> 'app_metadata' ->> 'role', ''\) = 'admin'/i);
 });
 
 test('landing footer shows only a centered location pin and place without photo order controls', () => {

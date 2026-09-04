@@ -27,6 +27,7 @@ const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_s
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
 const LANDING_SECTION_SELECT_COLUMNS = 'id,title,description,sort_order,is_visible,created_at,updated_at';
 const LANDING_SECTION_PHOTO_SELECT_COLUMNS = 'section_id,photo_id,sort_order';
+const LANDING_HERO_PHOTO_SELECT_COLUMNS = 'photo_id,sort_order';
 const PRODUCT_FEEDBACK_SELECT_COLUMNS = 'id,user_id,category,message,rating,page_path,contact_allowed,status,created_at,updated_at';
 
 let _supabaseClient = null;
@@ -312,15 +313,50 @@ export async function hydratePhotoUrls(photos = []) {
 export async function fetchLandingCuration() {
     try {
         const sb = getSupabase();
-        const [{ data: sections, error: sectionError }, { data: assignments, error: assignmentError }] = await Promise.all([
+        const [
+            { data: sections, error: sectionError },
+            { data: assignments, error: assignmentError },
+            { data: heroPhotos, error: heroPhotoError }
+        ] = await Promise.all([
             sb.from('landing_sections').select(LANDING_SECTION_SELECT_COLUMNS).order('sort_order', { ascending: true }),
-            sb.from('landing_section_photos').select(LANDING_SECTION_PHOTO_SELECT_COLUMNS).order('sort_order', { ascending: true })
+            sb.from('landing_section_photos').select(LANDING_SECTION_PHOTO_SELECT_COLUMNS).order('sort_order', { ascending: true }),
+            sb.from('landing_hero_photos').select(LANDING_HERO_PHOTO_SELECT_COLUMNS).order('sort_order', { ascending: true })
         ]);
         if (sectionError) throw sectionError;
         if (assignmentError) throw assignmentError;
-        return { sections: sections || [], assignments: assignments || [], error: null };
+        if (heroPhotoError) throw heroPhotoError;
+        return {
+            sections: sections || [],
+            assignments: assignments || [],
+            heroPhotoIds: (heroPhotos || []).map((item) => String(item.photo_id)),
+            error: null
+        };
     } catch (error) {
-        return { sections: [], assignments: [], error };
+        return { sections: [], assignments: [], heroPhotoIds: [], error };
+    }
+}
+
+export async function saveLandingHeroSlides(photoIds = []) {
+    try {
+        const sb = getSupabase();
+        const normalizedIds = [...new Set(photoIds.map(String).filter(Boolean))].slice(0, 5);
+        if (normalizedIds.length) {
+            const rows = normalizedIds.map((photoId, sortOrder) => ({ photo_id: photoId, sort_order: sortOrder }));
+            const { error: upsertError } = await sb
+                .from('landing_hero_photos')
+                .upsert(rows, { onConflict: 'photo_id' });
+            if (upsertError) throw upsertError;
+        }
+
+        let deleteQuery = sb.from('landing_hero_photos').delete();
+        deleteQuery = normalizedIds.length
+            ? deleteQuery.not('photo_id', 'in', `(${normalizedIds.map((id) => `"${id}"`).join(',')})`)
+            : deleteQuery.gte('sort_order', 0);
+        const { error: deleteError } = await deleteQuery;
+        if (deleteError) throw deleteError;
+        return { error: null };
+    } catch (error) {
+        return { error };
     }
 }
 
@@ -351,6 +387,12 @@ export async function saveLandingSection(section, photoIds = []) {
         const assignments = [...new Set(photoIds.map(String).filter(Boolean))]
             .map((photoId, sortOrder) => ({ section_id: data.id, photo_id: photoId, sort_order: sortOrder }));
         if (assignments.length) {
+            const { error: duplicateDeleteError } = await sb
+                .from('landing_section_photos')
+                .delete()
+                .in('photo_id', assignments.map((assignment) => assignment.photo_id))
+                .neq('section_id', data.id);
+            if (duplicateDeleteError) throw duplicateDeleteError;
             const { error: assignmentError } = await sb.from('landing_section_photos').insert(assignments);
             if (assignmentError) throw assignmentError;
         }

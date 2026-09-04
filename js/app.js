@@ -32,6 +32,7 @@ import {
     replaceAlbumPhotos,
     removeUploadedImage,
     requestPhotoAiAnalysis,
+    saveLandingHeroSlides,
     saveLandingSection,
     submitProductFeedback,
     updateProductFeedbackStatus,
@@ -353,6 +354,7 @@ const state = {
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
     landingAssignments: [],
+    landingHeroPhotoIds: [],
     hasLoadedLandingCuration: false,
     landingVisibleCounts: {},
     landingSearchQuery: '',
@@ -390,6 +392,7 @@ let turnstileLoadPromise = null;
 let lastModalTrigger = null;
 let landingHeroTimer = null;
 let landingHeroIndex = 0;
+const LANDING_HERO_SLIDE_LIMIT = 5;
 const MODAL_FOCUSABLE_SELECTOR = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function renderActionableFailure(copy, action = 'data-retry-saved-library') {
@@ -992,8 +995,9 @@ function getLandingPublicPhotos() {
         location_precision: 'exact'
     }));
     const albumPhotos = getPublicAlbums().flatMap((album) => album.photos || []);
-    const candidates = [...state.savedPhotos, ...albumPhotos, ...demoPhotos]
+    const serverPhotos = [...state.savedPhotos, ...albumPhotos]
         .filter((photo) => photo?.shared || photo?.visibility === 'public');
+    const candidates = serverPhotos.length ? serverPhotos : demoPhotos;
     const seen = new Set();
     return candidates.filter((photo) => {
         const id = String(photo.id || photo.localId || photo.url || '');
@@ -1001,6 +1005,29 @@ function getLandingPublicPhotos() {
         seen.add(id);
         return true;
     });
+}
+
+function renderLandingHeroSlides() {
+    const container = $('.landing-hero-slides');
+    if (!container || !state.landingHeroPhotoIds.length) return;
+    const photoById = new Map(getLandingPublicPhotos().map((photo) => [String(photo.id || photo.localId || ''), photo]));
+    const slides = state.landingHeroPhotoIds
+        .slice(0, LANDING_HERO_SLIDE_LIMIT)
+        .map((photoId) => photoById.get(String(photoId)))
+        .filter(Boolean);
+    if (!slides.length) return;
+
+    container.innerHTML = slides.map((photo, index) => {
+        const photoId = String(photo.id || photo.localId || '');
+        const priority = index === 0 ? 'fetchpriority="high"' : 'loading="lazy"';
+        return `
+            <figure class="landing-hero-slide ${index === 0 ? 'is-active' : ''}" data-landing-slide-label="${escapeHtml(getLandingPhotoLabel(photo))}">
+                <img src="${escapeHtml(getPhotoImageSrc(photo))}" data-i="${escapeHtml(photoId)}" alt="" ${priority} decoding="async">
+            </figure>`;
+    }).join('');
+    landingHeroIndex = 0;
+    syncLandingHeroSlide(0);
+    setLandingHeroSlideshowActive(document.body.dataset.page === LANDING_ROUTE);
 }
 
 function getLandingPhotoLabel(photo) {
@@ -1075,13 +1102,18 @@ function centerLandingRowsOnMobile() {
 }
 
 async function loadLandingCuration() {
-    const { sections, assignments, error } = await fetchLandingCuration();
+    const { sections, assignments, heroPhotoIds, error } = await fetchLandingCuration();
+    if (!error) {
+        state.landingHeroPhotoIds = heroPhotoIds;
+    }
     if (!error && sections.length) {
         state.landingAssignments = assignments;
         state.landingSections = normalizeLandingSections(sections, assignments, { includeHidden: isLandingAdmin(state.currentUser) });
     }
     state.hasLoadedLandingCuration = true;
+    renderLandingHeroSlides();
     renderLandingSections();
+    if (getCurrentRoute() === 'admin-landing') renderLandingAdminForm();
     if (getCurrentRoute() === 'tag') renderLandingTagPage();
 }
 
@@ -1119,6 +1151,7 @@ function renderLandingAdminForm() {
         routeTo(LANDING_ROUTE, { replace: true });
         return;
     }
+    renderLandingAdminHeroForm();
     const publicPhotos = getLandingPublicPhotos().filter((photo) => !String(photo.id).startsWith('landing-'));
     container.innerHTML = state.landingSections.map((section, index) => {
         const selectedIds = (section.photo_ids || []).slice(0, LANDING_TAG_PIN_LIMIT);
@@ -1162,6 +1195,43 @@ function renderLandingAdminForm() {
         </fieldset>
     `;
     }).join('');
+}
+
+function renderLandingAdminHeroForm() {
+    const container = $('#landing-admin-hero-photos');
+    if (!container || !isLandingAdmin(state.currentUser)) return;
+    const publicPhotos = getLandingPublicPhotos().filter((photo) => !String(photo.id).startsWith('landing-'));
+    const photoById = new Map(publicPhotos.map((photo) => [String(photo.id), photo]));
+    const selectedIds = state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT);
+    const selectedMarkup = selectedIds.map((photoId, index) => {
+        const photo = photoById.get(String(photoId));
+        if (!photo) return '';
+        return `
+            <div class="admin-selected-photo" data-admin-hero-selected="${escapeHtml(photoId)}">
+                <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
+                <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
+                <button data-admin-hero-move="previous" type="button" aria-label="슬라이드를 앞으로 이동" ${index === 0 ? 'disabled' : ''}>↑</button>
+                <button data-admin-hero-move="next" type="button" aria-label="슬라이드를 뒤로 이동" ${index === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
+                <button data-admin-hero-remove type="button" aria-label="슬라이드에서 제거">삭제</button>
+            </div>`;
+    }).join('');
+    const pickerMarkup = publicPhotos.map((photo) => {
+        const photoId = String(photo.id);
+        const selected = selectedIds.includes(photoId);
+        return `
+            <button class="admin-photo-option ${selected ? 'is-selected' : ''}" data-admin-hero-toggle="${escapeHtml(photoId)}" type="button" aria-pressed="${selected}">
+                <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
+                <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
+            </button>`;
+    }).join('');
+    container.innerHTML = `
+        <div class="admin-selected-photos">
+            <strong>선택된 슬라이드 (${selectedIds.length}/${LANDING_HERO_SLIDE_LIMIT})</strong>
+            ${selectedMarkup || '<p>첫 화면에 사용할 공개 사진을 선택하세요.</p>'}
+        </div>
+        <div class="admin-photo-picker" aria-label="첫 화면 슬라이드 사진 선택">
+            ${pickerMarkup || '<p>선택할 수 있는 공개 사진이 없습니다.</p>'}
+        </div>`;
 }
 
 function syncLandingAdminDrafts() {
@@ -1221,6 +1291,11 @@ async function saveLandingAdminForm(event) {
     if (!isLandingAdmin(state.currentUser)) return;
     const fieldsets = $$('[data-admin-landing-section]');
     if (message) message.textContent = '메인 구성을 저장하는 중입니다…';
+    const { error: heroError } = await saveLandingHeroSlides(state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT));
+    if (heroError) {
+        if (message) message.textContent = heroError.message || '첫 화면 슬라이드를 저장하지 못했습니다.';
+        return;
+    }
     for (const [index, fieldset] of fieldsets.entries()) {
         const formData = new FormData();
         fieldset.querySelectorAll('input, textarea, select').forEach((input) => formData.set(input.name, input.value));
@@ -7191,6 +7266,39 @@ function bindEvents() {
             setExplorePhotoScopeMenuOpen(false);
         }
 
+        const adminHeroToggle = event.target.closest('[data-admin-hero-toggle]');
+        if (adminHeroToggle) {
+            const photoId = adminHeroToggle.dataset.adminHeroToggle;
+            if (state.landingHeroPhotoIds.includes(photoId)) {
+                state.landingHeroPhotoIds = state.landingHeroPhotoIds.filter((id) => id !== photoId);
+            } else if (state.landingHeroPhotoIds.length < LANDING_HERO_SLIDE_LIMIT) {
+                state.landingHeroPhotoIds = [...state.landingHeroPhotoIds, photoId];
+            } else {
+                const message = $('#landing-admin-message');
+                if (message) message.textContent = '첫 화면 슬라이드는 최대 5장까지 선택할 수 있습니다.';
+                return;
+            }
+            renderLandingAdminHeroForm();
+            return;
+        }
+
+        const adminHeroAction = event.target.closest('[data-admin-hero-move], [data-admin-hero-remove]');
+        if (adminHeroAction) {
+            const selected = adminHeroAction.closest('[data-admin-hero-selected]');
+            const index = state.landingHeroPhotoIds.indexOf(selected?.dataset.adminHeroSelected);
+            if (index < 0) return;
+            if (adminHeroAction.hasAttribute('data-admin-hero-remove')) {
+                state.landingHeroPhotoIds.splice(index, 1);
+            } else {
+                const targetIndex = index + (adminHeroAction.dataset.adminHeroMove === 'previous' ? -1 : 1);
+                if (targetIndex >= 0 && targetIndex < state.landingHeroPhotoIds.length) {
+                    [state.landingHeroPhotoIds[index], state.landingHeroPhotoIds[targetIndex]] = [state.landingHeroPhotoIds[targetIndex], state.landingHeroPhotoIds[index]];
+                }
+            }
+            renderLandingAdminHeroForm();
+            return;
+        }
+
         const retryLibraryButton = event.target.closest('[data-retry-saved-library]');
         if (retryLibraryButton) {
             retryLibraryButton.disabled = true;
@@ -7237,7 +7345,13 @@ function bindEvents() {
                 if (message) message.textContent = '상단에 고정할 사진은 최대 20장까지 선택할 수 있습니다.';
                 return;
             }
-            section.photo_ids = section.photo_ids.includes(photoId)
+            const wasSelected = section.photo_ids.includes(photoId);
+            if (!wasSelected) {
+                state.landingSections.forEach((candidate) => {
+                    if (candidate !== section) candidate.photo_ids = candidate.photo_ids.filter((id) => id !== photoId);
+                });
+            }
+            section.photo_ids = wasSelected
                 ? section.photo_ids.filter((id) => id !== photoId)
                 : [...section.photo_ids, photoId];
             renderLandingAdminForm();

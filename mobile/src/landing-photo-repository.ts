@@ -190,7 +190,7 @@ export async function fetchLandingContent(
   dependencies: LandingDependencies = defaultDependencies
 ): Promise<LandingContent> {
   const results = await Promise.all([
-    dependencies.fetchCuration(), dependencies.fetchPhotos(100)
+    dependencies.fetchCuration(), dependencies.fetchPhotos(200)
   ]);
   if (!isRecord(results[0]) || !isRecord(results[1])) throw new Error(GENERIC_LANDING_ERROR);
   const { sections, assignments, error: curationError } = results[0];

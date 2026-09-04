@@ -1878,6 +1878,40 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     gap: 18px;
 }
 
+.admin-landing-hero {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    padding: 22px;
+}
+
+.admin-landing-hero > div:first-child h2,
+.admin-landing-hero > div:first-child p {
+    margin: 0;
+}
+
+.admin-landing-hero > div:first-child h2 {
+    margin-top: 4px;
+    font-size: 24px;
+}
+
+.admin-landing-hero > div:first-child p:last-child {
+    margin-top: 8px;
+    color: var(--muted);
+}
+
+#landing-admin-hero-photos {
+    display: grid;
+    gap: 14px;
+}
+
+#landing-admin-hero-photos .admin-selected-photo {
+    grid-template-columns: 48px minmax(0, 1fr) auto auto auto;
+}
+
 .admin-landing-section {
     display: grid;
     grid-template-columns: 1fr 1.4fr auto;

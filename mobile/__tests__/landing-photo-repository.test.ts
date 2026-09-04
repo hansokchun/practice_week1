@@ -25,7 +25,7 @@ describe("landing photo repository", () => {
         curatedPhotoIds: ["photo-a"]
       }]
     });
-    expect(fetchPhotos).toHaveBeenCalledWith(100);
+    expect(fetchPhotos).toHaveBeenCalledWith(200);
     expect(signPaths).toHaveBeenCalledWith(["owner-a/photo-a.jpg"], 300);
   });
 

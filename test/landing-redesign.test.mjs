@@ -89,6 +89,16 @@ test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이�
     assert.match(css, /\.landing-photo-row\s*\{[^}]*min-width:\s*0;[^}]*width:\s*100%;/s);
 });
 
+test('서버 공개 사진이 있으면 메인 목록에 정적 샘플을 섞지 않는다', async () => {
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
+    const start = app.indexOf('function getLandingPublicPhotos');
+    const end = app.indexOf('function getLandingPhotoLabel', start);
+    const source = app.slice(start, end);
+
+    assert.match(source, /serverPhotos\.length \? serverPhotos : demoPhotos/);
+    assert.doesNotMatch(source, /\.\.\.state\.savedPhotos, \.\.\.albumPhotos, \.\.\.demoPhotos/);
+});
+
 test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 편집형 링크다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
@@ -254,6 +264,16 @@ test('랜딩 관리자 저장소는 app_metadata 관리자만 변경할 수 있�
     assert.match(migration, /auth\.jwt\(\) -> 'app_metadata' ->> 'role'/);
     assert.doesNotMatch(migration, /user_metadata/);
     assert.match(migration, /revoke all on table public\.landing_sections from anon, authenticated/i);
+});
+
+test('주제 사진은 서버와 관리자 저장 흐름 모두에서 한 주제에만 배치된다', async () => {
+    const migration = await readFile(new URL('supabase/migrations/20260904101534_enforce_unique_landing_photo_topics.sql', root), 'utf8');
+    const auth = await readFile(new URL('auth.js', root), 'utf8');
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
+
+    assert.match(migration, /create unique index[^;]+landing_section_photos \(photo_id\)/is);
+    assert.match(auth, /\.in\('photo_id', assignments\.map\(\(assignment\) => assignment\.photo_id\)\)[\s\S]*?\.neq\('section_id', data\.id\)/);
+    assert.match(app, /state\.landingSections\.forEach\(\(candidate\) => \{[\s\S]*candidate\.photo_ids = candidate\.photo_ids\.filter\(\(id\) => id !== photoId\)/);
 });
 
 test('관리자 판별은 수정 가능한 app_metadata만 사용한다', () => {
