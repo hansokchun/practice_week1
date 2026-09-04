@@ -1,11 +1,11 @@
-import { gzipSync } from 'node:zlib';
+import { brotliCompressSync } from 'node:zlib';
 import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const budgets = {
-    javascriptGzipKb: 70,
-    cssGzipKb: 34,
+    javascriptBrotliKb: 70,
+    cssBrotliKb: 30,
     totalImageKb: 2200,
     largestImageKb: 450
 };
@@ -22,10 +22,10 @@ const files = readdirSync(assetsDirectory, { withFileTypes: true })
 
 const sum = (values) => values.reduce((total, value) => total + value, 0);
 const toKb = (bytes) => Number((bytes / 1024).toFixed(2));
-const gzipSize = (extension) => sum(
+const brotliSize = (extension) => sum(
     files
         .filter((file) => file.extension === extension)
-        .map((file) => gzipSync(file.contents).byteLength)
+        .map((file) => brotliCompressSync(file.contents).byteLength)
 );
 
 const images = files.filter((file) => imageExtensions.has(file.extension));
@@ -34,15 +34,15 @@ const largestImage = images.reduce(
     { name: 'none', contents: Buffer.alloc(0) }
 );
 const measurements = {
-    javascriptGzipKb: toKb(gzipSize('.js')),
-    cssGzipKb: toKb(gzipSize('.css')),
+    javascriptBrotliKb: toKb(brotliSize('.js')),
+    cssBrotliKb: toKb(brotliSize('.css')),
     totalImageKb: toKb(sum(images.map((image) => image.contents.byteLength))),
     largestImageKb: toKb(largestImage.contents.byteLength)
 };
 
 const labels = {
-    javascriptGzipKb: 'JavaScript gzip',
-    cssGzipKb: 'CSS gzip',
+    javascriptBrotliKb: 'JavaScript Brotli',
+    cssBrotliKb: 'CSS Brotli',
     totalImageKb: 'Total static images',
     largestImageKb: `Largest image (${largestImage.name})`
 };

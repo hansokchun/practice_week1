@@ -19,3 +19,13 @@ test('site photos stay hidden until the current image source is fully decoded', 
     assert.match(css, /img\[data-photo-reveal\]:not\(\.is-photo-ready\)\s*\{[^}]*opacity:\s*0;/s);
     assert.match(css, /img\[data-photo-reveal\]\.is-photo-ready\s*\{[^}]*opacity:\s*1;/s);
 });
+
+test('photo URLs are recovered in batches only when images approach the viewport', () => {
+    assert.match(app, /function observePhotoImageUrl\(image\)/);
+    assert.match(app, /new IntersectionObserver/);
+    assert.match(app, /rootMargin:\s*'250px 0px'/);
+    assert.match(app, /function queuePhotoImageUrlRecovery\(image\)/);
+    assert.match(app, /async function flushPhotoImageUrlRecoveryQueue\(\)/);
+    assert.match(app, /await hydratePhotoUrls\(photosToHydrate\)/);
+    assert.match(app, /if \(!source\)\s*\{\s*observePhotoImageUrl\(image\);\s*return;/s);
+});

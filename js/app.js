@@ -507,6 +507,9 @@ function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'au
 const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
 const PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000;
 const LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS = 15000;
+const photoImageUrlRecoveryQueue = new Map();
+let photoImageUrlRecoveryTimer = null;
+let photoImageUrlObserver = null;
 
 function isPhotoImageRevealCandidate(image) {
     return image instanceof HTMLImageElement
@@ -542,13 +545,25 @@ function preparePhotoImageReveal(image) {
         }
     };
 
-    if (!source) return;
+    if (!source) {
+        observePhotoImageUrl(image);
+        return;
+    }
     if (image.complete) {
         void settle();
         return;
     }
     image.addEventListener('load', () => { void settle(); }, { once: true });
     image.addEventListener('error', () => { void settle(); }, { once: true });
+}
+
+function observePhotoImageUrl(image) {
+    if (!(image instanceof HTMLImageElement) || !image.dataset.i || image.getAttribute('src')) return;
+    if (photoImageUrlObserver) {
+        photoImageUrlObserver.observe(image);
+        return;
+    }
+    queuePhotoImageUrlRecovery(image);
 }
 
 function preparePhotoImagesInNode(node) {
@@ -558,6 +573,15 @@ function preparePhotoImagesInNode(node) {
 }
 
 function initializePhotoImageReveal() {
+    if ('IntersectionObserver' in window) {
+        photoImageUrlObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                photoImageUrlObserver.unobserve(entry.target);
+                queuePhotoImageUrlRecovery(entry.target);
+            });
+        }, { rootMargin: '250px 0px' });
+    }
     preparePhotoImagesInNode(document.body);
     const observer = new MutationObserver((records) => {
         records.forEach((record) => {
@@ -666,18 +690,59 @@ function setPhotoImageSource(image, photo = {}) {
 }
 
 async function recoverPhotoImageUrl(image) {
+    queuePhotoImageUrlRecovery(image);
+}
+
+function queuePhotoImageUrlRecovery(image) {
     const photoId = image.dataset.i;
     const photo = state.savedPhotos.find((item) => String(item.id) === photoId);
-    if (!photo?.storage_path || image.dataset.r === image.src) return;
-    image.dataset.r = image.src;
+    const currentSource = image.getAttribute('src') || '';
+    if (!photo?.storage_path || image.dataset.r === currentSource) return;
+    image.dataset.r = currentSource;
 
-    const refreshed = (await hydratePhotoUrls([photo])).data?.[0];
-    if (!refreshed?.url) return;
-    photo.url = refreshed.url;
-    photo.signed_url_expires_at = refreshed.signed_url_expires_at;
-    image.dataset.r = refreshed.url;
-    image.onload = () => { delete image.dataset.r; };
-    image.src = refreshed.url;
+    const queuedImages = photoImageUrlRecoveryQueue.get(photoId) || new Set();
+    queuedImages.add(image);
+    photoImageUrlRecoveryQueue.set(photoId, queuedImages);
+    if (photoImageUrlRecoveryTimer) return;
+    photoImageUrlRecoveryTimer = window.setTimeout(() => {
+        photoImageUrlRecoveryTimer = null;
+        void flushPhotoImageUrlRecoveryQueue();
+    }, 0);
+}
+
+async function flushPhotoImageUrlRecoveryQueue() {
+    const queuedEntries = [...photoImageUrlRecoveryQueue.entries()];
+    photoImageUrlRecoveryQueue.clear();
+    if (!queuedEntries.length) return;
+
+    const queuedIds = new Set(queuedEntries.map(([photoId]) => String(photoId)));
+    const photosToHydrate = state.savedPhotos.filter((photo) => (
+        queuedIds.has(String(photo.id)) && photo.storage_path
+    ));
+    if (!photosToHydrate.length) return;
+
+    const { data: refreshedPhotos } = await hydratePhotoUrls(photosToHydrate);
+    const refreshedById = new Map((refreshedPhotos || []).map((photo) => [String(photo.id), photo]));
+    state.savedPhotos.forEach((photo) => {
+        const refreshed = refreshedById.get(String(photo.id));
+        if (!refreshed?.url) return;
+        photo.url = refreshed.url;
+        photo.signed_url_expires_at = refreshed.signed_url_expires_at;
+    });
+
+    queuedEntries.forEach(([photoId, images]) => {
+        const refreshed = refreshedById.get(String(photoId));
+        images.forEach((image) => {
+            if (!image.isConnected || String(image.dataset.i) !== String(photoId)) return;
+            if (!refreshed?.url) {
+                delete image.dataset.r;
+                return;
+            }
+            image.dataset.r = refreshed.url;
+            image.onload = () => { delete image.dataset.r; };
+            image.src = refreshed.url;
+        });
+    });
 }
 
 function showToast(message) {
@@ -1087,7 +1152,7 @@ function getLandingPublicPhotos() {
     const seen = new Set();
     return candidates.filter((photo) => {
         const id = String(photo.id || photo.localId || photo.url || '');
-        if (!id || seen.has(id) || !getPhotoImageSrc(photo)) return false;
+        if (!id || seen.has(id) || (!getPhotoImageSrc(photo) && !photo.storage_path)) return false;
         seen.add(id);
         return true;
     });
@@ -1109,10 +1174,12 @@ function renderLandingHeroSlides() {
     container.setAttribute('aria-busy', 'true');
     container.innerHTML = slides.map((photo, index) => {
         const photoId = String(photo.id || photo.localId || '');
-        const priority = index === 0 ? 'fetchpriority="high"' : 'loading="lazy"';
+        const source = getPhotoImageSrc(photo);
+        const sourceAttribute = source ? `src="${escapeHtml(source)}"` : '';
+        const priority = index === 0 ? 'fetchpriority="high"' : 'fetchpriority="low" loading="lazy"';
         return `
             <figure class="landing-hero-slide ${index === 0 ? 'is-active' : ''}" data-landing-slide-photo-id="${escapeHtml(photoId)}" data-landing-slide-location="${escapeHtml(getLandingHeroLocationLabel(photo))}">
-                <img src="${escapeHtml(getPhotoImageSrc(photo))}" data-i="${escapeHtml(photoId)}" alt="" ${priority} decoding="async">
+                <img ${sourceAttribute} data-i="${escapeHtml(photoId)}" data-photo-reveal alt="" ${priority} decoding="async">
             </figure>`;
     }).join('');
     container.removeAttribute('aria-busy');
@@ -1138,9 +1205,11 @@ function getLandingHeroLocationLabel(photo = {}) {
 function renderLandingPhotoCard(photo) {
     const photoId = String(photo.id || photo.localId || '');
     const label = getLandingPhotoLabel(photo);
+    const source = getPhotoImageSrc(photo);
+    const sourceAttribute = source ? `src="${escapeHtml(source)}"` : '';
     return `
         <button class="landing-photo-card" data-landing-photo-id="${escapeHtml(photoId)}" type="button" aria-label="${escapeHtml(label)} 상세 보기">
-            <img src="${escapeHtml(getPhotoImageSrc(photo))}" data-i="${escapeHtml(photoId)}" alt="${escapeHtml(label)}" loading="lazy" decoding="async">
+            <img ${sourceAttribute} data-i="${escapeHtml(photoId)}" data-photo-reveal alt="${escapeHtml(label)}" loading="lazy" decoding="async" fetchpriority="low">
         </button>
     `;
 }
@@ -5000,20 +5069,10 @@ async function loadSavedPhotos({ render = true } = {}) {
     state.savedPhotos = metadataPhotos;
     state.hasLoadedSavedPhotos = true;
 
-    if (document.body.dataset.page === APP_SECTIONS.EXPLORE) renderPublicSurfaces();
-
-    const { data: hydratedPhotos } = await hydratePhotoUrls(metadataPhotos);
-    const hydratedById = new Map((hydratedPhotos || []).map((photo) => [String(photo.id), photo]));
-    state.savedPhotos = state.savedPhotos.map((photo) => {
-        const hydrated = hydratedById.get(String(photo.id));
-        return hydrated?.url ? {
-            ...photo,
-            url: hydrated.url,
-            signed_url_expires_at: hydrated.signed_url_expires_at || photo.signed_url_expires_at
-        } : photo;
-    });
     if (render) {
         renderSavedPhotoSurfaces();
+        renderPublicSurfaces();
+    } else if (document.body.dataset.page === APP_SECTIONS.EXPLORE) {
         renderPublicSurfaces();
     }
     queuePhotoAiAnalysis(state.savedPhotos.filter((photo) => (

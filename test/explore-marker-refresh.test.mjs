@@ -28,7 +28,7 @@ test('direct Explore entry stops blocking pins as soon as photo metadata is read
     assert.match(emptyBody, /setExploreMarkerLoading\(false\)/);
 });
 
-test('saved photos render Explore pins before signed image URLs finish hydrating', () => {
+test('saved photos render from metadata without hydrating the entire library', () => {
     const loadStart = source.indexOf('async function loadSavedPhotos');
     const loadEnd = source.indexOf('async function loadMyLikedPhotos', loadStart);
     const body = source.slice(loadStart, loadEnd);
@@ -36,7 +36,9 @@ test('saved photos render Explore pins before signed image URLs finish hydrating
     assert.match(body, /fetchPhotos\(\{ hydrateUrls: false \}\)/);
     assert.match(body, /state\.hasLoadedSavedPhotos = true/);
     assert.match(body, /document\.body\.dataset\.page === APP_SECTIONS\.EXPLORE/);
-    assert.ok(body.indexOf('renderPublicSurfaces();') < body.indexOf('await hydratePhotoUrls(metadataPhotos)'));
+    assert.doesNotMatch(body, /await hydratePhotoUrls\(metadataPhotos\)/);
+    assert.match(body, /renderSavedPhotoSurfaces\(\)/);
+    assert.match(body, /renderPublicSurfaces\(\)/);
 });
 
 test('saved library loading ends only when all parallel library requests finish', () => {

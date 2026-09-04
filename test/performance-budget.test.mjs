@@ -40,10 +40,19 @@ test('the repository exposes an enforceable production performance budget', () =
     const checker = readFileSync('scripts/check-performance-budget.mjs', 'utf8');
 
     assert.equal(scripts['perf:budget'], 'npm run build && node scripts/check-performance-budget.mjs');
-    assert.match(checker, /javascriptGzipKb:\s*70/);
-    assert.match(checker, /cssGzipKb:\s*34/);
+    assert.match(checker, /javascriptBrotliKb:\s*70/);
+    assert.match(checker, /cssBrotliKb:\s*30/);
+    assert.match(checker, /brotliCompressSync/);
     assert.match(checker, /totalImageKb:\s*2200/);
     assert.match(checker, /largestImageKb:\s*450/);
+});
+
+test('the document warms only the origins needed during initial data loading', () => {
+    const source = markup();
+
+    assert.match(source, /rel="preconnect" href="https:\/\/pqczcponriukilrtpbdl\.supabase\.co" crossorigin/);
+    assert.match(source, /rel="preconnect" href="https:\/\/cdn\.jsdelivr\.net" crossorigin/);
+    assert.match(source, /rel="dns-prefetch" href="https:\/\/maps\.googleapis\.com"/);
 });
 
 test('client-side route rendering records a local duration for browser QA', () => {
