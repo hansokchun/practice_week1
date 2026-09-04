@@ -248,6 +248,10 @@ import {
     getLandingTagPhotoPage,
     getLandingTagRegions
 } from './landing-tag-feed.mjs';
+import {
+    getLandingAdminPhotoCandidates,
+    getLandingAdminSelectedPhotoIds
+} from './landing-admin-photo-candidates.mjs';
 
 const initialAuthHash = window.location.hash;
 
@@ -1146,6 +1150,10 @@ function syncPhotosAlbumList() {
     target.innerHTML = source.innerHTML.replace('id="btn-open-album-inline"', 'data-start-album');
 }
 
+function getLandingAdminLikedPhotoCandidates() {
+    return getLandingAdminPhotoCandidates(getLandingPublicPhotos(), state.likedPhotoIds);
+}
+
 function renderLandingAdminForm() {
     const container = $('#landing-admin-sections');
     if (!container) return;
@@ -1154,10 +1162,11 @@ function renderLandingAdminForm() {
         return;
     }
     renderLandingAdminHeroForm();
-    const publicPhotos = getLandingPublicPhotos().filter((photo) => !String(photo.id).startsWith('landing-'));
+    const candidatePhotos = getLandingAdminLikedPhotoCandidates();
     container.innerHTML = state.landingSections.map((section, index) => {
-        const selectedIds = (section.photo_ids || []).slice(0, LANDING_TAG_PIN_LIMIT);
-        const photoById = new Map(publicPhotos.map((photo) => [String(photo.id), photo]));
+        const selectedIds = getLandingAdminSelectedPhotoIds(section.photo_ids, candidatePhotos, LANDING_TAG_PIN_LIMIT);
+        section.photo_ids = selectedIds;
+        const photoById = new Map(candidatePhotos.map((photo) => [String(photo.id), photo]));
         const selectedMarkup = selectedIds.map((photoId, photoIndex) => {
             const photo = photoById.get(String(photoId));
             if (!photo) return '';
@@ -1169,7 +1178,7 @@ function renderLandingAdminForm() {
                     <button data-admin-photo-move="next" type="button" aria-label="사진을 뒤로 이동" ${photoIndex === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
                 </div>`;
         }).join('');
-        const pickerMarkup = publicPhotos.map((photo) => {
+        const pickerMarkup = candidatePhotos.map((photo) => {
             const selected = selectedIds.includes(String(photo.id));
             return `
                 <button class="admin-photo-option ${selected ? 'is-selected' : ''}" data-admin-photo-toggle="${escapeHtml(photo.id)}" type="button" aria-pressed="${selected}">
@@ -1191,7 +1200,7 @@ function renderLandingAdminForm() {
             <label>설명<textarea name="description" maxlength="180" rows="2">${escapeHtml(section.description || '')}</textarea></label>
             <label>공개 상태<select name="is_visible"><option value="true" ${section.is_visible !== false ? 'selected' : ''}>공개</option><option value="false" ${section.is_visible === false ? 'selected' : ''}>숨김</option></select></label>
             <div class="admin-selected-photos"><strong>상단 고정 사진 (최대 20장)</strong>${selectedMarkup || '<p>고정하지 않으면 태그 사진이 무작위 순서로 표시됩니다.</p>'}</div>
-            <div class="admin-photo-picker" aria-label="공개 사진 선택">${pickerMarkup || '<p>선택할 수 있는 실제 공개 사진이 없습니다.</p>'}</div>
+            <div class="admin-photo-picker" aria-label="좋아요한 공개 사진 선택">${pickerMarkup || '<p>지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다.</p>'}</div>
             <input name="photo_ids" type="hidden" value="${escapeHtml(selectedIds.join(','))}">
             <input name="sort_order" type="hidden" value="${index}">
         </fieldset>
@@ -1202,9 +1211,14 @@ function renderLandingAdminForm() {
 function renderLandingAdminHeroForm() {
     const container = $('#landing-admin-hero-photos');
     if (!container || !isLandingAdmin(state.currentUser)) return;
-    const publicPhotos = getLandingPublicPhotos().filter((photo) => !String(photo.id).startsWith('landing-'));
-    const photoById = new Map(publicPhotos.map((photo) => [String(photo.id), photo]));
-    const selectedIds = state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT);
+    const candidatePhotos = getLandingAdminLikedPhotoCandidates();
+    const photoById = new Map(candidatePhotos.map((photo) => [String(photo.id), photo]));
+    const selectedIds = getLandingAdminSelectedPhotoIds(
+        state.landingHeroPhotoIds,
+        candidatePhotos,
+        LANDING_HERO_SLIDE_LIMIT
+    );
+    state.landingHeroPhotoIds = selectedIds;
     const selectedMarkup = selectedIds.map((photoId, index) => {
         const photo = photoById.get(String(photoId));
         if (!photo) return '';
@@ -1217,7 +1231,7 @@ function renderLandingAdminHeroForm() {
                 <button data-admin-hero-remove type="button" aria-label="슬라이드에서 제거">삭제</button>
             </div>`;
     }).join('');
-    const pickerMarkup = publicPhotos.map((photo) => {
+    const pickerMarkup = candidatePhotos.map((photo) => {
         const photoId = String(photo.id);
         const selected = selectedIds.includes(photoId);
         return `
@@ -1229,10 +1243,10 @@ function renderLandingAdminHeroForm() {
     container.innerHTML = `
         <div class="admin-selected-photos">
             <strong>선택된 슬라이드 (${selectedIds.length}/${LANDING_HERO_SLIDE_LIMIT})</strong>
-            ${selectedMarkup || '<p>첫 화면에 사용할 공개 사진을 선택하세요.</p>'}
+            ${selectedMarkup || '<p>첫 화면에 사용할 좋아요한 사진을 선택하세요.</p>'}
         </div>
-        <div class="admin-photo-picker" aria-label="첫 화면 슬라이드 사진 선택">
-            ${pickerMarkup || '<p>선택할 수 있는 공개 사진이 없습니다.</p>'}
+        <div class="admin-photo-picker" aria-label="첫 화면에 사용할 좋아요한 공개 사진 선택">
+            ${pickerMarkup || '<p>지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다.</p>'}
         </div>`;
 }
 

@@ -78,7 +78,7 @@ test('landing tag page keeps placeholders stable and reveals a loaded page as on
 });
 
 test('landing admin limits the manually ordered tag lead to twenty photos', () => {
-    assert.match(appSource, /\(section\.photo_ids \|\| \[\]\)\.slice\(0, LANDING_TAG_PIN_LIMIT\)/);
+    assert.match(appSource, /getLandingAdminSelectedPhotoIds\(section\.photo_ids, candidatePhotos, LANDING_TAG_PIN_LIMIT\)/);
     assert.match(appSource, /상단 고정 사진 \(최대 20장\)/);
     assert.match(appSource, /section\.photo_ids\.length >= LANDING_TAG_PIN_LIMIT/);
 });
