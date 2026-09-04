@@ -5,6 +5,7 @@ import {
     getDefaultLandingSections,
     getLandingSearchResults,
     getLandingSectionPhotos,
+    getLandingScrollControlState,
     getLandingVisiblePhotos,
     isLandingAdmin,
     normalizeLandingSections
@@ -175,7 +176,7 @@ test('랜딩 소제목은 중앙에 놓이고 섹션 사이에는 충분한 여�
     assert.match(css, /\.landing-section-heading\s*\{[^}]*margin-bottom:\s*36px;/s);
     assert.match(css, /\.landing-section-heading h2\s*\{[^}]*text-align:\s*center;/s);
     assert.match(css, /\.landing-scroll-actions\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
-    assert.match(css, /\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*minmax\(210px,\s*25%\);/s);
+    assert.match(css, /\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*calc\(\(100% - 64px\) \/ 5\);/s);
     assert.match(css, /\.landing-sections\s*\{[^}]*gap:\s*128px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*gap:\s*12px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-heading\s*\{[^}]*margin-bottom:\s*24px;/s);
@@ -301,7 +302,33 @@ test('랜딩 섹션과 검색, 추가 로딩 규칙을 정규화한다', () => {
         { id: 'c', shared: true, placeName: '서울 야경' }
     ];
     assert.deepEqual(getLandingSearchResults(photos, '제주').map(({ id }) => id), ['a']);
-    assert.equal(getLandingVisiblePhotos(Array.from({ length: 30 }), 20).length, 20);
+    assert.equal(getLandingVisiblePhotos(Array.from({ length: 30 }), 20).length, 8);
+    assert.deepEqual(getLandingScrollControlState({ scrollLeft: 0, scrollWidth: 800, clientWidth: 500 }), {
+        canPrevious: false,
+        canNext: true
+    });
+    assert.deepEqual(getLandingScrollControlState({ scrollLeft: 300, scrollWidth: 800, clientWidth: 500 }), {
+        canPrevious: true,
+        canNext: false
+    });
+});
+
+test('메인 자동 배치 사진은 여덟 장씩 나누어 첫 화면 중복을 줄인다', () => {
+    const photos = Array.from({ length: 32 }, (_, index) => ({ id: `photo-${index}`, visibility: 'public' }));
+    const first = getLandingVisiblePhotos(getLandingSectionPhotos({ photo_ids: [] }, photos, 0));
+    const second = getLandingVisiblePhotos(getLandingSectionPhotos({ photo_ids: [] }, photos, 1));
+
+    assert.equal(first.length, 8);
+    assert.equal(second.length, 8);
+    assert.deepEqual(first.map(({ id }) => id), photos.slice(0, 8).map(({ id }) => id));
+    assert.deepEqual(second.map(({ id }) => id), photos.slice(8, 16).map(({ id }) => id));
+    assert.equal(first.some(({ id }) => second.some((photo) => photo.id === id)), false);
+});
+
+test('메인 사진 행은 여덟 장에서 끝나며 스크롤로 사진을 추가하지 않는다', async () => {
+    const app = await readFile(new URL('js/app.js', root), 'utf8');
+    assert.doesNotMatch(app, /function loadMoreLandingSectionPhotos/);
+    assert.doesNotMatch(app, /loadMoreLandingSectionPhotos\(row\)/);
 });
 
 test('랜딩 검색은 동의어와 AI 분석 메타데이터를 관련도 순으로 혼합한다', () => {

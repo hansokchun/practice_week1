@@ -73,23 +73,7 @@
 
     <main id="site-main">
         <section id="page-landing" class="page page-landing active" aria-labelledby="landing-hero-title">
-            <div class="landing-hero-slides" aria-hidden="true">
-                <figure class="landing-hero-slide is-active" data-landing-slide-label="프랑스 니스">
-                    <img src="images/main_bg1.jpg" alt="" fetchpriority="high" decoding="async">
-                </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="일본 교토">
-                    <img src="images/main_bg2.jpg" alt="" loading="lazy" decoding="async">
-                </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="스위스 인터라켄">
-                    <img src="images/main_bg3.jpg" alt="" loading="lazy" decoding="async">
-                </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="태국 방콕">
-                    <img src="images/main_bg4.jpg" alt="" loading="lazy" decoding="async">
-                </figure>
-                <figure class="landing-hero-slide" data-landing-slide-label="모로코 메르주가">
-                    <img src="images/main_bg5.jpg" alt="" loading="lazy" decoding="async">
-                </figure>
-            </div>
+            <div class="landing-hero-slides" aria-hidden="true" aria-busy="true"></div>
             <div class="landing-hero-scrim" aria-hidden="true"></div>
             <div class="landing-hero-content">
                 <h1 id="landing-hero-title">이 사진은 어디서 찍은거지?</h1>
@@ -102,7 +86,7 @@
             <div class="landing-hero-footer">
                 <p id="landing-hero-caption" aria-live="polite">
                     <span class="material-symbols-outlined landing-hero-caption-pin" aria-hidden="true">location_on</span>
-                    <span data-landing-caption-place>프랑스 니스</span>
+                    <span data-landing-caption-place></span>
                 </p>
             </div>
         </section>

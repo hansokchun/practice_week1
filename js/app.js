@@ -225,10 +225,10 @@ import {
 } from './user-facing-failure-states.mjs';
 import { isPasswordRecoveryCallback } from './password-recovery.mjs';
 import {
-    LANDING_SECTION_BATCH_SIZE,
     getDefaultLandingSections,
     getLandingSearchResults,
     getLandingSectionPhotos,
+    getLandingScrollControlState,
     getLandingVisiblePhotos,
     isLandingAdmin,
     normalizeLandingSections
@@ -1016,14 +1016,18 @@ function getLandingPublicPhotos() {
 
 function renderLandingHeroSlides() {
     const container = $('.landing-hero-slides');
-    if (!container || !state.landingHeroPhotoIds.length) return;
-    const photoById = new Map(getLandingPublicPhotos().map((photo) => [String(photo.id || photo.localId || ''), photo]));
-    const slides = state.landingHeroPhotoIds
+    if (!container) return;
+    stopLandingHeroSlideshow();
+    const publicPhotos = getLandingPublicPhotos();
+    const photoById = new Map(publicPhotos.map((photo) => [String(photo.id || photo.localId || ''), photo]));
+    const curatedSlides = state.landingHeroPhotoIds
         .slice(0, LANDING_HERO_SLIDE_LIMIT)
         .map((photoId) => photoById.get(String(photoId)))
         .filter(Boolean);
+    const slides = curatedSlides.length ? curatedSlides : publicPhotos.slice(0, LANDING_HERO_SLIDE_LIMIT);
     if (!slides.length) return;
 
+    container.setAttribute('aria-busy', 'true');
     container.innerHTML = slides.map((photo, index) => {
         const photoId = String(photo.id || photo.localId || '');
         const priority = index === 0 ? 'fetchpriority="high"' : 'loading="lazy"';
@@ -1032,6 +1036,7 @@ function renderLandingHeroSlides() {
                 <img src="${escapeHtml(getPhotoImageSrc(photo))}" data-i="${escapeHtml(photoId)}" alt="" ${priority} decoding="async">
             </figure>`;
     }).join('');
+    container.removeAttribute('aria-busy');
     landingHeroIndex = 0;
     syncLandingHeroSlide(0);
     setLandingHeroSlideshowActive(document.body.dataset.page === LANDING_ROUTE);
@@ -1069,8 +1074,7 @@ function renderLandingSections() {
         const sectionPhotos = query
             ? searchResults
             : getLandingSectionPhotos(section, allPhotos, sectionIndex);
-        const visibleCount = state.landingVisibleCounts[section.id] || LANDING_SECTION_BATCH_SIZE;
-        const visiblePhotos = getLandingVisiblePhotos(sectionPhotos, visibleCount);
+        const visiblePhotos = query ? sectionPhotos : getLandingVisiblePhotos(sectionPhotos);
         const cards = visiblePhotos.length
             ? visiblePhotos.map(renderLandingPhotoCard).join('')
             : '<div class="landing-empty-state"><strong>이 주제에 표시할 공개 사진이 아직 없습니다.</strong><p>다른 주제를 둘러보거나 검색어를 바꿔보세요.</p></div>';
@@ -1088,11 +1092,12 @@ function renderLandingSections() {
                         <button data-landing-scroll-direction="next" type="button" aria-label="다음 사진" ${visiblePhotos.length > 1 ? '' : 'disabled'}><span class="material-symbols-outlined">chevron_right</span></button>
                     </div>
                 </div>
-                <div class="landing-photo-row" data-landing-scroll tabindex="0" aria-label="${escapeHtml(section.title)} 사진 목록" data-total-count="${sectionPhotos.length}">${cards}</div>
+                <div class="landing-photo-row" data-landing-scroll tabindex="0" aria-label="${escapeHtml(section.title)} 사진 목록">${cards}</div>
             </section>
         `;
     }).join('');
     centerLandingRowsOnMobile();
+    requestAnimationFrame(() => $$('[data-landing-scroll]').forEach(updateLandingScrollButtons));
 }
 
 function centerLandingRowsOnMobile() {
@@ -1266,28 +1271,9 @@ function updateLandingScrollButtons(row) {
     if (!section) return;
     const previous = section.querySelector('[data-landing-scroll-direction="previous"]');
     const next = section.querySelector('[data-landing-scroll-direction="next"]');
-    const maxScroll = Math.max(0, row.scrollWidth - row.clientWidth);
-    if (previous) previous.disabled = row.scrollLeft <= 4;
-    if (next) next.disabled = row.scrollLeft >= maxScroll - 4 && row.children.length >= Number(row.dataset.totalCount || 0);
-}
-
-function loadMoreLandingSectionPhotos(row) {
-    const section = row?.closest('[data-landing-section]');
-    const sectionId = section?.dataset.landingSection;
-    if (!sectionId) return;
-    const totalCount = Number(row.dataset.totalCount || 0);
-    const currentCount = row.querySelectorAll('.landing-photo-card').length;
-    if (currentCount >= totalCount || row.scrollLeft + row.clientWidth < row.scrollWidth - 160) return;
-    const scrollLeft = row.scrollLeft;
-    state.landingVisibleCounts[sectionId] = currentCount + LANDING_SECTION_BATCH_SIZE;
-    renderLandingSections();
-    requestAnimationFrame(() => {
-        const nextRow = $(`[data-landing-section="${CSS.escape(sectionId)}"] [data-landing-scroll]`);
-        if (nextRow) {
-            nextRow.scrollLeft = scrollLeft;
-            updateLandingScrollButtons(nextRow);
-        }
-    });
+    const controls = getLandingScrollControlState(row);
+    if (previous) previous.disabled = !controls.canPrevious;
+    if (next) next.disabled = !controls.canNext;
 }
 
 function submitLandingSearch(event) {
@@ -6091,7 +6077,7 @@ function startLandingHeroSlideshow() {
     stopLandingHeroSlideshow();
     const slides = $$('.landing-hero-slide');
     syncLandingHeroSlide(landingHeroIndex);
-    if (slides.length <= 1 || document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (slides.length <= 1 || document.hidden) return;
     landingHeroTimer = window.setInterval(() => {
         syncLandingHeroSlide(getNextLandingSlideIndex(landingHeroIndex, slides.length));
     }, LANDING_SLIDE_INTERVAL_MS);
@@ -7613,7 +7599,6 @@ function bindEvents() {
                 const direction = landingScrollButton.dataset.landingScrollDirection === 'previous' ? -1 : 1;
                 row.scrollBy({ left: direction * Math.max(280, row.clientWidth * 0.82), behavior: 'smooth' });
                 window.setTimeout(() => {
-                    loadMoreLandingSectionPhotos(row);
                     updateLandingScrollButtons(row);
                 }, 360);
             }
@@ -8121,7 +8106,6 @@ function bindEvents() {
         const row = event.target instanceof Element ? event.target.closest('[data-landing-scroll]') : null;
         if (!row) return;
         updateLandingScrollButtons(row);
-        loadMoreLandingSectionPhotos(row);
     }, true);
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && state.isExplorePhotoScopeMenuOpen) {

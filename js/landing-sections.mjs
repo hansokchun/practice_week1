@@ -1,4 +1,4 @@
-export const LANDING_SECTION_BATCH_SIZE = 10;
+export const LANDING_SECTION_BATCH_SIZE = 8;
 
 const DEFAULT_LANDING_SECTIONS = [
     { id: 'recommended', title: '추천', description: '지금 이끼에서 먼저 둘러보기 좋은 장면들', sort_order: 0 },
@@ -145,7 +145,7 @@ export function getLandingSectionPhotos(section, photos = [], fallbackIndex = 0)
     const publicPhotos = getLandingSearchResults(photos);
     if (!section?.photo_ids?.length) {
         if (!publicPhotos.length) return [];
-        const offset = Math.abs(Number(fallbackIndex) || 0) % publicPhotos.length;
+        const offset = (Math.abs(Number(fallbackIndex) || 0) * LANDING_SECTION_BATCH_SIZE) % publicPhotos.length;
         return [...publicPhotos.slice(offset), ...publicPhotos.slice(0, offset)];
     }
     const photoById = new Map(publicPhotos.map((photo) => [String(photo.id), photo]));
@@ -153,5 +153,14 @@ export function getLandingSectionPhotos(section, photos = [], fallbackIndex = 0)
 }
 
 export function getLandingVisiblePhotos(photos = [], visibleCount = LANDING_SECTION_BATCH_SIZE) {
-    return photos.slice(0, Math.max(LANDING_SECTION_BATCH_SIZE, Number(visibleCount) || 0));
+    return photos.slice(0, Math.min(LANDING_SECTION_BATCH_SIZE, Math.max(0, Number(visibleCount) || LANDING_SECTION_BATCH_SIZE)));
+}
+
+export function getLandingScrollControlState({ scrollLeft = 0, scrollWidth = 0, clientWidth = 0 } = {}) {
+    const maxScroll = Math.max(0, Number(scrollWidth) - Number(clientWidth));
+    const currentScroll = Math.max(0, Number(scrollLeft) || 0);
+    return {
+        canPrevious: currentScroll > 4,
+        canNext: currentScroll < maxScroll - 4
+    };
 }

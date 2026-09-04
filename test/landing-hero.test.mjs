@@ -23,8 +23,12 @@ test('the first route renders a dedicated full-screen landing before the existin
     assert.match(app, /const hash = normalized === LANDING_ROUTE \? '#\/landing' : normalized === APP_SECTIONS\.HOME \? '#\/'/);
 });
 
-test('landing uses five full-screen sample photos with the requested copy', () => {
-    assert.equal((html.match(/class="landing-hero-slide(?: is-active)?"/g) || []).length, 5);
+test('landing waits for curated photos instead of flashing sample slides', () => {
+    const landingStart = html.indexOf('id="page-landing"');
+    const landingEnd = html.indexOf('id="page-home"', landingStart);
+    const landing = html.slice(landingStart, landingEnd);
+    assert.match(landing, /class="landing-hero-slides"[^>]*aria-busy="true"[^>]*><\/div>/);
+    assert.doesNotMatch(landing, /class="landing-hero-slide(?:\s|")/);
     assert.match(html, /<h1[^>]*>이 사진은 어디서 찍은거지\?<\/h1>/);
     assert.match(html, /<p>이끼에서 매력적인 장소와 자세한 위치를 찾아보세요<\/p>/);
     assert.match(css, /\.page-landing\s*\{[^}]*min-height:\s*100svh;/s);
@@ -35,11 +39,12 @@ test('landing uses five full-screen sample photos with the requested copy', () =
     assert.match(css, /body\[data-page="landing"\]\s+\.site-header\s*\{[^}]*background:\s*transparent;/s);
 });
 
-test('landing slideshow advances every five seconds and wraps around', () => {
-    assert.equal(LANDING_SLIDE_INTERVAL_MS, 5_000);
+test('landing slideshow advances every three seconds and wraps around', () => {
+    assert.equal(LANDING_SLIDE_INTERVAL_MS, 3_000);
     assert.equal(getNextLandingSlideIndex(0, 5), 1);
     assert.equal(getNextLandingSlideIndex(4, 5), 0);
     assert.equal(getNextLandingSlideIndex(2, 0), 0);
+    assert.doesNotMatch(app, /prefers-reduced-motion[^\n]+return/);
 });
 
 test('admins can select and order up to five server photos for the landing slideshow', () => {

@@ -1792,7 +1792,7 @@ body.is-logged-in #btn-open-auth {
     min-width: 0;
     width: 100%;
     grid-auto-flow: column;
-    grid-auto-columns: minmax(210px, 25%);
+    grid-auto-columns: calc((100% - 64px) / 5);
     gap: 16px;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
