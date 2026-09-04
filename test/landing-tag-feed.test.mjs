@@ -15,7 +15,7 @@ function photo(id, fields = {}) {
     return { id, visibility: 'public', ...fields };
 }
 
-test('landing tag feed keeps at most twenty curated photos first and shuffles the rest', () => {
+test('landing tag feed keeps at most twenty curated photos first and shuffles only the remaining curated set', () => {
     const photos = Array.from({ length: 28 }, (_, index) => photo(`p${index + 1}`, { tags: ['한국'] }));
     const section = {
         id: 'korea',
@@ -27,9 +27,9 @@ test('landing tag feed keeps at most twenty curated photos first and shuffles th
 
     assert.equal(LANDING_TAG_PIN_LIMIT, 20);
     assert.deepEqual(feed.slice(0, 20).map((item) => item.id), section.photo_ids.slice(0, 20));
-    assert.equal(feed.length, 28);
-    assert.equal(new Set(feed.map((item) => item.id)).size, 28);
-    assert.notDeepEqual(feed.slice(20).map((item) => item.id), photos.slice(20).map((item) => item.id));
+    assert.equal(feed.length, 23);
+    assert.equal(new Set(feed.map((item) => item.id)).size, 23);
+    assert.notDeepEqual(feed.slice(20).map((item) => item.id), section.photo_ids.slice(20));
 });
 
 test('landing tag feed is stable for one session and changes order for another session', () => {
@@ -44,7 +44,7 @@ test('landing tag feed is stable for one session and changes order for another s
     assert.notDeepEqual(first, anotherSession);
 });
 
-test('landing tag feed includes matching or curated public photos and excludes unrelated photos', () => {
+test('landing tag feed treats an explicit server curation as the complete topic set', () => {
     const photos = [
         photo('pinned', { description: '파리 골목' }),
         photo('tagged', { tags: ['한국', '산'] }),
@@ -54,7 +54,19 @@ test('landing tag feed includes matching or curated public photos and excludes u
     ];
     const feed = getLandingTagFeedPhotos({ id: 'korea', title: '한국', photo_ids: ['pinned'] }, photos, 'session');
 
-    assert.deepEqual(new Set(feed.map((item) => item.id)), new Set(['pinned', 'tagged', 'place']));
+    assert.deepEqual(feed.map((item) => item.id), ['pinned']);
+});
+
+test('landing tag feed derives matching public photos when no explicit curation exists', () => {
+    const photos = [
+        photo('tagged', { tags: ['한국', '산'] }),
+        photo('place', { placeName: '한국 서울' }),
+        photo('unrelated', { tags: ['일본'] }),
+        photo('private', { tags: ['한국'], visibility: 'private' })
+    ];
+    const feed = getLandingTagFeedPhotos({ id: 'korea', title: '한국', photo_ids: [] }, photos, 'session');
+
+    assert.deepEqual(new Set(feed.map((item) => item.id)), new Set(['tagged', 'place']));
 });
 
 test('landing tag feed falls back to shuffled public photos before AI tags exist', () => {

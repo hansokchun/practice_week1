@@ -486,22 +486,32 @@ function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'au
 
 const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
 const PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000;
+const LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS = 15000;
 
-function revealPhotoThumbnailGridWhenReady(container) {
+function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
     if (!container) return;
     const images = [...container.querySelectorAll('img')];
     if (!images.length) return;
 
     const loadId = String(Date.now() + Math.random());
     container.dataset.thumbnailLoadId = loadId;
+    if (atomic) {
+        container.classList.add('is-thumbnail-batch-loading');
+        container.setAttribute('aria-busy', 'true');
+    }
 
-    images.slice(0, PHOTO_THUMBNAIL_EAGER_COUNT).forEach((image) => {
+    images.slice(0, atomic ? images.length : PHOTO_THUMBNAIL_EAGER_COUNT).forEach((image, index) => {
         image.loading = 'eager';
-        image.fetchPriority = 'high';
+        image.fetchPriority = index < PHOTO_THUMBNAIL_EAGER_COUNT ? 'high' : 'low';
     });
 
     let remaining = images.length;
     let timeoutId = null;
+    const finishBatch = () => {
+        if (!atomic || container.dataset.thumbnailLoadId !== loadId) return;
+        container.classList.remove('is-thumbnail-batch-loading');
+        container.removeAttribute('aria-busy');
+    };
     const settleImage = (image, isReady) => {
         if (container.dataset.thumbnailLoadId !== loadId) return;
         const host = image.closest('article, figure, button');
@@ -519,6 +529,7 @@ function revealPhotoThumbnailGridWhenReady(container) {
         remaining -= 1;
         if (remaining > 0) return;
         if (timeoutId) window.clearTimeout(timeoutId);
+        finishBatch();
     };
     const revealLoadedImage = async (image) => {
         if (container.dataset.thumbnailLoadId !== loadId) return;
@@ -551,7 +562,8 @@ function revealPhotoThumbnailGridWhenReady(container) {
             if (image.dataset.thumbnailSettled === loadId) return;
             settleImage(image, image.complete && image.naturalWidth > 0);
         });
-    }, PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS);
+        finishBatch();
+    }, atomic ? LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS : PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS);
 }
 
 function setPhotoImageSource(image, photo = {}) {
@@ -3839,11 +3851,11 @@ function renderLandingTagPage() {
     state.tripReviewMap = null;
     const page = $('#page-trip');
     if (!page) return;
-    page.setAttribute('data-landing-tag-page', String(section.id));
+    page.setAttribute('data-landing-tag-section', String(section.id));
     page.innerHTML = `
         <div class="landing-tag-gallery-shell">
             <header class="landing-tag-gallery-header">
-                <button class="back-link" data-route="${LANDING_ROUTE}" type="button">
+                <button class="back-link" data-route="${APP_SECTIONS.HOME}" type="button">
                     <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
                     <span>홈</span>
                 </button>
@@ -3877,6 +3889,8 @@ function renderLandingTagPage() {
             </main>
         </div>
     `;
+    const grid = page.querySelector('.landing-tag-gallery-grid');
+    if (photoPage.items.length) revealPhotoThumbnailGridWhenReady(grid, { atomic: true });
 }
 
 function getLandingTagSessionSeed(sectionId) {
@@ -3907,7 +3921,7 @@ function renderLandingTagLoadingPage() {
     page.innerHTML = `
         <div class="landing-tag-gallery-shell">
             <header class="landing-tag-gallery-header">
-                <button class="back-link" data-route="${LANDING_ROUTE}" type="button"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span>홈</span></button>
+                <button class="back-link" data-route="${APP_SECTIONS.HOME}" type="button"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span>홈</span></button>
                 <div class="landing-tag-gallery-title-line"><h1>사진을 불러오는 중입니다</h1></div>
             </header>
             <div class="landing-tag-gallery-empty">공개 사진을 준비하고 있습니다.</div>
@@ -7272,7 +7286,7 @@ function bindEvents() {
             return;
         }
 
-        const landingTagPageButton = event.target.closest('[data-landing-tag-page]');
+        const landingTagPageButton = event.target.closest('button[data-landing-tag-page]');
         if (landingTagPageButton && !landingTagPageButton.disabled) {
             state.landingTagPage += landingTagPageButton.dataset.landingTagPage === 'previous' ? -1 : 1;
             renderLandingTagPage();

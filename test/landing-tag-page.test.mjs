@@ -50,12 +50,31 @@ test('landing topic page is a map-free regional gallery with thirty desktop phot
     assert.match(pageSource, /data-landing-tag-region/);
     assert.match(pageSource, /data-landing-tag-page="previous"/);
     assert.match(pageSource, /data-landing-tag-page="next"/);
+    assert.match(pageSource, /class="back-link" data-route="\$\{APP_SECTIONS\.HOME\}"/);
+    assert.match(pageSource, /page\.setAttribute\('data-landing-tag-section'/);
+    assert.doesNotMatch(pageSource, /page\.setAttribute\('data-landing-tag-page'/);
+    assert.match(pageSource, /revealPhotoThumbnailGridWhenReady\(grid, \{ atomic: true \}\)/);
     assert.doesNotMatch(pageSource, /trip-review-map|renderTripReviewMap|IntersectionObserver|landing-tag-load-sentinel/);
     assert.match(appSource, /function renderPublicSurfaces\(\)\s*\{\s*if \(document\.body\.dataset\.page === 'tag'\)\s*\{\s*renderLandingTagPage\(\);\s*return;/s);
     assert.match(cssSource, /\.landing-tag-gallery-shell\s*\{[^}]*width:\s*min\(var\(--container\),\s*calc\(100% - 48px\)\);/s);
     assert.match(cssSource, /\.photo-masonry-grid,\s*\.landing-tag-gallery-grid\s*\{[^}]*column-count:\s*3;[^}]*column-gap:\s*18px;/s);
     assert.match(cssSource, /\.landing-tag-gallery-grid \.landing-tag-gallery-card\s*\{[^}]*aspect-ratio:\s*auto;/s);
     assert.match(cssSource, /@media \(max-width:\s*860px\)[\s\S]*\.photo-masonry-grid,\s*\.landing-tag-gallery-grid\s*\{[^}]*column-count:\s*2;[^}]*column-gap:\s*12px;/s);
+});
+
+test('landing tag pagination only responds to its explicit arrow buttons', () => {
+    assert.match(appSource, /event\.target\.closest\('button\[data-landing-tag-page\]'\)/);
+    assert.doesNotMatch(appSource, /event\.target\.closest\('\[data-landing-tag-page\]'\)/);
+});
+
+test('landing tag page keeps placeholders stable and reveals a loaded page as one batch', () => {
+    assert.match(appSource, /function revealPhotoThumbnailGridWhenReady\(container, \{ atomic = false \} = \{\}\)/);
+    assert.match(appSource, /is-thumbnail-batch-loading/);
+    assert.match(appSource, /container\.setAttribute\('aria-busy', 'true'\)/);
+    assert.match(appSource, /LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS = 15000/);
+    assert.match(cssSource, /\.landing-tag-gallery-grid\.is-thumbnail-batch-loading\s*\{/);
+    assert.match(cssSource, /\.landing-tag-gallery-grid\.is-thumbnail-batch-loading \.landing-tag-gallery-card\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*5;/s);
+    assert.match(cssSource, /\.landing-tag-gallery-grid\.is-thumbnail-batch-loading \.landing-tag-gallery-card img\.is-thumbnail-ready\s*\{[^}]*opacity:\s*1;/s);
 });
 
 test('landing admin limits the manually ordered tag lead to twenty photos', () => {

@@ -24,7 +24,7 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
     assert.match(html, /data-landing-query="도로"/);
     assert.match(html, /data-landing-query="바다"/);
-    assert.match(html, /data-landing-query="나무"/);
+    assert.match(html, /data-landing-query="사람"/);
     assert.doesNotMatch(html, /data-landing-query="제주 바다"/);
     assert.doesNotMatch(html, /data-landing-query="서울 야경"/);
     assert.doesNotMatch(html, /data-landing-query="부산"/);
@@ -67,7 +67,8 @@ test('검색창 위에는 지정한 제목만 표시한다', async () => {
 
 test('기본 랜딩 소제목은 현재 공개 사진의 주요 태그와 같은 순서를 사용한다', () => {
     const sections = getDefaultLandingSections();
-    assert.deepEqual(sections.map(({ title }) => title), ['추천', '일본', '길과 거리', '바다와 물가', '나무와 초록', '도시의 장면']);
+    assert.deepEqual(sections.map(({ title }) => title), ['추천', '일본', '도로', '바다', '사람', '도시']);
+    assert.equal(sections.every(({ title }) => !/\s/u.test(title)), true);
     assert.equal(sections.every(({ description }) => description.length > 0), true);
 
     const photos = Array.from({ length: 6 }, (_, index) => ({ id: String(index), visibility: 'public' }));

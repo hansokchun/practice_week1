@@ -45,12 +45,12 @@ export function getLandingTagFeedPhotos(section, photos = [], seed = '') {
     const pinnedIdSet = new Set(pinnedIds);
     const curatedIdSet = new Set(curatedIds);
     const keywords = getSectionKeywords(section);
-    const candidates = publicPhotos.filter((photo) => {
-        const id = String(photo.id || photo.localId || '');
-        if (curatedIdSet.has(id)) return true;
-        const searchText = getPhotoSearchText(photo);
-        return keywords.some((keyword) => searchText.includes(keyword));
-    });
+    const candidates = curatedIds.length
+        ? publicPhotos.filter((photo) => curatedIdSet.has(String(photo.id || photo.localId || '')))
+        : publicPhotos.filter((photo) => {
+            const searchText = getPhotoSearchText(photo);
+            return keywords.some((keyword) => searchText.includes(keyword));
+        });
     const pinned = pinnedIds.map((id) => photoById.get(id)).filter(Boolean);
     const feedCandidates = candidates.length ? candidates : publicPhotos;
     const shuffled = feedCandidates

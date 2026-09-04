@@ -5,10 +5,10 @@ import test from 'node:test';
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = await readFile(new URL('../style.css', import.meta.url), 'utf8');
 
-test('photo thumbnail grids reveal each image independently without waiting forever', () => {
-    assert.match(app, /function revealPhotoThumbnailGridWhenReady\(container\)/);
+test('photo thumbnail grids reveal independently by default and can reveal a tag page atomically', () => {
+    assert.match(app, /function revealPhotoThumbnailGridWhenReady\(container, \{ atomic = false \} = \{\}\)/);
     assert.match(app, /PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000/);
-    assert.match(app, /images\.slice\(0, PHOTO_THUMBNAIL_EAGER_COUNT\)/);
+    assert.match(app, /images\.slice\(0, atomic \? images\.length : PHOTO_THUMBNAIL_EAGER_COUNT\)/);
     assert.match(app, /image\.decode\(\)/);
     assert.match(app, /image\.classList\.add\('is-thumbnail-ready'\)/);
     assert.match(app, /image\.classList\.add\('is-thumbnail-error'\)/);
