@@ -2127,9 +2127,12 @@ function mountExploreMapMarkers(renderState) {
         if (cluster.count === 1) {
             const [photo] = cluster.photos;
             const selected = Boolean(photo.id && photo.id === state.selectedPhotoId);
+            const markerPosition = selected
+                ? { lat: Number(photo.lat), lng: Number(photo.lng) }
+                : cluster.position || { lat: Number(photo.lat), lng: Number(photo.lng) };
             const marker = createGoogleMapsMarker(maps, {
                 map,
-                position: cluster.position || { lat: Number(photo.lat), lng: Number(photo.lng) },
+                position: markerPosition,
                 title: getPhotoFallbackLabel(photo, photo.albumTitle || '공개 사진'),
                 icon: getExplorePinIcon(maps, { type: 'photo', selected }),
                 label: null,

@@ -59,6 +59,8 @@ test('Explore marks a normal pin selected only when the photo itself is selected
     const body = getExploreMarkerMountBody();
 
     assert.match(body, /const selected = Boolean\(photo\.id && photo\.id === state\.selectedPhotoId\)/);
+    assert.match(body, /const markerPosition = selected[\s\S]*lat: Number\(photo\.lat\)[\s\S]*lng: Number\(photo\.lng\)/);
+    assert.match(body, /position: markerPosition/);
     assert.match(body, /zIndex: selected \? 1000 : 10/);
     assert.doesNotMatch(body, /const selected = photo\.album_id === selectedAlbumId \|\| photo\.id === state\.selectedPhotoId/);
 });
