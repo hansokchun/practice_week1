@@ -290,6 +290,7 @@ const state = {
     editingPhotoVisibility: 'private',
     editingPhotoLocationPrecision: 'approximate',
     locationEditorHasPickedLocation: false,
+    locationEditorDraftCoordinates: null,
     selectedLocationPhotoId: null,
     pendingAuthAction: null,
     pendingAuthRoute: null,
@@ -6754,11 +6755,21 @@ function getEditablePhoto() {
     return getLocationEditorPhoto(getMySavedPhotos(), state.selectedLocationPhotoId || state.selectedPhotoId);
 }
 
-function setLocationEditorCoordinateFields(lat, lng) {
-    const latInput = $('#location-lat-input');
-    const lngInput = $('#location-lng-input');
-    if (latInput) latInput.value = Number.isFinite(lat) ? lat.toFixed(6) : '';
-    if (lngInput) lngInput.value = Number.isFinite(lng) ? lng.toFixed(6) : '';
+function setLocationEditorCoordinates(lat, lng, { hasLocation = true } = {}) {
+    const coordinatesAreValid = Number.isFinite(lat)
+        && lat >= -90
+        && lat <= 90
+        && Number.isFinite(lng)
+        && lng >= -180
+        && lng <= 180;
+    state.locationEditorDraftCoordinates = hasLocation && coordinatesAreValid
+        ? { lat, lng }
+        : null;
+    const readout = $('#location-editor-coordinate-readout');
+    if (!readout) return;
+    readout.textContent = state.locationEditorDraftCoordinates
+        ? `위도 ${lat.toFixed(5)} · 경도 ${lng.toFixed(5)}`
+        : '위치 미지정';
 }
 
 function locationEditorHasLocation(photo = getEditablePhoto()) {
@@ -6789,7 +6800,7 @@ function syncLocationEditorPhotoState(photo = getEditablePhoto()) {
     });
     if (mapSaveButton) mapSaveButton.disabled = !hasLocation;
     if (pickButton && !state.locationEditorPickMode) {
-        pickButton.textContent = hasLocation ? '지도에서 위치수정' : '지도에서 위치 지정';
+        pickButton.textContent = hasLocation ? '지도에서 위치 수정' : '지도에서 위치 지정';
     }
 }
 
@@ -6802,7 +6813,7 @@ function setLocationEditorPickMode(enabled) {
     if (button) {
         button.textContent = state.locationEditorPickMode
             ? '위치 지정 완료'
-            : (locationEditorHasLocation() ? '지도에서 위치수정' : '지도에서 위치 지정');
+            : (locationEditorHasLocation() ? '지도에서 위치 수정' : '지도에서 위치 지정');
         button.setAttribute('aria-pressed', state.locationEditorPickMode ? 'true' : 'false');
     }
     state.locationEditorMarker?.setDraggable(state.locationEditorPickMode);
@@ -6841,11 +6852,17 @@ function syncLocationEditorMarker(maps, position, showMarker) {
         position,
         draggable: state.locationEditorPickMode
     }, { mapId: state.googleMapsMapId });
-    state.locationEditorMarker.addListener('dragend', () => {
+    const syncDraggedPosition = () => {
         if (!state.locationEditorPickMode) return;
         const next = state.locationEditorMarker.getPosition();
-        applyLocationEditorPosition(next.lat(), next.lng(), { center: false });
-    });
+        const lat = next.lat();
+        const lng = next.lng();
+        state.locationEditorHasPickedLocation = true;
+        setLocationEditorCoordinates(lat, lng);
+        syncLocationEditorPhotoState();
+    };
+    state.locationEditorMarker.addListener('drag', syncDraggedPosition);
+    state.locationEditorMarker.addListener('dragend', syncDraggedPosition);
 }
 
 async function ensureLocationEditorMap(center, { zoom = null, updateViewport = true, showMarker = true } = {}) {
@@ -6877,7 +6894,7 @@ async function applyLocationEditorPosition(lat, lng, options = {}) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     const position = { lat, lng };
     state.locationEditorHasPickedLocation = true;
-    setLocationEditorCoordinateFields(lat, lng);
+    setLocationEditorCoordinates(lat, lng);
     const map = await ensureLocationEditorMap(position, {
         updateViewport: options.center !== false,
         showMarker: true
@@ -6890,7 +6907,6 @@ async function applyLocationEditorPosition(lat, lng, options = {}) {
 
 async function updateLocationEditorMap(lat, lng, { zoom = 13, showMarker = true } = {}) {
     const position = { lat, lng };
-    setLocationEditorCoordinateFields(lat, lng);
     const map = await ensureLocationEditorMap(position, { zoom, showMarker });
     if (showMarker) state.locationEditorMarker?.setPosition(position);
     return map;
@@ -6906,7 +6922,7 @@ function setLocationEditorPhoto(photoId) {
     const draft = normalizeLocationDraft(photo);
     const hasSavedLocation = hasCompleteLocation(photo);
     setLocationEditorPickMode(false);
-    setLocationEditorCoordinateFields(Number(draft.lat), Number(draft.lng));
+    setLocationEditorCoordinates(Number(draft.lat), Number(draft.lng), { hasLocation: hasSavedLocation });
     if (descriptionInput) descriptionInput.value = photo?.description || '';
     if (dateInput) dateInput.value = formatPhotoDateInput(photo?.date);
     void updateLocationEditorMap(Number(draft.lat), Number(draft.lng), {
@@ -6934,13 +6950,7 @@ function openLocationEditor(eventOrPhotoId) {
         ? eventOrPhotoId
         : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
     const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
-    const latInput = $('#location-lat-input');
-    const lngInput = $('#location-lng-input');
     const message = $('#location-editor-message');
-    if (latInput || lngInput) {
-        const draft = normalizeLocationDraft(photo);
-        setLocationEditorCoordinateFields(Number(draft.lat), Number(draft.lng));
-    }
     if (message) {
         message.textContent = photo
             ? `${getPhotoFallbackLabel(photo, '선택한 사진')}의 위치를 수정합니다.`
@@ -6952,18 +6962,37 @@ function openLocationEditor(eventOrPhotoId) {
 
 async function startLocationEditorMapPick() {
     const nextPickMode = !state.locationEditorPickMode;
-    setLocationEditorPickMode(nextPickMode);
-    const lat = Number($('#location-lat-input')?.value);
-    const lng = Number($('#location-lng-input')?.value);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        await updateLocationEditorMap(lat, lng, { showMarker: locationEditorHasLocation() });
+    if (!nextPickMode) {
+        setLocationEditorPickMode(false);
+        return;
+    }
+    const coordinates = state.locationEditorDraftCoordinates;
+    const fallback = normalizeLocationDraft(getEditablePhoto());
+    const lat = coordinates?.lat ?? Number(fallback.lat);
+    const lng = coordinates?.lng ?? Number(fallback.lng);
+    try {
+        const map = await updateLocationEditorMap(lat, lng, {
+            showMarker: locationEditorHasLocation()
+        });
+        if (!map) {
+            setLocationEditorPickMode(false);
+            const message = $('#location-editor-message');
+            if (message) message.textContent = '지도를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
+            return;
+        }
+        setLocationEditorPickMode(true);
+    } catch (error) {
+        setLocationEditorPickMode(false);
+        const message = $('#location-editor-message');
+        if (message) message.textContent = '지도를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
     }
 }
 
 async function saveManualLocation(event) {
     event.preventDefault();
-    const lat = Number($('#location-lat-input')?.value);
-    const lng = Number($('#location-lng-input')?.value);
+    const coordinates = state.locationEditorDraftCoordinates;
+    const lat = coordinates?.lat;
+    const lng = coordinates?.lng;
     const description = $('#photo-description-input')?.value.trim() || '';
     const dateValue = $('#photo-date-input')?.value;
     const message = $('#location-editor-message');
@@ -7006,6 +7035,7 @@ async function saveManualLocation(event) {
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => savedPhoto.id === updated.id ? updated : savedPhoto);
     state.selectedLocationPhotoId = null;
     state.locationEditorHasPickedLocation = false;
+    state.locationEditorDraftCoordinates = null;
     renderSavedPhotoSurfaces();
     renderTravelDraftSurfaces();
     renderPublicSurfaces();

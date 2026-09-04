@@ -104,10 +104,10 @@ test('manual location assignment lets the author choose accuracy without changin
     assert.match(appSource, /location_precision: state\.locationAssignmentPrecision/);
 });
 
-test('publication review explains saved point disclosure and immediate revocation behavior', () => {
-    assert.match(appMarkup, /data-publication-review/);
+test('publication help explains saved point disclosure and immediate revocation behavior', () => {
+    assert.match(appMarkup, /id="photo-visibility-help"[^>]*role="tooltip"/);
     assert.match(appMarkup, /사진, 설명, 촬영일과 저장한 위치/);
-    assert.match(appMarkup, /Explore와 공개 프로필에서 즉시 사라집니다/);
+    assert.match(appMarkup, /지도와 공개 프로필에서 즉시 사라집니다/);
     assert.match(policyDocument, /`exact`/);
     assert.match(policyDocument, /`approximate`/);
     assert.match(policyDocument, /좌표를 반올림하거나 이동시키지 않는다/);

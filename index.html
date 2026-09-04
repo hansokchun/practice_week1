@@ -1178,7 +1178,8 @@
             </div>
             <div id="location-editor-map" class="location-editor-map">
                 <div id="location-editor-map-canvas" class="location-editor-map-canvas" role="img" aria-label="수정할 사진 위치 지도"></div>
-                <button id="btn-pick-photo-location" class="map-pick-button" type="button">지도에서 위치수정</button>
+                <output id="location-editor-coordinate-readout" class="map-coordinate-readout" aria-live="polite">위치 미지정</output>
+                <button id="btn-pick-photo-location" class="map-pick-button" type="button">지도에서 위치 수정</button>
                 <button class="map-location-save-button btn-primary" type="submit" form="location-editor-form">이 위치로 저장</button>
             </div>
             <form id="location-editor-form" class="location-form">
@@ -1187,7 +1188,15 @@
                 <label for="photo-date-input">촬영 날짜</label>
                 <input id="photo-date-input" type="datetime-local">
                 <div class="photo-visibility-editor" aria-label="사진 공개 여부">
-                    <span>공개 여부</span>
+                    <div class="photo-editor-setting-label">
+                        <span>공개 여부</span>
+                        <span class="photo-editor-help">
+                            <button class="photo-editor-help-trigger" type="button" aria-label="공개 여부 도움말" aria-describedby="photo-visibility-help">
+                                <span class="material-symbols-outlined" aria-hidden="true">help</span>
+                            </button>
+                            <span id="photo-visibility-help" class="photo-editor-tooltip" role="tooltip">공개하면 사진, 설명, 촬영일과 저장한 위치가 다른 사용자에게 표시됩니다. 다시 비공개로 바꾸면 지도와 공개 프로필에서 즉시 사라집니다. 원본 사진과 위치는 내 보관함에 유지됩니다.</span>
+                        </span>
+                    </div>
                     <div>
                         <button class="active" data-photo-visibility="private" type="button">
                             <span class="material-symbols-outlined">lock</span>
@@ -1200,22 +1209,20 @@
                     </div>
                 </div>
                 <div id="photo-location-precision-editor" class="photo-visibility-editor" aria-label="지정한 위치 정확도">
-                    <span>위치 정확도</span>
-                    <p>지정한 지점이 맞다고 확신하면 정확한 위치, 주변 정도만 알면 대략 위치를 선택하세요. 두 경우 모두 지도 핀은 저장한 위치에 표시됩니다.</p>
+                    <div class="photo-editor-setting-label">
+                        <span>위치 정확도</span>
+                        <span class="photo-editor-help">
+                            <button class="photo-editor-help-trigger" type="button" aria-label="위치 정확도 도움말" aria-describedby="photo-location-precision-help">
+                                <span class="material-symbols-outlined" aria-hidden="true">help</span>
+                            </button>
+                            <span id="photo-location-precision-help" class="photo-editor-tooltip" role="tooltip">지정한 지점이 맞다고 확신하면 정확한 위치, 주변 정도만 알면 대략 위치를 선택하세요. 두 경우 모두 지도 핀은 저장한 위치에 표시됩니다.</span>
+                        </span>
+                    </div>
                     <div>
                         <button data-photo-location-precision="exact" type="button">정확한 위치</button>
                         <button class="active" data-photo-location-precision="approximate" type="button">대략 위치</button>
                     </div>
                 </div>
-                <div class="publication-review" data-publication-review>
-                    <strong>공개 전 확인</strong>
-                    <p>공개하면 사진, 설명, 촬영일과 저장한 위치가 다른 사용자에게 표시됩니다. 위치 정확도는 좌표를 흐리는 기능이 아니라 위치에 대한 작성자의 판단을 나타냅니다.</p>
-                    <p>다시 비공개로 바꾸면 Explore와 공개 프로필에서 즉시 사라집니다. 원본 사진과 위치는 내 보관함에 유지됩니다.</p>
-                </div>
-                <label for="location-lat-input">위도</label>
-                <input id="location-lat-input" type="text" inputmode="decimal" placeholder="33.450701" readonly>
-                <label for="location-lng-input">경도</label>
-                <input id="location-lng-input" type="text" inputmode="decimal" placeholder="126.570667" readonly>
                 <div class="auth-actions">
                     <button class="btn-primary" type="submit">수정 저장</button>
                     <button class="btn-secondary" data-close-modal type="button">취소</button>

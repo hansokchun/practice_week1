@@ -39,17 +39,19 @@ test('photo info editor no longer exposes a photo title field', () => {
     assert.equal(html.includes('사진 이름'), false);
 });
 
-test('photo info editor coordinate inputs avoid browser number validation bubbles', () => {
-    assert.match(html, /id="location-lat-input" type="text" inputmode="decimal"[^>]+readonly/);
-    assert.match(html, /id="location-lng-input" type="text" inputmode="decimal"[^>]+readonly/);
-    assert.equal(html.includes('id="location-lat-input" type="number"'), false);
-    assert.equal(html.includes('id="location-lng-input" type="number"'), false);
-    assert.equal(html.includes('id="location-lat-input" type="text" inputmode="decimal" required'), false);
+test('photo info editor shows live coordinates over the map without coordinate fields', () => {
+    assert.doesNotMatch(html, /id="location-lat-input"/);
+    assert.doesNotMatch(html, /id="location-lng-input"/);
+    assert.match(html, /id="location-editor-coordinate-readout"[^>]*aria-live="polite"/);
+    assert.match(styles, /\.map-coordinate-readout\s*\{[^}]*position:\s*absolute;[^}]*top:\s*12px;[^}]*right:\s*12px;/s);
+    assert.match(app, /locationEditorDraftCoordinates:\s*null/);
+    assert.match(app, /function setLocationEditorCoordinates\(lat, lng,/);
+    assert.match(app, /`위도 \$\{lat\.toFixed\(5\)\} · 경도 \$\{lng\.toFixed\(5\)\}`/);
 });
 
 test('photo info editor uses a real map container instead of an iframe embed', () => {
     assert.match(html, /<div id="location-editor-map-canvas" class="location-editor-map-canvas"/);
-    assert.match(html, /id="btn-pick-photo-location"[^>]*>지도에서 위치수정<\/button>/);
+    assert.match(html, /id="btn-pick-photo-location"[^>]*>지도에서 위치 수정<\/button>/);
     assert.equal(html.includes('id="location-editor-map-frame"'), false);
 });
 
@@ -66,6 +68,21 @@ test('map editing expands to a large picker with an in-map save action', () => {
     assert.match(html, /class="map-location-save-button btn-primary"[^>]*form="location-editor-form"[^>]*>이 위치로 저장<\/button>/);
     assert.match(styles, /#location-editor-modal\.is-map-picking \.modal-card\s*\{[^}]*width:\s*min\(1120px,[^}]*height:\s*calc\(100dvh - 32px\);/s);
     assert.match(styles, /#location-editor-modal\.is-map-picking \.location-editor-map\s*\{[^}]*height:\s*100%;/s);
+});
+
+test('photo settings explanations stay behind accessible help icons', () => {
+    const editorStart = html.indexOf('id="location-editor-modal"');
+    const editorEnd = html.indexOf('id="auth-modal"', editorStart);
+    const editorMarkup = html.slice(editorStart, editorEnd);
+
+    assert.match(editorMarkup, /class="photo-editor-help-trigger"[^>]*aria-describedby="photo-visibility-help"/);
+    assert.match(editorMarkup, /id="photo-visibility-help"[^>]*role="tooltip"/);
+    assert.match(editorMarkup, /class="photo-editor-help-trigger"[^>]*aria-describedby="photo-location-precision-help"/);
+    assert.match(editorMarkup, /id="photo-location-precision-help"[^>]*role="tooltip"/);
+    assert.doesNotMatch(editorMarkup, /class="publication-review"/);
+    assert.doesNotMatch(editorMarkup, /위치 정확도는 좌표를 흐리는 기능이 아니라/);
+    assert.match(editorMarkup, /다시 비공개로 바꾸면 지도와 공개 프로필에서 즉시 사라집니다/);
+    assert.match(styles, /\.photo-editor-help:hover \.photo-editor-tooltip,[\s\S]*\.photo-editor-help:focus-within \.photo-editor-tooltip/);
 });
 
 test('location precision controls expose only exact and approximate choices', () => {
