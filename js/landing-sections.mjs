@@ -2,7 +2,7 @@ export const LANDING_SECTION_BATCH_SIZE = 10;
 
 const DEFAULT_LANDING_SECTIONS = [
     { id: 'recommended', title: '추천', description: '지금 이끼에서 먼저 둘러보기 좋은 장면들', sort_order: 0 },
-    { id: 'japan', title: '일본', description: '골목과 도시, 바닷가까지 일본에서 발견한 장소', sort_order: 1 },
+    { id: 'rural', title: '시골', description: '마을과 들길, 자연 가까이에서 발견한 장소', sort_order: 1 },
     { id: 'road', title: '도로', description: '걷다가 마주친 도로와 골목, 철길의 풍경', sort_order: 2 },
     { id: 'water', title: '바다', description: '해안과 호수, 물가 가까이에서 남긴 장면', sort_order: 3 },
     { id: 'people', title: '사람', description: '여행지에서 마주친 사람과 일상의 장면', sort_order: 4 },

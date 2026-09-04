@@ -43,7 +43,7 @@ type LandingDependencies = {
 
 const GENERIC_LANDING_ERROR = "랜딩 사진을 불러오지 못했어요.";
 const PHOTO_COLUMNS = "id,title,description,album,storage_path,owner_id,created_at,date,location_precision,lat,lng,ai_tags,ai_scene,ai_summary,ai_moods";
-const DEFAULT_SECTIONS = ["추천", "한국", "일본", "풍경", "도시"] as const;
+const DEFAULT_SECTIONS = ["추천", "시골", "도로", "바다", "사람", "도시"] as const;
 const SEARCH_CONCEPT_GROUPS = [
   ["길", "도로", "거리", "골목", "산책로", "오솔길", "시골길", "드라이브", "road"],
   ["바다", "해변", "해안", "파도", "항구", "비치", "beach"],
