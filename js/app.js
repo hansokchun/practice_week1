@@ -41,6 +41,7 @@ import {
 import { getAccountDeletionControlState } from './account-deletion.mjs';
 import {
     DEFAULT_ACCOUNT_SETTINGS,
+    getUploadVisibilityPlan,
     loadAccountSettings,
     saveAccountSettings
 } from './account-settings.mjs';
@@ -3111,8 +3112,9 @@ async function saveAccountProfile(event) {
 
     if (message) message.textContent = '프로필을 저장하는 중입니다...';
     if (avatarFile) {
-        const fileName = `${state.currentUser.id}/profile-${Date.now()}-${safeFileName(avatarFile.name)}`;
-        const { url, error: uploadError } = await uploadImage(avatarFile, fileName);
+        const optimizedAvatarFile = await optimizePhotoForUpload(avatarFile);
+        const fileName = `${state.currentUser.id}/profile-${Date.now()}-${safeFileName(optimizedAvatarFile.name)}`;
+        const { url, error: uploadError } = await uploadImage(optimizedAvatarFile, fileName);
         if (uploadError || !url) {
             if (message) message.textContent = uploadError?.message || '프로필 이미지를 업로드하지 못했어요.';
             return;
@@ -6458,6 +6460,24 @@ async function persistStagedPhotos() {
     })) return;
     if (!enforceAccountUploadLimit(selectedPhotos.length)) return;
     if (state.isPersistingUpload) return;
+    const requestedVisibility = state.accountSettings.defaultVisibility;
+    const publishStatus = getNewAccountLimitStatus({
+        user: state.currentUser,
+        photos: state.savedPhotos,
+        requestedVisibility,
+        incomingPublicCount: selectedPhotos.length
+    });
+    const visibilityPlan = getUploadVisibilityPlan({
+        defaultVisibility: requestedVisibility,
+        photoCount: selectedPhotos.length,
+        publicAllowance: publishStatus.isLimited
+            ? publishStatus.publicRemaining
+            : Number.POSITIVE_INFINITY
+    });
+    const plannedPublicCount = visibilityPlan.filter((visibility) => visibility === 'public').length;
+    const limitedPrivateCount = requestedVisibility === 'public'
+        ? selectedPhotos.length - plannedPublicCount
+        : 0;
     state.isPersistingUpload = true;
     const status = $('#upload-storage-status');
     const reviewButton = $('#btn-review-upload');
@@ -6479,6 +6499,7 @@ async function persistStagedPhotos() {
             const { url, storagePath, error: uploadError } = await uploadImage(storageFile, fileName);
             if (uploadError) throw uploadError;
             pendingStoragePath = storagePath;
+            const visibility = visibilityPlan[index] || 'private';
             const record = {
                 id,
                 url,
@@ -6488,10 +6509,10 @@ async function persistStagedPhotos() {
                 lat: hasExifLocation ? exif.lat : null,
                 lng: hasExifLocation ? exif.lng : null,
                 liked: 0,
-                shared: false,
+                shared: visibility === 'public',
                 owner_id: state.currentUser.id,
                 album: null,
-                visibility: 'private',
+                visibility,
                 geo_source: hasExifLocation ? 'exif' : 'unknown',
                 location_precision: getDefaultLocationPrecision(hasExifLocation ? 'exif' : 'unknown')
             };
@@ -6506,9 +6527,15 @@ async function persistStagedPhotos() {
             ...state.savedPhotos.filter((photo) => photo.owner_id !== state.currentUser.id || !saved.some((next) => next.id === photo.id))
         ];
         renderSavedPhotoSurfaces();
+        if (plannedPublicCount) renderPublicSurfaces();
         queuePhotoAiAnalysis(saved);
-        if (status) status.textContent = `${saved.length}장의 사진을 개별사진 보관함에 저장했습니다.`;
-        showToast(`${saved.length}장의 사진을 저장했습니다.`);
+        const completionMessage = plannedPublicCount === saved.length
+            ? `${saved.length}장의 사진을 공개 상태로 저장했습니다.`
+            : limitedPrivateCount
+                ? `${plannedPublicCount}장은 공개, ${limitedPrivateCount}장은 신규 계정 제한으로 비공개 저장했습니다.`
+                : `${saved.length}장의 사진을 개별사진 보관함에 저장했습니다.`;
+        if (status) status.textContent = completionMessage;
+        showToast(completionMessage);
         clearUploadQueue();
         routeTo(getUploadNextRoute(saved.length));
     } catch (error) {
@@ -8093,9 +8120,13 @@ function bindEvents() {
         setAccountProfileEditMode(true);
     });
     $$('[data-settings-visibility]').forEach((button) => {
-        button.addEventListener('click', () => updateAccountSettings({
-            defaultVisibility: button.dataset.settingsVisibility
-        }));
+        button.addEventListener('click', () => {
+            const defaultVisibility = button.dataset.settingsVisibility;
+            updateAccountSettings({ defaultVisibility });
+            showToast(defaultVisibility === 'public'
+                ? '새 사진을 자동 공개합니다.'
+                : '새 사진을 비공개로 보관합니다.');
+        });
     });
     $('#settings-missing-location-notifications')?.addEventListener('change', (event) => {
         updateAccountSettings({ missingLocationNotifications: event.currentTarget.checked });
@@ -8165,13 +8196,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentUser = await getCurrentUser();
         await ensureCurrentUserPublicProfile();
         updateAccountUI();
+        ensureProfileHeaderShell();
         bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
         await loadSavedLibrary();
         await loadLandingCuration();
         await loadPublicProfileNames();
-        ensureProfileHeaderShell();
         showPendingKakaoProfileImport();
         renderStagedPhotos();
         renderSavedPhotoSurfaces();

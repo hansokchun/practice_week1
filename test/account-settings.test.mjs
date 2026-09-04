@@ -4,6 +4,7 @@ import { test } from 'node:test';
 
 import {
     DEFAULT_ACCOUNT_SETTINGS,
+    getUploadVisibilityPlan,
     getAccountSettingsStorageKey,
     loadAccountSettings,
     normalizeAccountSettings,
@@ -53,6 +54,22 @@ test('account settings are stored separately for each signed-in account', () => 
     assert.deepEqual(loadAccountSettings(storage, 'user-2'), DEFAULT_ACCOUNT_SETTINGS);
 });
 
+test('new photo visibility plan follows the account default and respects a public allowance', () => {
+    assert.deepEqual(getUploadVisibilityPlan({
+        defaultVisibility: 'private',
+        photoCount: 3
+    }), ['private', 'private', 'private']);
+    assert.deepEqual(getUploadVisibilityPlan({
+        defaultVisibility: 'public',
+        photoCount: 3
+    }), ['public', 'public', 'public']);
+    assert.deepEqual(getUploadVisibilityPlan({
+        defaultVisibility: 'public',
+        photoCount: 3,
+        publicAllowance: 1
+    }), ['public', 'private', 'private']);
+});
+
 test('profile menu and settings route expose the complete account settings surface', () => {
     const html = readFileSync('index.html', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');
@@ -63,6 +80,8 @@ test('profile menu and settings route expose the complete account settings surfa
     assert.match(html, /id="settings-profile-edit"/u);
     assert.match(html, /data-settings-visibility="private"/u);
     assert.match(html, /data-settings-visibility="public"/u);
+    assert.match(html, /새 사진 자동 공개/u);
+    assert.match(html, />자동 공개<\/button>/u);
     assert.match(html, /id="settings-missing-location-notifications"/u);
     assert.match(html, /id="settings-library-summary-notifications"/u);
     assert.match(html, /id="settings-feedback-open"/u);
@@ -70,6 +89,8 @@ test('profile menu and settings route expose the complete account settings surfa
     assert.match(html, /id="settings-delete-account"/u);
     assert.match(app, /'settings'/u);
     assert.match(app, /function renderAccountSettingsPage\(\)/u);
+    assert.match(app, /getUploadVisibilityPlan\(\{/u);
+    assert.match(app, /새 사진을 자동 공개합니다\./u);
     assert.match(app, /getAuthRequiredRoute\(normalized, state\.currentUser\)[\s\S]*routeTo\(normalized, options\)/u);
     assert.match(css, /\.settings-page-shell\s*\{/u);
     assert.match(css, /\.settings-toggle\s*\{/u);

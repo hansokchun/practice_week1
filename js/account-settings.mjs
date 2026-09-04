@@ -36,3 +36,21 @@ export function saveAccountSettings(storage, userId = '', value = {}) {
     } catch {}
     return settings;
 }
+
+export function getUploadVisibilityPlan({
+    defaultVisibility = 'private',
+    photoCount = 0,
+    publicAllowance = Number.POSITIVE_INFINITY
+} = {}) {
+    const count = Math.max(0, Math.trunc(Number(photoCount) || 0));
+    const allowance = Number.isFinite(publicAllowance)
+        ? Math.max(0, Math.trunc(Number(publicAllowance) || 0))
+        : count;
+    const publicCount = defaultVisibility === 'public'
+        ? Math.min(count, allowance)
+        : 0;
+
+    return Array.from({ length: count }, (_, index) => (
+        index < publicCount ? 'public' : 'private'
+    ));
+}

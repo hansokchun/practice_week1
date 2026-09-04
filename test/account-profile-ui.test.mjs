@@ -135,13 +135,14 @@ test('profile updates use nickname, bio, and uploaded avatar metadata only', () 
     assert.match(app, /uploadImage,/);
     assert.match(app, /async function saveAccountProfile\(event\)/);
     assert.match(app, /const avatarFile = .*#profile-avatar-input/s);
+    assert.match(app, /const optimizedAvatarFile = await optimizePhotoForUpload\(avatarFile\);/);
     assert.match(app, /function clearAccountProfileAvatarPreview\(\)/);
     assert.match(app, /URL\.revokeObjectURL\(state\.accountProfileAvatarPreviewUrl\)/);
     assert.match(app, /state\.accountProfileAvatarPreviewUrl = previewUrl;/);
     assert.match(app, /\$\('#profile-avatar-upload-preview-image'\)/);
     assert.match(app, /\$\('#profile-avatar-upload-preview-fallback'\)/);
     assert.match(app, /const bio = bioInput\s*\?\s*String\(bioInput\.value \|\| ''\)\.trim\(\)\s*:\s*getCurrentAccountProfile\(\)\.bio;/s);
-    assert.match(app, /await uploadImage\(avatarFile,\s*fileName\)/);
+    assert.match(app, /await uploadImage\(optimizedAvatarFile,\s*fileName\)/);
     assert.match(app, /await updateUserMetadata\(\{\s*nickname,\s*bio,\s*avatar_url: avatarUrl\s*\}\)/s);
     assert.match(app, /await updateProfileInDB\(state\.currentUser\.id,\s*\{\s*nickname,\s*bio,\s*avatarUrl\s*\}\)/s);
     assert.match(app, /state\.profileNames = \{ \.\.\.state\.profileNames, \[state\.currentUser\.id\]: nickname \};/);
@@ -163,4 +164,9 @@ test('header profile trigger opens the account menu and profile menu item routes
     assert.match(app, /\$\('#account-profile-edit'\)\?\.addEventListener\('click', \(\) => setAccountProfileEditMode\(true\)\)/);
     assert.match(app, /\$\('#account-profile-form'\)\?\.addEventListener\('submit', saveAccountProfile\)/);
     assert.match(app, /\$\('#profile-avatar-input'\)\?\.addEventListener\('change', handleAccountProfileAvatarChange\)/);
+    const readyHandler = app.slice(app.indexOf("document.addEventListener('DOMContentLoaded'"));
+    assert.ok(
+        readyHandler.indexOf('ensureProfileHeaderShell();') < readyHandler.indexOf('bindEvents();'),
+        'dynamic profile controls must exist before their event listeners are bound'
+    );
 });
