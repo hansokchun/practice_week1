@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const source = readFileSync('js/app.js', 'utf8');
+const styles = readFileSync('style.css', 'utf8');
 
 test('photo detail edit button is shown only for the photo owner', () => {
     const fnStart = source.indexOf('function updatePhotoDetailModal');
@@ -12,6 +13,7 @@ test('photo detail edit button is shown only for the photo owner', () => {
     assert.match(body, /const editButton = modal\?\.querySelector\('\[data-open-photo-editor\]'\)/);
     assert.match(body, /const canEdit = Boolean\(state\.currentUser\?\.id && photo\.owner_id === state\.currentUser\.id\)/);
     assert.match(body, /editButton\.hidden = !canEdit/);
+    assert.match(styles, /\.photo-detail-more-menu button\[hidden\]\s*\{[^}]*display:\s*none;/s);
 });
 
 test('photo editor click path refuses non-owner photos', () => {
