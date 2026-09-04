@@ -9724,6 +9724,9 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .photo-detail-more-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     width: 100%;
     border: 0;
     border-radius: 6px;
@@ -9733,6 +9736,11 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     font-weight: 900;
     padding: 10px 12px;
     text-align: left;
+}
+
+.photo-detail-more-menu button .material-symbols-outlined {
+    flex: 0 0 auto;
+    font-size: 18px;
 }
 
 .photo-detail-more-menu button:hover,

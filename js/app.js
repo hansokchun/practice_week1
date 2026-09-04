@@ -52,6 +52,7 @@ import {
 import { buildAccountNotificationItems } from './account-notifications.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { getPhotoPage } from './photo-pagination.mjs';
+import { getPhotoDownloadPlan, insertGpsExifIntoJpegDataUrl } from './photo-download.mjs';
 import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
@@ -2568,6 +2569,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const likeButton = $('#photo-detail-like');
     const likeCount = $('#photo-detail-like-count');
     const editButton = modal?.querySelector('[data-open-photo-editor]');
+    const downloadButton = modal?.querySelector('[data-download-photo]');
     const showOnMapButton = modal?.querySelector('[data-show-photo-on-map]');
     const reportButton = modal?.querySelector('[data-report-photo]');
     const description = String(photo.description || '').trim();
@@ -2688,6 +2690,11 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
     if (likeCount) likeCount.textContent = String(likeTotal);
     if (editButton) editButton.hidden = !canEdit;
+    if (downloadButton) {
+        downloadButton.hidden = !photo?.url;
+        downloadButton.disabled = false;
+        downloadButton.dataset.photoId = photo.id || '';
+    }
     if (showOnMapButton) {
         const canShowOnExploreMap = Boolean(photo?.id && hasPhotoLocation(photo));
         showOnMapButton.hidden = !canShowOnExploreMap;
@@ -2819,6 +2826,121 @@ function setPhotoDetailMoreMenuOpen(isOpen) {
     const menu = $('[data-photo-detail-more-menu]');
     if (button) button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     if (menu) menu.hidden = !isOpen;
+}
+
+function readBlobAsDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(reader.error || new Error('사진 파일을 읽지 못했습니다.'));
+        reader.readAsDataURL(blob);
+    });
+}
+
+function dataUrlToBlob(dataUrl) {
+    const [header, payload = ''] = String(dataUrl || '').split(',');
+    const mimeType = header.match(/^data:([^;]+)/)?.[1] || 'image/jpeg';
+    const binary = atob(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    return new Blob([bytes], { type: mimeType });
+}
+
+function loadBlobImage(blob) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(blob);
+        image.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(image);
+        };
+        image.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('사진 형식을 변환하지 못했습니다.'));
+        };
+        image.src = objectUrl;
+    });
+}
+
+function canvasToDownloadBlob(canvas, mimeType = 'image/jpeg', quality = 0.94) {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('다운로드 파일을 만들지 못했습니다.'));
+        }, mimeType, quality);
+    });
+}
+
+async function convertDownloadBlobToJpeg(blob) {
+    const image = await loadBlobImage(blob);
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d');
+    if (!context || !canvas.width || !canvas.height) throw new Error('사진 형식을 변환하지 못했습니다.');
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0);
+    return canvasToDownloadBlob(canvas);
+}
+
+async function addGpsExifToJpeg(blob, gps) {
+    const piexifModule = await import('piexifjs');
+    const piexif = piexifModule.default || piexifModule.piexif || piexifModule;
+    const sourceDataUrl = await readBlobAsDataUrl(blob);
+    return dataUrlToBlob(insertGpsExifIntoJpegDataUrl(sourceDataUrl, gps, piexif));
+}
+
+function triggerPhotoDownload(blob, fileName) {
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.hidden = true;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+}
+
+async function downloadSelectedPhoto(eventOrPhotoId) {
+    const photoId = typeof eventOrPhotoId === 'string'
+        ? eventOrPhotoId
+        : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
+    const photo = getPhotoDetailMapCandidates().find((candidate) => String(candidate.id || candidate.localId) === String(photoId));
+    const button = eventOrPhotoId?.currentTarget || $('[data-download-photo]');
+    if (!photo?.url) {
+        showToast('다운로드할 사진을 찾지 못했습니다.');
+        return;
+    }
+
+    if (button) button.disabled = true;
+    setPhotoDetailMoreMenuOpen(false);
+    showToast('사진을 다운로드용으로 준비하고 있습니다.');
+    try {
+        const hydratedPhoto = photo.storage_path
+            ? (await hydratePhotoUrls([photo])).data?.[0] || photo
+            : photo;
+        const response = await fetch(hydratedPhoto.url || photo.url, { credentials: 'omit' });
+        if (!response.ok) throw new Error('사진 파일을 불러오지 못했습니다.');
+        let downloadBlob = await response.blob();
+        const sourceMimeType = String(downloadBlob.type || response.headers.get('content-type') || 'image/jpeg')
+            .split(';')[0]
+            .toLowerCase();
+        const plan = getPhotoDownloadPlan({ ...photo, url: hydratedPhoto.url || photo.url }, sourceMimeType);
+        if (plan.shouldConvertToJpeg) downloadBlob = await convertDownloadBlobToJpeg(downloadBlob);
+        if (plan.gps) downloadBlob = await addGpsExifToJpeg(downloadBlob, plan.gps);
+        triggerPhotoDownload(downloadBlob, plan.fileName);
+        showToast(plan.gps
+            ? '저장된 위치정보를 포함해 다운로드했습니다.'
+            : '사진을 다운로드했습니다.');
+    } catch (error) {
+        showToast(error?.message || '사진을 다운로드하지 못했습니다.');
+    } finally {
+        if (button) button.disabled = false;
+    }
 }
 
 function openPhotoFullscreenFromDetail() {
@@ -7615,6 +7737,13 @@ function bindEvents() {
             event.preventDefault();
             const isOpen = photoDetailMoreButton.getAttribute('aria-expanded') === 'true';
             setPhotoDetailMoreMenuOpen(!isOpen);
+            return;
+        }
+
+        const downloadPhotoButton = event.target.closest('[data-download-photo]');
+        if (downloadPhotoButton) {
+            event.preventDefault();
+            void downloadSelectedPhoto({ currentTarget: downloadPhotoButton });
             return;
         }
 

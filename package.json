@@ -34,5 +34,8 @@
   "homepage": "https://github.com/hansokchun/practice_week1#readme",
   "devDependencies": {
     "vite": "^8.2.1"
+  },
+  "dependencies": {
+    "piexifjs": "1.0.6"
   }
 }
