@@ -12,7 +12,9 @@ test('stored Ikkyee profile stays identical across Google and Kakao logins', () 
         id: 'shared-user',
         nickname: 'Ikkyee Traveler',
         bio: 'Shared account profile',
-        avatar_url: 'https://cdn.example.com/ikkyee-profile.jpg'
+        avatar_url: 'https://cdn.example.com/ikkyee-profile.jpg',
+        cover_path: 'shared-user/cover-123.jpg',
+        cover_url: 'https://cdn.example.com/ikkyee-cover.jpg'
     };
     const googleUser = {
         id: 'shared-user',
@@ -49,7 +51,9 @@ test('new provider accounts keep the avatar empty until the user chooses one', (
     assert.deepEqual(profile, {
         nickname: 'Kakao Name',
         bio: '',
-        avatarUrl: ''
+        avatarUrl: '',
+        coverPath: '',
+        coverUrl: ''
     });
 });
 
@@ -69,6 +73,20 @@ test('an intentionally empty stored avatar does not fall back to the OAuth provi
 
     assert.equal(profile.avatarUrl, '');
     assert.equal(profile.nickname, 'Saved Name');
+});
+
+test('stored cover path and hydrated public URL are part of the shared profile', () => {
+    const profile = resolveAccountProfile({ email: 'owner@example.com' }, {
+        id: 'owner-id',
+        nickname: 'Owner',
+        bio: '',
+        avatar_url: '',
+        cover_path: 'owner-id/cover-123.jpg',
+        cover_url: 'https://cdn.example.com/cover.jpg'
+    });
+
+    assert.equal(profile.coverPath, 'owner-id/cover-123.jpg');
+    assert.equal(profile.coverUrl, 'https://cdn.example.com/cover.jpg');
 });
 
 test('app loads the stored profile before rendering the account header', () => {

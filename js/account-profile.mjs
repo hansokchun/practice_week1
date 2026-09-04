@@ -20,7 +20,9 @@ export function getProviderAccountProfile(user) {
     return {
         nickname,
         bio: normalizeText(metadata.bio),
-        avatarUrl: ''
+        avatarUrl: '',
+        coverPath: '',
+        coverUrl: ''
     };
 }
 
@@ -31,6 +33,8 @@ export function resolveAccountProfile(user, storedProfile = null) {
     return {
         nickname: normalizeText(storedProfile.nickname) || providerProfile.nickname,
         bio: normalizeText(storedProfile.bio),
-        avatarUrl: normalizeAvatarUrl(storedProfile.avatar_url)
+        avatarUrl: normalizeAvatarUrl(storedProfile.avatar_url),
+        coverPath: normalizeText(storedProfile.cover_path),
+        coverUrl: normalizeAvatarUrl(storedProfile.cover_url)
     };
 }

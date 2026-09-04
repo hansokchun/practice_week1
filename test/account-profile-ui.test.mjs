@@ -83,7 +83,7 @@ test('header keeps only the landing logo and account actions', () => {
     assert.match(html, /id="btn-header-upload"/);
 });
 
-test('public profile page includes shared nickname, bio, and avatar editing fields for the current user', () => {
+test('public profile page includes shared nickname, avatar, and cover editing fields for the current user', () => {
     assert.match(html, /id="page-profile"/);
     assert.match(app, /function ensureProfileHeaderShell\(\)/);
     assert.match(app, /id="profile-title"/);
@@ -98,6 +98,10 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(app, /id="profile-nickname-input"/);
     assert.doesNotMatch(app, /id="profile-bio-input"/);
     assert.match(app, /id="profile-avatar-input"/);
+    assert.match(html, /id="profile-cover-edit-trigger"/);
+    assert.match(app, /id="profile-cover-input"/);
+    assert.match(app, /accept="image\/jpeg,image\/png,image\/webp"/);
+    assert.match(html, />배경 사진 변경</);
     assert.match(app, /type="file"/);
     assert.match(app, /accept="image\/\*"/);
     assert.match(app, /id="account-profile-save"/);
@@ -118,6 +122,8 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.match(css, /\.account-profile-field input,\s*\.account-profile-field textarea\s*\{/s);
     assert.match(css, /\.profile-edit-photo-field\s*\{/);
     assert.match(css, /\.profile-avatar-upload-control\s*\{/);
+    assert.match(css, /\.profile-cover-edit-trigger\s*\{/);
+    assert.match(css, /\.profile-cover-file-input\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /class="profile-title-row"/);
     assert.doesNotMatch(app, /profile-edit-avatar/);
     assert.match(app, /class="profile-avatar-file-input"/);
@@ -128,23 +134,30 @@ test('public profile page includes shared nickname, bio, and avatar editing fiel
     assert.doesNotMatch(app, /profile-avatar-url-input/);
 });
 
-test('profile updates use nickname, bio, and uploaded avatar metadata only', () => {
+test('profile updates persist the selected cover image with the shared profile', () => {
     assert.match(auth, /export async function updateUserMetadata\(metadata\)/);
     assert.match(auth, /export async function uploadImage\(file, fileName\)/);
+    assert.match(auth, /export async function uploadProfileCover\(file, userId\)/);
+    assert.match(auth, /export async function removeProfileAsset\(storagePath\)/);
     assert.match(app, /updateUserMetadata,/);
     assert.match(app, /uploadImage,/);
+    assert.match(app, /uploadProfileCover,/);
+    assert.match(app, /removeProfileAsset,/);
     assert.match(app, /async function saveAccountProfile\(event\)/);
     assert.match(app, /const avatarFile = .*#profile-avatar-input/s);
+    assert.match(app, /const coverFile = .*#profile-cover-input/s);
     assert.match(app, /const optimizedAvatarFile = await optimizePhotoForUpload\(avatarFile\);/);
     assert.match(app, /function clearAccountProfileAvatarPreview\(\)/);
     assert.match(app, /URL\.revokeObjectURL\(state\.accountProfileAvatarPreviewUrl\)/);
     assert.match(app, /state\.accountProfileAvatarPreviewUrl = previewUrl;/);
+    assert.match(app, /state\.accountProfileCoverPreviewUrl = previewUrl;/);
     assert.match(app, /\$\('#profile-avatar-upload-preview-image'\)/);
     assert.match(app, /\$\('#profile-avatar-upload-preview-fallback'\)/);
-    assert.match(app, /const bio = bioInput\s*\?\s*String\(bioInput\.value \|\| ''\)\.trim\(\)\s*:\s*getCurrentAccountProfile\(\)\.bio;/s);
+    assert.match(app, /const bio = bioInput\s*\?\s*String\(bioInput\.value \|\| ''\)\.trim\(\)\s*:\s*currentProfile\.bio;/s);
     assert.match(app, /await uploadImage\(optimizedAvatarFile,\s*fileName\)/);
     assert.match(app, /await updateUserMetadata\(\{\s*nickname,\s*bio,\s*avatar_url: avatarUrl\s*\}\)/s);
-    assert.match(app, /await updateProfileInDB\(state\.currentUser\.id,\s*\{\s*nickname,\s*bio,\s*avatarUrl\s*\}\)/s);
+    assert.match(app, /await uploadProfileCover\(optimizedCoverFile, state\.currentUser\.id\)/);
+    assert.match(app, /await updateProfileInDB\(state\.currentUser\.id,\s*\{\s*nickname,\s*bio,\s*avatarUrl,\s*coverPath\s*\}\)/s);
     assert.match(app, /state\.profileNames = \{ \.\.\.state\.profileNames, \[state\.currentUser\.id\]: nickname \};/);
     assert.doesNotMatch(app, /profile-website-input/);
     assert.doesNotMatch(app, /profile-username-input/);
@@ -155,6 +168,7 @@ test('header profile trigger opens the account menu and profile menu item routes
     assert.match(app, /function openAccountProfilePage\(\)/);
     assert.match(app, /function setAccountProfileEditMode\(isEditing\)/);
     assert.match(app, /function handleAccountProfileAvatarChange\(event\)/);
+    assert.match(app, /function handleAccountProfileCoverChange\(event\)/);
     assert.match(app, /function setAccountMenuOpen\(isOpen\)/);
     assert.match(app, /\$\('#btn-open-profile'\)\?\.addEventListener\('click', \(event\) =>/);
     assert.match(app, /accountRouteButton\.dataset\.accountRoute === 'profile'\) openAccountProfilePage\(\)/);
@@ -164,6 +178,7 @@ test('header profile trigger opens the account menu and profile menu item routes
     assert.match(app, /\$\('#account-profile-edit'\)\?\.addEventListener\('click', \(\) => setAccountProfileEditMode\(true\)\)/);
     assert.match(app, /\$\('#account-profile-form'\)\?\.addEventListener\('submit', saveAccountProfile\)/);
     assert.match(app, /\$\('#profile-avatar-input'\)\?\.addEventListener\('change', handleAccountProfileAvatarChange\)/);
+    assert.match(app, /\$\('#profile-cover-input'\)\?\.addEventListener\('change', handleAccountProfileCoverChange\)/);
     const readyHandler = app.slice(app.indexOf("document.addEventListener('DOMContentLoaded'"));
     assert.ok(
         readyHandler.indexOf('ensureProfileHeaderShell();') < readyHandler.indexOf('bindEvents();'),

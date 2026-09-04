@@ -26,11 +26,13 @@ import {
     updatePhotoInfo,
     updatePhotosVisibility,
     uploadImage,
+    uploadProfileCover,
     updateAlbum,
     updateAlbumVisibility,
     deletePhoto,
     replaceAlbumPhotos,
     removeUploadedImage,
+    removeProfileAsset,
     requestPhotoAiAnalysis,
     saveLandingHeroSlides,
     saveLandingSection,
@@ -333,6 +335,7 @@ const state = {
     isNotificationPopoverOpen: false,
     accountProfileEditMode: false,
     accountProfileAvatarPreviewUrl: null,
+    accountProfileCoverPreviewUrl: null,
     profileMap: null,
     profileMarkers: [],
     profileMapZoomListener: null,
@@ -3048,7 +3051,9 @@ function getPublicProfileDetails(ownerId) {
         return {
             nickname: currentProfile.nickname,
             bio: currentProfile.bio,
-            avatarUrl: currentProfile.avatarUrl
+            avatarUrl: currentProfile.avatarUrl,
+            coverPath: currentProfile.coverPath,
+            coverUrl: currentProfile.coverUrl
         };
     }
 
@@ -3058,7 +3063,9 @@ function getPublicProfileDetails(ownerId) {
     });
     const bio = String(publicProfile?.bio || '').trim();
     const avatarUrl = String(publicProfile?.avatar_url || publicProfile?.avatarUrl || '').trim();
-    return { nickname, bio, avatarUrl };
+    const coverPath = String(publicProfile?.cover_path || publicProfile?.coverPath || '').trim();
+    const coverUrl = String(publicProfile?.cover_url || publicProfile?.coverUrl || '').trim();
+    return { nickname, bio, avatarUrl, coverPath, coverUrl };
 }
 
 function ensureProfileHeaderShell() {
@@ -3094,6 +3101,7 @@ function ensureProfileHeaderShell() {
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
                 <input id="profile-avatar-input" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
+                <input id="profile-cover-input" class="profile-cover-file-input" type="file" accept="image/jpeg,image/png,image/webp" disabled>
                 <div class="account-profile-fields">
                     <div class="account-profile-field profile-edit-name-field">
                         <label for="profile-nickname-input">닉네임</label>
@@ -3142,9 +3150,24 @@ function clearAccountProfileAvatarPreview() {
     state.accountProfileAvatarPreviewUrl = null;
 }
 
+function clearAccountProfileCoverPreview() {
+    if (!state.accountProfileCoverPreviewUrl) return;
+    URL.revokeObjectURL(state.accountProfileCoverPreviewUrl);
+    state.accountProfileCoverPreviewUrl = null;
+}
+
+function setProfileCoverDisplay(coverUrl = '') {
+    const profileHeroImage = $('.profile-cover > img');
+    if (!profileHeroImage) return;
+    const fallbackUrl = getMySavedPhotos()[0]?.url || MAIN_BG_4_URL;
+    profileHeroImage.src = coverUrl || fallbackUrl;
+    profileHeroImage.alt = '';
+}
+
 function renderAccountProfilePanel() {
     ensureProfileHeaderShell();
     clearAccountProfileAvatarPreview();
+    clearAccountProfileCoverPreview();
     const profile = getCurrentAccountProfile();
     const photoCount = getMySavedPhotos().length;
     const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
@@ -3168,11 +3191,14 @@ function renderAccountProfilePanel() {
         profile.avatarUrl,
         profile.nickname
     );
+    setProfileCoverDisplay(profile.coverUrl);
 
     const displayNameInput = $('#profile-nickname-input');
     if (displayNameInput) displayNameInput.value = profile.nickname;
     const avatarInput = $('#profile-avatar-input');
     if (avatarInput) avatarInput.value = '';
+    const coverInput = $('#profile-cover-input');
+    if (coverInput) coverInput.value = '';
     const avatarUploadLabel = $('[data-profile-avatar-upload-label]');
     if (avatarUploadLabel) avatarUploadLabel.textContent = profile.avatarUrl ? '사진 변경' : '사진 추가';
 }
@@ -3187,6 +3213,8 @@ function setAccountProfileEditMode(isEditing) {
     const message = $('#account-profile-message');
     const profileCard = $('.profile-card');
     const avatarInput = $('#profile-avatar-input');
+    const coverInput = $('#profile-cover-input');
+    const coverEditTrigger = $('#profile-cover-edit-trigger');
 
     if (!state.accountProfileEditMode && state.selectedPublicOwnerId === state.currentUser?.id) {
         renderAccountProfilePanel();
@@ -3198,6 +3226,10 @@ function setAccountProfileEditMode(isEditing) {
     if (message) message.textContent = '';
     if (profileCard) profileCard.classList.toggle('is-editing', state.accountProfileEditMode);
     if (avatarInput) avatarInput.disabled = !state.accountProfileEditMode;
+    if (coverInput) coverInput.disabled = !state.accountProfileEditMode;
+    if (coverEditTrigger) {
+        coverEditTrigger.hidden = !state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
+    }
 }
 
 function openAccountProfilePage() {
@@ -3250,6 +3282,27 @@ function handleAccountProfileAvatarChange(event) {
     if (message) message.textContent = '저장하면 프로필 이미지가 반영됩니다.';
 }
 
+function handleAccountProfileCoverChange(event) {
+    const coverFile = event.target?.files?.[0];
+    const message = $('#account-profile-message');
+    if (!coverFile) return;
+    const supportedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const validation = validatePhotoFile(coverFile);
+    if (!validation.accepted || !supportedTypes.has(coverFile.type)) {
+        if (event.target) event.target.value = '';
+        clearAccountProfileCoverPreview();
+        setProfileCoverDisplay(getCurrentAccountProfile().coverUrl);
+        if (message) message.textContent = validation.reason || 'JPG, PNG, WebP 이미지만 등록할 수 있어요.';
+        return;
+    }
+
+    clearAccountProfileCoverPreview();
+    const previewUrl = URL.createObjectURL(coverFile);
+    state.accountProfileCoverPreviewUrl = previewUrl;
+    setProfileCoverDisplay(previewUrl);
+    if (message) message.textContent = '저장하면 프로필 배경이 반영됩니다.';
+}
+
 async function saveAccountProfile(event) {
     event.preventDefault();
     const message = $('#account-profile-message');
@@ -3267,30 +3320,56 @@ async function saveAccountProfile(event) {
     }
 
     const bioInput = $('#profile-bio-input');
-    const bio = bioInput ? String(bioInput.value || '').trim() : getCurrentAccountProfile().bio;
+    const currentProfile = getCurrentAccountProfile();
+    const bio = bioInput ? String(bioInput.value || '').trim() : currentProfile.bio;
     const avatarFile = $('#profile-avatar-input')?.files?.[0] || null;
-    let avatarUrl = getCurrentAccountProfile().avatarUrl;
+    const coverFile = $('#profile-cover-input')?.files?.[0] || null;
+    let avatarUrl = currentProfile.avatarUrl;
+    let coverPath = currentProfile.coverPath;
+    let coverUrl = currentProfile.coverUrl;
+    let uploadedAvatarPath = '';
+    let uploadedCoverPath = '';
 
     if (message) message.textContent = '프로필을 저장하는 중입니다...';
     if (avatarFile) {
         const optimizedAvatarFile = await optimizePhotoForUpload(avatarFile);
         const fileName = `${state.currentUser.id}/profile-${Date.now()}-${safeFileName(optimizedAvatarFile.name)}`;
-        const { url, error: uploadError } = await uploadImage(optimizedAvatarFile, fileName);
+        const { url, storagePath, error: uploadError } = await uploadImage(optimizedAvatarFile, fileName);
         if (uploadError || !url) {
             if (message) message.textContent = uploadError?.message || '프로필 이미지를 업로드하지 못했어요.';
             return;
         }
         avatarUrl = url;
+        uploadedAvatarPath = storagePath || '';
+    }
+    if (coverFile) {
+        const optimizedCoverFile = await optimizePhotoForUpload(coverFile);
+        const { url, storagePath, error: uploadError } = await uploadProfileCover(optimizedCoverFile, state.currentUser.id);
+        if (uploadError || !url || !storagePath) {
+            if (uploadedAvatarPath) await removeUploadedImage(uploadedAvatarPath);
+            if (message) message.textContent = uploadError?.message || '프로필 배경을 업로드하지 못했어요.';
+            return;
+        }
+        uploadedCoverPath = storagePath;
+        coverPath = storagePath;
+        coverUrl = url;
     }
     const { data: savedProfile, error: profileError } = await updateProfileInDB(state.currentUser.id, {
         nickname,
         bio,
-        avatarUrl
+        avatarUrl,
+        coverPath
     });
     if (profileError) {
+        if (uploadedAvatarPath) await removeUploadedImage(uploadedAvatarPath);
+        if (uploadedCoverPath) await removeProfileAsset(uploadedCoverPath);
         if (message) message.textContent = profileError.message || '공유 프로필을 저장하지 못했어요.';
         return;
     }
+    if (uploadedCoverPath && currentProfile.coverPath && currentProfile.coverPath !== uploadedCoverPath) {
+        await removeProfileAsset(currentProfile.coverPath);
+    }
+    coverUrl = savedProfile?.cover_url || coverUrl;
     const { user } = await updateUserMetadata({
         nickname,
         bio,
@@ -3306,7 +3385,9 @@ async function saveAccountProfile(event) {
             id: state.currentUser.id,
             nickname,
             bio,
-            avatar_url: avatarUrl
+            avatar_url: avatarUrl,
+            cover_path: coverPath,
+            cover_url: coverUrl
         }
     };
     updateAccountUI();
@@ -3315,6 +3396,7 @@ async function saveAccountProfile(event) {
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
     clearAccountProfileAvatarPreview();
+    clearAccountProfileCoverPreview();
     showToast('프로필을 저장했어요.');
 }
 
@@ -3523,7 +3605,9 @@ async function ensureCurrentUserPublicProfile() {
             id: user.id,
             nickname: resolvedProfile.nickname,
             bio: resolvedProfile.bio,
-            avatar_url: resolvedProfile.avatarUrl
+            avatar_url: resolvedProfile.avatarUrl,
+            cover_path: resolvedProfile.coverPath,
+            cover_url: resolvedProfile.coverUrl
         }
     };
 }
@@ -3939,7 +4023,12 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     const displayedPhotos = showAllPublicPhotos
         ? ownerPhotos
         : getProfilePhotoPreview(ownerPhotos, { seed: ownerId, limit: 7 });
-    const cover = ownerPhotos[0]?.url || MAIN_BG_4_URL;
+    const cover = getProfileHeroImage(
+        authorDetails.coverUrl,
+        {},
+        [],
+        ownerPhotos[0]?.url || MAIN_BG_4_URL
+    );
     setProfileOwnershipLayout(isOwnProfile);
 
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
@@ -4791,7 +4880,12 @@ function renderPublicSurfaces() {
 
     const profileHeroImage = $('.profile-cover > img');
     if (profileHeroImage) {
-        profileHeroImage.src = getProfileHeroImage(selected, profileAlbums, MAIN_BG_4_URL);
+        profileHeroImage.src = getProfileHeroImage(
+            getPublicProfileDetails(selected.owner_id).coverUrl,
+            selected,
+            profileAlbums,
+            MAIN_BG_4_URL
+        );
         profileHeroImage.alt = `${authorName} public profile cover`;
     }
 
@@ -8301,6 +8395,7 @@ function bindEvents() {
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
     $('#profile-avatar-input')?.addEventListener('change', handleAccountProfileAvatarChange);
+    $('#profile-cover-input')?.addEventListener('change', handleAccountProfileCoverChange);
     $('#settings-profile-edit')?.addEventListener('click', () => {
         openAccountProfilePage();
         setAccountProfileEditMode(true);

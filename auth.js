@@ -20,7 +20,7 @@ import {
 
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
-const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url';
+const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url,cover_path';
 const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,date,created_at,title,description,lat,lng,location_precision,location_assignment_skipped,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
@@ -96,6 +96,15 @@ async function hydrateSignedAlbumCoverUrls(sb, albums = []) {
             .map((item) => [item.path, item.signedUrl])
     );
     return applySignedAlbumCoverUrls(albums, signedUrlByPath);
+}
+
+function hydrateProfileAssetUrls(sb, profiles = []) {
+    return profiles.map((profile) => {
+        const coverPath = String(profile?.cover_path || '').trim();
+        if (!coverPath) return { ...profile, cover_url: '' };
+        const { data } = sb.storage.from('avatars').getPublicUrl(coverPath);
+        return { ...profile, cover_url: data?.publicUrl || '' };
+    });
 }
 
 // ═══════════════════════════════════════════════════
@@ -250,12 +259,13 @@ export async function updateProfileInDB(userId, profile = {}) {
                 id: userId,
                 nickname: profile.nickname,
                 bio: profile.bio || '',
-                avatar_url: profile.avatarUrl || ''
+                avatar_url: profile.avatarUrl || '',
+                cover_path: profile.coverPath || ''
             }, { onConflict: 'id' })
             .select(PROFILE_SELECT_COLUMNS)
             .single();
         if (error) throw error;
-        return { data, error: null };
+        return { data: hydrateProfileAssetUrls(sb, data ? [data] : [])[0] || null, error: null };
     } catch (error) {
         return { data: null, error };
     }
@@ -272,7 +282,7 @@ export async function fetchProfilesByIds(userIds) {
             .select(PROFILE_SELECT_COLUMNS)
             .in('id', ids);
         if (error) throw error;
-        return { data: data || [], error: null };
+        return { data: hydrateProfileAssetUrls(sb, data || []), error: null };
     } catch (error) {
         return { data: [], error };
     }
@@ -934,6 +944,48 @@ export async function uploadImage(file, fileName) {
     } catch (error) {
         if (uploadedPath) await removeUploadedImage(uploadedPath);
         return { url: null, storagePath: null, error };
+    }
+}
+
+export async function uploadProfileCover(file, userId) {
+    const extensionByMime = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp'
+    };
+    const extension = extensionByMime[file?.type];
+    if (!extension || !userId) {
+        return { url: null, storagePath: null, error: new Error('지원하지 않는 배경 이미지 형식입니다.') };
+    }
+
+    let uploadedPath = null;
+    try {
+        const sb = getSupabase();
+        const storagePath = `${userId}/cover-${crypto.randomUUID()}.${extension}`;
+        const { error } = await sb.storage
+            .from('avatars')
+            .upload(storagePath, file, getStorageUploadOptions(file));
+        if (error) throw error;
+        uploadedPath = storagePath;
+
+        const { data } = sb.storage.from('avatars').getPublicUrl(storagePath);
+        if (!data?.publicUrl) throw new Error('배경 이미지 주소를 만들지 못했습니다.');
+        return { url: data.publicUrl, storagePath, error: null };
+    } catch (error) {
+        if (uploadedPath) await removeProfileAsset(uploadedPath);
+        return { url: null, storagePath: null, error };
+    }
+}
+
+export async function removeProfileAsset(storagePath) {
+    if (!storagePath) return { error: null };
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.storage.from('avatars').remove([storagePath]);
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        return { error };
     }
 }
 

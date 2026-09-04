@@ -390,10 +390,12 @@ test('site footer provides global archive information after the app pages', () =
     assert.ok(footerIndex > mainEndIndex);
     assert.match(markup, /<footer class="site-footer" aria-labelledby="site-footer-title">/);
     assert.match(markup, /<h2 id="site-footer-title">Ikkyee<\/h2>/);
-    assert.match(markup, /장소로 기억하는 여행 사진 아카이브/);
-    assert.match(markup, /href="#\/">Home<\/a>/);
-    assert.match(markup, /href="#\/explore">Explore<\/a>/);
-    assert.match(markup, /사진은 기본 비공개로 보관됩니다\./);
+    assert.match(markup, /사진과 장소, 위치를 함께 기록하고/);
+    assert.match(markup, /href="#\/">메인<\/a>/);
+    assert.match(markup, /href="#\/explore">지도<\/a>/);
+    assert.match(markup, /개인정보 처리방침/);
+    assert.match(markup, /내 사진은 기본 비공개로 안전하게 보관됩니다\./);
+    assert.match(markup, /정확한 위치 또는 대략적인 위치/);
     assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*0;[^}]*radial-gradient\(circle at 12% 18%,\s*rgba\(255,\s*255,\s*255,\s*0\.14\),\s*transparent 34%\),[\s\S]*linear-gradient\(135deg,\s*var\(--teal-dark\)\s*0%,\s*var\(--teal\)\s*100%\);/s);
     assert.match(styles, /\.site-footer__inner\s*\{[^}]*grid-template-columns:/s);
     assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*background:\s*var\(--surface\);[^}]*color:\s*var\(--teal-dark\);/s);

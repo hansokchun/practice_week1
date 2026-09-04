@@ -22,5 +22,5 @@ test('photo select columns match the live photos schema used by saved photo surf
 test('profile select columns include the canonical shared profile fields', () => {
     const columns = getSelectColumns('PROFILE_SELECT_COLUMNS');
 
-    assert.deepEqual(columns, ['id', 'nickname', 'bio', 'avatar_url']);
+    assert.deepEqual(columns, ['id', 'nickname', 'bio', 'avatar_url', 'cover_path']);
 });

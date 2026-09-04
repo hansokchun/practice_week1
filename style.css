@@ -9160,6 +9160,42 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     background: linear-gradient(180deg, rgba(26, 77, 78, 0.12) 0%, rgba(249, 247, 242, 0.72) 54%, rgba(249, 247, 242, 0.99) 100%);
 }
 
+.profile-cover-edit-trigger {
+    position: absolute;
+    z-index: 3;
+    top: 24px;
+    right: max(24px, calc((100% - var(--container)) / 2));
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    border-radius: 8px;
+    background: rgba(26, 77, 78, 0.82);
+    color: #fff;
+    padding: 0 15px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(10, 43, 44, 0.2);
+    backdrop-filter: blur(8px);
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.profile-cover-edit-trigger:hover,
+.profile-cover-edit-trigger:focus-visible {
+    background: var(--teal-dark);
+    transform: scale(1.01);
+}
+
+.profile-cover-edit-trigger[hidden] {
+    display: none;
+}
+
+.profile-cover-edit-trigger .material-symbols-outlined {
+    font-size: 20px;
+}
+
 .profile-card {
     position: relative;
     z-index: 2;
@@ -9213,6 +9249,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .profile-avatar-file-input {
+    display: none;
+}
+
+.profile-cover-file-input {
     display: none;
 }
 
@@ -12911,6 +12951,14 @@ body.modal-open {
     .profile-cover {
         min-height: 280px;
         padding: 16px 0 28px;
+    }
+
+    .profile-cover-edit-trigger {
+        top: 14px;
+        right: 16px;
+        min-height: 40px;
+        padding: 0 12px;
+        font-size: 13px;
     }
 
     .profile-map-preview,
