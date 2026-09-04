@@ -72,9 +72,9 @@ test('selected personal photos can be published or made private in one guarded a
     assert.match(markup, /id="btn-private-selected-photos"[\s\S]*lock[\s\S]*비공개로 전환/);
     assert.match(body, /enforceVerifiedAccount\('publish'\)/);
     assert.match(body, /incomingPublicCount:\s*getPhotosBecomingPublic\(selectedPhotoIds\)/);
-    assert.match(body, /window\.confirm\([\s\S]*대략 위치/);
-    assert.match(body, /const publicLocationPrecision = nextVisibility === 'public' \? 'approximate' : undefined;/);
-    assert.match(body, /updatePhotosVisibility\(selectedPhotoIds, nextVisibility, publicLocationPrecision\)/);
+    assert.match(body, /window\.confirm\([\s\S]*저장된 위치와 위치 정확도 표시/);
+    assert.doesNotMatch(body, /const publicLocationPrecision/);
+    assert.match(body, /updatePhotosVisibility\(selectedPhotoIds, nextVisibility\)/);
     assert.match(body, /state\.selectedPersonalPhotoIds = \[\];/);
     assert.match(body, /renderSavedPhotoSurfaces\(\);[\s\S]*renderPublicSurfaces\(\);/);
     assert.match(source, /btn-publish-selected-photos[^\n]+updateSelectedPersonalPhotosVisibility\('public'\)/);

@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const mobileExplore = readFileSync('mobile/src/explore-photo-repository.ts', 'utf8');
 const mobilePublisher = readFileSync('mobile/src/publication-publisher.ts', 'utf8');
-const baseline = readFileSync('supabase/migrations/20260724000000_initial_remote_schema_baseline.sql', 'utf8');
+const accuracyMigration = readFileSync('supabase/migrations/20260904123000_reinterpret_location_precision_as_accuracy.sql', 'utf8');
 const audit = readFileSync('docs/mobile/public-location-policy-audit.md', 'utf8');
 
 test('mobile Explore accepts only public exact or approximate map locations', () => {
@@ -13,16 +13,16 @@ test('mobile Explore accepts only public exact or approximate map locations', ()
   assert.match(mobileExplore, /!\["approximate", "exact"\]\.includes/);
 });
 
-test('database projection enforces hidden, approximate, and exact publication boundaries', () => {
-  assert.match(baseline, /new\.location_precision = 'hidden'[\s\S]*new\.lat := null;[\s\S]*new\.lng := null;/);
-  assert.match(baseline, /new\.location_precision = 'approximate'[\s\S]*round\(source_lat::numeric, 2\)[\s\S]*round\(source_lng::numeric, 2\)/);
-  assert.match(baseline, /else[\s\S]*new\.lat := source_lat;[\s\S]*new\.lng := source_lng;/);
+test('database keeps the selected point unchanged for both accuracy labels', () => {
+  assert.match(accuracyMigration, /set lat = source\.lat,\s*lng = source\.lng/s);
+  assert.doesNotMatch(accuracyMigration, /round\s*\(/i);
+  assert.match(accuracyMigration, /location_precision in \('exact', 'approximate'\)/);
 });
 
-test('the mobile audit records the current conservative publication boundary', () => {
-  assert.match(mobilePublisher, /location_precision: "hidden"/);
-  assert.match(audit, /mobile publication[^\n]*`hidden`/i);
-  assert.match(audit, /web[^\n]*`exact`[^\n]*`approximate`[^\n]*`hidden`/i);
-  assert.match(audit, /shared Supabase `photos` rows/i);
-  assert.match(audit, /does not claim[^\n]*mobile[^\n]*exact/i);
+test('the mobile audit records location accuracy independently from coordinates', () => {
+  assert.match(mobilePublisher, /location_precision: "approximate"/);
+  assert.match(audit, /좌표의 이동이나 공개 범위가 아니라/);
+  assert.match(audit, /`exact`[^\n]*`approximate`/i);
+  assert.match(audit, /같은 Supabase `photos` 행/);
+  assert.match(audit, /모바일 신규 게시 흐름은 아직 사진 위치를 서버로 전송하지 않으므로/);
 });

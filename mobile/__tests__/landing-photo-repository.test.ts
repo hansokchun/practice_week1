@@ -33,7 +33,7 @@ describe("landing photo repository", () => {
     const photos = [{
       id: "photo-a", description: "제주 바다", title: null, album: "한국 여행", ownerId: "owner-a",
       createdAt: "2026-08-27T00:00:00.000Z", date: null, imageUrl: "https://example.com/a.jpg",
-      locationPrecision: "hidden" as const, lat: null, lng: null
+      locationPrecision: "approximate" as const, lat: null, lng: null
     }];
     expect(filterLandingPhotos(photos, "제주")).toEqual(photos);
     expect(filterLandingPhotos(photos, "도쿄")).toEqual([]);
@@ -47,7 +47,7 @@ describe("landing photo repository", () => {
   it("ranks exact copy before synonym tags and AI scene matches", () => {
     const base = {
       title: null, album: null, ownerId: "owner", createdAt: "2026-08-30T00:00:00.000Z",
-      date: null, imageUrl: "https://example.com/photo.jpg", locationPrecision: "hidden" as const,
+      date: null, imageUrl: "https://example.com/photo.jpg", locationPrecision: "approximate" as const,
       lat: null, lng: null, aiSummary: null, aiMoods: [] as const
     };
     const photos = [

@@ -9,7 +9,7 @@ export type LandingPhoto = {
   readonly createdAt: string;
   readonly date: string | null;
   readonly imageUrl: string;
-  readonly locationPrecision: "hidden" | "approximate" | "exact";
+  readonly locationPrecision: "approximate" | "exact";
   readonly lat: number | null;
   readonly lng: number | null;
   readonly aiTags?: readonly string[];
@@ -87,14 +87,14 @@ function parsePhoto(row: unknown, imageUrl: string | undefined): LandingPhoto | 
   if (!isRecord(row) || typeof imageUrl !== "string") return null;
   if (typeof row["id"] !== "string" || typeof row["owner_id"] !== "string" ||
       typeof row["created_at"] !== "string" ||
-      !["hidden", "approximate", "exact"].includes(String(row["location_precision"]))) return null;
+      !["approximate", "exact"].includes(String(row["location_precision"]))) return null;
   try {
     if (!["http:", "https:"].includes(new URL(imageUrl).protocol)) return null;
   } catch {
     return null;
   }
   const precision = row["location_precision"] as LandingPhoto["locationPrecision"];
-  const hasPublicCoordinates = precision !== "hidden" && typeof row["lat"] === "number" &&
+  const hasPublicCoordinates = typeof row["lat"] === "number" &&
     Number.isFinite(row["lat"]) && typeof row["lng"] === "number" && Number.isFinite(row["lng"]);
   return {
     id: row["id"], title: nullableText(row["title"]), description: nullableText(row["description"]),

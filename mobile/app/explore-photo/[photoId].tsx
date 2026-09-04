@@ -47,9 +47,8 @@ type CommentsState =
   | { readonly status: "ready"; readonly comments: readonly PhotoComment[]; readonly mutationPending: boolean; readonly mutationError: "create" | "delete" | null };
 
 function precisionCopy(precision: PublicPhotoDetail["locationPrecision"]): string {
-  if (precision === "exact") return "정확 위치로 공개됨";
-  if (precision === "approximate") return "근사 위치로 공개됨";
-  return "위치가 숨겨진 사진";
+  if (precision === "exact") return "정확한 위치";
+  return "대략 위치";
 }
 
 function isAbortError(error: unknown): boolean {
@@ -76,7 +75,7 @@ export function PublicPhotoDetailScreen({
     });
   },
   openStreetView = async (photo) => {
-    if (photo.location === undefined || photo.locationPrecision !== "exact") return;
+    if (photo.location === undefined) return;
     const location = `${photo.location.lat},${photo.location.lng}`;
     await Linking.openURL(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${encodeURIComponent(location)}`);
   },
@@ -328,7 +327,7 @@ export function PublicPhotoDetailScreen({
               <Pressable accessibilityLabel="Explore 지도에서 보기" accessibilityRole="button" onPress={() => openOnMap(displayState.photo)} style={styles.locationButton}>
                 <Text style={styles.locationButtonText}>Explore 지도에서 보기</Text>
               </Pressable>
-              {displayState.photo.locationPrecision === "exact" ? (
+              {displayState.photo.location !== undefined ? (
                 <Pressable accessibilityLabel="거리뷰 열기" accessibilityRole="button" onPress={() => void openStreetView(displayState.photo)} style={styles.locationButton}>
                   <Text style={styles.locationButtonText}>거리뷰</Text>
                 </Pressable>

@@ -1,37 +1,35 @@
-# 모바일 공개 위치 정책 대조
+# 모바일 위치 정확도 정책 대조
 
-기준일: 2026-08-26
+기준일: 2026-09-04
 
 ## 결론
 
-웹과 모바일은 같은 Supabase `photos`·`photo_private_locations` 행과 데이터베이스 트리거를 사용한다. 따라서 웹에서 공개한 사진의 위치 정밀도는 모바일에 복사본을 만들지 않고 같은 공유 행을 통해 보인다.
-
-Web supports `exact`, `approximate`, and `hidden` after an explicit owner choice. Mobile publication currently fixes every new publication to `hidden`; it does not transfer a local exact coordinate or offer an exact/approximate selector. Mobile Explore consumes eligible locations from shared Supabase `photos` rows. This audit does not claim that the current mobile publication flow can publish an exact location.
+웹과 모바일은 같은 Supabase `photos` 행의 좌표를 사용한다. `location_precision`은 좌표의 이동이나 공개 범위가 아니라 사용자가 지정한 지점에 대한 확신 정도를 나타낸다. 소유자와 다른 사용자의 지도는 같은 `lat/lng`를 사용한다.
 
 ## 정책 행렬
 
-| 정밀도 | DB 공개 투영 | 웹 | 모바일 Explore | 모바일 신규 게시 |
-| --- | --- | --- | --- | --- |
-| `hidden` | `photos.lat/lng = null`; 소유자 전용 원본은 유지 | 공개 프로필에는 보이지만 지도 핀은 없음 | 쿼리·행 파서 두 단계에서 제외 | 현재 안전 기본값 |
-| `approximate` | 소유자 원본을 소수점 둘째 자리로 반올림 | 명시적 선택·지도 핀 | 공개 영역 쿼리·지도 핀 | 선택 UI 없음; 전송하지 않음 |
-| `exact` | 소유자 원본을 명시적 선택 후 투영 | 명시적 선택·지도 핀 | 공개 영역 쿼리·지도 핀 | 선택 UI 없음; 전송하지 않음 |
+| 정확도 | 의미 | 저장·공개 좌표 | 기본값 |
+| --- | --- | --- | --- |
+| `exact` | 사진을 찍은 정확한 지점이라고 판단 | 선택한 좌표 그대로 | EXIF·GPX 좌표 |
+| `approximate` | 주변은 맞지만 정확한 지점인지 불확실 | 선택한 좌표 그대로 | 지도 수동 지정 |
+| 위치 없음 | 좌표가 없음 | `lat/lng = null`, 지도 핀 없음 | GPS가 없는 사진 |
 
-## 강제 경계
+## 공통 경계
 
-- `apply_photo_location_privacy` 트리거가 모든 웹·모바일 쓰기에 같은 변환을 강제한다.
-- 원본 좌표는 RLS로 소유자만 읽는 `photo_private_locations`에 보관한다.
-- 모바일 Explore는 `visibility = public` 이면서 `location_precision in (approximate, exact)`인 행만 요청한다. 반환된 행도 다시 파싱해 `hidden`·알 수 없는 값을 fail-closed 처리한다.
-- 모바일 공개 상세는 좌표 대신 정밀도 문구만 보여 준다.
-- 정확 좌표는 URL, 로그, 충돌 보고, 공개 프로필 응답에 포함하지 않는다.
+- 공개 여부는 `visibility`가 결정하고 위치 정확도와 독립적으로 동작한다.
+- `exact`와 `approximate` 모두 좌표를 반올림하거나 이동시키지 않는다.
+- 공개 전환과 비공개 전환은 저장 좌표와 정확도 선택을 덮어쓰지 않는다.
+- 모바일 Explore의 내 사진과 다른 사람 사진은 같은 `photos.lat/lng`를 사용한다.
+- 모바일 신규 게시 흐름은 아직 사진 위치를 서버로 전송하지 않으므로 `lat/lng = null`이며 지도 핀이 없다.
+- 위치가 있는 사진의 상세에서는 두 정확도 모두 지도와 거리뷰 진입을 사용할 수 있다.
 
 ## 검증 근거
 
-- 실제 역할 증빙: `docs/qa/public-location-privacy-role-qa-2026-07-26.md`
-- 웹 정책·UI: `js/photo-location-privacy.mjs`, `docs/product/public-photo-privacy-policy.md`
-- 데이터베이스: `supabase/migrations/20260724000000_initial_remote_schema_baseline.sql`
-- 모바일 조회: `mobile/src/explore-photo-repository.ts`
+- 웹 정책·UI: `js/photo-location-privacy.mjs`, `index.html`, `docs/product/public-photo-privacy-policy.md`
+- 데이터베이스: `supabase/migrations/20260904123000_reinterpret_location_precision_as_accuracy.sql`
+- 모바일 조회: `mobile/src/explore-photo-repository.ts`, `mobile/src/public-photo-detail-repository.ts`
 - 모바일 게시: `mobile/src/publication-publisher.ts`
 
-## 남은 제품 선택
+## 남은 제품 작업
 
-모바일 게시에 위치를 추가하려면 게시 전 사진별 `hidden`·`approximate` 선택과 노출 문구를 먼저 제공한다. `exact`는 별도 선택·재확인·스토어 개인정보 고지가 갖춰진 후에만 활성화한다. 현재 출시 경계는 모바일에서 위치를 전송하지 않는 보수적 선택이다.
+모바일 게시에서 위치를 함께 보내려면 게시 검토 화면에 사진별 위치 선택과 `정확한 위치`·`대략 위치` 선택을 추가한다. 현재는 위치를 보내지 않으므로 정확도 기본값만 저장되고 공개 지도 핀은 생성되지 않는다.

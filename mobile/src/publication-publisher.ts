@@ -12,7 +12,7 @@ type RemotePhotoRecord = {
   readonly lat: null;
   readonly lng: null;
   readonly geo_source: "unknown";
-  readonly location_precision: "hidden";
+  readonly location_precision: "approximate";
   readonly description: string;
   readonly date: string;
   readonly link_token_hash: string | null;
@@ -118,7 +118,7 @@ export async function executePersistedPublicationJob(
       lat: null,
       lng: null,
       geo_source: "unknown",
-      location_precision: "hidden",
+      location_precision: "approximate",
       description: "",
       date: new Date(job.createdAt).toISOString(),
       link_token_hash: linkTokenHash,

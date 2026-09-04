@@ -44,9 +44,10 @@ test('release setup requires Places API New and platform-restricted keys', () =>
   assert.match(setupDoc, /Powered by Google/);
 });
 
-test('photo scope keeps public privacy while hydrating owner-only private locations', () => {
+test('photo scope reads the same saved coordinates for owner and public maps', () => {
   assert.match(exploreRepository, /\.eq\("visibility", "public"\)/);
   assert.match(exploreRepository, /\.in\("location_precision", \["approximate", "exact"\]\)/);
-  assert.match(exploreRepository, /scope === "mine"[\s\S]*\.from\("photo_private_locations"\)[\s\S]*\.eq\("owner_id", viewerId\)/);
+  assert.match(exploreRepository, /scope === "mine"[\s\S]*\.from\("photos"\)[\s\S]*\.eq\("owner_id", viewerId\)/);
+  assert.doesNotMatch(exploreRepository, /\.from\("photo_private_locations"\)/);
   assert.match(exploreRepository, /scope === "others".*\.neq\("owner_id", viewerId\)/);
 });

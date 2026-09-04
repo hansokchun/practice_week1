@@ -582,6 +582,14 @@
                                     </header>
                                 </section>
                             </div>
+                            <div class="photo-visibility-editor location-assignment-precision" aria-label="지정한 위치 정확도">
+                                <span>위치 정확도</span>
+                                <p>지정한 지점이 맞다고 확신하면 정확한 위치, 주변 정도만 알면 대략 위치를 선택하세요. 두 경우 모두 선택한 핀 위치가 그대로 저장됩니다.</p>
+                                <div>
+                                    <button data-location-assignment-precision="exact" type="button">정확한 위치</button>
+                                    <button class="active" data-location-assignment-precision="approximate" type="button">대략 위치</button>
+                                </div>
+                            </div>
                             <div class="location-assignment-save-row">
                                 <p id="location-assignment-message" aria-live="polite">지도를 누르면 핀이 생깁니다.</p>
                                 <div class="location-assignment-save-actions">
@@ -1183,8 +1191,9 @@
                         </button>
                     </div>
                 </div>
-                <div id="photo-location-precision-editor" class="photo-visibility-editor" aria-label="위치 표시 방식">
-                    <span>위치 표시 방식</span>
+                <div id="photo-location-precision-editor" class="photo-visibility-editor" aria-label="지정한 위치 정확도">
+                    <span>위치 정확도</span>
+                    <p>지정한 지점이 맞다고 확신하면 정확한 위치, 주변 정도만 알면 대략 위치를 선택하세요. 두 경우 모두 지도 핀은 저장한 위치에 표시됩니다.</p>
                     <div>
                         <button data-photo-location-precision="exact" type="button">정확한 위치</button>
                         <button class="active" data-photo-location-precision="approximate" type="button">대략 위치</button>
@@ -1192,7 +1201,7 @@
                 </div>
                 <div class="publication-review" data-publication-review>
                     <strong>공개 전 확인</strong>
-                    <p>공개하면 사진, 설명, 촬영일과 선택한 범위의 위치가 다른 사용자에게 표시됩니다. 촬영 시각은 표시하지 않습니다.</p>
+                    <p>공개하면 사진, 설명, 촬영일과 저장한 위치가 다른 사용자에게 표시됩니다. 위치 정확도는 좌표를 흐리는 기능이 아니라 위치에 대한 작성자의 판단을 나타냅니다.</p>
                     <p>다시 비공개로 바꾸면 Explore와 공개 프로필에서 즉시 사라집니다. 원본 사진과 위치는 내 보관함에 유지됩니다.</p>
                 </div>
                 <label for="location-lat-input">위도</label>

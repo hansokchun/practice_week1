@@ -9,7 +9,7 @@ describe("public photo detail screen", () => {
       id: "photo-route", date: null, description: "라우트 사진", liked: 0,
       owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
       createdAt: "2026-08-30T08:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-route",
-      locationPrecision: "hidden", visibility: "public", viewerHasLiked: false
+      locationPrecision: "approximate", visibility: "public", viewerHasLiked: false
     });
     const screen = await render(
       <PublicPhotoDetailScreen loadComments={async () => []} photoId="photo-route" />
@@ -37,7 +37,7 @@ describe("public photo detail screen", () => {
     await waitFor(() => expect(getByText("한강 저녁")).toBeOnTheScreen());
     expect(getByLabelText("여행 사진")).toBeOnTheScreen();
     expect(getByText("여행자")).toBeOnTheScreen();
-    expect(queryByText("근사 위치로 공개됨")).toBeNull();
+    expect(queryByText("대략 위치")).toBeNull();
     expect(getByRole("button", { name: "좋아요" })).toHaveTextContent("♡");
     expect(queryByText("좋아요 취소")).toBeNull();
     expect(queryByText(/11111111|storage_path|37\.|127\./)).not.toBeOnTheScreen();
@@ -58,7 +58,7 @@ describe("public photo detail screen", () => {
       <PublicPhotoDetailScreen currentUserId={ownerId} loadPhoto={async () => photo} openOnMap={openOnMap} photoId="photo-a" />
     );
 
-    await waitFor(() => expect(screen.getByText("공개 · 정확 위치로 공개됨")).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText("공개 · 정확한 위치")).toBeOnTheScreen());
     expect(screen.getByText("-- -- · 좋아요 2")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole("button", { name: "Explore 지도에서 보기" }));
     expect(openOnMap).toHaveBeenCalledWith(photo);
@@ -69,7 +69,7 @@ describe("public photo detail screen", () => {
       id: "photo-date", date: "2026-07-24T04:30:00.000Z", description: "여름 풍경", liked: 0,
       owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
       createdAt: "2026-07-24T04:31:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-date",
-      locationPrecision: "hidden" as const, visibility: "public" as const, viewerHasLiked: false
+      locationPrecision: "approximate" as const, visibility: "public" as const, viewerHasLiked: false
     };
     const screen = await render(
       <PublicPhotoDetailScreen loadPhoto={async () => photo} photoId="photo-date" />
@@ -85,7 +85,7 @@ describe("public photo detail screen", () => {
       id: "photo-a", date: null, description: "한강 저녁", liked: 7,
       owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
       createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-a",
-      locationPrecision: "hidden" as const, viewerHasLiked: false
+      locationPrecision: "approximate" as const, viewerHasLiked: false
     };
     const { getByRole, getByText } = await render(
       <PublicPhotoDetailScreen currentUserId="22222222-2222-4222-8222-222222222222" loadPhoto={async () => photo} photoId="photo-a" updateLike={updateLike} />
@@ -105,7 +105,7 @@ describe("public photo detail screen", () => {
       id: "photo-a", date: null, description: "한강 저녁", liked: 7,
       owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
       createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-a",
-      locationPrecision: "hidden" as const, viewerHasLiked: false
+      locationPrecision: "approximate" as const, viewerHasLiked: false
     };
     const screen = await render(
       <PublicPhotoDetailScreen loadPhoto={async () => photo} photoId="photo-a" requestLogin={requestLogin} updateLike={updateLike} />
@@ -134,7 +134,7 @@ describe("public photo detail screen", () => {
       id: "photo-a", date: null, description: "이제 비공개", liked: 1,
       owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
       createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-a",
-      locationPrecision: "hidden" as const, viewerHasLiked: false
+      locationPrecision: "approximate" as const, viewerHasLiked: false
     };
     const loadPhoto = jest.fn().mockResolvedValueOnce(photo).mockRejectedValueOnce(new Error("private"));
     const loadComments = jest.fn().mockResolvedValue([{ id: 1, text: "캐시된 댓글", date: "2026-08-24T11:00:00.000Z", author: { id: photo.owner.id, displayName: "여행자" } }]);
@@ -154,7 +154,7 @@ describe("public photo detail screen", () => {
       id: "photo-a", date: null, description: "서명 재발급", liked: 1,
       owner: { id: "11111111-1111-4111-8111-111111111111", displayName: "여행자", avatarUrl: null },
       createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-a",
-      locationPrecision: "hidden" as const, viewerHasLiked: false
+      locationPrecision: "approximate" as const, viewerHasLiked: false
     };
     const loadPhoto = jest.fn().mockResolvedValue(photo);
     const screen = await render(<PublicPhotoDetailScreen loadPhoto={loadPhoto} photoId="photo-a" />);

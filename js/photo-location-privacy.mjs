@@ -1,4 +1,4 @@
-const LOCATION_PRECISIONS = new Set(['exact', 'approximate', 'hidden']);
+const LOCATION_PRECISIONS = new Set(['exact', 'approximate']);
 
 function hasCoordinate(value) {
     return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
@@ -8,15 +8,16 @@ export function normalizeLocationPrecision(value, fallback = 'approximate') {
     return LOCATION_PRECISIONS.has(value) ? value : fallback;
 }
 
-// Legacy hidden rows remain readable, but the owner-facing editor now offers
-// only the two publishable location levels.
 export function getEditableLocationPrecision(value) {
-    return value === 'exact' ? 'exact' : 'approximate';
+    return normalizeLocationPrecision(value);
+}
+
+export function getDefaultLocationPrecision(geoSource) {
+    return ['exif', 'gpx'].includes(geoSource) ? 'exact' : 'approximate';
 }
 
 export function canShowPhotoOnPublicMap(photo = {}) {
-    return normalizeLocationPrecision(photo.location_precision) !== 'hidden'
-        && hasCoordinate(photo.lat)
+    return hasCoordinate(photo.lat)
         && hasCoordinate(photo.lng);
 }
 
@@ -35,6 +36,5 @@ export function canShowPhotoInExploreScope(photo = {}, { scope = 'others', curre
 export function getLocationPrecisionLabel(value) {
     const precision = normalizeLocationPrecision(value);
     if (precision === 'exact') return '정확한 위치';
-    if (precision === 'approximate') return '대략 위치';
     return '대략 위치';
 }

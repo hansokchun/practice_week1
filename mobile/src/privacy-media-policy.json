@@ -107,7 +107,7 @@
   "gps": {
     "exactSource": "photo-EXIF-or-OS-media-library",
     "defaultDisclosure": "local-only",
-    "publicDisclosure": "approximate-or-hidden-only",
+    "publicDisclosure": "saved-coordinate-with-author-selected-accuracy",
     "allowedTransferRecipients": ["Supabase Postgres"],
     "transferPurpose": "user-requested-photo-publication-and-map-display",
     "retention": "until-user-deletes-photo-or-account",

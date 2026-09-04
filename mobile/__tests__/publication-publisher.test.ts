@@ -69,7 +69,7 @@ describe("confirmed publication execution", () => {
       storage_path: "11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222.jpg",
       lat: null,
       lng: null,
-      location_precision: "hidden"
+      location_precision: "approximate"
     }));
     expect(result).toEqual({ succeeded: 1, failed: 0, jobIds: ["22222222-2222-4222-8222-222222222222"] });
   });

@@ -220,7 +220,7 @@ test('내 사진 페이지 안에서 사진과 앨범을 전환한다', async ()
     assert.match(page, /id="photos-album-list"/);
 });
 
-test('사진 상세는 정확 위치에서만 지연 로딩하는 거리뷰 영역을 제공한다', async () => {
+test('사진 상세는 저장된 위치에서 지연 로딩하는 거리뷰 영역을 제공한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const app = await readFile(new URL('js/app.js', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
@@ -231,7 +231,7 @@ test('사진 상세는 정확 위치에서만 지연 로딩하는 거리뷰 영�
     assert.match(html, /class="photo-detail-street-view__overlay"/);
     assert.doesNotMatch(html, /정확한 위치가 공개된 사진에서만 사용할 수 있습니다/);
     assert.doesNotMatch(app, /마우스를 올리거나 버튼에 초점을 맞춰 동적 거리뷰를 열 수 있습니다/);
-    assert.match(app, /normalizeLocationPrecision\(photo\.location_precision\) === 'exact'/);
+    assert.match(app, /const canShowStreetView = hasPhotoLocation\(photo\);/);
     assert.match(app, /getStreetViewStaticImageUrl/);
     assert.match(app, /renderPhotoDetailStreetViewPreview\(photo\)/);
     assert.match(app, /preview\.classList\.add\('is-fallback'\);[\s\S]*preview\.hidden = false;/s);

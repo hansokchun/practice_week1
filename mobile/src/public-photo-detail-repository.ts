@@ -1,6 +1,6 @@
 import { getSupabaseClient } from "./supabase-client";
 
-export type PublicLocationPrecision = "hidden" | "approximate" | "exact";
+export type PublicLocationPrecision = "approximate" | "exact";
 
 export type PublicPhotoDetail = {
   readonly id: string;
@@ -24,7 +24,6 @@ type PublicPhotoDetailDependencies = {
   readonly fetchPhoto: (photoId: string, signal?: AbortSignal) => Promise<{ readonly row: unknown; readonly error: unknown }>;
   readonly fetchProfile: (ownerId: string, signal?: AbortSignal) => Promise<{ readonly row: unknown; readonly error: unknown }>;
   readonly fetchViewerLike: (photoId: string, signal?: AbortSignal) => Promise<{ readonly liked: boolean; readonly error: unknown }>;
-  readonly fetchPrivateLocation?: (photoId: string, ownerId: string, signal?: AbortSignal) => Promise<{ readonly row: unknown; readonly error: unknown }>;
   readonly signPath: (path: string, expiresIn: number, signal?: AbortSignal) => Promise<{ readonly url: unknown; readonly error: unknown }>;
 };
 
@@ -84,16 +83,6 @@ const defaultDependencies: PublicPhotoDetailDependencies = {
     const { data, error } = await query.maybeSingle();
     return { liked: data !== null, error };
   },
-  async fetchPrivateLocation(photoId, ownerId, signal) {
-    let query = getSupabaseClient()
-      .from("photo_private_locations")
-      .select("lat,lng")
-      .eq("photo_id", photoId)
-      .eq("owner_id", ownerId);
-    if (signal !== undefined) query = query.abortSignal(signal);
-    const { data, error } = await query.maybeSingle();
-    return { row: data, error };
-  },
   async signPath(path, expiresIn, signal) {
     throwIfAborted(signal);
     const { data, error } = await getSupabaseClient().storage.from("photos").createSignedUrl(path, expiresIn);
@@ -119,20 +108,17 @@ export async function fetchPublicPhotoDetail(
       !Number.isInteger(photo["liked"]) || Number(photo["liked"]) < 0 ||
       !(typeof photo["date"] === "string" || photo["date"] === null) ||
       !(typeof photo["description"] === "string" || photo["description"] === null) ||
-      !["hidden", "approximate", "exact"].includes(String(photo["location_precision"])) ||
+      !["approximate", "exact"].includes(String(photo["location_precision"])) ||
       !["private", "link", "public"].includes(String(photo["visibility"]))) {
       throw new Error(GENERIC_DETAIL_ERROR);
     }
     const isOwner = viewerId !== null && photo["owner_id"] === viewerId;
     if (photo["visibility"] !== "public" && !isOwner) throw new Error(GENERIC_DETAIL_ERROR);
 
-    const [profileResult, likeResult, signedResult, privateLocationResult] = await Promise.all([
+    const [profileResult, likeResult, signedResult] = await Promise.all([
       dependencies.fetchProfile(photo["owner_id"], signal),
       dependencies.fetchViewerLike(photoId, signal),
-      dependencies.signPath(photo["storage_path"], 300, signal),
-      isOwner && dependencies.fetchPrivateLocation !== undefined
-        ? dependencies.fetchPrivateLocation(photoId, photo["owner_id"], signal)
-        : Promise.resolve({ row: null, error: null })
+      dependencies.signPath(photo["storage_path"], 300, signal)
     ]);
     throwIfAborted(signal);
     if (profileResult.error !== null || signedResult.error !== null) throw new Error(GENERIC_DETAIL_ERROR);
@@ -147,15 +133,8 @@ export async function fetchPublicPhotoDetail(
     const rawAvatar = profile["avatar_url"];
     const avatarUrl = typeof rawAvatar === "string" && rawAvatar.length === 0 ? null : parseHttpUrl(rawAvatar);
     const precision = photo["location_precision"] as PublicLocationPrecision;
-    const hasPublicLocation = precision !== "hidden" && typeof photo["lat"] === "number" && Number.isFinite(photo["lat"]) &&
+    const hasPublicLocation = typeof photo["lat"] === "number" && Number.isFinite(photo["lat"]) &&
       typeof photo["lng"] === "number" && Number.isFinite(photo["lng"]);
-    if (precision !== "hidden" && !hasPublicLocation) throw new Error(GENERIC_DETAIL_ERROR);
-    const privateLocation = typeof privateLocationResult.row === "object" && privateLocationResult.row !== null
-      ? privateLocationResult.row as Record<string, unknown>
-      : null;
-    const hasPrivateLocation = isOwner && privateLocationResult.error === null && privateLocation !== null &&
-      typeof privateLocation["lat"] === "number" && Number.isFinite(privateLocation["lat"]) &&
-      typeof privateLocation["lng"] === "number" && Number.isFinite(privateLocation["lng"]);
 
     return {
       id: photoId,
@@ -165,9 +144,7 @@ export async function fetchPublicPhotoDetail(
       owner: { id: photo["owner_id"], displayName: nickname, avatarUrl },
       createdAt: photo["created_at"],
       imageUrl,
-      ...(hasPrivateLocation
-        ? { location: { lat: privateLocation["lat"] as number, lng: privateLocation["lng"] as number } }
-        : hasPublicLocation ? { location: { lat: photo["lat"] as number, lng: photo["lng"] as number } } : {}),
+      ...(hasPublicLocation ? { location: { lat: photo["lat"] as number, lng: photo["lng"] as number } } : {}),
       locationPrecision: precision,
       visibility: photo["visibility"] as "private" | "link" | "public",
       viewerHasLiked: likeResult.error === null && likeResult.liked

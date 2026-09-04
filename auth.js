@@ -97,25 +97,6 @@ async function hydrateSignedAlbumCoverUrls(sb, albums = []) {
     return applySignedAlbumCoverUrls(albums, signedUrlByPath);
 }
 
-async function hydratePrivatePhotoLocations(sb, photos = []) {
-    const photoIds = photos.map((photo) => photo.id).filter(Boolean);
-    if (!photoIds.length) return photos;
-
-    const { data, error } = await sb
-        .from('photo_private_locations')
-        .select('photo_id,lat,lng')
-        .in('photo_id', photoIds);
-    if (error || !data?.length) return photos;
-
-    const locationsByPhotoId = new Map(data.map((location) => [location.photo_id, location]));
-    return photos.map((photo) => {
-        const privateLocation = locationsByPhotoId.get(photo.id);
-        return privateLocation
-            ? { ...photo, lat: privateLocation.lat, lng: privateLocation.lng }
-            : photo;
-    });
-}
-
 // ═══════════════════════════════════════════════════
 //  1. 인증 (Auth) — 로그인/가입/로그아웃/세션
 // ═══════════════════════════════════════════════════
@@ -313,9 +294,8 @@ export async function fetchPhotos({ hydrateUrls = true } = {}) {
             .select(PHOTO_SELECT_COLUMNS)
             .order('date', { ascending: false });
         if (error) throw error;
-        const photosWithPrivateLocations = await hydratePrivatePhotoLocations(sb, data || []);
-        if (!hydrateUrls) return { data: photosWithPrivateLocations, error: null };
-        return { data: await hydrateSignedPhotoUrls(sb, photosWithPrivateLocations), error: null };
+        if (!hydrateUrls) return { data: data || [], error: null };
+        return { data: await hydrateSignedPhotoUrls(sb, data || []), error: null };
     } catch (error) {
         return { data: [], error };
     }
@@ -471,7 +451,7 @@ export async function upsertPhoto(photo) {
                 album_id: photo.album_id || null,
                 visibility: photo.visibility || (photo.shared ? 'public' : 'private'),
                 geo_source: photo.geo_source || 'unknown',
-                location_precision: photo.location_precision || 'approximate'
+                location_precision: photo.location_precision || (['exif', 'gpx'].includes(photo.geo_source) ? 'exact' : 'approximate')
             }, { onConflict: 'id' });
         if (error) throw error;
         return { data, error: null };

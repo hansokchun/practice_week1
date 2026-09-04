@@ -44,5 +44,5 @@ test('photo detail map exposes only public map-eligible photos to another viewer
         { id: 'missing', owner_id: 'author', lat: null, lng: null, visibility: 'public', location_precision: 'exact' }
     ], 'viewer');
 
-    assert.deepEqual(items.map((photo) => photo.id), ['selected', 'public', 'link']);
+    assert.deepEqual(items.map((photo) => photo.id), ['selected', 'public', 'link', 'hidden']);
 });

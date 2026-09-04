@@ -43,7 +43,7 @@ describe("explore photo repository", () => {
     })).rejects.toThrow("공개 사진");
   });
 
-  it("never turns a hidden location into a public map pin even if legacy coordinates remain", async () => {
+  it("rejects a legacy hidden accuracy value after migration", async () => {
     const signPaths = jest.fn(async () => ({
       urls: new Map([["owner-a/photo-hidden.jpg", "https://example.supabase.co/signed/photo-hidden"]]),
       error: null
@@ -60,7 +60,7 @@ describe("explore photo repository", () => {
     })).rejects.toThrow("공개 사진");
   });
 
-  it("allows an owner-only private source location in the mine scope", async () => {
+  it("allows an owner's private photo coordinates in the mine scope", async () => {
     const signPaths = jest.fn(async () => ({
       urls: new Map([["owner-a/photo-private.jpg", "https://example.supabase.co/signed/photo-private"]]),
       error: null
@@ -73,11 +73,11 @@ describe("explore photo repository", () => {
         id: "photo-private", date: null, description: "나만 보는 사진", liked: 0,
         owner_id: "owner-a", created_at: "2026-08-24T10:00:00.000Z",
         storage_path: "owner-a/photo-private.jpg", lat: 37.52, lng: 126.97,
-        location_precision: "hidden", visibility: "private"
+        location_precision: "approximate", visibility: "private"
       }], error: null }),
       signPaths
     })).resolves.toEqual({
-      photos: [expect.objectContaining({ id: "photo-private", visibility: "private", locationPrecision: "hidden" })],
+      photos: [expect.objectContaining({ id: "photo-private", visibility: "private", locationPrecision: "approximate" })],
       hasMore: false,
       nextOffset: 1
     });

@@ -21,8 +21,8 @@ test('album save flow does not change individual photo visibility', () => {
 });
 
 test('share flow handles photo visibility update failures', () => {
-    assert.match(source, /const publicLocationPrecision = \['public', 'link'\]\.includes\(state\.visibility\) \? 'approximate' : undefined;/);
-    assert.match(source, /const \{ data: updatedPhotos, error: photoVisibilityError \} = await updatePhotosVisibility\(photoIds, state\.visibility, publicLocationPrecision\);/);
+    assert.doesNotMatch(source, /const publicLocationPrecision/);
+    assert.match(source, /const \{ data: updatedPhotos, error: photoVisibilityError \} = await updatePhotosVisibility\(photoIds, state\.visibility\);/);
     assert.match(source, /if \(photoVisibilityError\) throw photoVisibilityError;/);
     assert.match(source, /showToast\(error\?\.message \|\| '공개 설정을 저장하지 못했습니다\.'\);/);
 });

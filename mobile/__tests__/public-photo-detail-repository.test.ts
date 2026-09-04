@@ -28,24 +28,23 @@ describe("public photo detail repository", () => {
     expect(fetchViewerLike).toHaveBeenCalledWith("photo-a", signal);
   });
 
-  it("loads a private location only for the authenticated photo owner", async () => {
+  it("loads the saved location for an authenticated private-photo owner", async () => {
     const ownerId = "11111111-1111-4111-8111-111111111111";
     const dependencies = {
       fetchPhoto: async () => ({ row: {
         id: "photo-private", date: null, description: "나만 보는 사진", liked: 0,
         owner_id: ownerId, created_at: "2026-08-24T10:00:00.000Z",
-        storage_path: `${ownerId}/photo-private.jpg`, location_precision: "hidden",
-        lat: null, lng: null, visibility: "private"
+        storage_path: `${ownerId}/photo-private.jpg`, location_precision: "approximate",
+        lat: 37.52, lng: 126.97, visibility: "private"
       }, error: null }),
       fetchProfile: async () => ({ row: { nickname: "나", avatar_url: "" }, error: null }),
       fetchViewerLike: async () => ({ liked: false, error: null }),
-      fetchPrivateLocation: jest.fn(async () => ({ row: { lat: 37.52, lng: 126.97 }, error: null })),
       signPath: async () => ({ url: "https://example.supabase.co/signed/photo-private", error: null })
     };
 
     await expect(fetchPublicPhotoDetail("photo-private", undefined, dependencies, ownerId)).resolves.toEqual(
       expect.objectContaining({
-        id: "photo-private", visibility: "private", locationPrecision: "hidden",
+        id: "photo-private", visibility: "private", locationPrecision: "approximate",
         location: { lat: 37.52, lng: 126.97 }
       })
     );

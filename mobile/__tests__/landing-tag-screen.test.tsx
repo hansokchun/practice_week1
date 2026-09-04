@@ -13,7 +13,7 @@ function photo(index: number): LandingPhoto {
     createdAt: "2026-08-30T00:00:00.000Z",
     date: null,
     imageUrl: `https://example.com/${index}.jpg`,
-    locationPrecision: "hidden",
+    locationPrecision: "approximate",
     lat: null,
     lng: null,
     aiTags: [index % 2 === 0 ? "서울" : "제주", "한국"],

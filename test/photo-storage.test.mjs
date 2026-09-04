@@ -111,10 +111,10 @@ test('photo reads can return map metadata before hydrating signed image URLs', (
     const albumsBody = authSource.slice(albumsStart, createAlbumStart);
 
     assert.doesNotMatch(profilesBody, /hydrateSignedPhotoUrls/);
-    assert.match(photosBody, /await hydratePrivatePhotoLocations\(sb, data \|\| \[\]\)/);
+    assert.doesNotMatch(authSource, /hydratePrivatePhotoLocations/);
     assert.match(photosBody, /hydrateUrls = true/);
-    assert.match(photosBody, /if \(!hydrateUrls\) return \{ data: photosWithPrivateLocations, error: null \}/);
-    assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, photosWithPrivateLocations\)/);
+    assert.match(photosBody, /if \(!hydrateUrls\) return \{ data: data \|\| \[\], error: null \}/);
+    assert.match(photosBody, /await hydrateSignedPhotoUrls\(sb, data \|\| \[\]\)/);
     assert.match(photosBody, /export async function hydratePhotoUrls\(photos = \[\]\)/);
     assert.match(albumsBody, /await hydrateSignedAlbumCoverUrls\(sb, data \|\| \[\]\)/);
     assert.match(authSource, /hydrateSignedAlbumCoverUrls/);

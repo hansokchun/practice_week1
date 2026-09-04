@@ -16,7 +16,7 @@ function photo(id: string, fields: Partial<LandingPhoto> = {}): LandingPhoto {
     createdAt: "2026-08-30T00:00:00.000Z",
     date: null,
     imageUrl: `https://example.com/${id}.jpg`,
-    locationPrecision: "hidden",
+    locationPrecision: "approximate",
     lat: null,
     lng: null,
     aiTags: [],

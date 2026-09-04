@@ -125,7 +125,7 @@ if (process.env["JEST_WORKER_ID"] !== undefined) {
 
     // Then: exact coordinates are local by default and each listed destination has a recipient, purpose, retention, deletion, and backup status.
     expect(gps["defaultDisclosure"]).toBe("local-only");
-    expect(gps["publicDisclosure"]).toBe("approximate-or-hidden-only");
+    expect(gps["publicDisclosure"]).toBe("saved-coordinate-with-author-selected-accuracy");
     expect(transfers).toEqual(["Supabase Postgres"]);
     expect(gpsRows.length).toBeGreaterThan(0);
     for (const row of map) {

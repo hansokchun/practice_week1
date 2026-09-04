@@ -211,6 +211,7 @@ import { getPublicSurfaceAlbums } from './public-surface-albums.mjs';
 import {
     canShowPhotoInExploreScope,
     canShowPhotoOnPublicMap,
+    getDefaultLocationPrecision,
     getEditableLocationPrecision,
     normalizeLocationPrecision
 } from './photo-location-privacy.mjs';
@@ -344,6 +345,7 @@ const state = {
     locationAssignmentReferenceMarkers: [],
     locationAssignmentMapClickListener: null,
     locationAssignmentDraft: null,
+    locationAssignmentPrecision: 'approximate',
     locationAssignmentSearchResultName: '',
     locationAssignmentStreetView: null,
     locationAssignmentStreetViewRequestToken: 0,
@@ -1757,8 +1759,7 @@ async function saveExplorePreviewEdits(event) {
     if (message) message.textContent = '저장 중입니다...';
     const { data, error } = await updatePhotoInfo(photo.id, {
         description,
-        visibility,
-        location_precision: visibility === 'public' ? 'approximate' : photo.location_precision
+        visibility
     });
     if (error) {
         if (message) message.textContent = error.message || '사진 정보를 저장하지 못했습니다.';
@@ -2566,7 +2567,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         streetViewCanvas.replaceChildren();
     }
     if (streetViewMessage) streetViewMessage.textContent = '';
-    const canShowStreetView = hasPhotoLocation(photo) && normalizeLocationPrecision(photo.location_precision) === 'exact';
+    const canShowStreetView = hasPhotoLocation(photo);
     if (streetViewSection) {
         streetViewSection.classList.remove('is-unavailable');
         streetViewSection.hidden = !canShowStreetView;
@@ -5002,11 +5003,10 @@ async function updateSelectedPersonalPhotosVisibility(visibility) {
             requestedVisibility: 'public',
             incomingPublicCount: getPhotosBecomingPublic(selectedPhotoIds)
         })) return;
-        const confirmed = window.confirm(`선택한 사진 ${selectedPhotoIds.length}장을 공개할까요? 위치가 있는 사진은 대략 위치로 공개됩니다.`);
+        const confirmed = window.confirm(`선택한 사진 ${selectedPhotoIds.length}장을 공개할까요? 저장된 위치와 위치 정확도 표시가 함께 공개됩니다.`);
         if (!confirmed) return;
     }
 
-    const publicLocationPrecision = nextVisibility === 'public' ? 'approximate' : undefined;
     const actionButtons = [
         $('#btn-publish-selected-photos'),
         $('#btn-private-selected-photos'),
@@ -5015,7 +5015,7 @@ async function updateSelectedPersonalPhotosVisibility(visibility) {
     actionButtons.forEach((button) => { button.disabled = true; });
 
     try {
-        const { data: updatedPhotos, error } = await updatePhotosVisibility(selectedPhotoIds, nextVisibility, publicLocationPrecision);
+        const { data: updatedPhotos, error } = await updatePhotosVisibility(selectedPhotoIds, nextVisibility);
         if (error) throw error;
         const updatedById = new Map((updatedPhotos || []).map((photo) => [String(photo.id), photo]));
         const selectedIds = new Set(selectedPhotoIds.map(String));
@@ -5026,7 +5026,7 @@ async function updateSelectedPersonalPhotosVisibility(visibility) {
                 ...persistedPhoto,
                 visibility: nextVisibility,
                 shared: nextVisibility === 'public',
-                location_precision: publicLocationPrecision || persistedPhoto?.location_precision || photo.location_precision
+                location_precision: persistedPhoto?.location_precision || photo.location_precision
             });
         });
         state.selectedPersonalPhotoIds = [];
@@ -5398,6 +5398,9 @@ function renderLocationAssignmentPage() {
     }
     if (image) setPhotoImageSource(image, selectedPhoto);
     if (date) date.textContent = formatLocationAssignmentDate(selectedPhoto.date);
+    $$('[data-location-assignment-precision]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.locationAssignmentPrecision === state.locationAssignmentPrecision);
+    });
 
     const nearbyPhotos = getNearbyLocatedPhotos(getMySavedPhotos(), selectedPhoto);
     if (nearbyList) {
@@ -5422,6 +5425,7 @@ function selectLocationAssignmentPhoto(photoId) {
     closeLocationAssignmentStreetView();
     state.selectedLocationPhotoId = photo.id;
     state.locationAssignmentDraft = null;
+    state.locationAssignmentPrecision = 'approximate';
     state.locationAssignmentSearchResultName = '';
     state.locationAssignmentMarker?.setMap(null);
     const coordinate = $('#location-assignment-coordinate');
@@ -5474,7 +5478,7 @@ async function saveLocationAssignment(event) {
         lat: draft.lat,
         lng: draft.lng,
         geo_source: 'manual',
-        location_precision: getEditableLocationPrecision(photo.location_precision),
+        location_precision: state.locationAssignmentPrecision,
         location_assignment_skipped: false
     });
     button.disabled = !skip;
@@ -5486,6 +5490,7 @@ async function saveLocationAssignment(event) {
     const updated = normalizePhotoUpdate(photo, data);
     state.savedPhotos = state.savedPhotos.map((savedPhoto) => String(savedPhoto.id) === String(updated.id) ? updated : savedPhoto);
     state.selectedLocationPhotoId = state.locationAssignmentDraft = null;
+    state.locationAssignmentPrecision = 'approximate';
     closeLocationAssignmentStreetView();
     state.locationAssignmentMarker?.setMap(null);
     renderSavedPhotoSurfaces();
@@ -5927,8 +5932,7 @@ async function saveShareSettings() {
             }
         }
         const photoIds = getSharePhotoIds();
-        const publicLocationPrecision = ['public', 'link'].includes(state.visibility) ? 'approximate' : undefined;
-        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(photoIds, state.visibility, publicLocationPrecision);
+        const { data: updatedPhotos, error: photoVisibilityError } = await updatePhotosVisibility(photoIds, state.visibility);
         if (photoVisibilityError) throw photoVisibilityError;
         if (updatedPhotos?.length) {
             const updatedById = new Map(updatedPhotos.map((photo) => [String(photo.id), photo]));
@@ -6410,7 +6414,7 @@ async function persistStagedPhotos() {
                 album: null,
                 visibility: 'private',
                 geo_source: hasExifLocation ? 'exif' : 'unknown',
-                location_precision: 'approximate'
+                location_precision: getDefaultLocationPrecision(hasExifLocation ? 'exif' : 'unknown')
             };
             const { error: dbError } = await upsertPhoto(record);
             if (dbError) throw dbError;
@@ -7687,6 +7691,15 @@ function bindEvents() {
             state.editingPhotoLocationPrecision = normalizeLocationPrecision(locationPrecisionButton.dataset.photoLocationPrecision);
             $$('[data-photo-location-precision]').forEach((button) => {
                 button.classList.toggle('active', button === locationPrecisionButton);
+            });
+            return;
+        }
+
+        const locationAssignmentPrecisionButton = event.target.closest('[data-location-assignment-precision]');
+        if (locationAssignmentPrecisionButton) {
+            state.locationAssignmentPrecision = normalizeLocationPrecision(locationAssignmentPrecisionButton.dataset.locationAssignmentPrecision);
+            $$('[data-location-assignment-precision]').forEach((button) => {
+                button.classList.toggle('active', button === locationAssignmentPrecisionButton);
             });
             return;
         }

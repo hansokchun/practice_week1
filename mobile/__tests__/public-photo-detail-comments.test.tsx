@@ -6,7 +6,7 @@ const photo = {
   id: "photo-a", date: "2026-08-24", description: "한강 저녁", liked: 7,
   owner: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", displayName: "여행자", avatarUrl: null },
   createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-a",
-  locationPrecision: "hidden" as const, viewerHasLiked: false
+  locationPrecision: "approximate" as const, viewerHasLiked: false
 };
 const currentUserId = "11111111-1111-4111-8111-111111111111";
 

@@ -18,7 +18,7 @@ export type ExplorePhoto = {
   readonly imageUrl: string;
   readonly lat: number;
   readonly lng: number;
-  readonly locationPrecision?: "hidden" | "approximate" | "exact";
+  readonly locationPrecision?: "approximate" | "exact";
   readonly visibility?: "private" | "link" | "public";
 };
 
@@ -74,8 +74,7 @@ function parseRow(value: unknown, imageUrl: string | undefined, scope: ExplorePh
     typeof row["created_at"] !== "string" || !Number.isInteger(row["liked"]) || Number(row["liked"]) < 0 ||
     typeof row["lat"] !== "number" || !Number.isFinite(row["lat"]) ||
     typeof row["lng"] !== "number" || !Number.isFinite(row["lng"]) ||
-    !["hidden", "approximate", "exact"].includes(String(row["location_precision"])) ||
-    (scope === "others" && !["approximate", "exact"].includes(String(row["location_precision"]))) ||
+    !["approximate", "exact"].includes(String(row["location_precision"])) ||
     !(typeof row["date"] === "string" || row["date"] === null) ||
     !(typeof row["description"] === "string" || row["description"] === null)) return null;
   try {
@@ -91,7 +90,7 @@ function parseRow(value: unknown, imageUrl: string | undefined, scope: ExplorePh
     id: row["id"], date: row["date"], description: row["description"], liked: Number(row["liked"]),
     ownerId: row["owner_id"], createdAt: row["created_at"], imageUrl,
     lat: row["lat"], lng: row["lng"],
-    locationPrecision: row["location_precision"] as "hidden" | "approximate" | "exact",
+    locationPrecision: row["location_precision"] as "approximate" | "exact",
     visibility
   };
 }
@@ -104,38 +103,20 @@ const defaultDependencies: ExploreRepositoryDependencies = {
   async fetchRows({ bounds, offset, limit, scope, viewerId, signal }) {
     const client = getSupabaseClient();
     if (scope === "mine" && viewerId !== null) {
-      let locationQuery = client
-        .from("photo_private_locations")
-        .select("photo_id,lat,lng")
+      let photoQuery = client
+        .from("photos")
+        .select(PHOTO_COLUMNS)
         .eq("owner_id", viewerId)
         .gte("lat", bounds.south)
         .lte("lat", bounds.north)
         .gte("lng", bounds.west)
         .lte("lng", bounds.east)
-        .order("photo_id", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .range(offset, offset + limit - 1);
-      if (signal !== undefined) locationQuery = locationQuery.abortSignal(signal);
-      const { data: locations, error: locationError } = await locationQuery;
-      if (locationError !== null || locations === null || locations.length === 0) {
-        return { rows: locations === null ? null : [], error: locationError };
-      }
-      const photoIds = locations.map((location) => location.photo_id);
-      let photoQuery = client
-        .from("photos")
-        .select(PHOTO_COLUMNS)
-        .eq("owner_id", viewerId)
-        .in("id", photoIds);
       if (signal !== undefined) photoQuery = photoQuery.abortSignal(signal);
-      const { data: photos, error: photoError } = await photoQuery;
-      if (photoError !== null || photos === null) return { rows: photos, error: photoError };
-      const photoById = new Map(photos.map((photo) => [photo.id, photo]));
-      return {
-        rows: locations.map((location) => {
-          const photo = photoById.get(location.photo_id);
-          return photo === undefined ? null : { ...photo, lat: location.lat, lng: location.lng };
-        }),
-        error: null
-      };
+      const { data, error } = await photoQuery;
+      return { rows: data, error };
     }
 
     let query = client
@@ -171,7 +152,7 @@ const defaultDependencies: ExploreRepositoryDependencies = {
 const defaultOwnedBoundsDependencies: OwnedPhotoBoundsDependencies = {
   async fetchLocations(viewerId, signal) {
     let query = getSupabaseClient()
-      .from("photo_private_locations")
+      .from("photos")
       .select("lat,lng")
       .eq("owner_id", viewerId)
       .limit(5000);

@@ -24,7 +24,7 @@ test('store privacy contract distinguishes off-device collection from local phot
   const publisher = readFileSync('mobile/src/publication-publisher.ts', 'utf8');
   assert.match(publisher, /lat: null/);
   assert.match(publisher, /lng: null/);
-  assert.match(publisher, /location_precision: "hidden"/);
+  assert.match(publisher, /location_precision: "approximate"/);
   assert.match(publisher, /metadataPolicy !== "stripped"/);
 });
 

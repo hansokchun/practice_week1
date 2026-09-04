@@ -10203,6 +10203,19 @@ body.photo-fullscreen-open {
     font-weight: 900;
 }
 
+.photo-visibility-editor > p {
+    margin: -3px 0 1px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.location-assignment-precision {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
 .photo-visibility-editor > div {
     display: flex;
     align-items: center;

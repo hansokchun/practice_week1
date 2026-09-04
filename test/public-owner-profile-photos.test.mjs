@@ -22,11 +22,11 @@ test('public profile keeps public photos even when they have no public map pin',
     assert.deepEqual(profilePhotos.map((photo) => photo.id), ['exact', 'hidden', 'missing']);
 });
 
-test('public profile map keeps only photos allowed by the location policy', () => {
+test('public profile map keeps every public photo with coordinates', () => {
     const profilePhotos = getPublicOwnerProfilePhotos(photos, 'ikkyee');
     const mapPhotos = getPublicOwnerProfileMapPhotos(profilePhotos);
 
-    assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact']);
+    assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact', 'hidden']);
 });
 
 test('own profile map includes every owned located photo regardless of visibility', () => {
@@ -35,8 +35,8 @@ test('own profile map includes every owned located photo regardless of visibilit
     assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact', 'hidden', 'private', 'link-only']);
 });
 
-test('another viewer profile map keeps the public location boundary', () => {
+test('another viewer profile map uses every public saved coordinate', () => {
     const mapPhotos = getOwnerProfileMapPhotos(photos, 'ikkyee', 'viewer');
 
-    assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact']);
+    assert.deepEqual(mapPhotos.map((photo) => photo.id), ['exact', 'hidden']);
 });

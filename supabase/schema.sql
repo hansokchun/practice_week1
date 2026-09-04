@@ -52,9 +52,6 @@ CREATE OR REPLACE FUNCTION "public"."apply_photo_location_privacy"() RETURNS "tr
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
-declare
-  source_lat double precision;
-  source_lng double precision;
 begin
   if new.lat is not null and new.lng is not null
      and (tg_op = 'INSERT' or new.lat is distinct from old.lat or new.lng is distinct from old.lng) then
@@ -65,25 +62,6 @@ begin
         lat = excluded.lat,
         lng = excluded.lng,
         updated_at = now();
-  end if;
-
-  select lat, lng into source_lat, source_lng
-  from public.photo_private_locations
-  where photo_id = new.id;
-
-  if new.visibility in ('public', 'link') or new.shared is true then
-    if new.location_precision = 'hidden' then
-      new.lat := null;
-      new.lng := null;
-    elsif source_lat is not null and source_lng is not null then
-      if new.location_precision = 'approximate' then
-        new.lat := round(source_lat::numeric, 2)::double precision;
-        new.lng := round(source_lng::numeric, 2)::double precision;
-      else
-        new.lat := source_lat;
-        new.lng := source_lng;
-      end if;
-    end if;
   end if;
 
   return new;
@@ -295,10 +273,10 @@ CREATE TABLE IF NOT EXISTS "public"."photos" (
     "visibility" "text" DEFAULT 'private'::"text" NOT NULL,
     "geo_source" "text" DEFAULT 'unknown'::"text" NOT NULL,
     "storage_path" "text",
-    "location_precision" "text" DEFAULT 'hidden'::"text" NOT NULL,
+    "location_precision" "text" DEFAULT 'approximate'::"text" NOT NULL,
     "location_assignment_skipped" boolean DEFAULT false NOT NULL,
     CONSTRAINT "photos_geo_source_check" CHECK (("geo_source" = ANY (ARRAY['exif'::"text", 'manual'::"text", 'gpx'::"text", 'unknown'::"text"]))),
-    CONSTRAINT "photos_location_precision_check" CHECK (("location_precision" = ANY (ARRAY['exact'::"text", 'approximate'::"text", 'hidden'::"text"]))),
+    CONSTRAINT "photos_location_precision_check" CHECK (("location_precision" = ANY (ARRAY['exact'::"text", 'approximate'::"text"]))),
     CONSTRAINT "photos_visibility_check" CHECK (("visibility" = ANY (ARRAY['private'::"text", 'link'::"text", 'public'::"text"])))
 );
 
