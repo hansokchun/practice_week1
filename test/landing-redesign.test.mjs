@@ -50,9 +50,11 @@ test('메인 검색창 위의 소개 문구를 제거하고 비워진 간격만�
     assert.match(css, /\.landing-search\s*\{[^}]*margin-top:\s*0;/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*blur\(0\.35px\) saturate\(1\.02\) brightness\(0\.94\) contrast\(1\.13\);[^}]*mix-blend-mode:\s*multiply;/s);
+    assert.match(css, /\.landing-search-globe\s*\{[^}]*top:\s*clamp\(-40px,\s*-2vw,\s*-12px\);/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*mask-image:\s*linear-gradient\(to bottom,/s);
     assert.match(css, /linear-gradient\(to right, transparent 0%, #000 8%, #000 92%, transparent 100%\)/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*84px 16px 44px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-globe\s*\{[^}]*top:\s*100px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*0;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search input\s*\{[^}]*font-size:\s*16px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions\s*\{[^}]*flex-wrap:\s*nowrap;/s);

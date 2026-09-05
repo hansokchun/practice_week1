@@ -1490,7 +1490,7 @@ body.is-logged-in #btn-open-auth {
 .landing-search-globe {
     position: absolute;
     z-index: 0;
-    top: clamp(100px, 11vw, 150px);
+    top: clamp(-40px, -2vw, -12px);
     left: 50%;
     width: min(1180px, 96vw);
     max-width: none;
@@ -2361,7 +2361,7 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-globe {
-        top: 270px;
+        top: 100px;
         width: 100vw;
         opacity: 0.86;
     }
