@@ -9146,6 +9146,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     padding: 24px 0 42px;
 }
 
+.profile-cover.is-editing {
+    padding-top: 88px;
+}
+
 .profile-cover > img {
     position: absolute;
     inset: 0;
@@ -12957,6 +12961,10 @@ body.modal-open {
     .profile-cover {
         min-height: 280px;
         padding: 16px 0 28px;
+    }
+
+    .profile-cover.is-editing {
+        padding-top: 72px;
     }
 
     .profile-cover-edit-trigger {

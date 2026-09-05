@@ -3393,6 +3393,7 @@ function setAccountProfileEditMode(isEditing) {
     const editButton = $('#account-profile-edit');
     const logoutButton = $('#account-profile-logout');
     const message = $('#account-profile-message');
+    const profileCover = $('.profile-cover');
     const profileCard = $('.profile-card');
     const avatarInput = $('#profile-avatar-input');
     const coverInput = $('#profile-cover-input');
@@ -3404,8 +3405,9 @@ function setAccountProfileEditMode(isEditing) {
     if (view) view.hidden = state.accountProfileEditMode;
     if (form) form.hidden = !state.accountProfileEditMode;
     if (editButton) editButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
-    if (logoutButton) logoutButton.hidden = state.selectedPublicOwnerId !== state.currentUser?.id;
+    if (logoutButton) logoutButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
     if (message) message.textContent = '';
+    profileCover?.classList.toggle('is-editing', state.accountProfileEditMode);
     if (profileCard) profileCard.classList.toggle('is-editing', state.accountProfileEditMode);
     if (avatarInput) avatarInput.disabled = !state.accountProfileEditMode;
     if (coverInput) coverInput.disabled = !state.accountProfileEditMode;

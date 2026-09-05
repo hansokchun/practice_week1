@@ -76,6 +76,13 @@ test('profile edit form has breathing room above the editing fields', () => {
     assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(280px,\s*100%\);/s);
 });
 
+test('profile edit mode reserves a separate cover action row without overlapping the profile card', () => {
+    assert.match(app, /profileCover\?\.classList\.toggle\('is-editing', state\.accountProfileEditMode\)/);
+    assert.match(app, /logoutButton\.hidden = state\.accountProfileEditMode \|\| state\.selectedPublicOwnerId !== state\.currentUser\?\.id/);
+    assert.match(css, /\.profile-cover\.is-editing\s*\{[^}]*padding-top:\s*88px;/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.profile-cover\.is-editing\s*\{[^}]*padding-top:\s*72px;/s);
+});
+
 test('profile edit mode keeps the profile avatar beside the account name and removes the extra edit circle', () => {
     const shellStart = app.indexOf('function ensureProfileHeaderShell');
     const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
