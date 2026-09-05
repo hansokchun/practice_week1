@@ -27,7 +27,7 @@ function photo(id: string, fields: Partial<LandingPhoto> = {}): LandingPhoto {
 }
 
 describe("mobile landing tag feed", () => {
-  it("keeps at most twenty curated photos first and stably shuffles matching photos", () => {
+  it("keeps the saved curation order across every load and filters deleted photos", () => {
     const photos = Array.from({ length: 28 }, (_, index) => photo(`p${index + 1}`, { aiTags: ["한국"] }));
     const curatedPhotoIds = Array.from({ length: 23 }, (_, index) => `p${index + 1}`);
     const section: LandingSection = {
@@ -42,11 +42,10 @@ describe("mobile landing tag feed", () => {
     const repeated = buildLandingTagFeed(section, "session-a");
     const anotherSession = buildLandingTagFeed(section, "session-b");
 
-    expect(first.slice(0, 20).map((item) => item.id)).toEqual(curatedPhotoIds.slice(0, 20));
-    expect(first).toHaveLength(28);
-    expect(new Set(first.map((item) => item.id)).size).toBe(28);
+    expect(first.map((item) => item.id)).toEqual(curatedPhotoIds);
+    expect(first).toHaveLength(23);
     expect(repeated.map((item) => item.id)).toEqual(first.map((item) => item.id));
-    expect(anotherSession.slice(20).map((item) => item.id)).not.toEqual(first.slice(20).map((item) => item.id));
+    expect(anotherSession.map((item) => item.id)).toEqual(first.map((item) => item.id));
   });
 
   it("derives conservative region chips from AI and photo copy", () => {

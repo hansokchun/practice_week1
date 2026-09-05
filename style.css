@@ -2015,6 +2015,31 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     gap: 8px;
 }
 
+.admin-selected-photos__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.admin-selected-photos__heading button {
+    min-height: 36px;
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--teal);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 0 12px;
+}
+
+.admin-selected-photos__heading button:hover,
+.admin-selected-photos__heading button:focus-visible {
+    background: var(--surface-muted);
+}
+
 .admin-selected-photo {
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr) auto auto;

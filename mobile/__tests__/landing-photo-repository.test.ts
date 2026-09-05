@@ -30,6 +30,23 @@ describe("landing photo repository", () => {
     expect(signPaths).toHaveBeenCalledWith(["owner-a/thumbnails/photo-a.jpg"], 300);
   });
 
+  it("does not invent tag photos when the administrator has not saved assignments", async () => {
+    await expect(fetchLandingContent({
+      fetchCuration: async () => ({
+        sections: [{ id: "section-a", title: "추천", description: "", sort_order: 0, is_visible: true }],
+        assignments: [],
+        error: null
+      }),
+      fetchPhotos: async () => ({ rows, error: null }),
+      signPaths: async () => ({
+        urls: new Map([["owner-a/thumbnails/photo-a.jpg", "https://example.supabase.co/signed/photo-a-thumbnail"]]),
+        error: null
+      })
+    })).resolves.toEqual({
+      sections: [{ id: "section-a", title: "추천", description: "", photos: [], curatedPhotoIds: [] }]
+    });
+  });
+
   it("searches only safe public photo copy and hides provider errors", async () => {
     const photos = [{
       id: "photo-a", description: "제주 바다", title: null, album: "한국 여행", ownerId: "owner-a",

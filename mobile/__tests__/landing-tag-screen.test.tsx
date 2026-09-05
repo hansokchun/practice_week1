@@ -24,7 +24,7 @@ function photo(index: number): LandingPhoto {
 
 const photos = Array.from({ length: 24 }, (_, index) => photo(index + 1));
 const content = {
-  sections: [{ id: "korea", title: "한국", description: "", curatedPhotoIds: [], photos }]
+  sections: [{ id: "korea", title: "한국", description: "", curatedPhotoIds: photos.map((item) => item.id), photos }]
 };
 
 describe("landing tag gallery", () => {
@@ -60,7 +60,13 @@ describe("landing tag gallery", () => {
     }));
     const screen = await render(
       <LandingTagScreen
-        loadContent={async () => ({ sections: [{ ...content.sections[0]!, photos: noRegionPhotos }] })}
+        loadContent={async () => ({
+          sections: [{
+            ...content.sections[0]!,
+            curatedPhotoIds: noRegionPhotos.map((item) => item.id),
+            photos: noRegionPhotos
+          }]
+        })}
         sectionId="korea"
         seed="test"
       />

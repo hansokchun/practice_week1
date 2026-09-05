@@ -41,7 +41,7 @@ test('landing topic page is a map-free regional gallery with thirty desktop phot
     const pageEnd = appSource.indexOf('function renderTripReviewStoryBlock', pageStart);
     const pageSource = appSource.slice(pageStart, pageEnd);
     assert.match(appSource, /function renderLandingTagPage\(\)/);
-    assert.match(appSource, /getLandingTagFeedPhotos\(section, getLandingPublicPhotos\(\), getLandingTagSessionSeed\(section\.id\)\)/);
+    assert.match(appSource, /getLandingTagFeedPhotos\(section, getLandingPublicPhotos\(\)\)/);
     assert.match(pageSource, /getLandingTagRegions\(sectionPhotos\)/);
     assert.match(pageSource, /filterLandingTagPhotosByRegion\(sectionPhotos, state\.landingTagRegion\)/);
     assert.match(pageSource, /getLandingTagPhotoPage\(regionPhotos, state\.landingTagPage\)/);
@@ -79,9 +79,9 @@ test('landing tag page keeps placeholders stable and reveals a loaded page as on
     assert.match(cssSource, /\.landing-tag-gallery-grid\.is-thumbnail-batch-loading \.landing-tag-gallery-card img\.is-thumbnail-ready\s*\{[^}]*opacity:\s*1;/s);
 });
 
-test('landing admin limits the manually ordered tag lead to twenty photos', () => {
+test('landing admin limits the saved tag curation to twenty photos', () => {
     assert.match(appSource, /getLandingAdminSelectedPhotoIds\(section\.photo_ids, candidatePhotos, LANDING_TAG_PIN_LIMIT\)/);
-    assert.match(appSource, /상단 고정 사진 \(최대 20장\)/);
+    assert.match(appSource, /태그 사진 \(최대 20장\)/);
     assert.match(appSource, /section\.photo_ids\.length >= LANDING_TAG_PIN_LIMIT/);
 });
 

@@ -1,3 +1,5 @@
+import { getLandingSearchResults } from './landing-sections.mjs';
+
 function getPhotoId(photo) {
     return String(photo?.id || photo?.localId || '');
 }
@@ -31,4 +33,26 @@ export function getLandingAdminSelectedPhotoIds(selectedPhotoIds = [], candidate
             return true;
         })
         .slice(0, maxCount);
+}
+
+export function getLandingAdminRandomPhotoIds(
+    section,
+    candidates = [],
+    reservedPhotoIds = [],
+    limit = 20,
+    random = Math.random
+) {
+    const reservedIds = new Set((reservedPhotoIds || []).map(String));
+    const title = String(section?.title || '').trim();
+    const available = title === '추천'
+        ? [...candidates]
+        : getLandingSearchResults(candidates, title);
+    const maxCount = Math.max(0, Math.trunc(Number(limit) || 0));
+
+    return available
+        .map((photo) => ({ id: getPhotoId(photo), score: Number(random()) || 0 }))
+        .filter(({ id }) => id && !reservedIds.has(id))
+        .sort((left, right) => left.score - right.score || left.id.localeCompare(right.id))
+        .slice(0, maxCount)
+        .map(({ id }) => id);
 }

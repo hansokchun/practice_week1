@@ -15,7 +15,7 @@ function photo(id, fields = {}) {
     return { id, visibility: 'public', ...fields };
 }
 
-test('landing tag feed keeps at most twenty curated photos first and shuffles only the remaining curated set', () => {
+test('landing tag feed keeps the saved curation order and filters deleted photos', () => {
     const photos = Array.from({ length: 28 }, (_, index) => photo(`p${index + 1}`, { tags: ['한국'] }));
     const section = {
         id: 'korea',
@@ -26,22 +26,24 @@ test('landing tag feed keeps at most twenty curated photos first and shuffles on
     const feed = getLandingTagFeedPhotos(section, photos, 'session-a');
 
     assert.equal(LANDING_TAG_PIN_LIMIT, 20);
-    assert.deepEqual(feed.slice(0, 20).map((item) => item.id), section.photo_ids.slice(0, 20));
+    assert.deepEqual(feed.map((item) => item.id), section.photo_ids);
     assert.equal(feed.length, 23);
     assert.equal(new Set(feed.map((item) => item.id)).size, 23);
-    assert.notDeepEqual(feed.slice(20).map((item) => item.id), section.photo_ids.slice(20));
+
+    const afterDeletion = getLandingTagFeedPhotos(section, photos.filter((item) => item.id !== 'p4'), 'another-session');
+    assert.deepEqual(afterDeletion.map((item) => item.id), section.photo_ids.filter((id) => id !== 'p4'));
 });
 
-test('landing tag feed is stable for one session and changes order for another session', () => {
+test('landing tag feed never changes between page loads', () => {
     const photos = Array.from({ length: 12 }, (_, index) => photo(`city-${index}`, { tags: ['도시'] }));
-    const section = { id: 'city', title: '도시', photo_ids: [] };
+    const section = { id: 'city', title: '도시', photo_ids: photos.map((item) => item.id) };
 
     const first = getLandingTagFeedPhotos(section, photos, 'session-a').map((item) => item.id);
     const repeated = getLandingTagFeedPhotos(section, photos, 'session-a').map((item) => item.id);
     const anotherSession = getLandingTagFeedPhotos(section, photos, 'session-b').map((item) => item.id);
 
     assert.deepEqual(first, repeated);
-    assert.notDeepEqual(first, anotherSession);
+    assert.deepEqual(first, anotherSession);
 });
 
 test('landing tag feed treats an explicit server curation as the complete topic set', () => {
@@ -57,7 +59,7 @@ test('landing tag feed treats an explicit server curation as the complete topic 
     assert.deepEqual(feed.map((item) => item.id), ['pinned']);
 });
 
-test('landing tag feed derives matching public photos when no explicit curation exists', () => {
+test('landing tag feed stays empty until the administrator saves a curation', () => {
     const photos = [
         photo('tagged', { tags: ['한국', '산'] }),
         photo('place', { placeName: '한국 서울' }),
@@ -66,15 +68,7 @@ test('landing tag feed derives matching public photos when no explicit curation 
     ];
     const feed = getLandingTagFeedPhotos({ id: 'korea', title: '한국', photo_ids: [] }, photos, 'session');
 
-    assert.deepEqual(new Set(feed.map((item) => item.id)), new Set(['tagged', 'place']));
-});
-
-test('landing tag feed falls back to shuffled public photos before AI tags exist', () => {
-    const photos = [photo('a'), photo('b'), photo('c')];
-    const feed = getLandingTagFeedPhotos({ id: 'korea', title: '한국', photo_ids: [] }, photos, 'session');
-
-    assert.equal(feed.length, 3);
-    assert.deepEqual(new Set(feed.map((item) => item.id)), new Set(['a', 'b', 'c']));
+    assert.deepEqual(feed, []);
 });
 
 test('landing tag gallery derives concise region labels and filters without losing unlocated photos from all', () => {

@@ -143,11 +143,8 @@ export function getLandingSearchResults(photos = [], query = '') {
 
 export function getLandingSectionPhotos(section, photos = [], fallbackIndex = 0) {
     const publicPhotos = getLandingSearchResults(photos);
-    if (!section?.photo_ids?.length) {
-        if (!publicPhotos.length) return [];
-        const offset = (Math.abs(Number(fallbackIndex) || 0) * LANDING_SECTION_BATCH_SIZE) % publicPhotos.length;
-        return [...publicPhotos.slice(offset), ...publicPhotos.slice(0, offset)];
-    }
+    void fallbackIndex;
+    if (!section?.photo_ids?.length) return [];
     const photoById = new Map(publicPhotos.map((photo) => [String(photo.id), photo]));
     return section.photo_ids.map((photoId) => photoById.get(String(photoId))).filter(Boolean);
 }

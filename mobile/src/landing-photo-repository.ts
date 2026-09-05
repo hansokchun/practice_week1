@@ -221,15 +221,12 @@ export async function fetchLandingContent(
         .filter((item) => item["section_id"] === section["id"])
         .map((item) => photoById.get(item["photo_id"] as string))
         .filter((photo): photo is LandingPhoto => photo !== undefined);
-      const fallback = publicPhotos.length === 0 ? [] : [
-        ...publicPhotos.slice(sectionIndex % publicPhotos.length),
-        ...publicPhotos.slice(0, sectionIndex % publicPhotos.length)
-      ];
+      void sectionIndex;
       return {
         id: section["id"] as string,
         title: (section["title"] as string).trim() || "여행 사진",
         description: typeof section["description"] === "string" ? section["description"].trim() : "",
-        photos: assigned.length > 0 ? assigned : fallback,
+        photos: assigned,
         curatedPhotoIds: assigned.map((photo) => photo.id)
       };
     })

@@ -264,6 +264,7 @@ import {
 } from './landing-tag-feed.mjs';
 import {
     getLandingAdminPhotoCandidates,
+    getLandingAdminRandomPhotoIds,
     getLandingAdminSelectedPhotoIds
 } from './landing-admin-photo-candidates.mjs';
 
@@ -386,7 +387,6 @@ const state = {
     landingTagPage: 1,
     landingTagRegion: '',
     landingTagPhotos: [],
-    landingTagRandomSeeds: {},
     productFeedback: [],
     isProductFeedbackLoading: false,
     hasLoadedProductFeedback: false,
@@ -1413,7 +1413,13 @@ function renderLandingAdminForm() {
             <label>소제목<input name="title" maxlength="80" value="${escapeHtml(section.title)}" required></label>
             <label>설명<textarea name="description" maxlength="180" rows="2">${escapeHtml(section.description || '')}</textarea></label>
             <label>공개 상태<select name="is_visible"><option value="true" ${section.is_visible !== false ? 'selected' : ''}>공개</option><option value="false" ${section.is_visible === false ? 'selected' : ''}>숨김</option></select></label>
-            <div class="admin-selected-photos"><strong>상단 고정 사진 (최대 20장)</strong>${selectedMarkup || '<p>고정하지 않으면 태그 사진이 무작위 순서로 표시됩니다.</p>'}</div>
+            <div class="admin-selected-photos">
+                <div class="admin-selected-photos__heading">
+                    <strong>태그 사진 (최대 20장)</strong>
+                    <button data-admin-photo-randomize type="button">무작위로 다시 구성</button>
+                </div>
+                ${selectedMarkup || '<p>저장하면 주제에 맞는 사진을 한 번 무작위로 구성하며, 다음 편집 전까지 같은 사진과 순서가 유지됩니다.</p>'}
+            </div>
             <div class="admin-photo-picker" aria-label="좋아요한 공개 사진 선택">${pickerMarkup || '<p>지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다.</p>'}</div>
             <input name="photo_ids" type="hidden" value="${escapeHtml(selectedIds.join(','))}">
             <input name="sort_order" type="hidden" value="${index}">
@@ -1515,7 +1521,10 @@ async function saveLandingAdminForm(event) {
     event.preventDefault();
     const message = $('#landing-admin-message');
     if (!isLandingAdmin(state.currentUser)) return;
+    syncLandingAdminDrafts();
     const fieldsets = $$('[data-admin-landing-section]');
+    const candidatePhotos = getLandingAdminLikedPhotoCandidates();
+    const reservedPhotoIds = new Set(state.landingSections.flatMap((section) => section.photo_ids || []));
     if (message) message.textContent = '메인 구성을 저장하는 중입니다…';
     const { error: heroError } = await saveLandingHeroSlides(getLandingHeroSlidesToSave());
     if (heroError) {
@@ -1527,7 +1536,17 @@ async function saveLandingAdminForm(event) {
         fieldset.querySelectorAll('input, textarea, select').forEach((input) => formData.set(input.name, input.value));
         const currentId = fieldset.dataset.adminLandingSection;
         const id = /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(currentId) ? currentId : crypto.randomUUID();
-        const photoIds = String(formData.get('photo_ids') || '').split(',').map((value) => value.trim()).filter(Boolean).slice(0, LANDING_TAG_PIN_LIMIT);
+        let photoIds = String(formData.get('photo_ids') || '').split(',').map((value) => value.trim()).filter(Boolean).slice(0, LANDING_TAG_PIN_LIMIT);
+        if (!photoIds.length) {
+            const section = state.landingSections.find((candidate) => String(candidate.id) === String(currentId));
+            photoIds = getLandingAdminRandomPhotoIds(
+                section,
+                candidatePhotos,
+                [...reservedPhotoIds],
+                LANDING_TAG_PIN_LIMIT
+            );
+        }
+        photoIds.forEach((photoId) => reservedPhotoIds.add(photoId));
         const { error } = await saveLandingSection({
             id,
             title: formData.get('title'),
@@ -4352,7 +4371,7 @@ function renderLandingTagPage() {
         return;
     }
 
-    const sectionPhotos = getLandingTagFeedPhotos(section, getLandingPublicPhotos(), getLandingTagSessionSeed(section.id));
+    const sectionPhotos = getLandingTagFeedPhotos(section, getLandingPublicPhotos());
     const regions = getLandingTagRegions(sectionPhotos);
     if (state.landingTagRegion && !regions.some((region) => region.label === state.landingTagRegion)) {
         state.landingTagRegion = '';
@@ -4407,14 +4426,6 @@ function renderLandingTagPage() {
     `;
     const grid = page.querySelector('.landing-tag-gallery-grid');
     if (photoPage.items.length) revealPhotoThumbnailGridWhenReady(grid, { atomic: true });
-}
-
-function getLandingTagSessionSeed(sectionId) {
-    const key = String(sectionId || 'tag');
-    if (!state.landingTagRandomSeeds[key]) {
-        state.landingTagRandomSeeds[key] = `${Date.now()}-${crypto.randomUUID()}`;
-    }
-    return state.landingTagRandomSeeds[key];
 }
 
 function renderLandingTagRegionButton(value, label) {
@@ -7873,6 +7884,29 @@ function bindEvents() {
                     [state.landingSections[index], state.landingSections[targetIndex]] = [state.landingSections[targetIndex], state.landingSections[index]];
                 }
             }
+            renderLandingAdminForm();
+            return;
+        }
+
+        const adminPhotoRandomize = event.target.closest('[data-admin-photo-randomize]');
+        if (adminPhotoRandomize) {
+            syncLandingAdminDrafts();
+            const fieldset = adminPhotoRandomize.closest('[data-admin-landing-section]');
+            const section = state.landingSections.find((candidate) => String(candidate.id) === fieldset?.dataset.adminLandingSection);
+            if (!section) return;
+            const reservedIds = state.landingSections
+                .filter((candidate) => candidate !== section)
+                .flatMap((candidate) => candidate.photo_ids || []);
+            section.photo_ids = getLandingAdminRandomPhotoIds(
+                section,
+                getLandingAdminLikedPhotoCandidates(),
+                reservedIds,
+                LANDING_TAG_PIN_LIMIT
+            );
+            const message = $('#landing-admin-message');
+            if (message) message.textContent = section.photo_ids.length
+                ? '무작위 구성을 만들었습니다. 저장하면 이 구성이 고정됩니다.'
+                : '이 주제와 맞는 좋아요한 공개 사진이 없습니다.';
             renderLandingAdminForm();
             return;
         }

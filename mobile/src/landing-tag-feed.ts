@@ -2,7 +2,6 @@ import type { LandingPhoto, LandingSection } from "./landing-photo-repository";
 
 export const LANDING_TAG_INITIAL_COUNT = 20;
 export const LANDING_TAG_LOAD_COUNT = 20;
-export const LANDING_TAG_PIN_LIMIT = 20;
 
 const REGION_LABELS = [
   "서울", "부산", "제주", "인천", "대구", "대전", "광주", "울산", "세종",
@@ -21,32 +20,12 @@ function photoSearchText(photo: LandingPhoto): string {
     .map(normalize).filter(Boolean).join(" ");
 }
 
-function stableScore(seed: string, id: string): number {
-  const value = `${seed}:${id}`;
-  let hash = 2166136261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
 export function buildLandingTagFeed(section: LandingSection, seed: string): readonly LandingPhoto[] {
+  void seed;
   const photoById = new Map(section.photos.map((photo) => [photo.id, photo]));
   const curatedIds = [...new Set(section.curatedPhotoIds ?? [])]
     .filter((id) => photoById.has(id));
-  const pinnedIds = curatedIds.slice(0, LANDING_TAG_PIN_LIMIT);
-  const pinnedSet = new Set(pinnedIds);
-  const sectionKeyword = normalize(section.title);
-  const matching = section.photos.filter((photo) =>
-    curatedIds.includes(photo.id) || (sectionKeyword.length > 0 && photoSearchText(photo).includes(sectionKeyword))
-  );
-  const source = matching.length > 0 ? matching : section.photos;
-  const pinned = pinnedIds.map((id) => photoById.get(id)).filter((photo): photo is LandingPhoto => photo !== undefined);
-  const shuffled = source.filter((photo) => !pinnedSet.has(photo.id)).sort((left, right) =>
-    stableScore(seed, left.id) - stableScore(seed, right.id) || left.id.localeCompare(right.id)
-  );
-  return [...pinned, ...shuffled];
+  return curatedIds.map((id) => photoById.get(id)).filter((photo): photo is LandingPhoto => photo !== undefined);
 }
 
 export function getLandingPhotoRegion(photo: LandingPhoto): string {

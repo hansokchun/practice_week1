@@ -73,8 +73,8 @@ test('기본 랜딩 소제목은 현재 공개 사진의 주요 태그와 같은
     assert.equal(sections.every(({ description }) => description.length > 0), true);
 
     const photos = Array.from({ length: 6 }, (_, index) => ({ id: String(index), visibility: 'public' }));
-    assert.equal(getLandingSectionPhotos(sections[0], photos, 0).length, 6);
-    assert.equal(getLandingSectionPhotos(sections[5], photos, 5).length, 6);
+    assert.equal(getLandingSectionPhotos(sections[0], photos, 0).length, 0);
+    assert.equal(getLandingSectionPhotos(sections[5], photos, 5).length, 0);
 });
 
 test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이를 두지 않는다', async () => {
@@ -316,16 +316,14 @@ test('랜딩 섹션과 검색, 추가 로딩 규칙을 정규화한다', () => {
     });
 });
 
-test('메인 자동 배치 사진은 여덟 장씩 나누어 첫 화면 중복을 줄인다', () => {
+test('메인 태그 사진은 저장된 순서로 고정되고 삭제된 사진만 빠진다', () => {
     const photos = Array.from({ length: 32 }, (_, index) => ({ id: `photo-${index}`, visibility: 'public' }));
-    const first = getLandingVisiblePhotos(getLandingSectionPhotos({ photo_ids: [] }, photos, 0));
-    const second = getLandingVisiblePhotos(getLandingSectionPhotos({ photo_ids: [] }, photos, 1));
+    const section = { photo_ids: ['photo-7', 'photo-2', 'deleted', 'photo-10'] };
+    const first = getLandingSectionPhotos(section, photos, 0);
+    const second = getLandingSectionPhotos(section, photos, 9);
 
-    assert.equal(first.length, 8);
-    assert.equal(second.length, 8);
-    assert.deepEqual(first.map(({ id }) => id), photos.slice(0, 8).map(({ id }) => id));
-    assert.deepEqual(second.map(({ id }) => id), photos.slice(8, 16).map(({ id }) => id));
-    assert.equal(first.some(({ id }) => second.some((photo) => photo.id === id)), false);
+    assert.deepEqual(first.map(({ id }) => id), ['photo-7', 'photo-2', 'photo-10']);
+    assert.deepEqual(second.map(({ id }) => id), ['photo-7', 'photo-2', 'photo-10']);
 });
 
 test('메인 사진 행은 여덟 장에서 끝나며 스크롤로 사진을 추가하지 않는다', async () => {
