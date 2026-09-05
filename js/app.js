@@ -1049,8 +1049,7 @@ async function refreshExploreMapAfterRouteEntry() {
     const useMobileOverview = isExploreMobileViewport();
     state.explorePreserveViewportOnce = useMobileOverview;
     if (useMobileOverview) {
-        map.setCenter({ lat: 22, lng: 135 });
-        map.setZoom(4);
+        map.moveCamera({ center: { lat: 22, lng: 135 }, zoom: 4 });
     }
     const photos = getExplorePhotoMapItems();
     if (photos.length) renderExploreMapMarkers(photos, state.exploreSelectedAlbumId);
