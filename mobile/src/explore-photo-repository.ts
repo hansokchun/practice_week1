@@ -1,5 +1,6 @@
 import { getSupabaseClient } from "./supabase-client";
 import type { ExplorePhotoScope } from "./explore-photo-scope";
+import { getPhotoPreviewPath, isSafePhotoStoragePath } from "./photo-preview-path";
 
 export type ExploreBounds = {
   readonly north: number;
@@ -60,12 +61,7 @@ type PublicPhotoBoundsDependencies = {
 };
 
 const GENERIC_EXPLORE_ERROR = "공개 사진을 불러오지 못했습니다.";
-const PHOTO_COLUMNS = "id,date,description,liked,owner_id,created_at,storage_path,lat,lng,location_precision,visibility";
-
-function isSafeStoragePath(value: unknown): value is string {
-  return typeof value === "string" && value.length <= 1024 && value.includes("/") &&
-    !value.startsWith("/") && !value.includes("..") && !value.includes("\\");
-}
+const PHOTO_COLUMNS = "id,date,description,liked,owner_id,created_at,storage_path,thumbnail_path,lat,lng,location_precision,visibility";
 
 function parseRow(value: unknown, imageUrl: string | undefined, scope: ExplorePhotoScope): ExplorePhoto | null {
   if (typeof value !== "object" || value === null || imageUrl === undefined) return null;
@@ -249,9 +245,9 @@ export async function fetchExplorePhotoPage(
   });
   if (error !== null || !Array.isArray(rows)) throw new Error(GENERIC_EXPLORE_ERROR);
   const paths = rows.map((row) => typeof row === "object" && row !== null
-    ? (row as Record<string, unknown>)["storage_path"]
+    ? getPhotoPreviewPath(row as Record<string, unknown>)
     : null);
-  if (!paths.every(isSafeStoragePath)) throw new Error(GENERIC_EXPLORE_ERROR);
+  if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_EXPLORE_ERROR);
   if (paths.length === 0) return { photos: [], hasMore: false, nextOffset: input.offset };
   const { urls, error: signError } = await dependencies.signPaths(paths, 300, input.signal);
   if (signError !== null) throw new Error(GENERIC_EXPLORE_ERROR);

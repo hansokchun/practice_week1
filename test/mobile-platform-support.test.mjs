@@ -34,7 +34,7 @@ test('Expo configuration generates the exact iOS and Android minimum versions', 
 });
 
 test('platform support drift check is pinned and required in CI', () => {
-  assert.equal(packageJson.dependencies['expo-build-properties'], '~57.0.15');
+  assert.equal(packageJson.dependencies['expo-build-properties'], '~57.0.17');
   assert.equal(packageJson.scripts['platform:verify'], 'node ./scripts/verify-platform-support.mjs');
   const workflow = readFileSync('.github/workflows/mobile-ci.yml', 'utf8');
   assert.match(workflow, /npm run doctor[\s\S]*npm run platform:verify/u);

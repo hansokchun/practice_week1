@@ -7,7 +7,7 @@ import { useAuthSession } from "../../src/auth-session";
 import { blockUser, reportPublicPhoto, type ContentReportReason } from "../../src/content-safety-repository";
 import { PhotoSafetyControls } from "../../src/PhotoSafetyControls";
 import { mobileColors } from "../../src/mobile-theme";
-import { exploreRoute, guestLoginRoute, publicProfileRoute } from "../../src/mobile-routes";
+import { buildGuestLoginRoute, exploreRoute, publicProfileRoute } from "../../src/mobile-routes";
 import { setPhotoLiked } from "../../src/liked-photo-repository";
 import { createPhotoComment, deletePhotoComment, fetchPhotoComments, type PhotoComment } from "../../src/photo-comment-repository";
 import { fetchPublicPhotoDetail, type PublicPhotoDetail } from "../../src/public-photo-detail-repository";
@@ -81,7 +81,7 @@ export function PublicPhotoDetailScreen({
   },
   photoId,
   refreshKey = 0,
-  requestLogin = () => router.push(guestLoginRoute),
+  requestLogin = () => router.push(buildGuestLoginRoute(photoId === null ? "/profile" : `/explore-photo/${photoId}`) as never),
   removeComment = deletePhotoComment,
   reportPhoto = reportPublicPhoto,
   submitComment = createPhotoComment,

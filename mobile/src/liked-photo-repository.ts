@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "./supabase-client";
+import { getPhotoPreviewPath, isSafePhotoStoragePath } from "./photo-preview-path";
 
 export type LikedPhoto = {
   readonly id: string;
@@ -27,11 +28,6 @@ const GENERIC_MUTATION_ERROR = "좋아요를 변경하지 못했습니다.";
 
 function isPhotoId(value: unknown): value is string {
   return typeof value === "string" && /^[A-Za-z0-9._:-]{1,128}$/u.test(value) && !value.includes("..");
-}
-
-function isSafeStoragePath(value: unknown): value is string {
-  return typeof value === "string" && value.length <= 1024 && value.includes("/") &&
-    !value.startsWith("/") && !value.includes("..") && !value.includes("\\");
 }
 
 function isHttpUrl(value: unknown): value is string {
@@ -63,7 +59,7 @@ const defaultDependencies: LikedPhotoDependencies = {
   async fetchPublicPhotos(ids, signal) {
     let query = getSupabaseClient()
       .from("photos")
-      .select("id,date,description,storage_path,created_at")
+      .select("id,date,description,storage_path,thumbnail_path,created_at")
       .in("id", [...ids])
       .eq("visibility", "public");
     if (signal !== undefined) query = query.abortSignal(signal);
@@ -105,8 +101,8 @@ export async function fetchLikedPhotos(
       const row = byId.get(id);
       return row === undefined ? [] : [row];
     });
-    const paths = publicRows.map((row) => row["storage_path"]);
-    if (!paths.every(isSafeStoragePath)) throw new Error(GENERIC_LIKES_ERROR);
+    const paths = publicRows.map(getPhotoPreviewPath);
+    if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_LIKES_ERROR);
     if (paths.length === 0) return [];
     const signed = await dependencies.signPaths(paths, 300, signal);
     if (signed.error !== null) throw new Error(GENERIC_LIKES_ERROR);

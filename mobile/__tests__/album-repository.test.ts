@@ -48,8 +48,8 @@ describe("read-only mobile album repository", () => {
       })),
       fetchPhotoRows: jest.fn(async () => ({
         rows: [
-          { id: "photo-a", title: null, description: "오름", date: "2026-08-02", created_at: "2026-08-04T00:00:00.000Z", storage_path: "owner-a/a.jpg" },
-          { id: "photo-b", title: null, description: "바다", date: "2026-08-01", created_at: "2026-08-04T00:00:00.000Z", storage_path: "owner-a/b.jpg" }
+          { id: "photo-a", title: null, description: "오름", date: "2026-08-02", created_at: "2026-08-04T00:00:00.000Z", storage_path: "owner-a/a.jpg", thumbnail_path: "owner-a/thumbnails/a.jpg" },
+          { id: "photo-b", title: null, description: "바다", date: "2026-08-01", created_at: "2026-08-04T00:00:00.000Z", storage_path: "owner-a/b.jpg", thumbnail_path: "owner-a/thumbnails/b.jpg" }
         ],
         error: null
       })),
@@ -62,6 +62,9 @@ describe("read-only mobile album repository", () => {
     const detail = await fetchOwnedAlbumDetail("album-a", "owner-a", dependencies);
     expect(detail.photos.map((photo) => photo.id)).toEqual(["photo-b", "photo-a"]);
     expect(detail.photos[0]?.imageUrl).toBe("https://example.com/b.jpg");
+    expect(dependencies.signPaths).toHaveBeenCalledWith([
+      "owner-a/thumbnails/a.jpg", "owner-a/thumbnails/b.jpg"
+    ], 300);
 
     await expect(fetchOwnedAlbums("owner-a", {
       ...dependencies,

@@ -3,6 +3,7 @@ import { fetchLandingContent, filterLandingPhotos } from "../src/landing-photo-r
 const rows = [{
   id: "photo-a", description: "제주 바다", title: null, album: "한국 여행",
   storage_path: "owner-a/photo-a.jpg", owner_id: "owner-a", created_at: "2026-08-27T00:00:00.000Z",
+  thumbnail_path: "owner-a/thumbnails/photo-a.jpg",
   date: "2026-08-20", location_precision: "approximate", lat: 33.4, lng: 126.5
 }];
 
@@ -15,18 +16,18 @@ describe("landing photo repository", () => {
     }));
     const fetchPhotos = jest.fn(async () => ({ rows, error: null }));
     const signPaths = jest.fn(async () => ({
-      urls: new Map([["owner-a/photo-a.jpg", "https://example.supabase.co/signed/photo-a"]]), error: null
+      urls: new Map([["owner-a/thumbnails/photo-a.jpg", "https://example.supabase.co/signed/photo-a-thumbnail"]]), error: null
     }));
 
     await expect(fetchLandingContent({ fetchCuration, fetchPhotos, signPaths })).resolves.toEqual({
       sections: [{
         id: "section-a", title: "추천", description: "",
-        photos: [expect.objectContaining({ id: "photo-a", imageUrl: "https://example.supabase.co/signed/photo-a" })],
+        photos: [expect.objectContaining({ id: "photo-a", imageUrl: "https://example.supabase.co/signed/photo-a-thumbnail" })],
         curatedPhotoIds: ["photo-a"]
       }]
     });
     expect(fetchPhotos).toHaveBeenCalledWith(200);
-    expect(signPaths).toHaveBeenCalledWith(["owner-a/photo-a.jpg"], 300);
+    expect(signPaths).toHaveBeenCalledWith(["owner-a/thumbnails/photo-a.jpg"], 300);
   });
 
   it("searches only safe public photo copy and hides provider errors", async () => {

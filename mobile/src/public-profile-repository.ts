@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "./supabase-client";
+import { getPhotoPreviewPath, isSafePhotoStoragePath } from "./photo-preview-path";
 
 export type PublicProfile = {
   readonly displayName: string;
@@ -25,11 +26,6 @@ const GENERIC_PROFILE_ERROR = "공개 프로필을 불러오지 못했습니다.
 
 function isUserId(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value);
-}
-
-function isSafeStoragePath(value: unknown): value is string {
-  return typeof value === "string" && value.length <= 1024 && value.includes("/") &&
-    !value.startsWith("/") && !value.includes("..") && !value.includes("\\");
 }
 
 function httpUrl(value: unknown): string | null {
@@ -61,7 +57,7 @@ const defaultDependencies: PublicProfileDependencies = {
   async fetchPhotos(userId, limit, signal) {
     let query = getSupabaseClient()
       .from("photos")
-      .select("id,description,storage_path")
+      .select("id,description,storage_path,thumbnail_path")
       .eq("owner_id", userId)
       .eq("visibility", "public")
       .order("created_at", { ascending: false })
@@ -104,9 +100,9 @@ export async function fetchPublicProfile(
     }
     const profile = profileResult.row as Record<string, unknown>;
     const paths = photosResult.rows.map((row) => typeof row === "object" && row !== null
-      ? (row as Record<string, unknown>)["storage_path"]
+      ? getPhotoPreviewPath(row as Record<string, unknown>)
       : null);
-    if (!paths.every(isSafeStoragePath)) throw new Error(GENERIC_PROFILE_ERROR);
+    if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_PROFILE_ERROR);
     const signed = paths.length === 0
       ? { urls: new Map<string, string>(), error: null }
       : await dependencies.signPaths(paths, 300, signal);

@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
@@ -10,19 +10,21 @@ import { KeyboardSafeScrollView } from "../../src/KeyboardSafeScrollView";
 import { createOAuthActions, type MobileOAuthProvider } from "../../src/oauth-auth";
 import { useMobileScreenGutter } from "../../src/mobile-layout";
 import { mobileColors } from "../../src/mobile-theme";
-import { profileRoute } from "../../src/mobile-routes";
+import { resolvePostAuthRoute } from "../../src/post-auth-route";
 import { getSupabaseClient } from "../../src/supabase-client";
 
 const providers = ["이메일", "Google", "Kakao"] as const;
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
+  const params = useLocalSearchParams<{ readonly returnTo?: string | string[] }>();
   const gutter = useMobileScreenGutter();
   const [emailMode, setEmailMode] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const postAuthRoute = resolvePostAuthRoute(params.returnTo);
 
   async function run(action: "login" | "reset" | "signup") {
     setBusy(true);
@@ -31,7 +33,7 @@ export default function LoginScreen() {
       const actions = createEmailAuthActions(getSupabaseClient().auth, Linking.createURL("/auth/callback"));
       if (action === "login") {
         await actions.signIn(email, password);
-        router.replace(profileRoute);
+        router.replace(postAuthRoute as never);
       } else if (action === "signup") {
         const result = await actions.signUp(email, password);
         setMessage(result.needsEmailVerification ? "확인 메일을 보냈습니다. 이메일 인증 후 로그인해 주세요." : "회원가입이 완료되었습니다.");
@@ -53,7 +55,7 @@ export default function LoginScreen() {
       const callbackUrl = Linking.createURL("/auth/callback");
       const actions = createOAuthActions(getSupabaseClient().auth, callbackUrl, WebBrowser.openAuthSessionAsync);
       const result = await actions.signIn(provider);
-      if (result.status === "signed_in") router.replace(profileRoute);
+      if (result.status === "signed_in") router.replace(postAuthRoute as never);
       else setMessage("로그인이 취소되었습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "소셜 로그인을 완료하지 못했습니다.");

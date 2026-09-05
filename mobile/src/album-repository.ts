@@ -38,7 +38,7 @@ export type AlbumRepositoryDependencies = {
 };
 
 const ALBUM_COLUMNS = "id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at";
-const PHOTO_COLUMNS = "id,title,description,date,created_at,storage_path,album_id";
+const PHOTO_COLUMNS = "id,title,description,date,created_at,storage_path,thumbnail_path,album_id";
 const GENERIC_ALBUM_ERROR = "앨범을 불러오지 못했어요.";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -175,7 +175,9 @@ export async function fetchOwnedAlbumDetail(
   const photoIds = assignments.map((row) => row["photo_id"] as string);
   const photoResult = await dependencies.fetchPhotoRows(albumId, photoIds);
   if (photoResult.error !== null || !Array.isArray(photoResult.rows)) throw new Error(GENERIC_ALBUM_ERROR);
-  const paths = photoResult.rows.map((row) => isRecord(row) ? safeStoragePath(row["storage_path"]) : null);
+  const paths = photoResult.rows.map((row) => isRecord(row)
+    ? safeStoragePath(row["thumbnail_path"]) ?? safeStoragePath(row["storage_path"])
+    : null);
   if (!paths.every((path): path is string => path !== null)) throw new Error(GENERIC_ALBUM_ERROR);
   const signed = paths.length === 0
     ? { urls: new Map<string, string>(), error: null }

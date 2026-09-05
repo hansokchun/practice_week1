@@ -31,13 +31,11 @@ describe("web-parity landing screen", () => {
     );
 
     await waitFor(() => expect(screen.getByText("추천")).toBeOnTheScreen());
-    const heroTitle = screen.getByText("당신만의 장소를 찾아보세요");
-    expect(heroTitle).toBeOnTheScreen();
-    expect(heroTitle).toHaveProp("numberOfLines", 1);
-    expect(screen.queryByText("이끼에서 당신만의 장소를 찾아보세요")).not.toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "제주 바다" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "서울 야경" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "일본" })).toBeOnTheScreen();
+    expect(screen.getByLabelText("Ikkyee 이끼 로고")).toBeOnTheScreen();
+    expect(screen.queryByText("당신만의 장소를 찾아보세요")).not.toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "도로" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "바다" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "사람" })).toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "부산" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "도쿄 골목" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "벚꽃 여행" })).not.toBeOnTheScreen();
@@ -50,7 +48,9 @@ describe("web-parity landing screen", () => {
     expect(screen.getByRole("button", { name: "내 프로필" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "내 사진" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "좋아요한 사진" })).toBeOnTheScreen();
-    await act(async () => fireEvent.press(screen.getByRole("button", { name: "지도에서 찾아보기" })));
+    await act(async () => fireEvent.press(screen.getByRole("button", { name: "지도로 둘러보기" })));
+    expect(navigate).toHaveBeenCalledWith("/explore");
+    await act(async () => fireEvent.press(screen.getByRole("button", { name: "기억에 남을 장소를 발견해보세요. 지도에서 보기" })));
     expect(navigate).toHaveBeenCalledWith("/explore");
     expect(screen.queryByText("지도에서 찾아보세요")).not.toBeOnTheScreen();
     await act(async () => fireEvent.press(screen.getAllByRole("button", { name: "제주 바다 상세 보기" })[0]!));

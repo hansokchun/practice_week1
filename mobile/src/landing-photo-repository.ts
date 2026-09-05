@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "./supabase-client";
+import { getPhotoPreviewPath, isSafePhotoStoragePath } from "./photo-preview-path";
 
 export type LandingPhoto = {
   readonly id: string;
@@ -42,7 +43,7 @@ type LandingDependencies = {
 };
 
 const GENERIC_LANDING_ERROR = "랜딩 사진을 불러오지 못했어요.";
-const PHOTO_COLUMNS = "id,title,description,album,storage_path,owner_id,created_at,date,location_precision,lat,lng,ai_tags,ai_scene,ai_summary,ai_moods";
+const PHOTO_COLUMNS = "id,title,description,album,storage_path,thumbnail_path,owner_id,created_at,date,location_precision,lat,lng,ai_tags,ai_scene,ai_summary,ai_moods";
 const DEFAULT_SECTIONS = ["추천", "시골", "도로", "바다", "사람", "도시"] as const;
 const SEARCH_CONCEPT_GROUPS = [
   ["길", "도로", "거리", "골목", "산책로", "오솔길", "시골길", "드라이브", "road"],
@@ -66,11 +67,6 @@ const SCENE_SEARCH_LABELS: Readonly<Record<string, string>> = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function isSafeStoragePath(value: unknown): value is string {
-  return typeof value === "string" && value.length <= 1024 && value.includes("/") &&
-    !value.startsWith("/") && !value.includes("..") && !value.includes("\\");
 }
 
 function nullableText(value: unknown): string | null {
@@ -198,8 +194,8 @@ export async function fetchLandingContent(
   if (curationError !== null || photoError !== null || !Array.isArray(sections) ||
       !Array.isArray(assignments) || !Array.isArray(rows)) throw new Error(GENERIC_LANDING_ERROR);
 
-  const paths = rows.map((row) => isRecord(row) ? row["storage_path"] : null);
-  if (!paths.every(isSafeStoragePath)) throw new Error(GENERIC_LANDING_ERROR);
+  const paths = rows.map((row) => isRecord(row) ? getPhotoPreviewPath(row) : null);
+  if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_LANDING_ERROR);
   const signed = paths.length === 0
     ? { urls: new Map<string, string>(), error: null }
     : await dependencies.signPaths(paths, 300);

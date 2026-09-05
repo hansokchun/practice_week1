@@ -8,8 +8,10 @@ const repoRoot = resolve(dirname(scriptPath), '../..');
 const approvedMedia = new Set([
   'mobile/assets/app-icon-foreground.png',
   'mobile/assets/app-icon.png',
+  'mobile/assets/brand-logo.png',
   'mobile/assets/default-profile-avatar.png',
   'mobile/assets/favicon.png',
+  'mobile/assets/landing-globe-sprout-route.jpg',
   'mobile/assets/landing-map-pins-background.jpg',
   'mobile/assets/landing-map-pins-faded.jpg',
 ]);

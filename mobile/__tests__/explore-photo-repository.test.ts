@@ -6,11 +6,11 @@ describe("explore photo repository", () => {
     const fetchRows = jest.fn(async () => ({ rows: [{
       id: "photo-a", date: "2026-08-24", description: "한강 저녁", liked: 3,
       owner_id: "owner-a", created_at: "2026-08-24T10:00:00.000Z",
-      storage_path: "owner-a/photo-a.jpg", lat: 37.52, lng: 126.97,
+      storage_path: "owner-a/photo-a.jpg", thumbnail_path: "owner-a/thumbnails/photo-a.jpg", lat: 37.52, lng: 126.97,
       location_precision: "approximate"
     }], error: null }));
     const signPaths = jest.fn(async () => ({
-      urls: new Map([["owner-a/photo-a.jpg", "https://example.supabase.co/signed/photo-a"]]),
+      urls: new Map([["owner-a/thumbnails/photo-a.jpg", "https://example.supabase.co/signed/photo-a-thumbnail"]]),
       error: null
     }));
 
@@ -23,9 +23,9 @@ describe("explore photo repository", () => {
       bounds: SEOUL_EXPLORE_BOUNDS, offset: 20, limit: 20, signal,
       scope: "others", viewerId: "owner-viewer"
     }));
-    expect(signPaths).toHaveBeenCalledWith(["owner-a/photo-a.jpg"], 300, signal);
+    expect(signPaths).toHaveBeenCalledWith(["owner-a/thumbnails/photo-a.jpg"], 300, signal);
     expect(page).toEqual({
-      photos: [expect.objectContaining({ id: "photo-a", imageUrl: "https://example.supabase.co/signed/photo-a" })],
+      photos: [expect.objectContaining({ id: "photo-a", imageUrl: "https://example.supabase.co/signed/photo-a-thumbnail" })],
       hasMore: false,
       nextOffset: 21
     });

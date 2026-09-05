@@ -26,3 +26,7 @@ export const albumDetailRoute = "/album/[albumId]" as const;
 export function buildLandingTagRoute(sectionId: string): string {
   return `/tag/${encodeURIComponent(sectionId.trim())}`;
 }
+
+export function buildGuestLoginRoute(returnTo: string): string {
+  return `${guestLoginRoute}?returnTo=${encodeURIComponent(returnTo)}`;
+}

@@ -5,19 +5,20 @@ describe("public profile repository", () => {
     const userId = "11111111-1111-4111-8111-111111111111";
     const fetchProfile = jest.fn(async () => ({ row: { nickname: "여행자", bio: "천천히 걷습니다", avatar_url: "" }, error: null }));
     const fetchPhotos = jest.fn(async () => ({ rows: [{
-      id: "photo-a", description: "한강 저녁", storage_path: `${userId}/photo-a.jpg`
+      id: "photo-a", description: "한강 저녁", storage_path: `${userId}/photo-a.jpg`,
+      thumbnail_path: `${userId}/thumbnails/photo-a.jpg`
     }], error: null }));
     const signPaths = jest.fn(async () => ({
-      urls: new Map([[`${userId}/photo-a.jpg`, "https://example.supabase.co/signed/photo-a"]]), error: null
+      urls: new Map([[`${userId}/thumbnails/photo-a.jpg`, "https://example.supabase.co/signed/photo-a-thumbnail"]]), error: null
     }));
 
     await expect(fetchPublicProfile(userId, undefined, { fetchProfile, fetchPhotos, signPaths })).resolves.toEqual({
       displayName: "여행자", bio: "천천히 걷습니다", avatarUrl: null,
-      photos: [{ id: "photo-a", description: "한강 저녁", imageUrl: "https://example.supabase.co/signed/photo-a" }]
+      photos: [{ id: "photo-a", description: "한강 저녁", imageUrl: "https://example.supabase.co/signed/photo-a-thumbnail" }]
     });
     expect(fetchProfile).toHaveBeenCalledWith(userId, undefined);
     expect(fetchPhotos).toHaveBeenCalledWith(userId, 12, undefined);
-    expect(signPaths).toHaveBeenCalledWith([`${userId}/photo-a.jpg`], 300, undefined);
+    expect(signPaths).toHaveBeenCalledWith([`${userId}/thumbnails/photo-a.jpg`], 300, undefined);
   });
 
   it("prefers a managed avatar path over a legacy provider URL", async () => {
