@@ -141,7 +141,8 @@ test('Explore refreshes marker rendering only after its visible map has been res
     assert.match(refreshBody, /maps\.event\.trigger\(map, 'resize'\)/);
     assert.match(refreshBody, /state\.exploreLastBoundsKey = null/);
     assert.match(refreshBody, /const useMobileOverview = isExploreMobileViewport\(\)/);
-    assert.match(refreshBody, /map\.fitBounds\(\{ north: 46, south: 30, east: 146, west: 124 \}, getExploreCurrentMapPadding\(\)\)/);
+    assert.match(refreshBody, /map\.setCenter\(\{ lat: 22, lng: 135 \}\)/);
+    assert.match(refreshBody, /map\.setZoom\(4\)/);
     assert.match(refreshBody, /state\.explorePreserveViewportOnce = useMobileOverview/);
     assert.match(refreshBody, /const photos = getExplorePhotoMapItems\(\)/);
     assert.match(refreshBody, /if \(photos\.length\) renderExploreMapMarkers\(photos, state\.exploreSelectedAlbumId\)/);
