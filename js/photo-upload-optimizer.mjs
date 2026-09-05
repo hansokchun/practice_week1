@@ -1,4 +1,4 @@
-const OPTIMIZABLE_PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const OPTIMIZABLE_PHOTO_TYPE = /^image\/(?:hei[cf]|jpe?g|png|webp)$/iu;
 
 export const TARGET_PHOTO_UPLOAD_SIZE_BYTES = 3 * 1024 * 1024;
 export const MAX_OPTIMIZED_PHOTO_EDGE = 3200;
@@ -8,7 +8,9 @@ export const PHOTO_THUMBNAIL_LONG_EDGE = 960;
 export const PHOTO_THUMBNAIL_QUALITY = 0.82;
 
 export function shouldOptimizePhotoForUpload(file) {
-    return OPTIMIZABLE_PHOTO_TYPES.has(file?.type) && Number(file?.size || 0) > TARGET_PHOTO_UPLOAD_SIZE_BYTES;
+    const mimeType = String(file?.type || '').toLowerCase();
+    return OPTIMIZABLE_PHOTO_TYPE.test(mimeType)
+        && (mimeType.startsWith('image/hei') || Number(file?.size || 0) > TARGET_PHOTO_UPLOAD_SIZE_BYTES);
 }
 
 export function getOptimizedPhotoMimeType(file) {
@@ -134,7 +136,7 @@ export async function optimizePhotoForUpload(file) {
 }
 
 export async function createPhotoThumbnailForUpload(file, photoId = 'photo') {
-    if (!OPTIMIZABLE_PHOTO_TYPES.has(file?.type)) return null;
+    if (!OPTIMIZABLE_PHOTO_TYPE.test(file?.type || '')) return null;
     if (typeof document === 'undefined' || typeof File === 'undefined') return null;
 
     try {

@@ -1,6 +1,6 @@
 # Mobile Performance Budget
 
-**Measured:** 2026-08-30
+**Measured:** 2026-09-05
 **Target:** Cloudflare Pages production build, mobile viewport 390 x 844
 
 ## Enforced Build Budgets
@@ -9,9 +9,9 @@ Run `npm run perf:budget` before a release.
 
 | Asset group | Budget | Current |
 | --- | ---: | ---: |
-| JavaScript, gzip | 65 KB | 61.28 KB |
-| CSS, gzip | 32 KB | 30.93 KB |
-| All static images | 2,200 KB | 2,169.90 KB |
+| JavaScript, Brotli | 70.5 KB | 70.08 KB |
+| CSS, Brotli | 30 KB | 28.31 KB |
+| All static images | 2,200 KB | 2,182.60 KB |
 | Largest static image | 450 KB | 348.74 KB |
 
 The checker reads the generated `dist/assets` files and exits with a failure when a budget is exceeded.
@@ -26,9 +26,9 @@ The four below-the-fold home illustrations now reference their compact JPEG vers
 
 The images retain explicit dimensions, lazy loading, and asynchronous decoding. Modern browsers already selected the JPEG `<source>` before this change, so the primary user-facing improvement is a smaller, simpler deployment artifact and a guard against PNG fallback downloads.
 
-The landing globe artwork was also converted from a non-transparent 1,133.59 KB PNG to an 82.70 KB JPEG at the same 1536 x 1024 dimensions. The current 65 KB JavaScript ceiling reflects the expanded landing search, tag gallery, Explore clustering, photo-detail, and AI-analysis contracts while preserving less than 4 KB of headroom.
+The landing globe artwork was also converted from a non-transparent 1,133.59 KB PNG to a compact JPEG at the same 1536 x 1024 dimensions. The JavaScript ceiling is 70.5 KB after adding mobile system-picker MIME fallbacks and HEIC conversion. This is a 0.5 KB allowance over the previous ceiling; CSS and image ceilings remain unchanged.
 
-The CSS ceiling increased from 30 KB to 32 KB on 2026-09-01 for the authenticated feedback form and administrator review states. JavaScript and image ceilings remain unchanged.
+The current checker measures Brotli output. Earlier gzip labels in this ledger were stale and are corrected above.
 
 ## Route Rendering
 

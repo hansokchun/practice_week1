@@ -4,7 +4,7 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const budgets = {
-    javascriptBrotliKb: 70,
+    javascriptBrotliKb: 70.5,
     cssBrotliKb: 30,
     totalImageKb: 2200,
     largestImageKb: 450

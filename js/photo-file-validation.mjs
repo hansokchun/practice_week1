@@ -1,8 +1,14 @@
-const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ACCEPTED_PHOTO = /(?:^image\/|\.)(?:hei[cf]|jpe?g|png|webp)$/iu;
 const MAX_PHOTO_SIZE_BYTES = 15 * 1024 * 1024;
 
+function hasSupportedPhotoType(file) {
+    const mimeType = String(file?.type || '');
+    const candidate = !mimeType || mimeType === 'application/octet-stream' ? file?.name : mimeType;
+    return ACCEPTED_PHOTO.test(String(candidate || ''));
+}
+
 export function validatePhotoFile(file) {
-    if (!ACCEPTED_TYPES.has(file?.type)) {
+    if (!hasSupportedPhotoType(file)) {
         return {
             accepted: false,
             reason: '지원하지 않는 파일 형식입니다.'

@@ -14,11 +14,26 @@ test('validatePhotoFile accepts supported image files under the size limit', () 
     });
 });
 
+test('validatePhotoFile accepts mobile picker JPEG aliases and extension fallback', () => {
+    assert.equal(validatePhotoFile({ name: 'camera.jpg', type: 'image/jpg', size: 1024 }).accepted, true);
+    assert.equal(validatePhotoFile({ name: 'google-photos.JPEG', type: '', size: 1024 }).accepted, true);
+    assert.equal(validatePhotoFile({ name: 'shared.png', type: 'application/octet-stream', size: 1024 }).accepted, true);
+});
+
+test('validatePhotoFile accepts iPhone HEIC and HEIF selections', () => {
+    assert.equal(validatePhotoFile({ name: 'IMG_0001.HEIC', type: 'image/heic', size: 1024 }).accepted, true);
+    assert.equal(validatePhotoFile({ name: 'IMG_0002.heif', type: '', size: 1024 }).accepted, true);
+});
+
 test('validatePhotoFile rejects unsupported file types', () => {
     assert.deepEqual(validatePhotoFile({ name: 'notes.pdf', type: 'application/pdf', size: 1024 }), {
         accepted: false,
         reason: '지원하지 않는 파일 형식입니다.'
     });
+});
+
+test('validatePhotoFile does not trust an image extension over an explicit non-image MIME type', () => {
+    assert.equal(validatePhotoFile({ name: 'notes.jpg', type: 'application/pdf', size: 1024 }).accepted, false);
 });
 
 test('validatePhotoFile rejects photos over 15MB', () => {

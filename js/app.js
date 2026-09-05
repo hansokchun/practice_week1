@@ -6185,10 +6185,10 @@ function renderStagedPhotos() {
         if (uploadDropzone) {
             uploadDropzone.className = 'upload-dropzone';
             uploadDropzone.innerHTML = `
-                <input id="photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp">
+                <input id="photo-input" type="file" multiple accept="image/*">
                 <span class="material-symbols-outlined">cloud_upload</span>
                 <strong>사진 파일 선택</strong>
-                <small>JPG, PNG, WEBP 파일을 선택하거나 이곳에 끌어다 놓을 수 있습니다.</small>
+                <small>사진을 선택하거나 이곳에 끌어다 놓을 수 있습니다.</small>
             `;
             bindPhotoInput();
         }
@@ -6206,7 +6206,7 @@ function renderStagedPhotos() {
     if (uploadDropzone) {
         uploadDropzone.className = 'upload-dropzone upload-thumbnail-zone';
         uploadDropzone.innerHTML = `
-            <input id="photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp">
+            <input id="photo-input" type="file" multiple accept="image/*">
             <div class="upload-thumbnail-grid" aria-label="업로드할 사진 선택">
                 ${state.stagedPhotos.map((photo) => `
                     <button class="upload-thumbnail${photo.selected === false ? '' : ' is-selected'}" type="button" data-upload-photo-id="${escapeHtml(photo.localId)}" aria-pressed="${photo.selected === false ? 'false' : 'true'}" draggable="false">
@@ -6879,7 +6879,7 @@ function handlePhotoFiles(files) {
     if (rejected.length) {
         const message = rejected.length === 1
             ? `${rejected[0].file.name}: ${rejected[0].reason}`
-            : `${rejected.length}개의 파일을 제외했습니다. JPG, PNG, WebP와 15MB 이하 사진만 올릴 수 있습니다.`;
+            : `사진 ${rejected.length}개를 제외했습니다.`;
         showToast(message);
     }
     if (!selected.length) return;
@@ -6888,8 +6888,8 @@ function handlePhotoFiles(files) {
         createLocalId: (file, index) => `${uploadBatchId}-${index}-${Math.random().toString(36).slice(2)}`,
         createObjectUrl: (file) => URL.createObjectURL(file)
     });
-    renderStagedPhotos();
     routeTo('upload');
+    renderStagedPhotos();
     closeModals();
     showToast(`${selected.length}장의 사진을 업로드 초안에 추가했습니다.`);
 }

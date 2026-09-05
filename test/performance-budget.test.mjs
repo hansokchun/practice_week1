@@ -40,7 +40,7 @@ test('the repository exposes an enforceable production performance budget', () =
     const checker = readFileSync('scripts/check-performance-budget.mjs', 'utf8');
 
     assert.equal(scripts['perf:budget'], 'npm run build && node scripts/check-performance-budget.mjs');
-    assert.match(checker, /javascriptBrotliKb:\s*70/);
+    assert.match(checker, /javascriptBrotliKb:\s*70\.5/);
     assert.match(checker, /cssBrotliKb:\s*30/);
     assert.match(checker, /brotliCompressSync/);
     assert.match(checker, /totalImageKb:\s*2200/);

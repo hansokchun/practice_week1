@@ -20,6 +20,11 @@ test('photo upload optimization targets files over three megabytes only', () => 
     assert.equal(shouldOptimizePhotoForUpload({ type: 'application/pdf', size: TARGET_PHOTO_UPLOAD_SIZE_BYTES + 1 }), false);
 });
 
+test('mobile HEIC selections are converted even when they are small', () => {
+    assert.equal(shouldOptimizePhotoForUpload({ type: 'image/heic', size: 1024 }), true);
+    assert.equal(getOptimizedPhotoMimeType({ type: 'image/heic' }), 'image/jpeg');
+});
+
 test('photo upload optimization keeps small files unchanged', async () => {
     const file = { name: 'small.jpg', type: 'image/jpeg', size: 640 * 1024 };
 
