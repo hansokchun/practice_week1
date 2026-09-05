@@ -1046,7 +1046,14 @@ async function refreshExploreMapAfterRouteEntry() {
     if (!map || !maps || document.body.dataset.page !== APP_SECTIONS.EXPLORE) return;
     maps.event.trigger(map, 'resize');
     state.exploreLastBoundsKey = null;
-    state.explorePreserveViewportOnce = false;
+    const useMobileOverview = isExploreMobileViewport();
+    state.explorePreserveViewportOnce = useMobileOverview;
+    if (useMobileOverview) {
+        map.setCenter({ lat: 36.4, lng: 133.4 });
+        map.setZoom(5);
+        const panY = getExploreMapFocusPanY(getExploreCurrentMapPadding());
+        if (panY) window.requestAnimationFrame(() => map.panBy(0, panY));
+    }
     const photos = getExplorePhotoMapItems();
     if (photos.length) renderExploreMapMarkers(photos, state.exploreSelectedAlbumId);
 }
