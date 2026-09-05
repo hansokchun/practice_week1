@@ -95,6 +95,29 @@ test('app tracks liked photo ids and renders liked photo surfaces', () => {
     assert.match(css, /@keyframes photoLikeSnap/);
 });
 
+test('logged-out photo likes open auth without disabling the photo detail controls', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const previewStart = source.indexOf('function updateExplorePhotoPreview');
+    const previewEnd = source.indexOf('function setExploreDiscoverySelection', previewStart);
+    const detailStart = source.indexOf('function updatePhotoDetailModal');
+    const detailEnd = source.indexOf('function openPhotoFullscreenFromDetail', detailStart);
+    const toggleStart = source.indexOf('async function toggleSelectedPhotoLike');
+    const toggleEnd = source.indexOf('function getCurrentAccountProfile', toggleStart);
+
+    assert.match(source.slice(previewStart, previewEnd), /likeButton\.disabled = !photo\.id/);
+    assert.match(source.slice(detailStart, detailEnd), /likeButton\.disabled = !canLike \|\| !photo\.id/);
+    assert.match(source.slice(toggleStart, toggleEnd), /if \(!state\.currentUser\) \{\s*openPhotoLikeAuth\(\);/s);
+});
+
+test('photo like auth returns to the underlying photo on dismiss and browser back', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+
+    assert.match(source, /function openPhotoLikeAuth\(\)[\s\S]*history\.pushState\(\{ likeAuth: true \}/);
+    assert.match(source, /authModal\.dataset\.likeAuth = '1'/);
+    assert.match(source, /function dismissModal\(modal\)[\s\S]*modal\?\.dataset\.likeAuth !== '1'[\s\S]*modal\.classList\.remove\('is-open'\)/);
+    assert.match(source, /window\.addEventListener\('popstate',[\s\S]*dismissModal\(authModal\)/);
+});
+
 test('photo like writes use one authenticated RPC and trust its exact count', () => {
     const auth = readFileSync('auth.js', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');

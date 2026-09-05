@@ -1127,6 +1127,25 @@ function closeModals() {
     lastModalTrigger = null;
 }
 
+function dismissModal(modal) {
+    if (modal?.dataset.likeAuth !== '1') {
+        closeModals();
+        return;
+    }
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    delete modal.dataset.likeAuth;
+    syncModalScrollLock();
+    if (history.state?.likeAuth) history.back();
+}
+
+function openPhotoLikeAuth() {
+    const authModal = $('#auth-modal');
+    history.pushState({ likeAuth: true }, '');
+    openModal('#auth-modal');
+    authModal.dataset.likeAuth = '1';
+}
+
 function closePhotoFullscreenModal() {
     const modal = $('#photo-fullscreen-modal');
     if (!modal) return;
@@ -1926,7 +1945,7 @@ function updateExplorePhotoPreview(photo) {
         if (likePanel) meta.append(likePanel);
     }
     if (likeButton) {
-        likeButton.disabled = !photo.id || !state.currentUser;
+        likeButton.disabled = !photo.id;
         likeButton.classList.toggle('is-liked', isLiked);
         likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
         likeButton.dataset.photoId = photo.id || '';
@@ -2874,7 +2893,7 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     }
     if (likePanel) likePanel.hidden = !canLike;
     if (likeButton) {
-        likeButton.disabled = !canLike || !photo.id || !state.currentUser;
+        likeButton.disabled = !canLike || !photo.id;
         likeButton.classList.toggle('is-liked', isLiked);
         likeButton.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
         likeButton.dataset.photoId = photo.id || '';
@@ -3155,8 +3174,7 @@ async function toggleSelectedPhotoLike(eventOrPhotoId) {
         ? eventOrPhotoId
         : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
     if (!state.currentUser) {
-        openModal('#auth-modal');
-        showToast('좋아요를 누르려면 먼저 로그인해주세요.');
+        openPhotoLikeAuth();
         return;
     }
     const photo = getAllDisplayPhotos().find((candidate) => String(candidate.id) === String(photoId));
@@ -6093,9 +6111,7 @@ ${getAlbumCoverLayerMarkup(layerSources[2], 'album-cover-layer--front')}
 
 function renderSavedAlbumRows(albums) {
     const list = $('#album-list');
-    const summary = $('#myphoto-summary');
     if (!list) return;
-    if (summary) summary.textContent = '';
     const myPhotos = getMySavedPhotos();
     list.innerHTML = albums.map((album) => {
         const albumPhotos = myPhotos.filter((photo) => photo.album_id === album.id);
@@ -6115,7 +6131,6 @@ function renderSavedAlbumRows(albums) {
 
 function renderSavedPhotoAlbums(photos) {
     const list = $('#album-list');
-    const summary = $('#myphoto-summary');
     if (!list) return;
     const grouped = photos.reduce((acc, photo) => {
         const key = photo.album || '나의 여행';
@@ -6124,7 +6139,6 @@ function renderSavedPhotoAlbums(photos) {
         return acc;
     }, {});
     const albums = Object.entries(grouped);
-    if (summary) summary.textContent = '';
     list.innerHTML = albums.map(([name, albumPhotos]) => {
         const shared = albumPhotos.some((photo) => photo.shared);
         const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.map((photo) => photo.url), name);
@@ -6154,7 +6168,6 @@ function renderStagedPhotos() {
     const isUploadLimitBlocked = state.currentUser && !uploadLimitStatus.canUpload;
     const uploadStorageStatus = $('#upload-storage-status');
     $('#album-count-label') && ($('#album-count-label').textContent = formatPhotoCount(state.stagedPhotos.length));
-    $('#myphoto-summary') && ($('#myphoto-summary').textContent = '');
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${selectedUploadCount}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
@@ -6832,8 +6845,6 @@ async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
 
 function renderAlbumDrafts() {
     const list = $('#album-list');
-    const summary = $('#myphoto-summary');
-    if (summary) summary.textContent = '';
     if (!list) return;
 
     if (!state.albumDrafts.length) {
@@ -6844,28 +6855,6 @@ function renderAlbumDrafts() {
                     <span>개별사진을 저장한 뒤 앨범 만들기로 여행을 묶을 수 있습니다.</span>
                 </div>
                 <button id="btn-open-album-inline" class="btn-secondary" type="button">앨범 만들기</button>
-            </article>
-        `;
-        return;
-    }
-
-    if (!state.albumDrafts.length) {
-        list.innerHTML = `
-            <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-                ${getAlbumCoverStackMarkup([MAIN_BG_2_URL], '제주 4박 5일')}
-                <div class="album-row-content">
-                    <strong>제주 4박 5일</strong>
-                    <p>사진을 업로드하거나 앨범 초안을 저장하면 이곳에 실제 앨범이 표시됩니다.</p>
-                    <small><span class="album-count-icon" aria-hidden="true"></span>128장</small>
-                </div>
-            </article>
-            <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-                ${getAlbumCoverStackMarkup([MAIN_BG_5_URL], '동해 새벽 여행')}
-                <div class="album-row-content">
-                    <strong>동해 새벽 여행</strong>
-                    <p>공개 전까지는 Home에서만 확인할 수 있는 개인 여행 기록입니다.</p>
-                    <small><span class="album-count-icon" aria-hidden="true"></span>42장</small>
-                </div>
             </article>
         `;
         return;
@@ -7612,7 +7601,7 @@ async function handleAuthSubmit(event) {
     await ensureCurrentUserPublicProfile();
     updateAccountUI();
     await loadSavedLibrary();
-    closeModals();
+    dismissModal($('#auth-modal'));
     showToast('\uB85C\uADF8\uC778\uD588\uC5B4\uC694.');
     await runPendingAuthAction();
 }
@@ -8505,9 +8494,7 @@ function bindEvents() {
             event.preventDefault();
             if (activeModal.id === 'photo-fullscreen-modal') {
                 returnToPhotoDetailFromFullscreen();
-            } else {
-                closeModals();
-            }
+            } else dismissModal(activeModal);
             return;
         }
         if (event.key === 'Tab' && activeModal) {
@@ -8683,11 +8670,17 @@ function bindEvents() {
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $('#pin-preview-edit-form')?.addEventListener('submit', saveExplorePreviewEdits);
-    $$('[data-close-modal]').forEach((button) => button.addEventListener('click', closeModals));
+    $$('[data-close-modal]').forEach((button) => button.addEventListener('click', (event) => {
+        dismissModal(event.currentTarget.closest('.modal'));
+    }));
     $$('.modal').forEach((modal) => {
         modal.addEventListener('click', (event) => {
-            if (event.target === modal) closeModals();
+            if (event.target === modal) dismissModal(modal);
         });
+    });
+    window.addEventListener('popstate', () => {
+        const authModal = $('#auth-modal');
+        if (authModal?.dataset.likeAuth === '1') dismissModal(authModal);
     });
     window.addEventListener('hashchange', () => applyRouteHash(window.location.hash));
     window.addEventListener('resize', () => layoutTripReviewPhotoRows());
