@@ -1049,10 +1049,7 @@ async function refreshExploreMapAfterRouteEntry() {
     const useMobileOverview = isExploreMobileViewport();
     state.explorePreserveViewportOnce = useMobileOverview;
     if (useMobileOverview) {
-        map.setCenter({ lat: 36.4, lng: 133.4 });
-        map.setZoom(5);
-        const panY = getExploreMapFocusPanY(getExploreCurrentMapPadding());
-        if (panY) window.requestAnimationFrame(() => map.panBy(0, panY));
+        map.fitBounds({ north: 46, south: 30, east: 146, west: 124 }, getExploreCurrentMapPadding());
     }
     const photos = getExplorePhotoMapItems();
     if (photos.length) renderExploreMapMarkers(photos, state.exploreSelectedAlbumId);
