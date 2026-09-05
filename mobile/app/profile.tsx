@@ -1,12 +1,10 @@
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { emptyStateStyles as styles } from "../src/mobile-theme";
-import { guestLoginRoute } from "../src/mobile-routes";
+import { guestLoginRoute, settingsRoute } from "../src/mobile-routes";
 import { useAuthSession } from "../src/auth-session";
-import { BlockedUsersSection } from "../src/BlockedUsersSection";
-import { AccountDeletionSection } from "../src/AccountDeletionSection";
 import { KeyboardSafeScrollView } from "../src/KeyboardSafeScrollView";
 import { useMobileScreenGutter } from "../src/mobile-layout";
 import { ProfileEditor } from "../src/ProfileEditor";
@@ -34,15 +32,16 @@ export function ProfileScreen({ refreshKey = 0 }: ProfileScreenProps) {
           <>
             {auth.user?.id === undefined ? null : <ProfileEditor userId={auth.user.id} />}
             {auth.user?.id === undefined ? null : <ProfilePublicSummary refreshKey={refreshKey} userId={auth.user.id} />}
+            <Pressable accessibilityRole="button" onPress={() => router.push(settingsRoute as Href)} style={styles.button}>
+              <Text style={styles.buttonText}>{"\uC124\uC815"}</Text>
+            </Pressable>
             <Text style={profileStyles.accountLabel}>계정</Text>
             <Text style={styles.emptyCopy}>{auth.user?.email ?? "Ikkyee 사용자"}</Text>
             {auth.user?.id === undefined ? null : <AccountIdentitySection userId={auth.user.id} />}
             <Pressable accessibilityRole="button" onPress={() => auth.signOut()} style={styles.button}>
               <Text style={styles.buttonText}>이 기기에서 로그아웃</Text>
             </Pressable>
-            <BlockedUsersSection />
             <LegalLinks />
-            <AccountDeletionSection />
           </>
         </KeyboardSafeScrollView>
       ) : (

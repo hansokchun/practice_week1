@@ -10,6 +10,7 @@ import {
   publicationReviewRoute,
   hiddenTabRoutes,
   profileRoute,
+  settingsRoute,
   exploreRoute,
   likesRoute,
   albumsRoute,
@@ -37,6 +38,7 @@ describe("mobile route contract", () => {
     expect(likesRoute).toBe("/likes");
     expect(uploadRoute).toBe("/upload");
     expect(profileRoute).toBe("/profile");
+    expect(settingsRoute).toBe("/settings");
     expect(guestLoginRoute).toBe("/auth/login");
     expect(authCallbackRoute).toBe("/auth/callback");
     expect(passwordUpdateRoute).toBe("/auth/update-password");

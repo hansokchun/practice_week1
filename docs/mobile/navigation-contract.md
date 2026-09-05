@@ -41,3 +41,8 @@
 ## 검증 범위
 
 Automated coverage verifies route files, route constants, screen callbacks, guest/auth boundaries, dynamic parameter validation, HTTPS origin·fragment validation, generated iOS entitlement·Android intent filter, and the main end-to-end publication journey. It is not a real-device claim: Android 백 버튼, iOS swipe-back, universal/app-link OS verification, 앱 프로세스 종료 후 복귀는 서명된 실기기 빌드 관문에서 다시 확인한다.
+
+## 2026-09-05 설정 경로 추가
+
+- 랜딩 계정 메뉴→`/settings`→프로필 수정·새 사진 기본값·의견 보내기·로그아웃·계정 삭제로 진이한다.
+- 새 사진 공개 기본값은 기기·계정별로 저장하고, 내 사진 선택 후 명시적 게시 검토 버튼을 누르기 전에 업로드하지 않는다.

@@ -31,6 +31,8 @@ import {
 import { publicationDerivativeRuntime } from "../../src/publication-derivative-runtime";
 import { RecoverableDeviceThumbnail } from "../../src/RecoverableDeviceThumbnail";
 import { regenerateDevicePhotoThumbnail } from "../../src/device-photo-thumbnail-recovery";
+import { loadAccountSettings } from "../../src/account-settings";
+import { useAuthSession } from "../../src/auth-session";
 
 type MyPhotosScreenProps = {
   readonly adapter?: DevicePhotoLibraryAdapter;
@@ -42,6 +44,7 @@ type MyPhotosScreenProps = {
   readonly openPhoto?: (assetId: string) => void;
   readonly openAlbums?: () => void;
   readonly openSettings?: () => Promise<void>;
+  readonly preferredPublicationIntent?: Exclude<PublicationIntent, "link">;
   readonly startPublicationReview?: (selection: PublicationSelection) => void;
 };
 
@@ -64,6 +67,7 @@ export function MyPhotosScreen({
   } as unknown as Href),
   openAlbums = () => router.push(albumsRoute),
   openSettings = Linking.openSettings,
+  preferredPublicationIntent = "private",
   startPublicationReview = (selection) => router.push({
     pathname: publicationReviewRoute,
     params: createPublicationReviewParams(selection.intent, selection.assetIds)
@@ -249,6 +253,7 @@ export function MyPhotosScreen({
               accessibilityRole="button"
               onPress={toggleSelectionMode}
               style={[styles.secondaryButton, selectionMode && styles.selectionCancelButton]}
+              testID="selection-mode-toggle"
             >
               <Text style={styles.secondaryButtonText}>{selectionMode ? "선택 취소" : "사진 선택"}</Text>
             </Pressable>
@@ -258,6 +263,12 @@ export function MyPhotosScreen({
           {selectionMode ? (
             <View style={styles.publicationBar}>
               <Text style={styles.publicationHint}>게시 방식을 선택해 검토합니다. 아직 업로드하지 않습니다.</Text>
+              <PublicationAction
+                disabled={selectedPhotoIds.length === 0}
+                label={`${preferredPublicationIntent === "public" ? "\uACF5\uAC1C" : "\uBE44\uACF5\uAC1C"} \uAE30\uBCF8\uAC12\uC73C\uB85C \uAC80\uD1A0`}
+                onPress={() => reviewSelection(preferredPublicationIntent)}
+                testID="default-publication-review"
+              />
               <View style={styles.publicationActions}>
                 <PublicationAction disabled={selectedPhotoIds.length === 0} label="비공개 저장" onPress={() => reviewSelection("private")} />
                 <PublicationAction disabled={selectedPhotoIds.length === 0} label="링크 공유" onPress={() => reviewSelection("link")} />
@@ -296,6 +307,7 @@ export function MyPhotosScreen({
                     accessibilityState={selectionMode ? { selected } : undefined}
                     onPress={() => selectionMode ? toggleSelectedPhoto(item.id) : openPhoto(item.id)}
                     style={[styles.photoTile, selected && styles.selectedPhotoTile]}
+                    testID={`photo-${item.id}`}
                   >
                     <RecoverableDeviceThumbnail
                       accessibilityLabel={item.filename ?? "기기 사진"}
@@ -328,11 +340,13 @@ export function MyPhotosScreen({
 function PublicationAction({
   disabled,
   label,
-  onPress
+  onPress,
+  testID
 }: {
   readonly disabled: boolean;
   readonly label: string;
   readonly onPress: () => void;
+  readonly testID?: string;
 }) {
   return (
     <Pressable
@@ -340,6 +354,7 @@ function PublicationAction({
       disabled={disabled}
       onPress={onPress}
       style={[styles.publicationAction, disabled && styles.disabledButton]}
+      testID={testID}
     >
       <Text style={styles.publicationActionText}>{label}</Text>
     </Pressable>
@@ -384,7 +399,20 @@ function StatusBody({ actionLabel, description, onAction, title }: StatusBodyPro
 }
 
 export default function MyPhotosRoute() {
-  return <MyPhotosScreen />;
+  const auth = useAuthSession();
+  const [preferredPublicationIntent, setPreferredPublicationIntent] = useState<Exclude<PublicationIntent, "link">>("private");
+
+  useEffect(() => {
+    let mounted = true;
+    if (auth.status === "signed_in" && auth.user?.id !== undefined) {
+      void loadAccountSettings(auth.user.id).then((settings) => {
+        if (mounted) setPreferredPublicationIntent(settings.defaultVisibility);
+      });
+    }
+    return () => { mounted = false; };
+  }, [auth.status, auth.user?.id]);
+
+  return <MyPhotosScreen preferredPublicationIntent={preferredPublicationIntent} />;
 }
 
 const styles = StyleSheet.create({

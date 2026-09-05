@@ -14,6 +14,24 @@ function createAdapter(overrides: Partial<DevicePhotoLibraryAdapter> = {}): Devi
 }
 
 describe("My Photos permission flow", () => {
+  it("uses the saved public default while preserving the explicit review step", async () => {
+    const adapter = createAdapter({
+      getPermission: jest.fn(async (): Promise<PhotoLibraryPermissionResponse> => ({ granted: true, accessPrivileges: "all", canAskAgain: true })),
+      listPhotos: jest.fn(async () => [{ id: "asset-public", filename: "road.jpg", width: 1200, height: 1500, creationTime: 1 }])
+    });
+    const startPublicationReview = jest.fn();
+    const screen = await render(
+      <MyPhotosScreen adapter={adapter} preferredPublicationIntent="public" startPublicationReview={startPublicationReview} />
+    );
+
+    await waitFor(() => expect(screen.getByTestId("photo-asset-public")).toBeOnTheScreen());
+    await act(async () => fireEvent.press(screen.getByTestId("selection-mode-toggle")));
+    await act(async () => fireEvent.press(screen.getByTestId("photo-asset-public")));
+    expect(startPublicationReview).not.toHaveBeenCalled();
+    await act(async () => fireEvent.press(screen.getByTestId("default-publication-review")));
+    expect(startPublicationReview).toHaveBeenCalledWith({ intent: "public", assetIds: ["asset-public"] });
+  });
+
   it("persists authorized device photo metadata through the local indexing runtime", async () => {
     const adapter = createAdapter({
       getPermission: jest.fn(async (): Promise<PhotoLibraryPermissionResponse> => ({

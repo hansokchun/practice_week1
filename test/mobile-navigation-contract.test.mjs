@@ -12,6 +12,7 @@ const routeFiles = [
   'mobile/app/explore.tsx',
   'mobile/app/upload.tsx',
   'mobile/app/profile.tsx',
+  'mobile/app/settings.tsx',
   'mobile/app/auth/login.tsx',
   'mobile/app/auth/callback.tsx',
   'mobile/app/auth/update-password.tsx',

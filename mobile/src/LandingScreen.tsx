@@ -6,7 +6,7 @@ import { fetchLandingContent, filterLandingPhotos, type LandingContent, type Lan
 import { RecoverableRemoteImage } from "./RecoverableRemoteImage";
 import { DefaultProfileAvatar } from "./DefaultProfileAvatar";
 import { mobileColors } from "./mobile-theme";
-import { buildLandingTagRoute, exploreRoute, guestLoginRoute, likesRoute, myPhotosRoute, profileRoute, uploadRoute } from "./mobile-routes";
+import { buildLandingTagRoute, exploreRoute, guestLoginRoute, likesRoute, myPhotosRoute, profileRoute, settingsRoute, uploadRoute } from "./mobile-routes";
 
 type LandingScreenProps = {
   readonly loadContent?: () => Promise<LandingContent>;
@@ -110,7 +110,8 @@ export function LandingScreen({
           {[
             { label: "내 프로필", route: profileRoute },
             { label: "내 사진", route: myPhotosRoute },
-            { label: "좋아요한 사진", route: likesRoute }
+            { label: "좋아요한 사진", route: likesRoute },
+            { label: "설정", route: settingsRoute }
           ].map((item) => (
             <Pressable accessibilityLabel={item.label} accessibilityRole="button" key={item.route} onPress={() => go(item.route)} style={styles.accountMenuItem}>
               <Text style={styles.accountMenuText}>{item.label}</Text>

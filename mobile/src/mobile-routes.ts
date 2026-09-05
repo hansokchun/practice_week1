@@ -9,6 +9,7 @@ export const myPhotosRoute = "/my-photos" as const;
 export const likesRoute = "/likes" as const;
 export const uploadRoute = "/upload" as const;
 export const profileRoute = "/profile" as const;
+export const settingsRoute = "/settings" as const;
 export const guestLoginRoute = "/auth/login" as const;
 export const authCallbackRoute = "/auth/callback" as const;
 export const passwordUpdateRoute = "/auth/update-password" as const;
