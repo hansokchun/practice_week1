@@ -7894,6 +7894,15 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     padding: 8px 10px;
 }
 
+.pin-preview-meta > .pin-preview-like-panel {
+    min-height: 34px;
+    gap: 4px;
+    border: 1px solid rgba(26, 77, 78, 0.12);
+    border-radius: 8px;
+    background: var(--bg);
+    padding: 6px 9px;
+}
+
 .profile-stats span {
     display: grid;
     gap: 4px;
@@ -12863,8 +12872,9 @@ body.modal-open {
     }
 
     .photo-detail-like-panel {
-        justify-content: space-between;
-        padding: 5px 12px 5px 5px;
+        justify-content: flex-start;
+        gap: 4px;
+        padding: 5px 0;
     }
 
     .modal {

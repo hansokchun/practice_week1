@@ -6,6 +6,7 @@ import {
     canShowPhotoInExploreScope,
     getDefaultLocationPrecision,
     getEditableLocationPrecision,
+    getPhotoLocationDisplayLabel,
     getLocationPrecisionLabel,
     normalizeLocationPrecision
 } from '../js/photo-location-privacy.mjs';
@@ -67,6 +68,13 @@ test('location accuracy labels describe user confidence in the saved point', () 
     assert.equal(getLocationPrecisionLabel('exact'), '정확한 위치');
     assert.equal(getLocationPrecisionLabel('approximate'), '대략 위치');
     assert.equal(getLocationPrecisionLabel('hidden'), '대략 위치');
+});
+
+test('photo detail hides coordinates only for approximate locations', () => {
+    assert.equal(getPhotoLocationDisplayLabel({ lat: 37.5665, lng: 126.978, location_precision: 'exact' }), '37.5665, 126.9780');
+    assert.equal(getPhotoLocationDisplayLabel({ lat: 37.5665, lng: 126.978, location_precision: 'approximate' }), '대략적인 위치');
+    assert.equal(getPhotoLocationDisplayLabel({ lat: 37.5665, lng: 126.978, location_precision: 'hidden' }), '대략적인 위치');
+    assert.equal(getPhotoLocationDisplayLabel({ lat: null, lng: null, location_precision: 'exact' }), '위치 정보 없음');
 });
 
 test('Explore filters missing coordinates and the editor persists the selected precision', () => {

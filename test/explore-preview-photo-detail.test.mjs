@@ -166,8 +166,20 @@ test('Explore photo preview keeps capture info as compact chips below the story'
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(body, /<span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today<\/span> \$\{dateLabel\}<\/span>/);
-    assert.match(body, /<span data-pin-meta="place"><span class="material-symbols-outlined">place<\/span> \$\{Number\(photo\.lat\)\.toFixed\(4\)\}, \$\{Number\(photo\.lng\)\.toFixed\(4\)\}<\/span>/);
+    assert.match(body, /const locationLabel = getPhotoLocationDisplayLabel\(photo\)/);
+    assert.match(body, /<span data-pin-meta="place"><span class="material-symbols-outlined">place<\/span> \$\{locationLabel\}<\/span>/);
     assert.doesNotMatch(body, /<b>찍은 날짜<\/b>/);
+});
+
+test('Explore photo preview keeps likes inside the photo information group', () => {
+    const previewStart = html.indexOf('id="explore-pin-preview"');
+    const previewEnd = html.indexOf('id="explore-list"', previewStart);
+    const preview = html.slice(previewStart, previewEnd);
+    const metaStart = preview.indexOf('class="pin-preview-meta"');
+    const likeIndex = preview.indexOf('class="pin-preview-like-panel"');
+    const ownerActionsIndex = preview.indexOf('class="pin-preview-owner-actions"');
+
+    assert.ok(metaStart < likeIndex && likeIndex < ownerActionsIndex);
 });
 
 test('Explore expanded own-photo preview edits description and visibility without changing location accuracy', () => {

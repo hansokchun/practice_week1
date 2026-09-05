@@ -89,6 +89,7 @@ test('mobile album and photo detail views avoid side-by-side desktop layouts', (
     assert.match(mobile, /\.photo-detail-close\s*\{[^}]*position:\s*static;[^}]*flex:\s*0 0 44px;/s);
     assert.match(mobile, /\.modal\.photo-detail-modal\s*\{[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(mobile, /\.photo-detail-meta > span,\s*\.photo-detail-meta > a,\s*\.photo-detail-visibility,\s*\.photo-detail-like-panel\s*\{[^}]*width:\s*100%;/s);
+    assert.match(mobile, /\.photo-detail-like-panel\s*\{[^}]*justify-content:\s*flex-start;[^}]*gap:\s*4px;[^}]*padding:\s*5px 0;/s);
     assert.doesNotMatch(mobile, /\.photo-detail-nearby/);
     assert.match(mobile, /\.photo-fullscreen-modal\s*\{[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);
     assert.match(mobile, /\.photo-fullscreen-card\s*\{[^}]*width:\s*100vw;[^}]*height:\s*100svh;/s);

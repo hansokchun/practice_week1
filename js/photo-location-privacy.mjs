@@ -38,3 +38,9 @@ export function getLocationPrecisionLabel(value) {
     if (precision === 'exact') return '정확한 위치';
     return '대략 위치';
 }
+
+export function getPhotoLocationDisplayLabel(photo = {}) {
+    if (!hasCoordinate(photo.lat) || !hasCoordinate(photo.lng)) return '위치 정보 없음';
+    if (normalizeLocationPrecision(photo.location_precision) === 'approximate') return '대략적인 위치';
+    return `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`;
+}

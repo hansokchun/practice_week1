@@ -227,6 +227,7 @@ import {
     canShowPhotoOnPublicMap,
     getDefaultLocationPrecision,
     getEditableLocationPrecision,
+    getPhotoLocationDisplayLabel,
     normalizeLocationPrecision
 } from './photo-location-privacy.mjs';
 import {
@@ -1871,6 +1872,7 @@ function updateExplorePhotoPreview(photo) {
     const meta = preview.querySelector('.pin-preview-meta');
     const likeButton = preview.querySelector('#pin-preview-like');
     const likeCount = preview.querySelector('#pin-preview-like-count');
+    const likePanel = preview.querySelector('.pin-preview-like-panel');
     const profileButton = preview.querySelector('[data-go-profile]');
     const authorAvatar = preview.querySelector('.pin-author .avatar');
     const authorNameNode = preview.querySelector('.pin-author strong');
@@ -1893,6 +1895,7 @@ function updateExplorePhotoPreview(photo) {
     });
     const date = photo.date ? new Date(photo.date) : null;
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '-- --';
+    const locationLabel = getPhotoLocationDisplayLabel(photo);
     const uploadTimeLabel = formatRelativeTime(photo.created_at || photo.uploaded_at || photo.createdAt || photo.date);
     const visibilityLabel = photo.albumVisibility === 'link'
         ? '링크'
@@ -1913,9 +1916,10 @@ function updateExplorePhotoPreview(photo) {
     if (meta) {
         meta.innerHTML = `
             <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span> ${dateLabel}</span>
-            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> ${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}</span>
+            <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> ${locationLabel}</span>
             ${visibilityMeta}
         `;
+        if (likePanel) meta.append(likePanel);
     }
     if (likeButton) {
         likeButton.disabled = !photo.id || !state.currentUser;
@@ -2764,12 +2768,9 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
     const isLiked = Boolean(photo.id && state.likedPhotoIds.includes(String(photo.id)));
     const likeTotal = Number(photo.liked || 0);
     const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '-- --';
-    const placeName = String(photo.placeName || '').trim();
     const ownerId = String(photo.owner_id || '');
     const authorProfile = getPublicProfileDetails(ownerId);
-    const locationLabel = placeName || (hasPhotoLocation(photo)
-        ? `${Number(photo.lat).toFixed(4)}, ${Number(photo.lng).toFixed(4)}`
-        : '위치 정보 없음');
+    const locationLabel = getPhotoLocationDisplayLabel(photo);
     const googleMapsLocationUrl = getGoogleMapsLocationUrl(photo.lat, photo.lng);
 
     if (modal) {

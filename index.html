@@ -697,12 +697,12 @@
                     <div class="pin-preview-meta">
                         <span data-pin-meta="date"><span class="material-symbols-outlined">calendar_today</span> 2025-08-03</span>
                         <span data-pin-meta="place"><span class="material-symbols-outlined">place</span> 35.6997, 139.7656</span>
-                    </div>
-                    <div class="pin-preview-like-panel">
-                        <button id="pin-preview-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
-                            <span class="material-symbols-outlined">favorite</span>
-                        </button>
-                        <span id="pin-preview-like-count">0</span>
+                        <div class="pin-preview-like-panel">
+                            <button id="pin-preview-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </button>
+                            <span id="pin-preview-like-count">0</span>
+                        </div>
                     </div>
                     <div class="pin-preview-owner-actions" hidden>
                         <button id="btn-edit-pin-preview" class="btn-secondary" type="button">수정하기</button>
@@ -1116,6 +1116,12 @@
                 <div class="photo-detail-meta">
                     <span data-photo-detail-meta="date"><span class="material-symbols-outlined">calendar_today</span> -- --</span>
                     <a data-photo-detail-meta="place" target="_blank" rel="noopener noreferrer" aria-disabled="true"><span class="material-symbols-outlined">place</span> 위치 정보 없음</a>
+                    <div class="photo-detail-like-panel">
+                        <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
+                            <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                        </button>
+                        <span id="photo-detail-like-count">0</span>
+                    </div>
                 </div>
                 <div id="photo-detail-ai-analysis" class="photo-detail-ai-analysis" hidden>
                     <div class="photo-detail-ai-analysis__heading">
@@ -1126,12 +1132,6 @@
                     <div id="photo-detail-ai-tags" class="photo-detail-ai-tags" aria-label="AI 분석 태그" hidden></div>
                 </div>
                 <div id="photo-detail-visibility" class="photo-detail-visibility" hidden>비공개</div>
-                <div class="photo-detail-like-panel">
-                    <button id="photo-detail-like" class="photo-like-button" data-toggle-photo-like type="button" aria-label="좋아요" aria-pressed="false">
-                        <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
-                    </button>
-                    <span id="photo-detail-like-count">0</span>
-                </div>
                 <section id="photo-detail-street-view" class="photo-detail-street-view" hidden>
                     <div class="photo-detail-street-view__heading">
                         <h3>거리뷰</h3>

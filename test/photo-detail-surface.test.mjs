@@ -53,6 +53,9 @@ test('photo detail surface leads with description and compact info before the ma
     assert.match(detail, />올린 사람</);
     assert.match(detail, /class="photo-detail-meta"/);
     assert.match(detail, /<a data-photo-detail-meta="place"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
+    const metaStart = detail.indexOf('class="photo-detail-meta"');
+    const metaEnd = detail.indexOf('</div>', detail.indexOf('id="photo-detail-like-count"'));
+    assert.ok(detail.slice(metaStart, metaEnd).includes('class="photo-detail-like-panel"'));
     assert.ok(detail.indexOf('id="photo-detail-description"') < detail.indexOf('class="photo-detail-meta"'));
     assert.ok(detail.indexOf('class="photo-detail-meta"') < detail.indexOf('id="photo-detail-map"'));
     assert.ok(detail.indexOf('class="photo-detail-like-panel"') < detail.indexOf('id="photo-detail-street-view"'));
@@ -113,6 +116,7 @@ test('photo detail renderer writes compact metadata and map handoff controls', (
     assert.match(source, /state\.photoDetailMap\.setZoom\(viewport\.zoom\)/);
     assert.match(source, /selected: item\.isSelected/);
     assert.match(source, /authorButton\.dataset\.publicOwnerId = ownerId/);
+    assert.match(source, /getPhotoLocationDisplayLabel\(photo\)/);
     assert.match(source, /setAvatarDisplay\(authorImage, authorFallback, authorProfile\.avatarUrl, authorProfile\.nickname\)/);
     assert.match(source, /photo-detail-visibility/);
     assert.match(source, /visibilityValue\.innerHTML = `<span class="material-symbols-outlined">\$\{isPublicPhoto \? 'public' : 'lock'\}<\/span> \$\{isPublicPhoto \? '공개' : '비공개'\}`/);
