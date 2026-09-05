@@ -2228,9 +2228,9 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 .photo-detail-street-view {
     display: grid;
     gap: 12px;
-    min-height: 380px;
+    min-height: 0;
     border-top: 1px solid var(--line);
-    padding: 28px 34px 36px !important;
+    padding: 22px 0 0 !important;
 }
 
 .photo-detail-street-view[hidden],
@@ -9738,7 +9738,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     transform: none;
 }
 
-.photo-detail-card section {
+.photo-detail-card > .photo-detail-info {
     display: grid;
     align-self: stretch;
     align-content: start;
@@ -9748,15 +9748,18 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     overflow-y: auto;
     border-left: 1px solid rgba(26, 77, 78, 0.08);
     background: #ffffff;
-    padding: 38px 34px 34px;
+    padding: 62px 34px 34px;
 }
 
 .photo-detail-section-head {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
-    margin-bottom: 6px;
 }
 
 .photo-detail-title-row {
@@ -12807,15 +12810,7 @@ body.modal-open {
         padding: 12px;
     }
 
-    .photo-detail-media-column .photo-detail-street-view {
-        height: auto;
-        min-height: 0;
-        max-height: none;
-        overflow: visible;
-        padding: 20px 16px !important;
-    }
-
-    .photo-detail-card section {
+    .photo-detail-card > .photo-detail-info {
         display: grid;
         gap: 12px;
         height: auto;
@@ -12824,14 +12819,23 @@ body.modal-open {
         padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
     }
 
+    .photo-detail-info > .photo-detail-street-view {
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
+        padding: 20px 0 0 !important;
+    }
+
     .photo-detail-section-head {
         position: sticky;
         top: 0;
+        order: -1;
         z-index: 3;
         justify-content: flex-end;
-        margin: -16px -16px 0;
+        width: 100%;
         background: rgba(255, 255, 255, 0.94);
-        padding: 10px 14px;
+        padding: max(8px, env(safe-area-inset-top)) 14px 8px;
         backdrop-filter: blur(10px);
     }
 

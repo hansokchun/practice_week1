@@ -44,10 +44,11 @@ test('upload persistence optimizes large files after reading EXIF but before sto
     const end = source.indexOf('function renderStagedPhotos', start);
     const body = source.slice(start, end);
 
-    assert.match(source, /import \{ optimizePhotoForUpload, shouldOptimizePhotoForUpload \} from '\.\/photo-upload-optimizer\.mjs';/);
+    assert.match(source, /optimizePhotoForUpload,[\s\S]*shouldOptimizePhotoForUpload[\s\S]*from '\.\/photo-upload-optimizer\.mjs';/);
     assert.match(body, /const hasLargeUpload = selectedPhotos\.some\(\(photo\) => shouldOptimizePhotoForUpload\(photo\.file\)\)/);
     assert.ok(body.indexOf('const exif = await readPhotoExif(photo.file);') < body.indexOf('const storageFile = await optimizePhotoForUpload(photo.file);'));
     assert.match(body, /const fileName = `\$\{state\.currentUser\.id\}\/\$\{id\}-\$\{safeFileName\(storageFile\.name \|\| photo\.name\)\}`;/);
     assert.match(body, /const \{ url, storagePath, error: uploadError \} = await uploadImage\(storageFile, fileName\)/);
+    assert.match(body, /createPhotoThumbnailForUpload\(storageFile, id\)/);
     assert.match(body, /storage_path: storagePath/);
 });

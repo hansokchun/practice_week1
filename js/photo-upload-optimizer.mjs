@@ -4,6 +4,8 @@ export const TARGET_PHOTO_UPLOAD_SIZE_BYTES = 3 * 1024 * 1024;
 export const MAX_OPTIMIZED_PHOTO_EDGE = 3200;
 export const MIN_OPTIMIZED_PHOTO_EDGE = 1600;
 export const PHOTO_OPTIMIZATION_QUALITY_STEPS = [0.96, 0.93, 0.9, 0.86, 0.82, 0.76];
+export const PHOTO_THUMBNAIL_LONG_EDGE = 960;
+export const PHOTO_THUMBNAIL_QUALITY = 0.82;
 
 export function shouldOptimizePhotoForUpload(file) {
     return OPTIMIZABLE_PHOTO_TYPES.has(file?.type) && Number(file?.size || 0) > TARGET_PHOTO_UPLOAD_SIZE_BYTES;
@@ -29,6 +31,14 @@ export function getConstrainedPhotoSize(width, height, maxEdge = MAX_OPTIMIZED_P
         width: Math.max(1, Math.round(width * scale)),
         height: Math.max(1, Math.round(height * scale))
     };
+}
+
+export function getPhotoThumbnailSize(width, height) {
+    return getConstrainedPhotoSize(width, height, PHOTO_THUMBNAIL_LONG_EDGE);
+}
+
+export function getPhotoThumbnailFileName(photoId) {
+    return `${String(photoId || 'photo').replace(/[^a-zA-Z0-9_-]/g, '-')}.jpg`;
 }
 
 function getOptimizationEdges(width, height) {
@@ -120,5 +130,30 @@ export async function optimizePhotoForUpload(file) {
         return bestFile;
     } catch (_) {
         return file;
+    }
+}
+
+export async function createPhotoThumbnailForUpload(file, photoId = 'photo') {
+    if (!OPTIMIZABLE_PHOTO_TYPES.has(file?.type)) return null;
+    if (typeof document === 'undefined' || typeof File === 'undefined') return null;
+
+    try {
+        const photoSource = await loadPhotoSource(file);
+        const size = getPhotoThumbnailSize(photoSource.width, photoSource.height);
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (!context || !size.width || !size.height) return null;
+
+        canvas.width = size.width;
+        canvas.height = size.height;
+        context.drawImage(photoSource, 0, 0, size.width, size.height);
+        const blob = await canvasToBlob(canvas, 'image/jpeg', PHOTO_THUMBNAIL_QUALITY);
+        if (!blob) return null;
+        return new File([blob], getPhotoThumbnailFileName(photoId), {
+            type: 'image/jpeg',
+            lastModified: file.lastModified || Date.now()
+        });
+    } catch (_) {
+        return null;
     }
 }

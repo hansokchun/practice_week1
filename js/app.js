@@ -24,8 +24,10 @@ import {
     updateUserMetadata,
     updateProfileInDB,
     updatePhotoInfo,
+    updatePhotoThumbnailPath,
     updatePhotosVisibility,
     uploadImage,
+    uploadPhotoThumbnail,
     uploadProfileCover,
     updateAlbum,
     updateAlbumVisibility,
@@ -106,7 +108,12 @@ import {
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
 import { readPhotoExif } from './photo-exif-reader.mjs';
-import { optimizePhotoForUpload, shouldOptimizePhotoForUpload } from './photo-upload-optimizer.mjs';
+import {
+    createPhotoThumbnailForUpload,
+    getPhotoThumbnailFileName,
+    optimizePhotoForUpload,
+    shouldOptimizePhotoForUpload
+} from './photo-upload-optimizer.mjs';
 import {
     getSelectedPersonalPhotos,
     prunePersonalPhotoSelection,
@@ -365,6 +372,7 @@ const state = {
     locationAssignmentStreetView: null,
     locationAssignmentStreetViewRequestToken: 0,
     isPersistingUpload: false,
+    isThumbnailBackfillRunning: false,
     isSavingShare: false,
     landingSections: getDefaultLandingSections(),
     landingAssignments: [],
@@ -495,13 +503,17 @@ function getPhotoImageSrc(photo = {}) {
     return photo.url || photo.albumCoverUrl || (!photo.storage_path && MAIN_BG_2_URL) || '';
 }
 
+function getPhotoThumbnailSrc(photo = {}) {
+    return photo.thumbnail_url || getPhotoImageSrc(photo);
+}
+
 function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'auto' } = {}) {
-    const src = escapeHtml(getPhotoImageSrc(photo));
+    const src = escapeHtml(getPhotoThumbnailSrc(photo));
     const alt = escapeHtml(getPhotoFallbackLabel(photo, fallback));
     const photoId = escapeHtml(photo.id || photo.localId || '');
     const priority = ['high', 'low'].includes(fetchPriority) ? ` fetchpriority="${fetchPriority}"` : '';
     const source = src ? ` src="${src}"` : '';
-    return `<img${source} data-i="${photoId}" data-photo-reveal alt="${alt}" loading="lazy" decoding="async"${priority}>`;
+    return `<img${source} data-i="${photoId}" data-photo-variant="thumbnail" data-photo-reveal alt="${alt}" loading="lazy" decoding="async"${priority}>`;
 }
 
 const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
@@ -580,7 +592,7 @@ function initializePhotoImageReveal() {
                 photoImageUrlObserver.unobserve(entry.target);
                 queuePhotoImageUrlRecovery(entry.target);
             });
-        }, { rootMargin: '250px 0px' });
+        }, { rootMargin: '120px 0px' });
     }
     preparePhotoImagesInNode(document.body);
     const observer = new MutationObserver((records) => {
@@ -612,10 +624,16 @@ function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
         container.setAttribute('aria-busy', 'true');
     }
 
-    images.slice(0, atomic ? images.length : PHOTO_THUMBNAIL_EAGER_COUNT).forEach((image, index) => {
-        image.loading = 'eager';
-        image.fetchPriority = index < PHOTO_THUMBNAIL_EAGER_COUNT ? 'high' : 'low';
-    });
+    const page = container.closest('.page');
+    const modal = container.closest('.modal');
+    const isVisibleSurface = (!page || page.classList.contains('active'))
+        && (!modal || modal.classList.contains('is-open'));
+    if (isVisibleSurface) {
+        images.slice(0, atomic ? images.length : PHOTO_THUMBNAIL_EAGER_COUNT).forEach((image, index) => {
+            image.loading = 'eager';
+            image.fetchPriority = index < PHOTO_THUMBNAIL_EAGER_COUNT ? 'high' : 'low';
+        });
+    }
 
     let remaining = images.length;
     let timeoutId = null;
@@ -678,10 +696,11 @@ function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
     }, atomic ? LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS : PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS);
 }
 
-function setPhotoImageSource(image, photo = {}) {
+function setPhotoImageSource(image, photo = {}, { variant = 'detail' } = {}) {
     if (!image) return;
     image.dataset.i = String(photo.id || '');
-    const source = getPhotoImageSrc(photo);
+    image.dataset.photoVariant = variant;
+    const source = variant === 'thumbnail' ? getPhotoThumbnailSrc(photo) : getPhotoImageSrc(photo);
     if (source) image.src = source;
     else {
         image.removeAttribute('src');
@@ -727,6 +746,7 @@ async function flushPhotoImageUrlRecoveryQueue() {
         const refreshed = refreshedById.get(String(photo.id));
         if (!refreshed?.url) return;
         photo.url = refreshed.url;
+        photo.thumbnail_url = refreshed.thumbnail_url || photo.thumbnail_url;
         photo.signed_url_expires_at = refreshed.signed_url_expires_at;
     });
 
@@ -738,9 +758,12 @@ async function flushPhotoImageUrlRecoveryQueue() {
                 delete image.dataset.r;
                 return;
             }
-            image.dataset.r = refreshed.url;
+            const source = image.dataset.photoVariant === 'thumbnail'
+                ? (refreshed.thumbnail_url || refreshed.url)
+                : refreshed.url;
+            image.dataset.r = source;
             image.onload = () => { delete image.dataset.r; };
-            image.src = refreshed.url;
+            image.src = source;
         });
     });
 }
@@ -1205,11 +1228,11 @@ function getLandingHeroLocationLabel(photo = {}) {
 function renderLandingPhotoCard(photo) {
     const photoId = String(photo.id || photo.localId || '');
     const label = getLandingPhotoLabel(photo);
-    const source = getPhotoImageSrc(photo);
+    const source = getPhotoThumbnailSrc(photo);
     const sourceAttribute = source ? `src="${escapeHtml(source)}"` : '';
     return `
         <button class="landing-photo-card" data-landing-photo-id="${escapeHtml(photoId)}" type="button" aria-label="${escapeHtml(label)} 상세 보기">
-            <img ${sourceAttribute} data-i="${escapeHtml(photoId)}" data-photo-reveal alt="${escapeHtml(label)}" loading="lazy" decoding="async" fetchpriority="low">
+            <img ${sourceAttribute} data-i="${escapeHtml(photoId)}" data-photo-variant="thumbnail" data-photo-reveal alt="${escapeHtml(label)}" loading="lazy" decoding="async" fetchpriority="low">
         </button>
     `;
 }
@@ -1339,7 +1362,7 @@ function renderLandingAdminForm() {
             if (!photo) return '';
             return `
                 <div class="admin-selected-photo" data-admin-selected-photo="${escapeHtml(photoId)}">
-                    <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
+                    <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
                     <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
                     <button data-admin-photo-move="previous" type="button" aria-label="사진을 앞으로 이동" ${photoIndex === 0 ? 'disabled' : ''}>↑</button>
                     <button data-admin-photo-move="next" type="button" aria-label="사진을 뒤로 이동" ${photoIndex === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
@@ -1349,7 +1372,7 @@ function renderLandingAdminForm() {
             const selected = selectedIds.includes(String(photo.id));
             return `
                 <button class="admin-photo-option ${selected ? 'is-selected' : ''}" data-admin-photo-toggle="${escapeHtml(photo.id)}" type="button" aria-pressed="${selected}">
-                    <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
+                    <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
                     <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
                 </button>`;
         }).join('');
@@ -1391,7 +1414,7 @@ function renderLandingAdminHeroForm() {
         if (!photo) return '';
         return `
             <div class="admin-selected-photo" data-admin-hero-selected="${escapeHtml(photoId)}">
-                <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
+                <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
                 <label class="admin-hero-location-field">
                     <span>지역명</span>
                     <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 일본 · 도쿄" required>
@@ -1406,7 +1429,7 @@ function renderLandingAdminHeroForm() {
         const selected = selectedIds.includes(photoId);
         return `
             <button class="admin-photo-option ${selected ? 'is-selected' : ''}" data-admin-hero-toggle="${escapeHtml(photoId)}" type="button" aria-pressed="${selected}">
-                <img src="${escapeHtml(getPhotoImageSrc(photo))}" alt="">
+                <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
                 <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
             </button>`;
     }).join('');
@@ -3826,8 +3849,10 @@ function normalizeSavedPhoto(photo) {
         id: photo.id,
         description: photo.description || '',
         url: photo.url,
+        thumbnail_url: photo.thumbnail_url || null,
         signed_url_expires_at: Number(photo.signed_url_expires_at) || null,
         storage_path: photo.storage_path || null,
+        thumbnail_path: photo.thumbnail_path || null,
         date: photo.date || photo.created_at || new Date().toISOString(),
         created_at: photo.created_at || photo.uploaded_at || photo.createdAt || null,
         lat: hasLocation ? Number(photo.lat) : null,
@@ -3856,7 +3881,9 @@ function normalizePhotoUpdate(photo, update) {
         ...photo,
         ...update,
         url: photo.url,
-        storage_path: update.storage_path || photo.storage_path
+        thumbnail_url: photo.thumbnail_url,
+        storage_path: update.storage_path || photo.storage_path,
+        thumbnail_path: update.thumbnail_path || photo.thumbnail_path
     });
 }
 
@@ -5051,6 +5078,70 @@ function renderPublicSurfaces() {
     });
 }
 
+function getPhotoThumbnailStoragePathForUpload(photoId, ownerId) {
+    return `${ownerId}/thumbnails/${getPhotoThumbnailFileName(photoId)}`;
+}
+
+async function createAndStorePhotoThumbnail(photo, sourceUrl) {
+    const response = await fetch(sourceUrl, { cache: 'force-cache' });
+    if (!response.ok) throw new Error();
+    const sourceBlob = await response.blob();
+    const sourceFile = new File([sourceBlob], `${photo.id}-source`, {
+        type: sourceBlob.type || 'image/jpeg',
+        lastModified: Date.now()
+    });
+    const thumbnailFile = await createPhotoThumbnailForUpload(sourceFile, photo.id);
+    if (!thumbnailFile) throw new Error();
+
+    const thumbnailPath = getPhotoThumbnailStoragePathForUpload(photo.id, photo.owner_id);
+    const uploaded = await uploadPhotoThumbnail(thumbnailFile, thumbnailPath);
+    if (uploaded.error || !uploaded.url) throw uploaded.error || new Error();
+
+    const updated = await updatePhotoThumbnailPath(photo.id, thumbnailPath);
+    if (updated.error) {
+        await removeUploadedImage(thumbnailPath);
+        throw updated.error;
+    }
+    photo.thumbnail_path = thumbnailPath;
+    photo.thumbnail_url = uploaded.url;
+}
+
+async function backfillMissingPhotoThumbnails() {
+    if (state.isThumbnailBackfillRunning || !state.currentUser) return;
+    const candidates = state.savedPhotos.filter((photo) => (
+        photo.owner_id === state.currentUser.id
+        && photo.storage_path
+        && !photo.thumbnail_path
+    ));
+    if (!candidates.length) return;
+
+    state.isThumbnailBackfillRunning = true;
+    try {
+        for (const photo of candidates) {
+            const { data } = await hydratePhotoUrls([photo]);
+            const sourceUrl = data?.[0]?.url;
+            if (!sourceUrl) continue;
+            try {
+                await createAndStorePhotoThumbnail(photo, sourceUrl);
+            } catch (_) {
+                // A failed derivative never blocks the original photo from loading.
+            }
+            await new Promise((resolve) => window.setTimeout(resolve, 120));
+        }
+    } finally {
+        state.isThumbnailBackfillRunning = false;
+    }
+}
+
+function queueMissingPhotoThumbnailBackfill() {
+    if (!state.currentUser || state.isThumbnailBackfillRunning) return;
+    if (navigator.connection?.saveData || window.matchMedia('(max-width: 860px)').matches) return;
+    const schedule = window.requestIdleCallback
+        ? (callback) => window.requestIdleCallback(callback, { timeout: 8000 })
+        : (callback) => window.setTimeout(callback, 3000);
+    schedule(() => { void backfillMissingPhotoThumbnails(); });
+}
+
 async function loadSavedPhotos({ render = true } = {}) {
     const { data, error } = await fetchPhotos({ hydrateUrls: false });
     if (error) {
@@ -5068,6 +5159,7 @@ async function loadSavedPhotos({ render = true } = {}) {
         .map(normalizeSavedPhoto);
     state.savedPhotos = metadataPhotos;
     state.hasLoadedSavedPhotos = true;
+    queueMissingPhotoThumbnailBackfill();
 
     if (render) {
         renderSavedPhotoSurfaces();
@@ -5508,7 +5600,7 @@ async function deleteSelectedPersonalPhotos() {
 
     try {
         for (const photo of selectedPhotos) {
-            const { error } = await deletePhoto(photo.id, photo.url, photo.storage_path);
+            const { error } = await deletePhoto(photo.id, photo.url, photo.storage_path, photo.thumbnail_path);
             if (error) throw error;
         }
         state.savedPhotos = removeSelectedPersonalPhotos(state.savedPhotos, state.selectedPersonalPhotoIds);
@@ -6871,7 +6963,7 @@ async function persistStagedPhotos() {
     if (reviewButton) reviewButton.disabled = true;
 
     const saved = [];
-    let pendingStoragePath = null;
+    let pendingStoragePaths = [];
     try {
         const timestamp = Date.now();
         for (const [index, photo] of selectedPhotos.entries()) {
@@ -6882,12 +6974,22 @@ async function persistStagedPhotos() {
             const fileName = `${state.currentUser.id}/${id}-${safeFileName(storageFile.name || photo.name)}`;
             const { url, storagePath, error: uploadError } = await uploadImage(storageFile, fileName);
             if (uploadError) throw uploadError;
-            pendingStoragePath = storagePath;
+            pendingStoragePaths = [storagePath];
+            const thumbnailFile = await createPhotoThumbnailForUpload(storageFile, id);
+            const thumbnailPath = thumbnailFile
+                ? getPhotoThumbnailStoragePathForUpload(id, state.currentUser.id)
+                : null;
+            const thumbnailUpload = thumbnailFile
+                ? await uploadPhotoThumbnail(thumbnailFile, thumbnailPath)
+                : { url: null, storagePath: null, error: null };
+            if (thumbnailUpload.storagePath) pendingStoragePaths.push(thumbnailUpload.storagePath);
             const visibility = visibilityPlan[index] || 'private';
             const record = {
                 id,
                 url,
                 storage_path: storagePath,
+                thumbnail_url: thumbnailUpload.url || null,
+                thumbnail_path: thumbnailUpload.storagePath || null,
                 date: exif.date || new Date().toISOString(),
                 description: '',
                 lat: hasExifLocation ? exif.lat : null,
@@ -6903,7 +7005,7 @@ async function persistStagedPhotos() {
             const { error: dbError } = await upsertPhoto(record);
             if (dbError) throw dbError;
             saved.push(normalizeSavedPhoto(record));
-            pendingStoragePath = null;
+            pendingStoragePaths = [];
         }
         state.lastSavedPhotoIds = saved.map((photo) => photo.id);
         state.savedPhotos = [
@@ -6923,9 +7025,9 @@ async function persistStagedPhotos() {
         clearUploadQueue();
         routeTo(getUploadNextRoute(saved.length));
     } catch (error) {
-        if (pendingStoragePath) await removeUploadedImage(pendingStoragePath);
+        await Promise.all(pendingStoragePaths.map((path) => removeUploadedImage(path)));
         for (const record of [...saved].reverse()) {
-            await deletePhoto(record.id, record.url, record.storage_path);
+            await deletePhoto(record.id, record.url, record.storage_path, record.thumbnail_path);
         }
         const failure = getUploadFailureState({ online: navigator.onLine });
         if (status) status.textContent = `${failure.title} ${failure.body}`;

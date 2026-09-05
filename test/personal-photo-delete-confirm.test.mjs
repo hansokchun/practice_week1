@@ -12,5 +12,5 @@ test('selected personal photo deletion asks for confirmation with the selected c
     assert.match(body, /window\.confirm/);
     assert.match(body, /selectedPhotos\.length/);
     assert.match(body, /정말 삭제/);
-    assert.match(body, /deletePhoto\(photo\.id, photo\.url, photo\.storage_path\)/);
+    assert.match(body, /deletePhoto\(photo\.id, photo\.url, photo\.storage_path, photo\.thumbnail_path\)/);
 });

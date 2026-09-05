@@ -82,8 +82,9 @@ test('mobile album and photo detail views avoid side-by-side desktop layouts', (
     assert.match(mobile, /\.photo-detail-card\s*\{[^}]*display:\s*block;[^}]*width:\s*100vw;[^}]*height:\s*100svh;[^}]*max-height:\s*100svh;[^}]*overflow-y:\s*auto;/s);
     assert.match(mobile, /\.photo-detail-media-column\s*\{[^}]*height:\s*auto;[^}]*max-height:\s*none;[^}]*overflow:\s*visible;/s);
     assert.match(mobile, /\.photo-detail-media-column > img\s*\{[^}]*height:\s*auto;[^}]*max-height:\s*70svh;[^}]*object-fit:\s*contain;/s);
-    assert.match(mobile, /\.photo-detail-card section\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*height:\s*auto;[^}]*overflow:\s*visible;/s);
-    assert.match(mobile, /\.photo-detail-section-head\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*justify-content:\s*flex-end;/s);
+    assert.match(mobile, /\.photo-detail-card > \.photo-detail-info\s*\{[^}]*display:\s*grid;[^}]*gap:\s*12px;[^}]*height:\s*auto;[^}]*overflow:\s*visible;/s);
+    assert.match(mobile, /\.photo-detail-section-head\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*order:\s*-1;[^}]*justify-content:\s*flex-end;/s);
+    assert.match(mobile, /\.photo-detail-info > \.photo-detail-street-view\s*\{[^}]*padding:\s*20px 0 0 !important;/s);
     assert.match(mobile, /\.photo-detail-more-button,\s*\.photo-detail-close\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/s);
     assert.match(mobile, /\.photo-detail-close\s*\{[^}]*position:\s*static;[^}]*flex:\s*0 0 44px;/s);
     assert.match(mobile, /\.modal\.photo-detail-modal\s*\{[^}]*align-items:\s*stretch;[^}]*padding:\s*0;/s);

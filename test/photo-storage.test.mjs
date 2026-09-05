@@ -6,7 +6,8 @@ import {
     applyPhotoUrlsToAlbumCovers,
     applySignedAlbumCoverUrls,
     applySignedPhotoUrls,
-    getPhotoStoragePath
+    getPhotoStoragePath,
+    getPhotoThumbnailStoragePath
 } from '../js/photo-storage.mjs';
 
 const authSource = readFileSync('auth.js', 'utf8');
@@ -56,6 +57,36 @@ test('applySignedPhotoUrls replaces only rows with a matching signed URL', () =>
         { id: 'legacy', url: 'https://legacy.example/photo.jpg' }
     ]);
     assert.notEqual(hydrated[0], photos[0]);
+});
+
+test('photo thumbnail storage paths remain separate from downloadable originals', () => {
+    assert.equal(
+        getPhotoThumbnailStoragePath({ thumbnail_path: 'owner-1/thumbnails/photo-1.jpg' }),
+        'owner-1/thumbnails/photo-1.jpg'
+    );
+    assert.equal(getPhotoThumbnailStoragePath({ storage_path: 'owner-1/original.jpg' }), null);
+
+    assert.deepEqual(
+        applySignedPhotoUrls(
+            [{
+                id: 'photo-1',
+                storage_path: 'owner-1/original.jpg',
+                thumbnail_path: 'owner-1/thumbnails/photo-1.jpg',
+                url: null
+            }],
+            new Map([
+                ['owner-1/original.jpg', 'https://signed.example/original.jpg'],
+                ['owner-1/thumbnails/photo-1.jpg', 'https://signed.example/thumbnail.jpg']
+            ])
+        ),
+        [{
+            id: 'photo-1',
+            storage_path: 'owner-1/original.jpg',
+            thumbnail_path: 'owner-1/thumbnails/photo-1.jpg',
+            url: 'https://signed.example/original.jpg',
+            thumbnail_url: 'https://signed.example/thumbnail.jpg'
+        }]
+    );
 });
 
 test('applySignedAlbumCoverUrls replaces legacy album covers with signed URLs', () => {

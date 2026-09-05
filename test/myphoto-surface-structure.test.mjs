@@ -404,11 +404,11 @@ test('site footer provides global archive information after the app pages', () =
 test('photo detail modal keeps the right information panel inside the viewport', () => {
     const styles = css();
 
-    assert.match(styles, /\.photo-detail-card section\s*\{[^}]*min-width:\s*0;/s);
+    assert.match(styles, /\.photo-detail-card > \.photo-detail-info\s*\{[^}]*min-width:\s*0;/s);
     assert.match(styles, /\.photo-detail-card\s*\{[^}]*width:\s*min\(1220px,\s*calc\(100vw - 44px\)\);/s);
     assert.match(styles, /\.photo-detail-card\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(300px,\s*380px\);/s);
     assert.match(styles, /\.photo-detail-card\s*\{[^}]*align-items:\s*stretch;/s);
-    assert.match(styles, /\.photo-detail-card section\s*\{[^}]*align-self:\s*stretch;/s);
+    assert.match(styles, /\.photo-detail-card > \.photo-detail-info\s*\{[^}]*align-self:\s*stretch;/s);
     assert.match(styles, /\.photo-detail-card > img\s*\{[^}]*height:\s*min\(76vh,\s*760px\);/s);
     assert.match(styles, /\.photo-detail-card > img\s*\{[^}]*max-height:\s*calc\(100vh - 48px\);/s);
     assert.doesNotMatch(styles, /\.photo-detail-card > img\s*\{[^}]*min-height:/s);

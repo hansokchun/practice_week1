@@ -22,10 +22,10 @@ test('photo upload batch compensates storage and database writes after a failure
     const persistEnd = appSource.indexOf('async function saveAlbumDraft()', persistStart);
     const persistBody = appSource.slice(persistStart, persistEnd);
 
-    assert.match(persistBody, /let pendingStoragePath = null;/);
-    assert.match(persistBody, /pendingStoragePath = storagePath;/);
-    assert.match(persistBody, /await removeUploadedImage\(pendingStoragePath\)/);
-    assert.match(persistBody, /await deletePhoto\(record\.id, record\.url, record\.storage_path\)/);
+    assert.match(persistBody, /let pendingStoragePaths = \[\];/);
+    assert.match(persistBody, /pendingStoragePaths = \[storagePath\];/);
+    assert.match(persistBody, /Promise\.all\(pendingStoragePaths\.map\(\(path\) => removeUploadedImage\(path\)\)\)/);
+    assert.match(persistBody, /await deletePhoto\(record\.id, record\.url, record\.storage_path, record\.thumbnail_path\)/);
 });
 
 test('private location foreign key is deferred until the photo insert completes', () => {

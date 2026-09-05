@@ -52,7 +52,7 @@ test('Explore photo preview marks stored images for signed URL recovery', () => 
     const body = source.slice(fnStart, fnEnd);
 
     assert.match(helpers, /function getPhotoImageSrc\(photo = \{\}\)/);
-    assert.match(helpers, /function setPhotoImageSource\(image, photo = \{\}\)/);
+    assert.match(helpers, /function setPhotoImageSource\(image, photo = \{\}, \{ variant = 'detail' \} = \{\}\)/);
     assert.match(helpers, /image\.dataset\.i = String\(photo\.id \|\| ''\)/);
     assert.match(body, /setPhotoImageSource\(image, photo\)/);
 });
