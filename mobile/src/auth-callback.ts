@@ -7,6 +7,15 @@ type PasswordAuthApi = {
   updateUser(attributes: { password: string }): Promise<{ error: Error | null }>;
 };
 
+function isPrivateExpoHost(hostname: string): boolean {
+  if (hostname === "localhost" || hostname === "[::1]") return true;
+  const octets = hostname.split(".").map(Number);
+  if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) return false;
+  const [first, second] = octets;
+  return first === 10 || first === 127 || (first === 192 && second === 168) ||
+    (first === 172 && second !== undefined && second >= 16 && second <= 31);
+}
+
 function getCallbackParams(callbackUrl: string) {
   const parsedUrl = requireTrustedAuthCallbackUrl(callbackUrl);
   const params = new URLSearchParams(parsedUrl.search);
@@ -25,9 +34,14 @@ export function requireTrustedAuthCallbackUrl(callbackUrl: string): URL {
   } catch {
     throw new Error("올바르지 않은 인증 링크입니다.");
   }
-  if (parsedUrl.protocol !== "ikkyee:" || parsedUrl.hostname !== "auth" ||
-    parsedUrl.pathname !== "/callback" || parsedUrl.username !== "" ||
-    parsedUrl.password !== "" || parsedUrl.port !== "") {
+
+  const nativeCallback = parsedUrl.protocol === "ikkyee:" && parsedUrl.hostname === "auth" &&
+    parsedUrl.pathname === "/callback" && parsedUrl.port === "";
+  const expoGoCallback = parsedUrl.protocol === "exp:" &&
+    isPrivateExpoHost(parsedUrl.hostname) &&
+    parsedUrl.pathname === "/--/auth/callback" && /^\d{1,5}$/u.test(parsedUrl.port);
+
+  if ((!nativeCallback && !expoGoCallback) || parsedUrl.username !== "" || parsedUrl.password !== "") {
     throw new Error("올바르지 않은 인증 링크입니다.");
   }
   return parsedUrl;

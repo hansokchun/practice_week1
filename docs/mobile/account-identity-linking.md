@@ -20,7 +20,7 @@
 ## 출시 전 외부 관문
 
 1. 운영·preview Supabase Auth 설정에서 **Enable Manual Linking**을 켠다.
-2. Google·Kakao 공급자와 `ikkyee://auth/callback` 리디렉션을 등록한다.
+2. Google·Kakao 공급자와 설치형 앱의 `ikkyee://auth/callback` 리디렉션을 등록한다. Expo Go 실기기 점검 중에는 현재 개발 서버가 생성한 `exp://<사설 IP>:<포트>/--/auth/callback`의 정확한 주소만 임시 허용하고, 점검 후 제거한다.
 3. 기존 이메일 계정에서 Google·Kakao를 각각 연결하고, 연결 전후 `user.id`와 대표 `profiles` 행이 동일한지 확인한다.
 4. 이미 다른 사용자에 연결된 identity, 취소, 공급자 거부, 네트워크 중단을 서명된 iOS·Android 빌드에서 확인한다.
 5. Supabase의 identity link/unlink 보안 알림 이메일 기능 사용 여부를 운영 정책과 함께 승인한다.

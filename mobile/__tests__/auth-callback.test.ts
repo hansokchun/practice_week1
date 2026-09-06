@@ -24,6 +24,19 @@ describe("mobile auth callback", () => {
     expect(auth.setSession).toHaveBeenCalledWith({ access_token: "access", refresh_token: "refresh" });
   });
 
+  it("accepts a private-network Expo Go callback during device testing", async () => {
+    const auth = {
+      exchangeCodeForSession: jest.fn(async () => ({ error: null })),
+      setSession: jest.fn()
+    };
+
+    await expect(completeAuthCallback(
+      auth,
+      "exp://192.168.0.25:8081/--/auth/callback?code=expo-go-code"
+    )).resolves.toEqual({ intent: "signed_in" });
+    expect(auth.exchangeCodeForSession).toHaveBeenCalledWith("expo-go-code", undefined);
+  });
+
   it("preserves an explicit recovery intent when a PKCE redirect only adds a code", async () => {
     const auth = {
       exchangeCodeForSession: jest.fn(async () => ({ error: null })),
@@ -46,7 +59,10 @@ describe("mobile auth callback", () => {
     "https://attacker.example/auth/callback?code=stolen",
     "ikkyee://evil/callback?code=stolen",
     "ikkyee://auth/other?code=stolen",
-    "ikkyee://user@auth/callback?code=stolen"
+    "ikkyee://user@auth/callback?code=stolen",
+    "exp://example.com:8081/--/auth/callback?code=stolen",
+    "exp://192.168.999.999:8081/--/auth/callback?code=stolen",
+    "exp://192.168.0.25:8081/--/auth/other?code=stolen"
   ])("rejects an untrusted callback target before consuming credentials: %s", async (callbackUrl) => {
     const auth = { exchangeCodeForSession: jest.fn(), setSession: jest.fn() };
 

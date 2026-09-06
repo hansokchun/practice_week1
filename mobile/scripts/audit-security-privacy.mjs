@@ -32,9 +32,10 @@ check('auth-redirect', () => {
   const oauth = source('mobile/src/oauth-auth.ts');
   const email = source('mobile/src/email-auth.ts');
   const screen = source('mobile/app/auth/callback.tsx');
-  assert.match(callback, /parsedUrl\.protocol !== "ikkyee:"/u);
-  assert.match(callback, /parsedUrl\.hostname !== "auth"/u);
-  assert.match(callback, /parsedUrl\.pathname !== "\/callback"/u);
+  assert.match(callback, /const nativeCallback = parsedUrl\.protocol === "ikkyee:"/u);
+  assert.match(callback, /const expoGoCallback = parsedUrl\.protocol === "exp:"/u);
+  assert.match(callback, /isPrivateExpoHost\(parsedUrl\.hostname\)/u);
+  assert.match(callback, /parsedUrl\.pathname === "\/--\/auth\/callback"/u);
   assert.match(oauth, /requireTrustedAuthCallbackUrl\(callbackUrl\)/u);
   assert.match(email, /requireTrustedAuthCallbackUrl\(callbackUrl\)/u);
   assert.match(oauth, /url\.protocol !== "https:"/u);

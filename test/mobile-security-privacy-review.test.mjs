@@ -38,14 +38,15 @@ test('publication deletion role roundtrip is recorded without stale Docker block
   assert.doesNotMatch(deletionLine, /Docker·Podman이 없어/u);
 });
 
-test('auth callbacks consume credentials only on the exact app callback and hide provider details', () => {
+test('auth callbacks consume credentials only on exact native or private Expo Go callbacks and hide provider details', () => {
   const callback = readFileSync('mobile/src/auth-callback.ts', 'utf8');
   const callbackScreen = readFileSync('mobile/app/auth/callback.tsx', 'utf8');
   const oauth = readFileSync('mobile/src/oauth-auth.ts', 'utf8');
 
-  assert.match(callback, /parsedUrl\.protocol !== "ikkyee:"/u);
-  assert.match(callback, /parsedUrl\.hostname !== "auth"/u);
-  assert.match(callback, /parsedUrl\.pathname !== "\/callback"/u);
+  assert.match(callback, /const nativeCallback = parsedUrl\.protocol === "ikkyee:"/u);
+  assert.match(callback, /const expoGoCallback = parsedUrl\.protocol === "exp:"/u);
+  assert.match(callback, /isPrivateExpoHost\(parsedUrl\.hostname\)/u);
+  assert.match(callback, /parsedUrl\.pathname === "\/--\/auth\/callback"/u);
   assert.doesNotMatch(callbackScreen, /error instanceof Error \? error\.message/u);
   assert.match(oauth, /url\.protocol !== "https:"/u);
   assert.match(oauth, /loopbackHttp/u);

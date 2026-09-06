@@ -46,7 +46,7 @@ file_size_limit = "50MiB"
 [auth]
 enabled = true
 site_url = "ikkyee://auth/callback"
-additional_redirect_urls = ["exp://127.0.0.1:8081", "http://localhost:8081"]
+additional_redirect_urls = ["ikkyee://auth/callback", "exp://127.0.0.1:8081/**", "http://localhost:8081/**"]
 jwt_expiry = 3600
 enable_signup = true
 

@@ -23,6 +23,23 @@ describe("mobile OAuth", () => {
     expect(auth.exchangeCodeForSession).toHaveBeenCalledWith("oauth-code", undefined);
   });
 
+  it.each(["google", "kakao"] as const)("opens %s with an Expo Go callback on a private network", async (provider) => {
+    const callbackUrl = "exp://192.168.0.25:8081/--/auth/callback";
+    const auth = {
+      exchangeCodeForSession: jest.fn(async () => ({ error: null })),
+      setSession: jest.fn(),
+      signInWithOAuth: jest.fn(async () => ({ data: { url: "https://provider.example/authorize" }, error: null }))
+    };
+    const openAuthSession = jest.fn(async () => ({ type: "success" as const, url: `${callbackUrl}?code=oauth-code` }));
+    const actions = createOAuthActions(auth, callbackUrl, openAuthSession);
+
+    await expect(actions.signIn(provider)).resolves.toEqual({ status: "signed_in" });
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith(expect.objectContaining({
+      options: expect.objectContaining({ redirectTo: callbackUrl })
+    }));
+    expect(openAuthSession).toHaveBeenCalledWith("https://provider.example/authorize", callbackUrl);
+  });
+
   it("returns a cancelled result without creating a callback session", async () => {
     const auth = {
       exchangeCodeForSession: jest.fn(),
