@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   StyleSheet,
@@ -53,17 +54,25 @@ export function RecoverableRemoteImage({
           )}
         </View>
       ) : (
-        <Image
-          accessibilityLabel={accessibilityLabel}
-          onError={() => {
-            setLoadedUri(null);
-            setFailedUri(uri);
-          }}
-          onLoad={() => setLoadedUri(uri)}
-          resizeMode={resizeMode}
-          source={{ uri }}
-          style={[StyleSheet.absoluteFill, { opacity: loaded ? 1 : 0 }]}
-        />
+        <>
+          {!loaded ? (
+            <View accessibilityLabel={`${accessibilityLabel} 불러오는 중`} style={styles.loading}>
+              <ActivityIndicator color={mobileColors.pineDeep} size="small" />
+            </View>
+          ) : null}
+          <Image
+            accessibilityLabel={accessibilityLabel}
+            fadeDuration={120}
+            onError={() => {
+              setLoadedUri(null);
+              setFailedUri(uri);
+            }}
+            onLoad={() => setLoadedUri(uri)}
+            resizeMode={resizeMode}
+            source={{ uri }}
+            style={[StyleSheet.absoluteFill, { opacity: loaded ? 1 : 0 }]}
+          />
+        </>
       )}
     </View>
   );
@@ -71,6 +80,7 @@ export function RecoverableRemoteImage({
 
 const styles = StyleSheet.create({
   container: { backgroundColor: mobileColors.line, overflow: "hidden" },
+  loading: { alignItems: "center", bottom: 0, justifyContent: "center", left: 0, position: "absolute", right: 0, top: 0 },
   fallback: { alignItems: "center", flex: 1, justifyContent: "center", padding: 6 },
   copy: { color: mobileColors.muted, fontSize: 11, fontWeight: "700", textAlign: "center" },
   retryButton: { alignItems: "center", justifyContent: "center", minHeight: 44, paddingHorizontal: 8 },

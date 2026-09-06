@@ -94,7 +94,7 @@ export function ExploreScreen({
   const [query, setQuery] = useState("");
   const [searchState, setSearchState] = useState<PlaceSearchState>({ status: "idle" });
   const [searchedPlaceName, setSearchedPlaceName] = useState<string | null>(null);
-  const [scope, setScope] = useState<ExplorePhotoScope>(() => initialFocus?.scope ?? (viewerId === null ? "others" : "mine"));
+  const [scope, setScope] = useState<ExplorePhotoScope>(() => initialFocus?.scope ?? "others");
   const [scopeOpen, setScopeOpen] = useState(false);
   const pageAbortRef = useRef<AbortController | null>(null);
   const searchRequestRef = useRef(0);

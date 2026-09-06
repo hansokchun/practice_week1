@@ -1,10 +1,16 @@
 import { fireEvent, render } from "@testing-library/react-native";
 
-import { ExploreMapSurface } from "../src/ExploreMapSurface.native";
+import { ExploreMapSurface, shouldUseNativeExploreMap } from "../src/ExploreMapSurface.native";
 
 const bounds = { north: 37.72, south: 37.42, east: 127.18, west: 126.76 };
 
 describe("Explore native map surface", () => {
+  it("uses the bundled map provider in Expo Go without enabling it in a keyless standalone build", () => {
+    expect(shouldUseNativeExploreMap(false, "57.0.0")).toBe(true);
+    expect(shouldUseNativeExploreMap(false, null)).toBe(false);
+    expect(shouldUseNativeExploreMap(true, null)).toBe(true);
+  });
+
   it("reports completed camera bounds and routes marker selection", async () => {
     const onBoundsChange = jest.fn();
     const onClusterPress = jest.fn();

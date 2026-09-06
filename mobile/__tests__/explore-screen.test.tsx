@@ -217,27 +217,30 @@ describe("ExploreScreen", () => {
     expect(screen.getByText("부산역")).toBeOnTheScreen();
   });
 
-  it("starts a signed-in viewer on all owned located photos and can switch to other public photos", async () => {
+  it("starts a signed-in viewer on other public photos and can switch to owned photos", async () => {
     const loadPage = jest.fn(async () => ({ photos: [], hasMore: false, nextOffset: 0 }));
-    const screen = await render(<ExploreScreen loadOwnerBounds={async () => null} loadPage={loadPage} viewerId="owner-a" getConnectivity={async () => "online"} />);
+    const screen = await render(<ExploreScreen loadPublicBounds={async () => null} loadPage={loadPage} viewerId="owner-a" getConnectivity={async () => "online"} />);
     await waitFor(() => expect(loadPage).toHaveBeenCalledTimes(1));
-    expect(loadPage).toHaveBeenLastCalledWith(expect.objectContaining({ scope: "mine", viewerId: "owner-a" }));
-    expect(screen.getByRole("button", { name: "사진 범위 내 사진" })).toBeOnTheScreen();
+    expect(loadPage).toHaveBeenLastCalledWith(expect.objectContaining({ scope: "others", viewerId: "owner-a" }));
+    expect(screen.getByRole("button", { name: "사진 범위 다른 사람 사진" })).toBeOnTheScreen();
 
-    await fireEvent.press(screen.getByRole("button", { name: "사진 범위 내 사진" }));
-    await fireEvent.press(screen.getByRole("button", { name: "다른 사람 사진 보기" }));
+    await fireEvent.press(screen.getByRole("button", { name: "사진 범위 다른 사람 사진" }));
+    await fireEvent.press(screen.getByRole("button", { name: "내 사진 보기" }));
 
     await waitFor(() => expect(loadPage).toHaveBeenCalledTimes(2));
-    expect(loadPage).toHaveBeenLastCalledWith(expect.objectContaining({ scope: "others", viewerId: "owner-a", offset: 0 }));
-    expect(screen.getByRole("button", { name: "사진 범위 다른 사람 사진" })).toBeOnTheScreen();
+    expect(loadPage).toHaveBeenLastCalledWith(expect.objectContaining({ scope: "mine", viewerId: "owner-a", offset: 0 }));
+    expect(screen.getByRole("button", { name: "사진 범위 내 사진" })).toBeOnTheScreen();
   });
 
-  it("fits the first signed-in Explore viewport around the owner's located photos", async () => {
+  it("fits the owner viewport after a signed-in viewer selects owned photos", async () => {
     const ownerBounds = { north: 38.1, south: 33.0, east: 130.0, west: 126.0 };
     const loadPage = jest.fn(async () => ({ photos: [], hasMore: false, nextOffset: 0 }));
-    await render(
-      <ExploreScreen loadOwnerBounds={async () => ownerBounds} loadPage={loadPage} viewerId="owner-a" getConnectivity={async () => "online"} />
+    const screen = await render(
+      <ExploreScreen loadOwnerBounds={async () => ownerBounds} loadPublicBounds={async () => null} loadPage={loadPage} viewerId="owner-a" getConnectivity={async () => "online"} />
     );
+    await waitFor(() => expect(screen.getByRole("button", { name: "사진 범위 다른 사람 사진" })).toBeOnTheScreen());
+    await fireEvent.press(screen.getByRole("button", { name: "사진 범위 다른 사람 사진" }));
+    await fireEvent.press(screen.getByRole("button", { name: "내 사진 보기" }));
 
     await waitFor(() => expect(loadPage).toHaveBeenCalledWith(expect.objectContaining({ bounds: ownerBounds, scope: "mine" })));
   });

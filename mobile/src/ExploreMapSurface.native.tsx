@@ -9,9 +9,16 @@ import { ExploreMapFallback } from "./ExploreMapFallback";
 import type { ExploreMapSurfaceProps } from "./ExploreMapSurface.types";
 import { mobileColors } from "./mobile-theme";
 
+export function shouldUseNativeExploreMap(configured: boolean, expoVersion: string | null): boolean {
+  return configured || (typeof expoVersion === "string" && expoVersion.length > 0);
+}
+
 export function ExploreMapSurface({ bounds, clusters, nativeMapsEnabled, onBoundsChange, onClusterPress, photoKind = "public", selectedPhotoId }: ExploreMapSurfaceProps) {
   const mapRef = useRef<MapView>(null);
-  const enabled = nativeMapsEnabled ?? (Constants.expoConfig?.extra?.["nativeMapsEnabled"] === true);
+  const enabled = nativeMapsEnabled ?? shouldUseNativeExploreMap(
+    Constants.expoConfig?.extra?.["nativeMapsEnabled"] === true,
+    Constants.expoVersion
+  );
   function completeRegionChange(region: Region): void {
     try {
       onBoundsChange(regionToBounds(region));

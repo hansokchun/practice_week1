@@ -9,9 +9,11 @@ describe("RecoverableRemoteImage", () => {
     );
     const image = screen.getByLabelText("공개 여행 사진");
 
+    expect(screen.getByLabelText("공개 여행 사진 불러오는 중")).toBeOnTheScreen();
     expect(image).toHaveStyle({ opacity: 0 });
     await act(async () => fireEvent(image, "load"));
     expect(image).toHaveStyle({ opacity: 1 });
+    expect(screen.queryByLabelText("공개 여행 사진 불러오는 중")).toBeNull();
   });
 
   it("replaces a failed remote image with a safe retry action", async () => {
