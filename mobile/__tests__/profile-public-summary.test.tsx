@@ -9,7 +9,7 @@ describe("signed-in profile public photo summary", () => {
     const openPhoto = jest.fn();
     const screen = await render(<ProfilePublicSummary
       loadProfile={async () => ({
-        displayName: "여행자", bio: "", avatarUrl: null,
+        displayName: "여행자", bio: "", avatarUrl: null, publicPhotoCount: 1,
         photos: [{ id: "photo-a", description: "한강 저녁", imageUrl: "https://storage.example/photo-a" }]
       })}
       openPhoto={openPhoto}
@@ -33,8 +33,8 @@ describe("signed-in profile public photo summary", () => {
 
   it("removes a cached own-profile photo after a profile refresh", async () => {
     const loadProfile = jest.fn()
-      .mockResolvedValueOnce({ displayName: "여행자", bio: "", avatarUrl: null, photos: [{ id: "photo-a", description: "삭제 예정", imageUrl: "https://storage.example/photo-a" }] })
-      .mockResolvedValueOnce({ displayName: "여행자", bio: "", avatarUrl: null, photos: [] });
+      .mockResolvedValueOnce({ displayName: "여행자", bio: "", avatarUrl: null, publicPhotoCount: 1, photos: [{ id: "photo-a", description: "삭제 예정", imageUrl: "https://storage.example/photo-a" }] })
+      .mockResolvedValueOnce({ displayName: "여행자", bio: "", avatarUrl: null, publicPhotoCount: 0, photos: [] });
     const screen = await render(<ProfilePublicSummary loadProfile={loadProfile} refreshKey={0} userId={userId} />);
     await waitFor(() => expect(screen.getByRole("button", { name: "삭제 예정 공개 사진 열기" })).toBeOnTheScreen());
 

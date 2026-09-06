@@ -6,6 +6,10 @@ export function getMobileScreenGutter(width: number): number {
   return 24;
 }
 
+export function usesCompactHeaderLayout(width: number): boolean {
+  return width <= 340;
+}
+
 export function useMobileScreenGutter(): number {
   const { width } = useWindowDimensions();
   return getMobileScreenGutter(width);

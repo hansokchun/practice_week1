@@ -74,7 +74,7 @@ export function PublicProfileScreen({
           ) : <Image accessibilityLabel="여행자 프로필 이미지" source={{ uri: displayState.profile.avatarUrl }} style={styles.avatar} />}
           <Text style={styles.name}>{displayState.profile.displayName}</Text>
           {displayState.profile.bio.length === 0 ? null : <Text style={styles.bio}>{displayState.profile.bio}</Text>}
-          <Text style={styles.sectionTitle}>공개 사진 {displayState.profile.photos.length}장</Text>
+          <Text style={styles.sectionTitle}>공개 사진 {displayState.profile.publicPhotoCount}장</Text>
           {displayState.profile.photos.length === 0 ? (
             <Text style={styles.emptyCopy}>아직 공개한 사진이 없습니다.</Text>
           ) : (

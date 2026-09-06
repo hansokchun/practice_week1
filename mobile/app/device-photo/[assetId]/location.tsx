@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -111,7 +112,7 @@ export function DevicePhotoLocationScreen({
         </View>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>{loading
           ? "저장된 위치를 확인하고 있어요"
           : selectedLocation === null
@@ -138,9 +139,9 @@ export function DevicePhotoLocationScreen({
           {markerPosition === null ? null : (
             <View
               accessibilityLabel="선택한 비공개 사진 위치"
-              pointerEvents="none"
               style={[
                 styles.marker,
+                styles.markerNonInteractive,
                 { left: `${markerPosition.leftPercent}%`, top: `${markerPosition.topPercent}%` }
               ]}
             />
@@ -162,7 +163,7 @@ export function DevicePhotoLocationScreen({
         >
           <Text style={styles.saveText}>{saving ? "저장 중" : "이 위치 저장"}</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
   backText: { color: mobileColors.ink, fontSize: 31, lineHeight: 34, marginTop: -3 },
   eyebrow: { color: mobileColors.pine, fontSize: 12, fontWeight: "800" },
   heading: { color: mobileColors.ink, fontSize: 21, fontWeight: "800", marginTop: 2 },
-  content: { flex: 1, padding: 16 },
+  content: { flexGrow: 1, padding: 16, paddingBottom: 32 },
   title: { color: mobileColors.ink, fontSize: 20, fontWeight: "800" },
   description: { color: mobileColors.muted, fontSize: 14, lineHeight: 21, marginTop: 7 },
   map: { backgroundColor: "#9ed8e2", borderRadius: 8, height: 360, marginTop: 18, overflow: "hidden", position: "relative", width: "100%" },
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
   northLabel: { color: mobileColors.pineDeep, fontSize: 12, fontWeight: "800", left: 12, position: "absolute", top: 10 },
   southLabel: { bottom: 10, color: mobileColors.pineDeep, fontSize: 12, fontWeight: "800", position: "absolute", right: 12 },
   marker: { backgroundColor: "#f48c71", borderColor: mobileColors.surface, borderRadius: 13, borderWidth: 3, height: 26, marginLeft: -13, marginTop: -13, position: "absolute", width: 26 },
+  markerNonInteractive: { pointerEvents: "none" },
   privacyCard: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, marginTop: 12, padding: 14 },
   privacyTitle: { color: mobileColors.ink, fontSize: 14, fontWeight: "800" },
   privacyCopy: { color: mobileColors.muted, fontSize: 12, lineHeight: 18, marginTop: 4 },

@@ -1,5 +1,5 @@
 import appConfig from "../app.json";
-import { getMobileScreenGutter } from "../src/mobile-layout";
+import { getMobileScreenGutter, usesCompactHeaderLayout } from "../src/mobile-layout";
 
 describe("mobile layout policy", () => {
   it("keeps 360px and 390px portrait layouts within their intended gutters", () => {
@@ -11,5 +11,11 @@ describe("mobile layout policy", () => {
 
   it("declares the supported release orientation explicitly", () => {
     expect(appConfig.expo.orientation).toBe("portrait");
+  });
+
+  it("uses the compact header only on very narrow devices", () => {
+    expect(usesCompactHeaderLayout(320)).toBe(true);
+    expect(usesCompactHeaderLayout(340)).toBe(true);
+    expect(usesCompactHeaderLayout(360)).toBe(false);
   });
 });

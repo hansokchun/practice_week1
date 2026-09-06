@@ -418,6 +418,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     height: 48,
+    minWidth: 0,
     paddingHorizontal: 16
   },
   searchButton: {

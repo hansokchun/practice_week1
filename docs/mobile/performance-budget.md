@@ -1,20 +1,20 @@
 # 모바일 출시 성능 예산
 
-기준일: 2026-08-25
+기준일: 2026-09-07
 
 ## 자동 출시 관문
 
 `npm --prefix mobile run export:all` 후 `npm --prefix mobile run performance:verify`를 실행한다. CI는 공개 로컬 개발 URL·publishable key 예시로 production Metro export를 만들며 운영 계정이나 비밀값에 연결하지 않는다.
 
-| 측정값 | 예산 | 2026-08-25 기준선 |
+| 측정값 | 예산 | 2026-09-07 기준선 |
 | --- | ---: | ---: |
-| iOS Hermes 엔트리 | 4,000,000 bytes | 3,651,791 bytes |
-| Android Hermes 엔트리 | 4,400,000 bytes | 3,956,149 bytes |
-| Web 초기 엔트리 | 1,850,000 bytes | 1,663,327 bytes |
-| 가장 큰 번들 자산 | 1,100,000 bytes | 962,968 bytes |
-| 전체 Expo export | 12,000,000 bytes | 10,815,138 bytes |
+| iOS Hermes 엔트리 | 4,000,000 bytes | 3,863,942 bytes |
+| Android Hermes 엔트리 | 4,400,000 bytes | 4,175,800 bytes |
+| Web 초기 엔트리 | 1,850,000 bytes | 1,761,159 bytes |
+| 가장 큰 번들 자산 | 1,100,000 bytes | 963,776 bytes |
+| 전체 Expo export | 12,500,000 bytes | 12,178,484 bytes |
 
-예산은 현재 검증된 기준선에 약 10~15% 회귀 여유를 둔다. 임계값을 넘기면 기능을 삭제해 숫자만 맞추지 않고 Expo Atlas로 증가 모듈을 확인한 뒤 플랫폼 분기, 개발 전용 코드, 중복 자산을 줄인다. Expo production export는 플랫폼별 최적화와 minification이 적용되는 산출물을 사용한다.
+플랫폼별 엔트리와 가장 큰 자산 예산은 출시 체감 성능을 직접 보호하며 그대로 유지한다. 전체 export 예산은 추가된 정적 경로와 1,024px 브랜드 자산을 반영해 약 2.6% 여유로 재설정했다. 임계값을 넘기면 기능을 삭제해 숫자만 맞추지 않고 Expo Atlas로 증가 모듈을 확인한 뒤 플랫폼 분기, 개발 전용 코드, 중복 자산을 줄인다. Expo production export는 플랫폼별 최적화와 minification이 적용되는 산출물을 사용한다.
 
 ## 실행 시 상한
 

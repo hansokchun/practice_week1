@@ -48,13 +48,13 @@ describe("production app assets", () => {
     expect(appConfig.expo.plugins).toContainEqual([
       "expo-splash-screen",
       {
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#F9F7F2",
         image: "./assets/brand-logo.png",
         imageWidth: 180,
         resizeMode: "contain"
       }
     ]);
-    expect(readPng("assets/brand-logo.png")).toEqual({ width: 256, height: 256, colorType: 6 });
+    expect(readPng("assets/brand-logo.png")).toEqual({ width: 1024, height: 1024, colorType: 6 });
     expect(appConfig.expo.web.favicon).toBe("./assets/favicon.png");
     expect(readPng("assets/favicon.png")).toEqual({ width: 512, height: 512, colorType: 6 });
   });

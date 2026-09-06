@@ -21,11 +21,12 @@ export function ProfileScreen({ refreshKey = 0 }: ProfileScreenProps) {
 
   return (
     <SafeAreaView style={styles.safeArea} testID="profile-screen">
-      <View style={styles.header}>
+      <View style={[profileStyles.header, { paddingHorizontal: gutter }]}>
         <Pressable accessibilityLabel="프로필 닫기" accessibilityRole="button" onPress={() => router.back()} style={profileStyles.closeButton}>
-          <Text>닫기</Text>
+          <Text style={profileStyles.closeText}>닫기</Text>
         </Pressable>
-        <Text style={styles.title}>프로필</Text>
+        <Text style={profileStyles.headerTitle}>프로필</Text>
+        <View style={profileStyles.headerSpacer} />
       </View>
       {auth.status === "signed_in" ? (
         <KeyboardSafeScrollView contentContainerStyle={[profileStyles.signedInBody, { paddingHorizontal: gutter }]}>
@@ -74,5 +75,9 @@ export default function ProfileRoute() {
 const profileStyles = StyleSheet.create({
   signedInBody: { alignItems: "center", flexGrow: 1, paddingBottom: 48, paddingTop: 24 },
   accountLabel: { alignSelf: "stretch", color: "#252c25", fontSize: 17, fontWeight: "800", marginTop: 28 },
-  closeButton: { alignItems: "center", justifyContent: "center", minHeight: 44, minWidth: 44 }
+  header: { alignItems: "center", flexDirection: "row", minHeight: 64 },
+  closeButton: { alignItems: "flex-start", justifyContent: "center", minHeight: 44, minWidth: 44, width: 52 },
+  closeText: { color: "#003637", fontSize: 14, fontWeight: "800" },
+  headerTitle: { color: "#191c1c", flex: 1, fontSize: 22, fontWeight: "800", textAlign: "center" },
+  headerSpacer: { width: 52 }
 });

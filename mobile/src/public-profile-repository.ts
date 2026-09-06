@@ -5,6 +5,7 @@ export type PublicProfile = {
   readonly displayName: string;
   readonly bio: string;
   readonly avatarUrl: string | null;
+  readonly publicPhotoCount: number;
   readonly photos: readonly {
     readonly id: string;
     readonly description: string | null;
@@ -14,7 +15,7 @@ export type PublicProfile = {
 
 type PublicProfileDependencies = {
   readonly fetchProfile: (userId: string, signal?: AbortSignal) => Promise<{ readonly row: unknown; readonly error: unknown }>;
-  readonly fetchPhotos: (userId: string, limit: number, signal?: AbortSignal) => Promise<{ readonly rows: unknown; readonly error: unknown }>;
+  readonly fetchPhotos: (userId: string, limit: number, signal?: AbortSignal) => Promise<{ readonly rows: unknown; readonly count: number | null; readonly error: unknown }>;
   readonly signPaths: (paths: readonly string[], expiresIn: number, signal?: AbortSignal) => Promise<{
     readonly urls: ReadonlyMap<string, string>;
     readonly error: unknown;
@@ -57,14 +58,14 @@ const defaultDependencies: PublicProfileDependencies = {
   async fetchPhotos(userId, limit, signal) {
     let query = getSupabaseClient()
       .from("photos")
-      .select("id,description,storage_path,thumbnail_path")
+      .select("id,description,storage_path,thumbnail_path", { count: "exact" })
       .eq("owner_id", userId)
       .eq("visibility", "public")
       .order("created_at", { ascending: false })
       .limit(limit);
     if (signal !== undefined) query = query.abortSignal(signal);
-    const { data, error } = await query;
-    return { rows: data, error };
+    const { data, count, error } = await query;
+    return { rows: data, count, error };
   },
   async signPaths(paths, expiresIn, signal) {
     throwIfAborted(signal);
@@ -98,6 +99,8 @@ export async function fetchPublicProfile(
       typeof profileResult.row !== "object" || profileResult.row === null || !Array.isArray(photosResult.rows)) {
       throw new Error(GENERIC_PROFILE_ERROR);
     }
+    const publicPhotoCount = typeof photosResult.count === "number" && Number.isInteger(photosResult.count) &&
+      photosResult.count >= photosResult.rows.length ? photosResult.count : photosResult.rows.length;
     const profile = profileResult.row as Record<string, unknown>;
     const paths = photosResult.rows.map((row) => typeof row === "object" && row !== null
       ? getPhotoPreviewPath(row as Record<string, unknown>)
@@ -127,7 +130,7 @@ export async function fetchPublicProfile(
     const avatarUrl = httpUrl(managedUrl) ?? (typeof profile["avatar_url"] === "string" && profile["avatar_url"].length > 0
       ? httpUrl(profile["avatar_url"])
       : null);
-    return { displayName, bio, avatarUrl, photos: photos as PublicProfile["photos"] };
+    return { displayName, bio, avatarUrl, publicPhotoCount, photos: photos as PublicProfile["photos"] };
   } catch (error) {
     if (signal?.aborted === true || (typeof error === "object" && error !== null && (error as { name?: unknown }).name === "AbortError")) {
       throw abortError();

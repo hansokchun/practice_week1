@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { fetchLandingContent, filterLandingPhotos, type LandingContent, type LandingPhoto } from "./landing-photo-repository";
 import { RecoverableRemoteImage } from "./RecoverableRemoteImage";
 import { DefaultProfileAvatar } from "./DefaultProfileAvatar";
 import { mobileColors } from "./mobile-theme";
+import { usesCompactHeaderLayout } from "./mobile-layout";
 import { buildLandingTagRoute, exploreRoute, guestLoginRoute, likesRoute, myPhotosRoute, profileRoute, settingsRoute, uploadRoute } from "./mobile-routes";
 
 type LandingScreenProps = {
@@ -39,6 +40,8 @@ export function LandingScreen({
   const [query, setQuery] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const { width } = useWindowDimensions();
+  const compactHeader = usesCompactHeaderLayout(width);
 
   useEffect(() => {
     let mounted = true;
@@ -83,11 +86,11 @@ export function LandingScreen({
 
   return (
     <SafeAreaView style={styles.safeArea} testID="landing-screen">
-      <View style={styles.header}>
+      <View style={[styles.header, compactHeader && styles.headerCompact]}>
         <Pressable accessibilityLabel="Ikkyee 이끼 로고" accessibilityRole="button" onPress={() => { setDraftQuery(""); setQuery(""); }} style={styles.brand}>
           <Image resizeMode="contain" source={require("../assets/brand-logo.png")} style={styles.brandIcon} />
           <Text style={styles.brandWordmark}>Ikkyee</Text>
-          <Text style={styles.brandKorean}>이끼</Text>
+          <Text style={[styles.brandKorean, compactHeader && styles.brandKoreanCompact]}>이끼</Text>
         </Pressable>
         <View style={styles.headerActions}>
           <Pressable accessibilityLabel="사진 추가" accessibilityRole="button" onPress={() => go(signedIn ? uploadRoute : guestLoginRoute)} style={styles.addButton}>
@@ -205,7 +208,7 @@ export function LandingScreen({
           style={styles.footerMapVisual}
         >
           <ImageBackground imageStyle={styles.footerMapImage} resizeMode="cover" source={require("../assets/landing-map-pins-background.jpg")} style={styles.footerMapBackground}>
-            <View pointerEvents="none" style={styles.footerMapOverlay} />
+            <View style={styles.footerMapOverlay} />
             <View style={styles.footerMapContent}>
               <Text style={styles.footerMapTitle}>기억에 남을{`\n`}장소를 발견해보세요.</Text>
               <Text style={styles.footerMapAction}>지도에서 보기  →</Text>
@@ -221,10 +224,12 @@ export function LandingScreen({
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: mobileColors.paper, flex: 1 },
   header: { alignItems: "center", flexDirection: "row", height: 72, justifyContent: "space-between", paddingHorizontal: 16, zIndex: 3 },
+  headerCompact: { paddingHorizontal: 12 },
   brand: { alignItems: "center", flexDirection: "row", minHeight: 44 },
   brandIcon: { height: 34, width: 34 },
   brandWordmark: { color: mobileColors.ink, fontSize: 20, fontWeight: "900", marginLeft: 7 },
   brandKorean: { borderLeftColor: mobileColors.line, borderLeftWidth: 1, color: mobileColors.pine, fontSize: 13, fontWeight: "800", marginLeft: 8, paddingLeft: 8 },
+  brandKoreanCompact: { display: "none" },
   headerActions: { alignItems: "center", flexDirection: "row", gap: 8 },
   addButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 22, justifyContent: "center", minHeight: 44, paddingHorizontal: 16 },
   addButtonText: { color: mobileColors.surface, fontSize: 14, fontWeight: "800" },
@@ -238,7 +243,7 @@ const styles = StyleSheet.create({
   hero: { alignItems: "center", minHeight: 340, paddingBottom: 72, paddingHorizontal: 16, paddingTop: 32, width: "100%" },
   heroBackgroundImage: { opacity: 0.5 },
   searchRow: { flexDirection: "row", gap: 8, width: "100%" },
-  searchInput: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 12, borderWidth: 1, color: mobileColors.ink, flex: 1, fontSize: 15, height: 54, paddingHorizontal: 14 },
+  searchInput: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 12, borderWidth: 1, color: mobileColors.ink, flex: 1, fontSize: 15, height: 54, minWidth: 0, paddingHorizontal: 14 },
   searchButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 12, justifyContent: "center", minHeight: 54, paddingHorizontal: 16 },
   searchButtonText: { color: mobileColors.surface, fontSize: 14, fontWeight: "800" },
   suggestionLabel: { alignSelf: "flex-start", color: mobileColors.muted, fontSize: 12, fontWeight: "700", marginTop: 18 },
@@ -264,7 +269,7 @@ const styles = StyleSheet.create({
   footerMapVisual: { borderRadius: 8, height: 260, marginHorizontal: 16, marginTop: 4, overflow: "hidden" },
   footerMapBackground: { height: "100%", justifyContent: "center", width: "100%" },
   footerMapImage: { opacity: 0.96 },
-  footerMapOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 44, 45, 0.48)" },
+  footerMapOverlay: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 44, 45, 0.48)", pointerEvents: "none" },
   footerMapContent: { paddingHorizontal: 28 },
   footerMapTitle: { color: mobileColors.surface, fontSize: 24, fontWeight: "900", lineHeight: 32 },
   footerMapAction: { color: mobileColors.surface, fontSize: 14, fontWeight: "800", marginTop: 18 },
