@@ -27,6 +27,11 @@
       "channel": "preview",
       "kind": "standalone-internal"
     },
+    "android-device-test": {
+      "appEnvironment": "production",
+      "channel": "android-device-test",
+      "kind": "standalone-internal-without-native-maps"
+    },
     "production": {
       "appEnvironment": "production",
       "channel": "production",

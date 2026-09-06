@@ -4,9 +4,9 @@ import android.content.pm.PackageManager
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
-import com.google.android.libraries.places.api.net.Places
 import com.google.android.libraries.places.api.net.PlacesStatusCodes
 import com.google.android.libraries.places.api.net.SearchByTextRequest
 import expo.modules.kotlin.Promise

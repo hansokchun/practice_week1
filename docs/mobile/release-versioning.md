@@ -11,6 +11,7 @@
 - EAS의 `appVersionSource`는 `remote`이며 production은 매 빌드 자동 증가한다.
 - `development`는 개발 클라이언트, `development-simulator`는 iOS Simulator 개발 클라이언트다.
 - `preview`는 개발 도구가 없는 내부 배포용 독립 앱이며 Android는 설치 가능한 APK를 만든다.
+- `android-device-test`는 운영 Supabase의 공개 클라이언트 설정을 사용하되, 제한된 Google Maps 모바일 키가 준비되기 전까지 네이티브 지도와 장소 검색을 끈 Android 실기기 확인용 내부 APK다.
 - `production`은 TestFlight·Google Play 내부 테스트와 스토어 제출용 빌드다.
 - EAS Update는 현재 승인되지 않았으므로 `expo-updates`, `runtimeVersion`, 원격 OTA 배포를 구성하지 않는다.
 
@@ -25,4 +26,4 @@
 
 ## 아직 남은 외부 관문
 
-Expo 프로젝트 연결, Apple·Google 개발자 계정의 최종 식별자 확인, 서명 자격 증명 생성, remote build number 초기화와 실제 preview·production 빌드가 남아 있다.
+Expo 프로젝트 `@hansokchun/ikkyee-mobile` 연결과 EAS 관리 Android 내부 APK 생성은 완료했다. Apple·Google 개발자 계정의 최종 식별자 확인, 제한된 모바일 지도 키, iOS 서명 자격 증명, remote build number 초기화와 실제 preview·production 스토어 빌드는 남아 있다.

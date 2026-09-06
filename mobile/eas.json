@@ -32,6 +32,19 @@
         "EXPO_PUBLIC_APP_ENV": "preview"
       }
     },
+    "android-device-test": {
+      "extends": "preview",
+      "distribution": "internal",
+      "channel": "android-device-test",
+      "environment": "production",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "IKKYEE_EXPO_GO_TEST": "1"
+      }
+    },
     "production": {
       "distribution": "store",
       "channel": "production",

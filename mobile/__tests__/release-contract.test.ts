@@ -24,4 +24,12 @@ describe("mobile release identity contract", () => {
     expect(appConfig.expo).not.toHaveProperty("updates");
     expect(appConfig.expo).not.toHaveProperty("runtimeVersion");
   });
+
+  it("provides an installable Android device-test APK without native map keys", () => {
+    expect(easConfig.build["android-device-test"].distribution).toBe("internal");
+    expect(easConfig.build["android-device-test"].environment).toBe("production");
+    expect(easConfig.build["android-device-test"].android.buildType).toBe("apk");
+    expect(easConfig.build["android-device-test"].env.EXPO_PUBLIC_APP_ENV).toBe("production");
+    expect(easConfig.build["android-device-test"].env.IKKYEE_EXPO_GO_TEST).toBe("1");
+  });
 });

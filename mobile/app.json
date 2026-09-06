@@ -64,6 +64,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "08482248-0b32-4cb4-ba40-93e3222fcb6e"
+      }
+    },
+    "owner": "hansokchun"
   }
 }

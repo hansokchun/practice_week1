@@ -11,6 +11,8 @@ const setupDoc = await readFile(new URL('../docs/mobile/native-map-setup.md', im
 
 test('Android place search uses the restricted app key and New Places SDK with a minimal bounded response', () => {
   assert.match(androidBuild, /places:places:5\.1\.1/);
+  assert.match(androidSource, /import com\.google\.android\.libraries\.places\.api\.Places\n/);
+  assert.doesNotMatch(androidSource, /import com\.google\.android\.libraries\.places\.api\.net\.Places\n/);
   assert.match(androidSource, /com\.google\.android\.geo\.API_KEY/);
   assert.match(androidSource, /com\.ikkyee\.mobile/);
   assert.match(androidSource, /initializeWithNewPlacesApiEnabled/);
