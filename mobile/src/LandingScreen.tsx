@@ -22,8 +22,6 @@ type LandingState =
   | { readonly status: "failed" }
   | { readonly status: "ready"; readonly content: LandingContent };
 
-const suggestions = ["도로", "바다", "사람"] as const;
-
 function photoLabel(photo: LandingPhoto): string {
   return photo.description?.trim() || photo.title?.trim() || photo.album?.trim() || "여행 사진";
 }
@@ -42,6 +40,7 @@ export function LandingScreen({
   const [reloadKey, setReloadKey] = useState(0);
   const { width } = useWindowDimensions();
   const compactHeader = usesCompactHeaderLayout(width);
+  const heroHeight = Math.min(340, Math.max(260, width / 1.5));
 
   useEffect(() => {
     let mounted = true;
@@ -128,7 +127,7 @@ export function LandingScreen({
           imageStyle={styles.heroBackgroundImage}
           resizeMode="cover"
           source={require("../assets/landing-globe-sprout-route.jpg")}
-          style={styles.hero}
+          style={[styles.hero, { height: heroHeight }]}
         >
           <View style={styles.searchRow}>
             <TextInput
@@ -145,14 +144,6 @@ export function LandingScreen({
               <Text style={styles.searchButtonText}>검색</Text>
             </Pressable>
           </View>
-          <Text style={styles.suggestionLabel}>추천 검색어</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suggestions}>
-            {suggestions.map((suggestion) => (
-              <Pressable accessibilityRole="button" key={suggestion} onPress={() => submitSearch(suggestion)} style={styles.suggestionChip}>
-                <Text style={styles.suggestionText}>{suggestion}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
           <Pressable accessibilityLabel="지도로 둘러보기" accessibilityRole="button" onPress={() => go(exploreRoute)} style={styles.mapButton}>
             <Text style={styles.mapButtonText}>지도로 둘러보기  →</Text>
           </Pressable>
@@ -183,12 +174,11 @@ export function LandingScreen({
                 </Pressable>
               ) : null}
             </View>
-            {section.description.length > 0 ? <Text style={styles.sectionDescription}>{section.description}</Text> : null}
             {section.photos.length === 0 ? (
               <Text style={styles.emptyText}>{query.length > 0 ? "검색 결과가 없어요." : "이 주제에 표시할 공개 사진이 아직 없어요."}</Text>
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoRow}>
-                {section.photos.slice(0, 8).map((photo) => {
+                {section.photos.map((photo) => {
                   const label = photoLabel(photo);
                   return (
                     <RecoverableRemoteImage accessibilityLabel={label} key={`${section.id}-${photo.id}`} onPress={() => openPhoto(photo.id)} onRetry={() => setReloadKey((value) => value + 1)} pressAccessibilityLabel={`${label} 상세 보기`} style={styles.photoCard} uri={photo.imageUrl} />
@@ -238,25 +228,20 @@ const styles = StyleSheet.create({
   accountMenuItem: { justifyContent: "center", minHeight: 48, paddingHorizontal: 12 },
   accountMenuText: { color: mobileColors.ink, fontSize: 15, fontWeight: "700" },
   content: { paddingBottom: 56 },
-  hero: { alignItems: "center", minHeight: 340, paddingBottom: 72, paddingHorizontal: 16, paddingTop: 32, width: "100%" },
-  heroBackgroundImage: { opacity: 0.5 },
+  hero: { backgroundColor: "#edf1eb", justifyContent: "space-between", overflow: "hidden", paddingBottom: 24, paddingHorizontal: 16, paddingTop: 24, width: "100%" },
+  heroBackgroundImage: { opacity: 0.68 },
   searchRow: { flexDirection: "row", gap: 8, width: "100%" },
   searchInput: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 12, borderWidth: 1, color: mobileColors.ink, flex: 1, fontSize: 15, height: 54, minWidth: 0, paddingHorizontal: 14 },
   searchButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 12, justifyContent: "center", minHeight: 54, paddingHorizontal: 16 },
   searchButtonText: { color: mobileColors.surface, fontSize: 14, fontWeight: "800" },
-  suggestionLabel: { alignSelf: "flex-start", color: mobileColors.muted, fontSize: 12, fontWeight: "700", marginTop: 18 },
-  suggestions: { alignSelf: "stretch", marginTop: 10 },
-  suggestionChip: { backgroundColor: "#edf1eb", borderRadius: 18, justifyContent: "center", marginRight: 8, minHeight: 36, paddingHorizontal: 13 },
-  suggestionText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "700" },
-  mapButton: { alignItems: "center", borderBottomColor: "rgba(26, 77, 78, 0.42)", borderBottomWidth: 1, justifyContent: "center", marginTop: 24, minHeight: 44, paddingHorizontal: 2 },
+  mapButton: { alignItems: "center", alignSelf: "flex-start", borderBottomColor: "rgba(26, 77, 78, 0.42)", borderBottomWidth: 1, justifyContent: "center", minHeight: 44, paddingHorizontal: 2 },
   mapButtonText: { color: mobileColors.pineDeep, fontSize: 15, fontWeight: "800" },
   section: { marginBottom: 48 },
   sectionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "center", minHeight: 44, paddingHorizontal: 16, position: "relative" },
   sectionTitle: { color: mobileColors.ink, fontSize: 24, fontWeight: "900", textAlign: "center" },
   sectionAllButton: { alignItems: "flex-end", justifyContent: "center", minHeight: 44, paddingLeft: 12, position: "absolute", right: 16 },
   sectionAllText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" },
-  sectionDescription: { color: mobileColors.muted, fontSize: 14, marginTop: 8, paddingHorizontal: 24, textAlign: "center" },
-  photoRow: { gap: 10, paddingHorizontal: 16, paddingTop: 28 },
+  photoRow: { gap: 10, paddingHorizontal: 16, paddingTop: 16 },
   photoCard: { borderRadius: 14, height: 210, overflow: "hidden", width: 168 },
   photo: { backgroundColor: "#edf1eb", height: "100%", width: "100%" },
   statusCard: { alignItems: "center", marginBottom: 32 },

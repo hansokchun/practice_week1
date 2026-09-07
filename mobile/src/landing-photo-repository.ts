@@ -194,22 +194,26 @@ export async function fetchLandingContent(
   if (curationError !== null || photoError !== null || !Array.isArray(sections) ||
       !Array.isArray(assignments) || !Array.isArray(rows)) throw new Error(GENERIC_LANDING_ERROR);
 
-  const paths = rows.map((row) => isRecord(row) ? getPhotoPreviewPath(row) : null);
-  if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_LANDING_ERROR);
-  const signed = paths.length === 0
-    ? { urls: new Map<string, string>(), error: null }
-    : await dependencies.signPaths(paths, 300);
-  if (signed.error !== null) throw new Error(GENERIC_LANDING_ERROR);
-  const photos = rows.map((row, index) => parsePhoto(row, signed.urls.get(paths[index] as string)));
-  if (photos.some((photo) => photo === null)) throw new Error(GENERIC_LANDING_ERROR);
-  const publicPhotos = photos as LandingPhoto[];
-
   const normalizedAssignments = assignments.filter(isRecord)
     .filter((item) => typeof item["section_id"] === "string" && typeof item["photo_id"] === "string")
     .sort((left, right) => Number(left["sort_order"] ?? 0) - Number(right["sort_order"] ?? 0));
   const normalizedSections = sections.filter(isRecord)
     .filter((section) => typeof section["id"] === "string" && typeof section["title"] === "string")
     .sort((left, right) => Number(left["sort_order"] ?? 0) - Number(right["sort_order"] ?? 0));
+  const visibleSectionIds = new Set(normalizedSections.map((section) => section["id"] as string));
+  const assignedPhotoIds = new Set(normalizedAssignments
+    .filter((item) => visibleSectionIds.has(item["section_id"] as string))
+    .map((item) => item["photo_id"] as string));
+  const assignedRows = rows.filter((row) => isRecord(row) && typeof row["id"] === "string" && assignedPhotoIds.has(row["id"]));
+  const paths = assignedRows.map((row) => getPhotoPreviewPath(row));
+  if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_LANDING_ERROR);
+  const signed = paths.length === 0
+    ? { urls: new Map<string, string>(), error: null }
+    : await dependencies.signPaths(paths, 300);
+  if (signed.error !== null) throw new Error(GENERIC_LANDING_ERROR);
+  const photos = assignedRows.map((row, index) => parsePhoto(row, signed.urls.get(paths[index] as string)));
+  if (photos.some((photo) => photo === null)) throw new Error(GENERIC_LANDING_ERROR);
+  const publicPhotos = photos as LandingPhoto[];
   const sourceSections = normalizedSections.length > 0 ? normalizedSections : DEFAULT_SECTIONS.map((title, index) => ({
     id: `default-${index}`, title, description: "", sort_order: index
   }));

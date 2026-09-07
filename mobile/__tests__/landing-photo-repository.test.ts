@@ -47,6 +47,32 @@ describe("landing photo repository", () => {
     });
   });
 
+  it("signs only photos that are actually assigned to visible landing sections", async () => {
+    const signPaths = jest.fn(async () => ({
+      urls: new Map([["owner-a/thumbnails/photo-a.jpg", "https://example.supabase.co/signed/photo-a-thumbnail"]]),
+      error: null
+    }));
+    const unassigned = {
+      ...rows[0], id: "photo-unused", storage_path: "../unsafe.jpg", thumbnail_path: null
+    };
+
+    await expect(fetchLandingContent({
+      fetchCuration: async () => ({
+        sections: [{ id: "section-a", title: "추천", description: "", sort_order: 0, is_visible: true }],
+        assignments: [{ section_id: "section-a", photo_id: "photo-a", sort_order: 0 }],
+        error: null
+      }),
+      fetchPhotos: async () => ({ rows: [...rows, unassigned], error: null }),
+      signPaths
+    })).resolves.toEqual({
+      sections: [{
+        id: "section-a", title: "추천", description: "",
+        photos: [expect.objectContaining({ id: "photo-a" })], curatedPhotoIds: ["photo-a"]
+      }]
+    });
+    expect(signPaths).toHaveBeenCalledWith(["owner-a/thumbnails/photo-a.jpg"], 300);
+  });
+
   it("searches only safe public photo copy and hides provider errors", async () => {
     const photos = [{
       id: "photo-a", description: "제주 바다", title: null, album: "한국 여행", ownerId: "owner-a",

@@ -4,7 +4,7 @@ import { LandingScreen } from "../src/LandingScreen";
 
 const content = {
   sections: [{
-    id: "recommended", title: "추천", description: "",
+    id: "recommended", title: "추천", description: "화면에는 표시하지 않을 설명",
     photos: [{
       id: "photo-a", description: "제주 바다", title: null, album: "한국", ownerId: "owner-a",
       createdAt: "2026-08-27T00:00:00.000Z", date: null,
@@ -13,12 +13,12 @@ const content = {
     }], curatedPhotoIds: ["photo-a"]
   }, {
     id: "korea", title: "한국", description: "",
-    photos: [{
-      id: "photo-a", description: "제주 바다", title: null, album: "한국", ownerId: "owner-a",
+    photos: Array.from({ length: 9 }, (_, index) => ({
+      id: `korea-${index + 1}`, description: `한국 사진 ${index + 1}`, title: null, album: "한국", ownerId: "owner-a",
       createdAt: "2026-08-27T00:00:00.000Z", date: null,
-      imageUrl: "https://example.supabase.co/signed/photo-a", locationPrecision: "approximate" as const,
-      lat: 33.4, lng: 126.5, aiTags: ["제주", "바다"], aiScene: "beach", aiSummary: "제주 바다 풍경"
-    }], curatedPhotoIds: []
+      imageUrl: `https://example.supabase.co/signed/korea-${index + 1}`, locationPrecision: "approximate" as const,
+      lat: 33.4, lng: 126.5, aiTags: ["한국"], aiScene: "city", aiSummary: "한국 여행 풍경"
+    })), curatedPhotoIds: []
   }]
 };
 
@@ -33,9 +33,12 @@ describe("web-parity landing screen", () => {
     await waitFor(() => expect(screen.getByText("추천")).toBeOnTheScreen());
     expect(screen.getByLabelText("Ikkyee 이끼 로고")).toBeOnTheScreen();
     expect(screen.queryByText("당신만의 장소를 찾아보세요")).not.toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "도로" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "바다" })).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "사람" })).toBeOnTheScreen();
+    expect(screen.queryByText("추천 검색어")).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "도로" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "바다" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "사람" })).not.toBeOnTheScreen();
+    expect(screen.queryByText("화면에는 표시하지 않을 설명")).not.toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "한국 사진 9 상세 보기" })).toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "부산" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "도쿄 골목" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "벚꽃 여행" })).not.toBeOnTheScreen();
