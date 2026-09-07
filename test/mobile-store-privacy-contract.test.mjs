@@ -22,9 +22,9 @@ test('store privacy contract distinguishes off-device collection from local phot
     assert.ok(localIds.has(id), `missing local-only boundary: ${id}`);
   }
   const publisher = readFileSync('mobile/src/publication-publisher.ts', 'utf8');
-  assert.match(publisher, /lat: null/);
-  assert.match(publisher, /lng: null/);
-  assert.match(publisher, /location_precision: "approximate"/);
+  assert.match(publisher, /lat: hasLocation \? sourceMetadata\.latitude : null/);
+  assert.match(publisher, /lng: hasLocation \? sourceMetadata\.longitude : null/);
+  assert.match(publisher, /location_precision: hasLocation \? sourceMetadata\.locationPrecision : "approximate"/);
   assert.match(publisher, /metadataPolicy !== "stripped"/);
 });
 
@@ -48,17 +48,18 @@ test('Apple privacy manifest covers app and bundled Maps or Places data without 
   assert.deepEqual(finalConfig.ios.privacyManifests, manifest);
 });
 
-test('Google Play draft includes first-party and SDK collection while excluding unsupported claims', () => {
+test('Google Play draft includes first-party, published location, and SDK collection while excluding unsupported claims', () => {
   const rows = new Map(contract.googlePlay.dataTypes.map((entry) => [entry.type, entry]));
   for (const type of [
     'Name', 'Email address', 'User IDs', 'Photos and videos', 'Other user-generated content',
-    'App interactions', 'Search history', 'Device or other IDs', 'Crash logs', 'Diagnostics'
+    'App interactions', 'Search history', 'Precise location', 'Device or other IDs', 'Crash logs', 'Diagnostics'
   ]) assert.ok(rows.has(type), `missing Google Play data type: ${type}`);
-  for (const type of ['Approximate location', 'Precise location', 'Contacts', 'Financial info', 'Health info', 'Advertising data']) {
+  for (const type of ['Approximate location', 'Contacts', 'Financial info', 'Health info', 'Advertising data']) {
     assert.equal(rows.has(type), false, `unsupported Google Play declaration: ${type}`);
   }
   assert.equal(contract.googlePlay.dataShared, false);
   assert.equal(rows.get('Photos and videos').optional, true);
+  assert.equal(rows.get('Precise location').optional, true);
   assert.equal(rows.get('Device or other IDs').optional, false);
 });
 

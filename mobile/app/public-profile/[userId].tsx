@@ -80,9 +80,7 @@ export function PublicProfileScreen({
           ) : (
             <View style={styles.grid}>
               {displayState.profile.photos.map((photo) => (
-                <Pressable accessibilityLabel={photo.description ?? "공개 여행 사진"} accessibilityRole="button" key={photo.id} onPress={() => openPhoto(photo.id)} style={styles.photoButton}>
-                  <RecoverableRemoteImage accessibilityLabel={`${photo.description ?? "공개 여행 사진"} 이미지`} onRetry={() => setRetryKey((value) => value + 1)} style={styles.photo} uri={photo.imageUrl} />
-                </Pressable>
+                <RecoverableRemoteImage accessibilityLabel={`${photo.description ?? "공개 여행 사진"} 이미지`} key={photo.id} onPress={() => openPhoto(photo.id)} onRetry={() => setRetryKey((value) => value + 1)} pressAccessibilityLabel={photo.description ?? "공개 여행 사진"} style={styles.photoButton} uri={photo.imageUrl} />
               ))}
             </View>
           )}

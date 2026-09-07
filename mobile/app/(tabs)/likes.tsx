@@ -111,8 +111,15 @@ export function LikesScreen({
             <View style={styles.center}><Text style={styles.title}>아직 좋아요 한 공개 사진이 없어요</Text></View>
           ) : state.photos.map((photo, index) => (
             <View key={photo.id} style={styles.card}>
-              <Pressable accessibilityLabel={`${photo.description ?? "공개 사진"} 상세 열기`} accessibilityRole="button" onPress={() => openPhoto(photo.id)}>
-                <RecoverableRemoteImage accessibilityLabel={`${photo.description ?? "공개 사진"} 이미지`} onRetry={() => setRetryKey((value) => value + 1)} style={styles.photo} uri={photo.imageUrl} />
+              <RecoverableRemoteImage
+                accessibilityLabel={`${photo.description ?? "공개 사진"} 이미지`}
+                onPress={() => openPhoto(photo.id)}
+                onRetry={() => setRetryKey((value) => value + 1)}
+                pressAccessibilityLabel={`${photo.description ?? "공개 사진"} 이미지 상세 열기`}
+                style={styles.photo}
+                uri={photo.imageUrl}
+              />
+              <Pressable accessibilityLabel={`${photo.description ?? "공개 사진"} 상세 열기`} accessibilityRole="button" onPress={() => openPhoto(photo.id)} style={styles.photoCopyButton}>
                 <Text style={styles.description}>{photo.description ?? "여행 사진"}</Text>
                 <Text style={styles.date}>{formatPhotoDate(photo.date)}</Text>
               </Pressable>
@@ -152,8 +159,9 @@ const styles = StyleSheet.create({
   errorCopy: { color: "#9b2c2c", fontSize: 13, lineHeight: 19 },
   card: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 10, borderWidth: 1, overflow: "hidden", paddingBottom: 10 },
   photo: { backgroundColor: mobileColors.line, height: 220, width: "100%" },
-  description: { color: mobileColors.ink, fontSize: 17, fontWeight: "800", marginTop: 12, paddingHorizontal: 14 },
-  date: { color: mobileColors.muted, fontSize: 12, marginTop: 5, paddingHorizontal: 14 },
+  photoCopyButton: { justifyContent: "center", minHeight: 60, paddingHorizontal: 14 },
+  description: { color: mobileColors.ink, fontSize: 17, fontWeight: "800" },
+  date: { color: mobileColors.muted, fontSize: 12, marginTop: 5 },
   unlikeButton: { alignItems: "center", alignSelf: "flex-end", justifyContent: "center", marginRight: 8, marginTop: 4, minHeight: 44, paddingHorizontal: 10 },
   unlikeText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" }
 });

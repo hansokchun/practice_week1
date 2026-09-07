@@ -77,7 +77,7 @@ export function MyAlbumsScreen({
             return (
               <Pressable accessibilityLabel={`${item.title} 앨범 열기`} accessibilityRole="button" onPress={() => openAlbum(item.id)} style={styles.albumCard}>
                 {item.coverImageUrl === null ? <View style={styles.coverPlaceholder}><Text style={styles.coverPlaceholderText}>Ikkyee</Text></View> : (
-                  <RecoverableRemoteImage accessibilityLabel={`${item.title} 표지`} onRetry={() => setReloadKey((value) => value + 1)} style={styles.cover} uri={item.coverImageUrl} />
+                  <RecoverableRemoteImage accessibilityLabel={`${item.title} 표지`} style={styles.cover} uri={item.coverImageUrl} />
                 )}
                 <Text numberOfLines={1} style={styles.albumTitle}>{item.title}</Text>
                 <Text style={styles.albumMeta}>{item.photoCount}장{dates.length > 0 ? ` · ${dates}` : ""}</Text>

@@ -1,5 +1,13 @@
 import type { PublicationIntent } from "./publication-selection";
 
+export type PublicationSourceMetadata = {
+  readonly capturedAt: string | null;
+  readonly latitude: number | null;
+  readonly longitude: number | null;
+  readonly geoSource: "exif" | "manual" | "unknown";
+  readonly locationPrecision: "exact" | "approximate";
+};
+
 export type PublicationJobStatus = "pending" | "running" | "succeeded" | "failed";
 
 export type PublicationJobPayload = {
@@ -8,6 +16,7 @@ export type PublicationJobPayload = {
   readonly objectPath: string;
   readonly photoId: string;
   readonly shareToken?: string | null;
+  readonly sourceMetadata?: PublicationSourceMetadata;
 };
 
 export type PublicationJob = {
@@ -28,6 +37,7 @@ export type EnqueuePublicationJob = {
   readonly objectPath: string;
   readonly photoId: string;
   readonly shareToken?: string | null;
+  readonly sourceMetadata?: PublicationSourceMetadata;
   readonly createdAt: number;
 };
 

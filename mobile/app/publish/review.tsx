@@ -151,7 +151,7 @@ export function PublicationReviewScreen({
         {preparation.status === "ready" ? (
           <>
             <Text accessibilityLiveRegion="polite" style={styles.confirmed}>게시용 사진 {preparation.derivatives.length}장 준비 완료 · 업로드는 시작되지 않았어요</Text>
-            <Text style={styles.metadataCopy}>사진 파일의 EXIF·GPS 등 메타데이터를 제거했습니다.</Text>
+            <Text style={styles.metadataCopy}>사진 파일의 EXIF 메타데이터는 제거하고, 저장된 촬영일과 위치는 게시 정보로 함께 반영합니다.</Text>
             {publication.status === "succeeded" ? (
               <>
                 <Text accessibilityLiveRegion="polite" style={styles.successCopy}>사진 {publication.count}장을 안전하게 저장했습니다.</Text>

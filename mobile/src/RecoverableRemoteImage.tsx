@@ -15,7 +15,9 @@ import { mobileColors } from "./mobile-theme";
 
 type RecoverableRemoteImageProps = {
   readonly accessibilityLabel: string;
+  readonly onPress?: (() => void) | undefined;
   readonly onRetry?: (() => void) | undefined;
+  readonly pressAccessibilityLabel?: string | undefined;
   readonly resizeMode?: ImageResizeMode | undefined;
   readonly style?: StyleProp<ViewStyle>;
   readonly uri: string;
@@ -23,7 +25,9 @@ type RecoverableRemoteImageProps = {
 
 export function RecoverableRemoteImage({
   accessibilityLabel,
+  onPress,
   onRetry,
+  pressAccessibilityLabel,
   resizeMode = "cover",
   style,
   uri
@@ -33,20 +37,22 @@ export function RecoverableRemoteImage({
   const failed = failedUri === uri;
   const loaded = loadedUri === uri;
 
-  return (
-    <View style={[styles.container, style]}>
+  function retry() {
+    setFailedUri(null);
+    setLoadedUri(null);
+    onRetry?.();
+  }
+
+  const content = (
+    <>
       {failed ? (
         <View accessibilityLiveRegion="polite" style={styles.fallback}>
           <Text numberOfLines={2} style={styles.copy}>사진을 표시할 수 없어요</Text>
-          {onRetry === undefined ? null : (
+          {onPress !== undefined && onRetry !== undefined ? <Text style={styles.retryText}>다시 시도</Text> : onRetry === undefined ? null : (
             <Pressable
               accessibilityLabel={`${accessibilityLabel} 다시 불러오기`}
               accessibilityRole="button"
-              onPress={() => {
-                setFailedUri(null);
-                setLoadedUri(null);
-                onRetry();
-              }}
+              onPress={retry}
               style={styles.retryButton}
             >
               <Text style={styles.retryText}>다시 시도</Text>
@@ -74,8 +80,22 @@ export function RecoverableRemoteImage({
           />
         </>
       )}
-    </View>
+    </>
   );
+
+  if (onPress !== undefined) {
+    return (
+      <Pressable
+        accessibilityLabel={failed ? `${accessibilityLabel} 다시 불러오기` : pressAccessibilityLabel ?? accessibilityLabel}
+        accessibilityRole="button"
+        onPress={failed && onRetry !== undefined ? retry : onPress}
+        style={[styles.container, style]}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+  return <View style={[styles.container, style]}>{content}</View>;
 }
 
 const styles = StyleSheet.create({

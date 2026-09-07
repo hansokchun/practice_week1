@@ -138,14 +138,14 @@ export function LandingTagScreen({
         renderItem={({ item }) => {
           const label = photoLabel(item);
           return (
-            <Pressable
-              accessibilityLabel={`${label} 상세 보기`}
-              accessibilityRole="button"
+            <RecoverableRemoteImage
+              accessibilityLabel={label}
               onPress={() => openPhoto(item.id)}
+              onRetry={() => setReloadKey((value) => value + 1)}
+              pressAccessibilityLabel={`${label} 상세 보기`}
               style={[styles.photoTile, { width: tileWidth }]}
-            >
-              <RecoverableRemoteImage accessibilityLabel={label} onRetry={() => setReloadKey((value) => value + 1)} style={styles.photo} uri={item.imageUrl} />
-            </Pressable>
+              uri={item.imageUrl}
+            />
           );
         }}
         testID="landing-tag-grid"

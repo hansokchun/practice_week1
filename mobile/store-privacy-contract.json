@@ -1,6 +1,6 @@
 {
   "contractVersion": 1,
-  "reviewedAt": "2026-08-26",
+  "reviewedAt": "2026-09-07",
   "reviewStatus": "store-console-review-required",
   "globalPractices": {
     "tracking": false,
@@ -17,12 +17,12 @@
     },
     {
       "id": "device_photo_metadata",
-      "description": "EXIF와 Live Photo 메타데이터는 정제해 백업 제외 로컬 저장소에만 둔다.",
+      "description": "EXIF 원문과 Live Photo 메타데이터는 정제해 백업 제외 로컬 저장소에만 두며, 게시 확정 시 촬영일과 저장 좌표만 별도 게시 정보로 전송한다.",
       "evidence": ["mobile/src/device-photo-metadata.ts", "mobile/src/device-photo-metadata-enricher.ts"]
     },
     {
       "id": "device_photo_location",
-      "description": "기기 사진 GPS와 수동 보정 위치는 외부 지도 요청 없이 로컬에만 저장한다.",
+      "description": "기기 사진 GPS와 수동 보정 위치는 게시 확정 전까지 외부 전송 없이 로컬에만 저장한다.",
       "evidence": ["mobile/src/device-photo-location.ts", "mobile/src/local-photo-location-runtime.ts"]
     },
     {
@@ -167,6 +167,12 @@
         "evidence": ["mobile/src/publication-publisher.ts", "mobile/src/profile-editor-repository.ts"]
       },
       {
+        "type": "Precise location",
+        "optional": true,
+        "purposes": ["app_functionality"],
+        "evidence": ["mobile/src/publication-publisher.ts", "mobile/src/device-photo-repository.ts"]
+      },
+      {
         "type": "Other user-generated content",
         "optional": true,
         "purposes": ["app_functionality", "account_management"],
@@ -208,7 +214,7 @@
     {
       "id": "supabase",
       "role": "service-provider",
-      "data": ["account", "profile", "published photos", "comments", "likes", "reports", "blocks"],
+      "data": ["account", "profile", "published photos", "published photo capture date and location", "comments", "likes", "reports", "blocks"],
       "evidence": ["mobile/src/supabase-client.ts", "docs/mobile/backend-contract.md"]
     },
     {

@@ -46,11 +46,25 @@ describe("SQLite publication job repository", () => {
       objectPath: "owner/job-a.jpg",
       photoId: "job-a",
       shareToken: "a".repeat(64),
+      sourceMetadata: {
+        capturedAt: "2024-03-05T14:06:07+09:00",
+        latitude: 37.5665,
+        longitude: 126.978,
+        geoSource: "exif",
+        locationPrecision: "exact"
+      },
       createdAt: 1_000
     });
 
     expect(job.status).toBe("pending");
     expect(job.payload.shareToken).toBe("a".repeat(64));
+    expect(job.payload.sourceMetadata).toEqual({
+      capturedAt: "2024-03-05T14:06:07+09:00",
+      latitude: 37.5665,
+      longitude: 126.978,
+      geoSource: "exif",
+      locationPrecision: "exact"
+    });
     expect(JSON.stringify(job)).not.toContain("file:///cache");
     await expect(repository.markRunning("job-a", 2_000)).resolves.toBe(1);
     await expect(repository.findOpen("asset-a", "link")).resolves.toMatchObject({ jobId: "job-a" });

@@ -1,5 +1,5 @@
 import type { PublicationDerivative } from "./publication-derivative";
-import type { PublicationJobRepository } from "./publication-job";
+import type { PublicationJobRepository, PublicationSourceMetadata } from "./publication-job";
 import type { PublicationSelection } from "./publication-selection";
 import { isPublicationShareToken } from "./publication-link-token";
 
@@ -9,10 +9,10 @@ type RemotePhotoRecord = {
   readonly storage_path: string;
   readonly visibility: "private" | "public";
   readonly shared: boolean;
-  readonly lat: null;
-  readonly lng: null;
-  readonly geo_source: "unknown";
-  readonly location_precision: "approximate";
+  readonly lat: number | null;
+  readonly lng: number | null;
+  readonly geo_source: "exif" | "manual" | "unknown";
+  readonly location_precision: "exact" | "approximate";
   readonly description: string;
   readonly date: string;
   readonly link_token_hash: string | null;
@@ -84,6 +84,9 @@ export async function executePersistedPublicationJob(
     throw new TypeError("A safe persisted publication job is required");
   }
   const timestamp = (dependencies.now ?? Date.now)();
+  const sourceMetadata = job.payload.sourceMetadata;
+  const hasLocation = sourceMetadata?.latitude !== null && sourceMetadata?.latitude !== undefined &&
+    sourceMetadata.longitude !== null && sourceMetadata.longitude !== undefined;
   const rawShareToken = job.payload.intent === "link" ? job.payload.shareToken : null;
   let linkTokenHash: string | null = null;
   if (rawShareToken !== null && rawShareToken !== undefined) {
@@ -115,12 +118,12 @@ export async function executePersistedPublicationJob(
       storage_path: job.payload.objectPath,
       visibility: job.payload.intent === "public" ? "public" : "private",
       shared: job.payload.intent === "public",
-      lat: null,
-      lng: null,
-      geo_source: "unknown",
-      location_precision: "approximate",
+      lat: hasLocation ? sourceMetadata.latitude : null,
+      lng: hasLocation ? sourceMetadata.longitude : null,
+      geo_source: hasLocation ? sourceMetadata.geoSource : "unknown",
+      location_precision: hasLocation ? sourceMetadata.locationPrecision : "approximate",
       description: "",
-      date: new Date(job.createdAt).toISOString(),
+      date: sourceMetadata?.capturedAt ?? new Date(job.createdAt).toISOString(),
       link_token_hash: linkTokenHash,
       link_token_created_at: linkTokenHash === null ? null : new Date(job.createdAt).toISOString()
     });
@@ -141,6 +144,7 @@ export async function publishPreparedSelection(
     readonly ownerId: string;
     readonly selection: PublicationSelection;
     readonly derivatives: readonly PublicationDerivative[];
+    readonly sourceMetadataByAssetId?: ReadonlyMap<string, PublicationSourceMetadata>;
   },
   dependencies: PublishPreparedDependencies
 ): Promise<PublicationResult> {
@@ -185,6 +189,7 @@ export async function publishPreparedSelection(
       throw new TypeError("A secure publication share token is required");
     }
     try {
+      const sourceMetadata = input.sourceMetadataByAssetId?.get(assetId);
       const job = await dependencies.repository.enqueue({
         jobId,
         deviceAssetId: assetId,
@@ -192,6 +197,7 @@ export async function publishPreparedSelection(
         objectPath,
         photoId: jobId,
         shareToken,
+        ...(sourceMetadata === undefined ? {} : { sourceMetadata }),
         createdAt: timestamp
       });
       jobIds.push(jobId);

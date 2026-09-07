@@ -5,6 +5,7 @@ import {
   createDevicePhotoGridRepository,
   createDevicePhotoLocationRepository,
   createDevicePhotoMetadataRepository,
+  createDevicePhotoPublicationMetadataRepository,
   createSQLiteDevicePhotoScanStore
 } from "../src/device-photo-repository";
 import migrations from "../src/local-schema-migrations.json";
@@ -251,5 +252,30 @@ describe("SQLite device photo scan store", () => {
       latitude: 35.1796,
       longitude: 129.0756
     });
+    await expect(createDevicePhotoPublicationMetadataRepository(adapter).getByAssetIds([
+      "asset-older", "asset-newer", "asset-undated"
+    ])).resolves.toEqual(new Map([
+      ["asset-older", {
+        capturedAt: new Date(1_000).toISOString(),
+        latitude: 33.4996,
+        longitude: 126.5312,
+        geoSource: "manual",
+        locationPrecision: "approximate"
+      }],
+      ["asset-newer", {
+        capturedAt: new Date(3_000).toISOString(),
+        latitude: 35.1796,
+        longitude: 129.0756,
+        geoSource: "manual",
+        locationPrecision: "approximate"
+      }],
+      ["asset-undated", {
+        capturedAt: null,
+        latitude: null,
+        longitude: null,
+        geoSource: "unknown",
+        locationPrecision: "approximate"
+      }]
+    ]));
   });
 });

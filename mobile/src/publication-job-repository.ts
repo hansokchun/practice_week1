@@ -3,7 +3,8 @@ import type {
   PublicationJob,
   PublicationJobPayload,
   PublicationJobRepository,
-  PublicationJobStatus
+  PublicationJobStatus,
+  PublicationSourceMetadata
 } from "./publication-job";
 import { publicationIntents } from "./publication-selection";
 import { isPublicationShareToken } from "./publication-link-token";
@@ -57,6 +58,30 @@ function parseTimestamp(value: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseSourceMetadata(value: unknown): PublicationSourceMetadata | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "object" || value === null) throw new TypeError("Invalid publication source metadata");
+  const row = value as Record<string, unknown>;
+  const capturedAt = row["capturedAt"];
+  const latitude = row["latitude"];
+  const longitude = row["longitude"];
+  const coordinatesValid = latitude === null && longitude === null ||
+    typeof latitude === "number" && Number.isFinite(latitude) && latitude >= -90 && latitude <= 90 &&
+    typeof longitude === "number" && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
+  if (!(capturedAt === null || typeof capturedAt === "string" && capturedAt.length <= 64 && Number.isFinite(Date.parse(capturedAt))) ||
+    !coordinatesValid || !["exif", "manual", "unknown"].includes(String(row["geoSource"])) ||
+    !["exact", "approximate"].includes(String(row["locationPrecision"]))) {
+    throw new TypeError("Invalid publication source metadata");
+  }
+  return {
+    capturedAt,
+    latitude,
+    longitude,
+    geoSource: row["geoSource"] as PublicationSourceMetadata["geoSource"],
+    locationPrecision: row["locationPrecision"] as PublicationSourceMetadata["locationPrecision"]
+  };
+}
+
 function parsePayload(value: string): PublicationJobPayload {
   const candidate: unknown = JSON.parse(value);
   if (typeof candidate !== "object" || candidate === null) throw new TypeError("Invalid publication job payload");
@@ -69,12 +94,14 @@ function parsePayload(value: string): PublicationJobPayload {
     typeof row["photoId"] !== "string" ||
     !(row["shareToken"] === undefined || row["shareToken"] === null || isPublicationShareToken(row["shareToken"]))
   ) throw new TypeError("Invalid publication job payload");
+  const sourceMetadata = parseSourceMetadata(row["sourceMetadata"]);
   return {
     version: 1,
     intent: row["intent"] as PublicationJobPayload["intent"],
     objectPath: row["objectPath"],
     photoId: row["photoId"],
-    shareToken: row["shareToken"] === undefined ? null : row["shareToken"] as string | null
+    shareToken: row["shareToken"] === undefined ? null : row["shareToken"] as string | null,
+    ...(sourceMetadata === undefined ? {} : { sourceMetadata })
   };
 }
 
@@ -197,7 +224,8 @@ export function createPublicationJobRepository(database: PublicationJobSqlExecut
         intent: input.intent,
         objectPath: input.objectPath,
         photoId: input.photoId,
-        shareToken: input.shareToken ?? null
+        shareToken: input.shareToken ?? null,
+        ...(input.sourceMetadata === undefined ? {} : { sourceMetadata: input.sourceMetadata })
       };
       await database.runAsync(
         `INSERT INTO publication_jobs(

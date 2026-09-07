@@ -64,6 +64,37 @@ describe("public photo detail screen", () => {
     expect(openOnMap).toHaveBeenCalledWith(photo);
   });
 
+  it("lets the owner save shared description, visibility, and location accuracy", async () => {
+    const ownerId = "11111111-1111-4111-8111-111111111111";
+    const saveOwnedPhoto = jest.fn(async (_photoId, _ownerId, patch) => patch);
+    const photo = {
+      id: "photo-own", date: null, description: "수정 전", liked: 0,
+      owner: { id: ownerId, displayName: "나", avatarUrl: null },
+      createdAt: "2026-08-24T10:00:00.000Z", imageUrl: "https://example.supabase.co/signed/photo-own",
+      locationPrecision: "approximate" as const, location: { lat: 37.52, lng: 126.97 },
+      visibility: "private" as const, viewerHasLiked: false
+    };
+    const screen = await render(
+      <PublicPhotoDetailScreen currentUserId={ownerId} loadComments={async () => []} loadPhoto={async () => photo}
+        photoId="photo-own" saveOwnedPhoto={saveOwnedPhoto} />
+    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "사진 수정" })).toBeOnTheScreen());
+
+    await fireEvent.press(screen.getByRole("button", { name: "사진 수정" }));
+    await waitFor(() => expect(screen.getByLabelText("사진 설명")).toBeOnTheScreen());
+    await fireEvent.changeText(screen.getByLabelText("사진 설명"), "웹에도 보일 설명");
+    await fireEvent.press(screen.getByRole("button", { name: "공개" }));
+    await fireEvent.press(screen.getByRole("button", { name: "정확한 위치" }));
+    await fireEvent.press(screen.getByRole("button", { name: "사진 수정 저장" }));
+
+    await waitFor(() => expect(saveOwnedPhoto).toHaveBeenCalledWith("photo-own", ownerId, {
+      description: "웹에도 보일 설명",
+      visibility: "public",
+      locationPrecision: "exact"
+    }));
+    await waitFor(() => expect(screen.getByText("공개 · 정확한 위치")).toBeOnTheScreen());
+  });
+
   it("formats provider timestamps as a calm calendar date", async () => {
     const photo = {
       id: "photo-date", date: "2026-07-24T04:30:00.000Z", description: "여름 풍경", liked: 0,

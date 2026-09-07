@@ -43,4 +43,20 @@ describe("RecoverableRemoteImage", () => {
     await waitFor(() => expect(screen.queryByText("사진을 표시할 수 없어요")).toBeNull());
     expect(screen.getByLabelText("공개 여행 사진")).toBeOnTheScreen();
   });
+
+  it("uses one button for opening a loaded card and retrying its failed image", async () => {
+    const onPress = jest.fn();
+    const onRetry = jest.fn();
+    const screen = await render(
+      <RecoverableRemoteImage accessibilityLabel="공개 여행 사진" onPress={onPress} onRetry={onRetry} pressAccessibilityLabel="사진 상세 열기" uri="https://storage.example/signed/photo-a" />
+    );
+
+    await fireEvent.press(screen.getByRole("button", { name: "사진 상세 열기" }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    fireEvent(screen.getByLabelText("공개 여행 사진"), "error");
+    await waitFor(() => expect(screen.getByRole("button", { name: "공개 여행 사진 다시 불러오기" })).toBeOnTheScreen());
+    await fireEvent.press(screen.getByRole("button", { name: "공개 여행 사진 다시 불러오기" }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
 });

@@ -17,6 +17,11 @@ import { useMobileScreenGutter } from "../../src/mobile-layout";
 import { useContentVisibilityRefreshKey } from "../../src/content-visibility-refresh";
 import { DefaultProfileAvatar } from "../../src/DefaultProfileAvatar";
 import { formatPhotoDate } from "../../src/photo-date";
+import {
+  updateOwnedPhoto,
+  type OwnedPhotoPatch,
+  type SavedOwnedPhotoPatch
+} from "../../src/owned-photo-mutation-repository";
 
 type PublicPhotoDetailScreenProps = {
   readonly blockAuthor?: (blockerId: string, blockedId: string) => Promise<void>;
@@ -31,6 +36,7 @@ type PublicPhotoDetailScreenProps = {
   readonly refreshKey?: number;
   readonly requestLogin?: () => void;
   readonly removeComment?: (commentId: number) => Promise<void>;
+  readonly saveOwnedPhoto?: (photoId: string, ownerId: string, patch: OwnedPhotoPatch) => Promise<SavedOwnedPhotoPatch>;
   readonly reportPhoto?: (photoId: string, reporterId: string, reportedUserId: string, reason: ContentReportReason, details: string) => Promise<void>;
   readonly submitComment?: (photoId: string, authorId: string, text: string) => Promise<PhotoComment>;
   readonly updateLike?: (photoId: string, shouldLike: boolean) => Promise<number>;
@@ -83,6 +89,7 @@ export function PublicPhotoDetailScreen({
   refreshKey = 0,
   requestLogin = () => router.push(buildGuestLoginRoute(photoId === null ? "/profile" : `/explore-photo/${photoId}`) as never),
   removeComment = deletePhotoComment,
+  saveOwnedPhoto,
   reportPhoto = reportPublicPhoto,
   submitComment = createPhotoComment,
   updateLike = setPhotoLiked
@@ -94,6 +101,12 @@ export function PublicPhotoDetailScreen({
   const [commentsRetryKey, setCommentsRetryKey] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editDescription, setEditDescription] = useState("");
+  const [editVisibility, setEditVisibility] = useState<"private" | "public">("private");
+  const [editPrecision, setEditPrecision] = useState<"approximate" | "exact">("approximate");
+  const [editPending, setEditPending] = useState(false);
+  const [editError, setEditError] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [likeScale] = useState(() => new Animated.Value(1));
   const loadPhotoForViewer = useCallback(
@@ -172,6 +185,42 @@ export function PublicPhotoDetailScreen({
     }
     animateLike();
     void toggleLike();
+  }
+
+  function openEdit(photo: PublicPhotoDetail) {
+    setEditDescription(photo.description ?? "");
+    setEditVisibility(photo.visibility === "public" ? "public" : "private");
+    setEditPrecision(photo.locationPrecision);
+    setEditError(false);
+    setEditOpen(true);
+  }
+
+  async function saveEdit() {
+    if (state.status !== "ready" || currentUserId === null || saveOwnedPhoto === undefined || editPending) return;
+    const previous = state;
+    setEditPending(true);
+    setEditError(false);
+    try {
+      const saved = await saveOwnedPhoto(previous.photo.id, currentUserId, {
+        description: editDescription,
+        visibility: editVisibility,
+        locationPrecision: editPrecision
+      });
+      setState({
+        ...previous,
+        photo: {
+          ...previous.photo,
+          description: saved.description,
+          visibility: saved.visibility,
+          locationPrecision: saved.locationPrecision
+        }
+      });
+      setEditOpen(false);
+    } catch {
+      setEditError(true);
+    } finally {
+      setEditPending(false);
+    }
   }
 
   async function addComment() {
@@ -301,6 +350,11 @@ export function PublicPhotoDetailScreen({
           </Pressable>
           <View style={styles.titleRow}>
             <Text style={styles.description}>{displayState.photo.description ?? "여행의 순간"}</Text>
+            {currentUserId === displayState.photo.owner.id && saveOwnedPhoto !== undefined ? (
+              <Pressable accessibilityLabel="사진 수정" accessibilityRole="button" onPress={() => openEdit(displayState.photo)} style={styles.editButton}>
+                <Text style={styles.editButtonText}>수정</Text>
+              </Pressable>
+            ) : null}
             {currentUserId !== null && currentUserId !== displayState.photo.owner.id ? (
               <Pressable accessibilityLabel="사진 메뉴" accessibilityRole="button" onPress={() => setActionsOpen((open) => !open)} style={styles.menuButton}>
                 <Text style={styles.menuText}>•••</Text>
@@ -339,6 +393,50 @@ export function PublicPhotoDetailScreen({
               <Text style={styles.privacyTitle}>{displayState.photo.visibility === "private" ? "비공개" : displayState.photo.visibility === "link" ? "링크 공개" : "공개"} · {precisionCopy(displayState.photo.locationPrecision)}</Text>
             </View>
           ) : null}
+          {editOpen ? (
+            <View style={styles.editPanel}>
+              <Text style={styles.editTitle}>사진 수정</Text>
+              <TextInput
+                accessibilityLabel="사진 설명"
+                maxLength={2000}
+                multiline
+                onChangeText={setEditDescription}
+                placeholder="사진 설명"
+                placeholderTextColor={mobileColors.muted}
+                style={styles.editInput}
+                value={editDescription}
+              />
+              <Text style={styles.editLabel}>공개 여부</Text>
+              <View style={styles.editOptions}>
+                {(["private", "public"] as const).map((value) => (
+                  <Pressable accessibilityLabel={value === "public" ? "공개" : "비공개"} accessibilityRole="button" key={value} onPress={() => setEditVisibility(value)} style={[styles.editOption, editVisibility === value && styles.editOptionSelected]}>
+                    <Text style={[styles.editOptionText, editVisibility === value && styles.editOptionTextSelected]}>{value === "public" ? "공개" : "비공개"}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              {displayState.photo.location === undefined ? null : (
+                <>
+                  <Text style={styles.editLabel}>위치 정확도</Text>
+                  <View style={styles.editOptions}>
+                    {(["approximate", "exact"] as const).map((value) => (
+                      <Pressable accessibilityLabel={value === "exact" ? "정확한 위치" : "대략 위치"} accessibilityRole="button" key={value} onPress={() => setEditPrecision(value)} style={[styles.editOption, editPrecision === value && styles.editOptionSelected]}>
+                        <Text style={[styles.editOptionText, editPrecision === value && styles.editOptionTextSelected]}>{value === "exact" ? "정확한 위치" : "대략 위치"}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </>
+              )}
+              {editError ? <Text accessibilityLiveRegion="polite" style={styles.editError}>사진을 수정하지 못했어요. 잠시 후 다시 시도해 주세요.</Text> : null}
+              <View style={styles.editFooter}>
+                <Pressable accessibilityLabel="사진 수정 취소" accessibilityRole="button" disabled={editPending} onPress={() => setEditOpen(false)} style={styles.cancelEditButton}>
+                  <Text style={styles.cancelEditText}>취소</Text>
+                </Pressable>
+                <Pressable accessibilityLabel="사진 수정 저장" accessibilityRole="button" disabled={editPending} onPress={() => void saveEdit()} style={styles.saveEditButton}>
+                  <Text style={styles.saveEditText}>{editPending ? "저장 중" : "저장"}</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
           {actionsOpen ? <PhotoSafetyControls blockAuthor={blockAuthor} currentUserId={currentUserId} onBlocked={goBack} ownerId={displayState.photo.owner.id} photoId={displayState.photo.id} reportPhoto={reportPhoto} /> : null}
           {renderComments()}
         </KeyboardSafeScrollView>
@@ -351,7 +449,7 @@ export default function PublicPhotoDetailRoute() {
   const params = useLocalSearchParams<{ readonly photoId?: string | string[] }>();
   const auth = useAuthSession();
   const refreshKey = useContentVisibilityRefreshKey();
-  return <PublicPhotoDetailScreen currentUserId={auth.user?.id ?? null} photoId={typeof params.photoId === "string" ? params.photoId : null} refreshKey={refreshKey} />;
+  return <PublicPhotoDetailScreen currentUserId={auth.user?.id ?? null} photoId={typeof params.photoId === "string" ? params.photoId : null} refreshKey={refreshKey} saveOwnedPhoto={updateOwnedPhoto} />;
 }
 
 const styles = StyleSheet.create({
@@ -378,6 +476,8 @@ const styles = StyleSheet.create({
   description: { color: mobileColors.ink, flex: 1, fontSize: 20, fontWeight: "800", lineHeight: 28 },
   menuButton: { alignItems: "center", height: 44, justifyContent: "center", marginTop: -8, width: 44 },
   menuText: { color: mobileColors.ink, fontSize: 17, fontWeight: "800", letterSpacing: 0 },
+  editButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 40, paddingHorizontal: 14 },
+  editButtonText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" },
   metaRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
   meta: { color: mobileColors.muted, fontSize: 13 },
   likeButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 22, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
@@ -390,6 +490,21 @@ const styles = StyleSheet.create({
   locationActions: { flexDirection: "row", gap: 8, marginTop: 16 },
   locationButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 46, paddingHorizontal: 10 },
   locationButtonText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800", textAlign: "center" },
+  editPanel: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, marginTop: 18, padding: 16 },
+  editTitle: { color: mobileColors.ink, fontSize: 18, fontWeight: "800" },
+  editInput: { borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, color: mobileColors.ink, fontSize: 14, marginTop: 14, minHeight: 88, padding: 12, textAlignVertical: "top" },
+  editLabel: { color: mobileColors.ink, fontSize: 13, fontWeight: "800", marginTop: 16 },
+  editOptions: { flexDirection: "row", gap: 8, marginTop: 8 },
+  editOption: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 44 },
+  editOptionSelected: { backgroundColor: mobileColors.pineDeep, borderColor: mobileColors.pineDeep },
+  editOptionText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" },
+  editOptionTextSelected: { color: mobileColors.surface },
+  editError: { color: "#9b2c2c", fontSize: 13, lineHeight: 19, marginTop: 12 },
+  editFooter: { flexDirection: "row", gap: 8, marginTop: 18 },
+  cancelEditButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 46 },
+  cancelEditText: { color: mobileColors.pineDeep, fontSize: 14, fontWeight: "800" },
+  saveEditButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 8, flex: 1, justifyContent: "center", minHeight: 46 },
+  saveEditText: { color: mobileColors.surface, fontSize: 14, fontWeight: "800" },
   commentsSection: { borderTopColor: mobileColors.line, borderTopWidth: 1, marginTop: 28, paddingTop: 24 },
   commentsTitle: { color: mobileColors.ink, fontSize: 19, fontWeight: "800" },
   commentsCopy: { color: mobileColors.muted, fontSize: 14, lineHeight: 21, marginTop: 12 },

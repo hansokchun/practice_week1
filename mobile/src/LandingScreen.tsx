@@ -191,9 +191,7 @@ export function LandingScreen({
                 {section.photos.slice(0, 8).map((photo) => {
                   const label = photoLabel(photo);
                   return (
-                    <Pressable accessibilityLabel={`${label} 상세 보기`} accessibilityRole="button" key={`${section.id}-${photo.id}`} onPress={() => openPhoto(photo.id)} style={styles.photoCard}>
-                      <RecoverableRemoteImage accessibilityLabel={label} onRetry={() => setReloadKey((value) => value + 1)} style={styles.photo} uri={photo.imageUrl} />
-                    </Pressable>
+                    <RecoverableRemoteImage accessibilityLabel={label} key={`${section.id}-${photo.id}`} onPress={() => openPhoto(photo.id)} onRetry={() => setReloadKey((value) => value + 1)} pressAccessibilityLabel={`${label} 상세 보기`} style={styles.photoCard} uri={photo.imageUrl} />
                   );
                 })}
               </ScrollView>

@@ -8,6 +8,7 @@ import { File } from "expo-file-system";
 
 import { getSupabaseClient } from "./supabase-client";
 import { openLocalPhotoDatabase } from "./local-photo-database";
+import { createDevicePhotoPublicationMetadataRepository } from "./device-photo-repository";
 import { nativeLocalPhotoStorage } from "./native-local-photo-storage";
 import { publicationDerivativeRuntime } from "./publication-derivative-runtime";
 import type { PublicationDerivative } from "./publication-derivative";
@@ -84,7 +85,15 @@ export const publicationRuntime = {
       const handle = await openLocalPhotoDatabase({ databaseName: "ikkyee-local.db", directoryObservation });
       try {
         await recoverInterruptedPublicationJobsOnce(databaseExecutor(handle));
-        return await publishPreparedSelection({ ownerId, selection, derivatives }, {
+        const sourceMetadataByAssetId = await createDevicePhotoPublicationMetadataRepository(
+          databaseExecutor(handle)
+        ).getByAssetIds(selection.assetIds);
+        return await publishPreparedSelection({
+          ownerId,
+          selection,
+          derivatives,
+          sourceMetadataByAssetId
+        }, {
           ...publicationDependencies(handle),
           createId: randomUUID
         });

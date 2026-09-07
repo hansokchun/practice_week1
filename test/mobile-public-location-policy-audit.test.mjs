@@ -20,9 +20,9 @@ test('database keeps the selected point unchanged for both accuracy labels', () 
 });
 
 test('the mobile audit records location accuracy independently from coordinates', () => {
-  assert.match(mobilePublisher, /location_precision: "approximate"/);
+  assert.match(mobilePublisher, /location_precision: hasLocation \? sourceMetadata\.locationPrecision : "approximate"/);
   assert.match(audit, /좌표의 이동이나 공개 범위가 아니라/);
   assert.match(audit, /`exact`[^\n]*`approximate`/i);
   assert.match(audit, /같은 Supabase `photos` 행/);
-  assert.match(audit, /모바일 신규 게시 흐름은 아직 사진 위치를 서버로 전송하지 않으므로/);
+  assert.match(audit, /모바일 신규 게시 흐름은 로컬에 저장된 촬영일과 위치를 같은 `photos` 행에 전송한다/);
 });

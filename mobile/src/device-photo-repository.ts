@@ -6,6 +6,7 @@ import {
   type PrivateDevicePhotoLocation
 } from "./device-photo-location";
 import type { SQLiteDatabase } from "expo-sqlite";
+import type { PublicationSourceMetadata } from "./publication-job";
 
 type SqlValue = string | number | null;
 
@@ -91,6 +92,45 @@ export type DevicePhotoLocationRepository = {
   readonly getLocation: (assetId: string) => Promise<PrivateDevicePhotoLocation | null>;
   readonly saveLocation: (assetId: string, location: PrivateDevicePhotoLocation) => Promise<void>;
 };
+
+export type DevicePhotoPublicationMetadataRepository = {
+  readonly getByAssetIds: (assetIds: readonly string[]) => Promise<ReadonlyMap<string, PublicationSourceMetadata>>;
+};
+
+export function createDevicePhotoPublicationMetadataRepository(
+  database: DevicePhotoSqlExecutor
+): DevicePhotoPublicationMetadataRepository {
+  return {
+    async getByAssetIds(assetIds) {
+      const uniqueIds = [...new Set(assetIds.filter((assetId) => assetId.trim() !== ""))];
+      if (uniqueIds.length === 0) return new Map();
+      const placeholders = uniqueIds.map(() => "?").join(",");
+      const rows = await database.getAllAsync<{
+        readonly asset_id: string;
+        readonly created_at: string | null;
+        readonly latitude: number | null;
+        readonly longitude: number | null;
+      }>(
+        `SELECT asset_id, created_at, latitude, longitude
+         FROM device_assets WHERE asset_id IN (${placeholders})`,
+        uniqueIds
+      );
+      return new Map(rows.map((row) => {
+        const hasLocation = row.latitude !== null && row.longitude !== null;
+        const capturedAt = row.created_at !== null && Number.isFinite(Date.parse(row.created_at))
+          ? row.created_at
+          : null;
+        return [row.asset_id, {
+          capturedAt,
+          latitude: hasLocation ? row.latitude : null,
+          longitude: hasLocation ? row.longitude : null,
+          geoSource: hasLocation ? "manual" as const : "unknown" as const,
+          locationPrecision: "approximate" as const
+        }];
+      }));
+    }
+  };
+}
 
 export function createDevicePhotoLocationRepository(
   database: DevicePhotoSqlExecutor

@@ -23,7 +23,13 @@ describe("confirmed publication execution", () => {
           jobId: input.jobId,
           deviceAssetId: input.deviceAssetId,
           status: "pending" as const,
-          payload: { version: 1 as const, intent: input.intent, objectPath: input.objectPath, photoId: input.photoId },
+          payload: {
+            version: 1 as const,
+            intent: input.intent,
+            objectPath: input.objectPath,
+            photoId: input.photoId,
+            sourceMetadata: input.sourceMetadata
+          },
           attempts: 0,
           nextAttemptAt: null,
           createdAt: input.createdAt,
@@ -44,7 +50,14 @@ describe("confirmed publication execution", () => {
     const result = await publishPreparedSelection({
       ownerId: "11111111-1111-4111-8111-111111111111",
       selection: { intent: "public", assetIds: ["asset-a"] },
-      derivatives: [derivative]
+      derivatives: [derivative],
+      sourceMetadataByAssetId: new Map([["asset-a", {
+        capturedAt: "2024-03-05T14:06:07+09:00",
+        latitude: 37.5665,
+        longitude: 126.978,
+        geoSource: "exif" as const,
+        locationPrecision: "exact" as const
+      }]])
     }, {
       createId: () => "22222222-2222-4222-8222-222222222222",
       now: () => 10_000,
@@ -67,9 +80,11 @@ describe("confirmed publication execution", () => {
       visibility: "public",
       shared: true,
       storage_path: "11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222.jpg",
-      lat: null,
-      lng: null,
-      location_precision: "approximate"
+      date: "2024-03-05T14:06:07+09:00",
+      lat: 37.5665,
+      lng: 126.978,
+      geo_source: "exif",
+      location_precision: "exact"
     }));
     expect(result).toEqual({ succeeded: 1, failed: 0, jobIds: ["22222222-2222-4222-8222-222222222222"] });
   });

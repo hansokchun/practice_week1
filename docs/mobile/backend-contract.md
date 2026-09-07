@@ -39,6 +39,7 @@ No migration, DDL, DML, user creation, function deployment, bucket mutation, or 
 ## Shared Web And Mobile Visibility
 
 - 웹과 모바일은 같은 Supabase Auth, `profiles`, `photos`, `user_likes`, `comments`를 사용한다. 웹에서 사진을 삭제하거나 비공개로 바꾸면 모바일은 화면 재진입·포그라운드 복귀 시 서버의 현재 공개 범위를 다시 조회한다.
+- 모바일 게시도 로컬에 저장된 촬영일과 위치를 같은 `photos` 행에 기록한다. 게시 파일의 EXIF 원문은 제거하며, 앱 본인 사진 수정은 소유자 UPDATE 정책 아래 설명·공개 여부·위치 정확도를 같은 행에서 변경한다.
 - Explore, 좋아요, 공개 사진·댓글, 공개 프로필, 내 프로필 요약은 재조회 시 기존 이미지·미리보기·댓글을 먼저 제거한다. 비공개·삭제 행은 RLS 조회에서 제외되고, 토큰이 해제된 링크는 잘못된 링크와 같은 404를 받는다.
 - 이미 발급한 Storage 서명 URL은 데이터 공개 상태와 독립적으로 최대 300초 유효할 수 있으며 CDN 캐시도 독립적으로 동작한다. 사진 삭제는 DB 행과 Storage 객체를 함께 제거하고, 세부 재검증·잔존 제한은 `docs/mobile/content-visibility-cache.md`를 따른다.
 

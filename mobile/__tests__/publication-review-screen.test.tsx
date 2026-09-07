@@ -44,7 +44,7 @@ describe("publication selection review", () => {
       fireEvent.press(getByRole("button", { name: "사진 선택 확정" }));
     });
     await waitFor(() => expect(getByText("게시용 사진 2장 준비 완료 · 업로드는 시작되지 않았어요")).toBeOnTheScreen());
-    expect(getByText("사진 파일의 EXIF·GPS 등 메타데이터를 제거했습니다.")).toBeOnTheScreen();
+    expect(getByText("사진 파일의 EXIF 메타데이터는 제거하고, 저장된 촬영일과 위치는 게시 정보로 함께 반영합니다.")).toBeOnTheScreen();
     expect(prepareDerivatives).toHaveBeenCalledWith(["asset-a", "asset-b"]);
     expect(publish).not.toHaveBeenCalled();
     await act(async () => {

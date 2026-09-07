@@ -53,9 +53,7 @@ export function ProfilePublicSummary({
     {state.status === "ready" ? <View>
       <Text style={styles.count}>최근 공개 사진 {state.profile.photos.length}장</Text>
       {state.profile.photos.length === 0 ? <Text style={styles.copy}>아직 공개한 사진이 없습니다.</Text> : <View style={styles.grid}>
-        {state.profile.photos.slice(0, 6).map((photo) => <Pressable accessibilityLabel={`${photo.description ?? "공개 여행 사진"} 공개 사진 열기`} accessibilityRole="button" key={photo.id} onPress={() => openPhoto(photo.id)} style={styles.photoButton}>
-          <RecoverableRemoteImage accessibilityLabel={`${photo.description ?? "공개 여행 사진"} 이미지`} onRetry={() => setRetryKey((value) => value + 1)} style={styles.photo} uri={photo.imageUrl} />
-        </Pressable>)}
+        {state.profile.photos.slice(0, 6).map((photo) => <RecoverableRemoteImage accessibilityLabel={`${photo.description ?? "공개 여행 사진"} 이미지`} key={photo.id} onPress={() => openPhoto(photo.id)} onRetry={() => setRetryKey((value) => value + 1)} pressAccessibilityLabel={`${photo.description ?? "공개 여행 사진"} 공개 사진 열기`} style={styles.photoButton} uri={photo.imageUrl} />)}
       </View>}
     </View> : null}
   </View>;
