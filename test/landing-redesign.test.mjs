@@ -100,30 +100,23 @@ test('서버 공개 사진이 있으면 메인 목록에 정적 샘플을 섞지
     assert.doesNotMatch(source, /\.\.\.state\.savedPhotos, \.\.\.albumPhotos, \.\.\.demoPhotos/);
 });
 
-test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 편집형 링크다', async () => {
+test('메인 지도 CTA는 기존 사진 배경을 유지한 하단 중앙 캡슐이다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
     const footer = html.match(/<button id="landing-map-footer"[\s\S]*?<\/button>/)?.[0] ?? '';
-    assert.match(footer, /class="landing-map-footer page-container"[^>]*data-route="explore"/);
+    assert.match(footer, /class="landing-map-footer"[^>]*data-route="explore"/);
     assert.doesNotMatch(footer, /landing-map-footer-eyebrow|지도 탐색/);
-    assert.match(footer, /id="landing-map-footer-title"[\s\S]*?<span>기억에 남을<\/span>[\s\S]*?<span>장소를 발견해보세요\.<\/span>/);
+    assert.match(footer, /id="landing-map-footer-title">지도로 둘러보기<\/span>/);
     assert.doesNotMatch(footer, /지도에서,/);
-    assert.match(footer, /class="landing-map-footer-action"[\s\S]*?>지도에서 보기<\/span>[\s\S]*?>arrow_forward<\/span>/);
-    assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*justify-items:\s*start;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*url\(['"]?images\/landing-map-pins-background\.jpg['"]?\)[^}]*\/\s*cover\s+no-repeat;[^}]*filter:\s*saturate\(1\.08\) contrast\(1\.08\) brightness\(0\.88\);[^}]*mask-image:\s*linear-gradient/s);
-    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*z-index:\s*0;/s);
-    assert.match(css, /\.landing-map-footer\.page-container::after\s*\{[^}]*z-index:\s*1;/s);
-    assert.match(css, /\.landing-map-footer-content\s*\{[^}]*z-index:\s*2;/s);
-    assert.match(css, /\.landing-map-footer\.page-container::before\s*\{[^}]*transition:\s*filter 520ms ease-out, transform 700ms ease-out;/s);
-    assert.match(css, /\.landing-map-footer:hover::before,[\s\S]*?filter:\s*saturate\(1\.1\) contrast\(1\.09\) brightness\(0\.9\);[^}]*transform:\s*scale\(1\.018\);/s);
-    assert.match(css, /\.landing-map-footer-action \.material-symbols-outlined\s*\{[^}]*transition:\s*transform 300ms ease-out;[^}]*\}[\s\S]*?\.landing-map-footer:hover \.landing-map-footer-action \.material-symbols-outlined,[\s\S]*?transform:\s*translateX\(2px\);/s);
-    assert.match(css, /\.landing-map-footer\.page-container::after\s*\{[^}]*linear-gradient\(90deg,[^}]*linear-gradient\(180deg,/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-footer\.page-container\s*\{[^}]*place-items:\s*center;/s);
-    assert.doesNotMatch(css.match(/\.landing-map-footer\.page-container\s*\{[^}]*\}/s)?.[0] ?? '', /border-radius:/);
-    assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*#fff;[^}]*cursor:\s*pointer;/s);
-    assert.doesNotMatch(css, /\.landing-map-footer \.btn-primary/);
-    assert.match(css, /#landing-map-footer-title\s*\{[^}]*font-size:\s*42px;/s);
-    assert.match(css, /#landing-map-footer-title > span:last-child\s*\{[^}]*padding-left:\s*clamp\(32px,\s*5vw,\s*72px\);/s);
+    assert.match(footer, />map<\/span>/);
+    assert.match(footer, />arrow_forward<\/span>/);
+    assert.match(css, /\.landing-map-footer\s*\{[^}]*position:\s*fixed;[^}]*left:\s*50%;[^}]*bottom:\s*calc\(20px \+ env\(safe-area-inset-bottom, 0px\)\);/s);
+    assert.match(css, /\.landing-map-footer\s*\{[^}]*display:\s*none;[^}]*width:\s*min\(360px, calc\(100% - 48px\)\);[^}]*height:\s*64px;[^}]*border-radius:\s*999px;/s);
+    assert.match(css, /body\[data-page="home"\]:not\(\.modal-open\) \.landing-map-footer\s*\{\s*display:\s*flex;/);
+    assert.match(css, /\.landing-map-footer::before\s*\{[^}]*url\('images\/landing-map-pins-background.jpg'\)/s);
+    assert.match(css, /body\[data-page="home"\] \.site-footer\s*\{[^}]*padding-bottom:\s*calc\(104px \+ env\(safe-area-inset-bottom, 0px\)\);/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-map-footer\s*\{[^}]*width:\s*min\(280px, calc\(100% - 40px\)\);[^}]*height:\s*56px;/s);
+    assert.ok(html.indexOf('id="landing-map-footer"') > html.indexOf('</footer>'));
 });
 
 test('지도 CTA 시안 갤러리는 최종 디자인 적용 후 제거한다', async () => {
@@ -133,14 +126,10 @@ test('지도 CTA 시안 갤러리는 최종 디자인 적용 후 제거한다', 
     assert.doesNotMatch(css, /\.landing-map-cta-gallery|\.landing-map-cta-demo/);
 });
 
-test('검색 영역의 지도 진입은 무거운 배경 버튼 대신 간결한 텍스트 동작이다', async () => {
+test('검색 영역의 중복 지도 링크는 하단 고정 버튼으로 통합한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
-    const css = await readFile(new URL('style.css', root), 'utf8');
-    const primary = html.match(/<button id="landing-map-primary"[\s\S]*?<\/button>/)?.[0] ?? '';
-
-    assert.match(primary, />지도로 둘러보기<\/span>/);
-    assert.match(primary, />arrow_forward<\/span>/);
-    assert.match(css, /\.landing-map-link\s*\{[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*var\(--teal\);/s);
+    assert.doesNotMatch(html, /id="landing-map-primary"/);
+    assert.equal((html.match(/id="landing-map-footer"/g) || []).length, 1);
 });
 
 test('메인 검색은 제출할 때 결과를 렌더링하고 결과 목록으로 이동한다', async () => {
@@ -204,11 +193,11 @@ test('로그인 여부와 관계없이 기본 홈은 새 랜딩만 표시한다'
     assert.doesNotMatch(css, /body\.is-logged-in\[data-page="landing"\]\s+\.(?:home-workspace|home-houses-reference|home-feature-stories|white-band)[\s\S]*display:\s*(?:block|grid);/s);
 });
 
-test('랜딩은 상단·고정 하단 메뉴 대신 두 곳에서 지도 둘러보기를 제공한다', async () => {
+test('메인은 전체 너비 메뉴 대신 단일 지도 캡슐을 제공한다', async () => {
     const html = await readFile(new URL('index.html', root), 'utf8');
     assert.doesNotMatch(html, /class="top-nav"/);
     assert.doesNotMatch(html, /class="mobile-bottom-nav"/);
-    assert.match(html, /id="landing-map-primary"[^>]*data-route="explore"/);
+    assert.doesNotMatch(html, /id="landing-map-primary"/);
     assert.match(html, /id="landing-map-footer"[^>]*data-route="explore"/);
 });
 

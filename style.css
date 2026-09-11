@@ -1643,50 +1643,60 @@ body.is-logged-in #btn-open-auth {
     padding-top: 28px;
 }
 
-.landing-map-footer.page-container {
-    position: relative;
+.landing-map-footer {
+    position: fixed;
+    left: 50%;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
     isolation: isolate;
-    display: grid;
+    display: none;
     align-items: center;
-    justify-items: start;
-    width: min(var(--container), calc(100% - 48px));
-    min-height: 360px;
+    justify-content: center;
+    gap: 12px;
+    width: min(360px, calc(100% - 48px));
+    height: 64px;
     overflow: hidden;
-    margin-top: 8px;
-    border: 0;
-    background: transparent;
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 999px;
+    background: var(--teal);
     color: #fff;
     cursor: pointer;
     font: inherit;
-    padding: 56px clamp(40px, 8vw, 104px);
-    text-align: left;
+    padding: 0 24px;
+    text-align: center;
+    transform: translateX(-50%);
+    box-shadow: 0 6px 22px rgba(14, 40, 41, 0.22);
+    transition: transform 180ms ease-out, box-shadow 240ms ease-out;
 }
 
-.landing-map-footer.page-container::before,
-.landing-map-footer.page-container::after {
+body[data-page="home"]:not(.modal-open) .landing-map-footer {
+    display: flex;
+}
+
+body[data-page="home"] .site-footer {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+
+.landing-map-footer::before,
+.landing-map-footer::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
 }
 
-.landing-map-footer.page-container::before {
+.landing-map-footer::before {
     z-index: 0;
     background: url('images/landing-map-pins-background.jpg') center / cover no-repeat;
     filter: saturate(1.08) contrast(1.08) brightness(0.88);
     transform: scale(1.01);
     transition: filter 520ms ease-out, transform 700ms ease-out;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
 }
 
-.landing-map-footer.page-container::after {
+.landing-map-footer::after {
     z-index: 1;
-    background:
-        linear-gradient(90deg, rgba(0, 44, 45, 0.78) 0%, rgba(0, 54, 55, 0.36) 52%, rgba(0, 54, 55, 0.05) 100%),
-        linear-gradient(180deg, rgba(0, 25, 26, 0.04) 0%, rgba(0, 25, 26, 0.18) 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
+    background: rgba(0, 44, 45, 0.56);
 }
 
 .landing-map-footer:hover::before,
@@ -1695,54 +1705,36 @@ body.is-logged-in #btn-open-auth {
     transform: scale(1.018);
 }
 
-.landing-map-footer-content {
+.landing-map-footer > span {
     position: relative;
     z-index: 2;
-    display: grid;
-    justify-items: start;
-    gap: 18px;
-    width: min(660px, 72%);
     text-shadow: 0 2px 14px rgba(0, 35, 36, 0.52);
 }
 
-.landing-map-footer-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+.landing-map-footer .material-symbols-outlined {
+    flex: 0 0 24px;
+    font-size: 24px;
+    line-height: 1;
 }
 
 #landing-map-footer-title {
-    display: grid;
-    width: max-content;
-    font-size: 42px;
+    font-size: 18px;
     font-weight: 800;
-    line-height: 1.35;
-    word-break: keep-all;
+    line-height: 1.4;
+    white-space: nowrap;
 }
 
-#landing-map-footer-title > span {
-    display: block;
-}
-
-#landing-map-footer-title > span:last-child {
-    padding-left: clamp(32px, 5vw, 72px);
-}
-
-.landing-map-footer-action {
-    min-height: 42px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.78);
-    font-size: 15px;
-    font-weight: 800;
-}
-
-.landing-map-footer-action .material-symbols-outlined {
-    font-size: 20px;
+.landing-map-footer-arrow {
     transition: transform 300ms ease-out;
 }
 
-.landing-map-footer:hover .landing-map-footer-action .material-symbols-outlined,
-.landing-map-footer:focus-visible .landing-map-footer-action .material-symbols-outlined {
+.landing-map-footer:hover .landing-map-footer-arrow,
+.landing-map-footer:focus-visible .landing-map-footer-arrow {
     transform: translateX(2px);
+}
+
+.landing-map-footer:active {
+    transform: translateX(-50%) scale(0.98);
 }
 
 .landing-map-footer:focus-visible {
@@ -2521,40 +2513,21 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
         display: none;
     }
 
-    .landing-map-footer.page-container::before,
-    .landing-map-footer.page-container::after {
-        -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 1%, #000 99%, transparent 100%);
-        mask-image: linear-gradient(to right, transparent 0%, #000 1%, #000 99%, transparent 100%);
-    }
-
     .landing-section-toolbar,
     .landing-sections {
         padding-right: 16px;
         padding-left: 16px;
     }
 
-    .landing-map-footer.page-container {
-        place-items: center;
-        width: 100%;
-        min-height: 300px;
-        margin-right: auto;
-        margin-left: auto;
-        padding: 32px 24px;
-    }
-
-    .landing-map-footer-content {
-        gap: 14px;
-        width: 100%;
-        text-align: left;
+    .landing-map-footer {
+        width: min(280px, calc(100% - 40px));
+        height: 56px;
+        gap: 10px;
+        padding: 0 20px;
     }
 
     #landing-map-footer-title {
-        max-width: 100%;
-        font-size: 26px;
-    }
-
-    #landing-map-footer-title > span:last-child {
-        padding-left: clamp(20px, 8vw, 32px);
+        font-size: 16px;
     }
 
     .landing-section-toolbar {
@@ -2608,8 +2581,9 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
 @media (prefers-reduced-motion: reduce) {
     .landing-map-link-arrow,
-    .landing-map-footer.page-container::before,
-    .landing-map-footer-action .material-symbols-outlined {
+    .landing-map-footer,
+    .landing-map-footer::before,
+    .landing-map-footer-arrow {
         transition: none;
     }
 }

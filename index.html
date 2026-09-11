@@ -109,11 +109,6 @@
                         <button type="button" data-landing-query="바다">바다</button>
                         <button type="button" data-landing-query="사람">사람</button>
                     </div>
-                    <button id="landing-map-primary" class="landing-map-link" data-route="explore" type="button">
-                        <span class="material-symbols-outlined" aria-hidden="true">map</span>
-                        <span>지도로 둘러보기</span>
-                        <span class="material-symbols-outlined landing-map-link-arrow" aria-hidden="true">arrow_forward</span>
-                    </button>
                 </div>
                 <div class="landing-section-toolbar page-container">
                     <p id="landing-search-result-copy" class="sr-only" aria-live="polite">공개 사진을 주제별로 둘러보세요.</p>
@@ -129,18 +124,6 @@
                         <div class="landing-photo-row" data-landing-scroll tabindex="0" aria-label="공개 여행 사진"></div>
                     </section>
                 </div>
-                <button id="landing-map-footer" class="landing-map-footer page-container" data-route="explore" type="button" aria-labelledby="landing-map-footer-title">
-                    <span class="landing-map-footer-content">
-                        <strong id="landing-map-footer-title">
-                            <span>기억에 남을</span>
-                            <span>장소를 발견해보세요.</span>
-                        </strong>
-                        <span class="landing-map-footer-action">
-                            <span>지도에서 보기</span>
-                            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-                        </span>
-                    </span>
-                </button>
             </section>
             <section class="white-band home-houses-reference" aria-labelledby="home-houses-reference-title">
                 <div class="home-houses-reference__word" aria-hidden="true">Ikkyee</div>
@@ -1017,6 +1000,11 @@
             <p class="site-footer__copyright">© 2026 Ikkyee. 사진과 기록의 권리는 작성자에게 있습니다.</p>
         </div>
     </footer>
+    <button id="landing-map-footer" class="landing-map-footer" data-route="explore" type="button" aria-labelledby="landing-map-footer-title">
+        <span class="material-symbols-outlined" aria-hidden="true">map</span>
+        <span id="landing-map-footer-title">지도로 둘러보기</span>
+        <span class="material-symbols-outlined landing-map-footer-arrow" aria-hidden="true">arrow_forward</span>
+    </button>
 
     <div id="feedback-modal" class="modal" aria-hidden="true">
         <form id="feedback-form" class="modal-card feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="feedback-dialog-title">
