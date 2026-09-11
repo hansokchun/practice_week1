@@ -50,7 +50,7 @@ test('home stays visually gated until auth and saved library boot are finished',
     assert.match(markup, /<body[^>]*class="is-logged-out is-app-booting"/);
     assert.match(styles, /body\.is-app-booting\s+\.home-workspace,[\s\S]*body\.is-app-booting\s+\.white-band\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /function setAppBooting\(isBooting\)\s*\{[\s\S]*document\.body\.classList\.toggle\('is-app-booting', Boolean\(isBooting\)\);[\s\S]*\}/);
-    assert.match(app, /document\.addEventListener\('DOMContentLoaded', async \(\) => \{[\s\S]*try \{[\s\S]*await loadSavedLibrary\(\);[\s\S]*\} finally \{[\s\S]*setAppBooting\(false\);[\s\S]*\}/);
+    assert.match(app, /document\.addEventListener\('DOMContentLoaded', async \(\) => \{[\s\S]*try \{[\s\S]*await Promise\.all\(\[loadSavedLibrary\(\), loadLandingCuration\(\)\]\);[\s\S]*\} finally \{[\s\S]*setAppBooting\(false\);[\s\S]*\}/);
 });
 
 test('home no longer renders temporary preview bands or removed intro candidates', () => {
@@ -398,7 +398,7 @@ test('site footer provides global archive information after the app pages', () =
     assert.match(markup, /정확한 위치 또는 대략적인 위치/);
     assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*0;[^}]*radial-gradient\(circle at 12% 18%,\s*rgba\(255,\s*255,\s*255,\s*0\.14\),\s*transparent 34%\),[\s\S]*linear-gradient\(135deg,\s*var\(--teal-dark\)\s*0%,\s*var\(--teal\)\s*100%\);/s);
     assert.match(styles, /\.site-footer__inner\s*\{[^}]*grid-template-columns:/s);
-    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*background:\s*var\(--surface\);[^}]*color:\s*var\(--teal-dark\);/s);
+    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*color:\s*#fff;[^}]*text-decoration:\s*underline;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {

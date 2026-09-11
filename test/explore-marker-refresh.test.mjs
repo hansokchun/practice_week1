@@ -54,7 +54,7 @@ test('saved library loading ends only when all parallel library requests finish'
 test('startup opens the requested Explore route before waiting for the photo library', () => {
     const bootStart = source.indexOf("document.addEventListener('DOMContentLoaded'");
     const bootBody = source.slice(bootStart);
-    const loadIndex = bootBody.indexOf('await loadSavedLibrary();');
+    const loadIndex = bootBody.indexOf('await Promise.all([loadSavedLibrary(), loadLandingCuration()]);');
 
     assert.notEqual(loadIndex, -1);
     assert.ok(bootBody.indexOf('requestedInitialRoute === APP_SECTIONS.EXPLORE') < bootBody.indexOf('state.currentUser = await getCurrentUser();'));

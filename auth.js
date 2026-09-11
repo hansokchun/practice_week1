@@ -66,7 +66,7 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
     const { data, error } = await sb.storage
         .from('photos')
         .createSignedUrls(paths, PHOTO_SIGNED_URL_TTL_SECONDS);
-    if (error) return photos;
+    if (error) throw error;
 
     const signedUrlByPath = new Map(
         (data || [])

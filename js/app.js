@@ -95,7 +95,7 @@ import {
     getPhotoDetailOwnerMapItems
 } from './photo-detail-map.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
-import { shouldRefreshPhotoSignedUrl } from './photo-signed-url-freshness.mjs';
+import { shouldRefreshPhotoSignedUrl, reusePhotoSignedUrls } from './photo-signed-url-freshness.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
@@ -282,6 +282,7 @@ const state = {
     hasLoadedMyLikes: false,
     hasLoadedSavedAlbums: false,
     savedPhotosLoadError: false,
+    savedPhotosLoadFailure: null,
     savedAlbumsLoadError: false,
     myLikesLoadError: false,
     profileNames: {},
@@ -381,6 +382,7 @@ const state = {
     landingHeroPhotoIds: [],
     landingHeroLocationLabels: {},
     hasLoadedLandingCuration: false,
+    landingCurationLoadError: null,
     landingVisibleCounts: {},
     landingSearchQuery: '',
     selectedLandingSectionId: null,
@@ -416,6 +418,7 @@ let turnstileLoadPromise = null;
 let lastModalTrigger = null;
 let landingHeroTimer = null;
 let landingHeroIndex = 0;
+let lastLandingSectionsMarkup = null;
 const LANDING_HERO_SLIDE_LIMIT = 5;
 const MODAL_FOCUSABLE_SELECTOR = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
@@ -501,10 +504,14 @@ function getPhotoDescriptionText(photo) {
 }
 
 function getPhotoImageSrc(photo = {}) {
+    if (shouldRefreshPhotoSignedUrl(photo)) return '';
     return photo.url || photo.albumCoverUrl || (!photo.storage_path && MAIN_BG_2_URL) || '';
 }
 
 function getPhotoThumbnailSrc(photo = {}) {
+    if (photo.thumbnail_path) {
+        return shouldRefreshPhotoSignedUrl(photo) ? '' : (photo.thumbnail_url || '');
+    }
     return photo.thumbnail_url || getPhotoImageSrc(photo);
 }
 
@@ -731,7 +738,8 @@ function queuePhotoImageUrlRecovery(image) {
 }
 
 async function flushPhotoImageUrlRecoveryQueue() {
-    const queuedEntries = [...photoImageUrlRecoveryQueue.entries()];
+    const queuedEntries = [...photoImageUrlRecoveryQueue.entries()]
+        .filter(([, images]) => [...images].some((image) => image.isConnected));
     photoImageUrlRecoveryQueue.clear();
     if (!queuedEntries.length) return;
 
@@ -741,7 +749,11 @@ async function flushPhotoImageUrlRecoveryQueue() {
     ));
     if (!photosToHydrate.length) return;
 
-    const { data: refreshedPhotos } = await hydratePhotoUrls(photosToHydrate);
+    const { data: refreshedPhotos, error } = await hydratePhotoUrls(photosToHydrate);
+    if (error) {
+        queuedEntries.forEach(([, images]) => images.forEach((image) => image.classList.add('is-photo-error')));
+        return;
+    }
     const refreshedById = new Map((refreshedPhotos || []).map((photo) => [String(photo.id), photo]));
     state.savedPhotos.forEach((photo) => {
         const refreshed = refreshedById.get(String(photo.id));
@@ -1006,6 +1018,7 @@ function renderRoute(section) {
     document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : normalized === 'tag' ? 'tag' : renderedRoute;
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
+    if (normalized === LANDING_ROUTE) renderLandingHeroSlides();
     setLandingHeroSlideshowActive(normalized === LANDING_ROUTE);
     $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
     if (normalized === 'album') renderAlbumComposePage();
@@ -1208,6 +1221,8 @@ function getLandingPublicPhotos() {
 function renderLandingHeroSlides() {
     const container = $('.landing-hero-slides');
     if (!container) return;
+    if (document.body.dataset.page !== LANDING_ROUTE) return;
+    if (!state.hasLoadedSavedPhotos || !state.hasLoadedLandingCuration || state.savedPhotosLoadError) return;
     stopLandingHeroSlideshow();
     const publicPhotos = getLandingPublicPhotos();
     const photoById = new Map(publicPhotos.map((photo) => [String(photo.id || photo.localId || ''), photo]));
@@ -1264,6 +1279,22 @@ function renderLandingPhotoCard(photo) {
 function renderLandingSections() {
     const container = $('#landing-sections');
     if (!container) return;
+    if (state.savedPhotosLoadError || state.landingCurationLoadError) {
+        lastLandingSectionsMarkup = null;
+        container.removeAttribute('aria-busy');
+        container.innerHTML = renderActionableFailure(getLibraryFailureState('photos', {
+            online: navigator.onLine,
+            error: state.savedPhotosLoadFailure || state.landingCurationLoadError
+        }));
+        return;
+    }
+    if (!state.hasLoadedSavedPhotos || !state.hasLoadedLandingCuration) {
+        lastLandingSectionsMarkup = null;
+        container.setAttribute('aria-busy', 'true');
+        container.innerHTML = `<div class="landing-loading-state" role="status"><span class="sr-only">사진을 불러오는 중입니다.</span>${Array.from({ length: 5 }, () => '<div aria-hidden="true"></div>').join('')}</div>`;
+        return;
+    }
+    container.removeAttribute('aria-busy');
     const allPhotos = getLandingPublicPhotos();
     const query = state.landingSearchQuery.trim();
     const searchResults = getLandingSearchResults(allPhotos, query);
@@ -1275,14 +1306,15 @@ function renderLandingSections() {
         ? `${query} 검색 결과 ${searchResults.length}장`
         : '공개 사진을 주제별로 둘러보세요.';
 
-    container.innerHTML = sections.map((section, sectionIndex) => {
+    const sectionsMarkup = sections.map((section, sectionIndex) => {
         const sectionPhotos = query
             ? searchResults
             : getLandingSectionPhotos(section, allPhotos, sectionIndex);
         const visiblePhotos = query ? sectionPhotos : getLandingVisiblePhotos(sectionPhotos);
+        if (!query && !visiblePhotos.length) return '';
         const cards = visiblePhotos.length
             ? visiblePhotos.map(renderLandingPhotoCard).join('')
-            : '<div class="landing-empty-state"><strong>이 주제에 표시할 공개 사진이 아직 없습니다.</strong><p>다른 주제를 둘러보거나 검색어를 바꿔보세요.</p></div>';
+            : '<div class="landing-empty-state"><strong>검색 결과가 없습니다.</strong><p>다른 검색어로 찾아보세요.</p></div>';
         return `
             <section class="landing-photo-section" data-landing-section="${escapeHtml(section.id)}" aria-labelledby="landing-section-${escapeHtml(section.id)}">
                 <div class="landing-section-heading">
@@ -1297,10 +1329,14 @@ function renderLandingSections() {
                         <button data-landing-scroll-direction="next" type="button" aria-label="다음 사진" ${visiblePhotos.length > 1 ? '' : 'disabled'}><span class="material-symbols-outlined">chevron_right</span></button>
                     </div>
                 </div>
-                <div class="landing-photo-row" data-landing-scroll tabindex="0" aria-label="${escapeHtml(section.title)} 사진 목록">${cards}</div>
+                <div class="landing-photo-row${visiblePhotos.length ? '' : ' is-empty'}" data-landing-scroll tabindex="0" aria-label="${escapeHtml(section.title)} 사진 목록">${cards}</div>
             </section>
         `;
     }).join('');
+    // Keep image elements and horizontal scroll positions when only unrelated UI changes.
+    if (lastLandingSectionsMarkup === sectionsMarkup) return;
+    lastLandingSectionsMarkup = sectionsMarkup;
+    container.innerHTML = sectionsMarkup || '<div class="landing-empty-state"><strong>아직 공개된 사진이 없습니다.</strong></div>';
     centerLandingRowsOnMobile();
     requestAnimationFrame(() => $$('[data-landing-scroll]').forEach(updateLandingScrollButtons));
 }
@@ -1320,6 +1356,7 @@ function centerLandingRowsOnMobile() {
 
 async function loadLandingCuration() {
     const { sections, assignments, heroSlides, heroPhotoIds, error } = await fetchLandingCuration();
+    state.landingCurationLoadError = error || null;
     if (!error) {
         state.landingHeroPhotoIds = heroPhotoIds;
         state.landingHeroLocationLabels = Object.fromEntries(
@@ -3616,7 +3653,7 @@ function updateAccountUI() {
     if (!state.currentUser) setAccountMenuOpen(false);
     if (button) {
         button.hidden = Boolean(state.currentUser);
-        button.textContent = 'Login';
+        button.textContent = '로그인';
     }
     setAvatarDisplay($('#account-avatar-image'), $('#account-avatar-fallback'), profile.avatarUrl, profile.nickname);
     renderAccountNotifications();
@@ -5184,17 +5221,23 @@ async function loadSavedPhotos({ render = true } = {}) {
         state.savedPhotos = [];
         state.hasLoadedSavedPhotos = true;
         state.savedPhotosLoadError = true;
+        state.savedPhotosLoadFailure = error;
         showToast('저장된 사진을 불러오지 못했습니다.');
+        renderLandingSections();
         if (render) renderSavedPhotoSurfaces();
         if (render || document.body.dataset.page === APP_SECTIONS.EXPLORE) renderPublicSurfaces();
         return;
     }
     state.savedPhotosLoadError = false;
+    state.savedPhotosLoadFailure = null;
+    const previousPhotos = new Map(state.savedPhotos.map((photo) => [String(photo.id), photo]));
     const metadataPhotos = (data || [])
         .filter((photo) => !state.currentUser || photo.owner_id === state.currentUser.id || photo.shared || photo.visibility === 'public')
-        .map(normalizeSavedPhoto);
+        .map((photo) => normalizeSavedPhoto(reusePhotoSignedUrls(photo, previousPhotos.get(String(photo.id)))));
     state.savedPhotos = metadataPhotos;
     state.hasLoadedSavedPhotos = true;
+    renderLandingSections();
+    renderLandingHeroSlides();
     queueMissingPhotoThumbnailBackfill();
 
     if (render) {
@@ -5270,6 +5313,7 @@ function loadSavedLibrary() {
 }
 
 async function retrySavedLibrary() {
+    if (state.isSavedLibraryLoading) return;
     state.isSavedLibraryLoading = true;
     state.hasLoadedSavedPhotos = false;
     state.hasLoadedMyLikes = false;
@@ -5277,9 +5321,14 @@ async function retrySavedLibrary() {
     state.savedPhotosLoadError = false;
     state.savedAlbumsLoadError = false;
     state.myLikesLoadError = false;
+    state.savedPhotosLoadFailure = null;
+    state.landingCurationLoadError = null;
+    state.hasLoadedLandingCuration = false;
+    lastLandingSectionsMarkup = null;
+    renderLandingSections();
     renderSavedPhotoSurfaces();
     renderLikedPhotoSurfaces();
-    await loadSavedLibrary();
+    await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
 }
 
 async function loadPublicProfileNames() {
@@ -5498,6 +5547,7 @@ async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
         return refreshed ? {
             ...photo,
             url: refreshed.url,
+            thumbnail_url: refreshed.thumbnail_url || photo.thumbnail_url,
             signed_url_expires_at: refreshed.signed_url_expires_at
         } : photo;
     });
@@ -8744,8 +8794,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
-        await loadSavedLibrary();
-        await loadLandingCuration();
+        await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
         await loadPublicProfileNames();
         showPendingKakaoProfileImport();
         renderStagedPhotos();

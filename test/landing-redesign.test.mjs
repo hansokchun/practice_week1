@@ -50,18 +50,18 @@ test('메인 검색창 위의 소개 문구를 제거하고 비워진 간격만�
     assert.match(css, /\.landing-search\s*\{[^}]*margin-top:\s*0;/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*blur\(0\.35px\) saturate\(1\.02\) brightness\(0\.94\) contrast\(1\.13\);[^}]*mix-blend-mode:\s*multiply;/s);
-    assert.match(css, /\.landing-search-globe\s*\{[^}]*top:\s*clamp\(-40px,\s*-2vw,\s*-12px\);/s);
+    assert.match(css, /\.landing-search-globe\s*\{[^}]*top:\s*-140px;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*mask-image:\s*linear-gradient\(to bottom,/s);
     assert.match(css, /linear-gradient\(to right, transparent 0%, #000 8%, #000 92%, transparent 100%\)/);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*84px 16px 44px;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-globe\s*\{[^}]*top:\s*100px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-hero\s*\{[^}]*padding:\s*32px 16px 24px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-globe\s*\{[^}]*top:\s*24px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*0;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search input\s*\{[^}]*font-size:\s*16px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions\s*\{[^}]*flex-wrap:\s*nowrap;/s);
     assert.match(html, /id="btn-header-upload"[^>]*aria-label="사진 추가"/);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload \.material-symbols-outlined\s*\{[^}]*display:\s*inline-block;/s);
-    assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*\.brand-korean\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*\.brand-korean\s*\{[^}]*display:\s*inline;/s);
     assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
     assert.doesNotMatch(html, /지금 둘러보기|data-landing-query="도쿄 골목"|data-landing-query="벚꽃"|data-landing-query="일본"/);
 });
@@ -122,7 +122,7 @@ test('하단 지도 CTA는 발견 문구와 짧은 지도 동작을 분리한 �
     assert.doesNotMatch(css.match(/\.landing-map-footer\.page-container\s*\{[^}]*\}/s)?.[0] ?? '', /border-radius:/);
     assert.match(css, /\.landing-map-footer\.page-container\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*color:\s*#fff;[^}]*cursor:\s*pointer;/s);
     assert.doesNotMatch(css, /\.landing-map-footer \.btn-primary/);
-    assert.match(css, /#landing-map-footer-title\s*\{[^}]*font-size:\s*clamp\(30px,\s*3\.4vw,\s*48px\);/s);
+    assert.match(css, /#landing-map-footer-title\s*\{[^}]*font-size:\s*42px;/s);
     assert.match(css, /#landing-map-footer-title > span:last-child\s*\{[^}]*padding-left:\s*clamp\(32px,\s*5vw,\s*72px\);/s);
 });
 
@@ -173,17 +173,16 @@ test('로그인 모달은 선택 수단만 간결하게 보여준다', async () 
     assert.doesNotMatch(auth, /auth-policy-note/);
 });
 
-test('랜딩 소제목은 중앙에 놓이고 섹션 사이에는 충분한 여백을 둔다', async () => {
+test('메인 소제목과 동작은 한 줄에 정렬되고 사진 행은 다섯 장을 유지한다', async () => {
     const css = await readFile(new URL('style.css', root), 'utf8');
-    assert.match(css, /\.landing-section-heading\s*\{[^}]*position:\s*relative;[^}]*display:\s*grid;[^}]*place-items:\s*center;/s);
-    assert.match(css, /\.landing-section-heading\s*\{[^}]*margin-bottom:\s*36px;/s);
-    assert.match(css, /\.landing-section-heading h2\s*\{[^}]*text-align:\s*center;/s);
-    assert.match(css, /\.landing-scroll-actions\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
+    assert.match(css, /\.landing-section-heading\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
+    assert.match(css, /\.landing-section-heading h2\s*\{[^}]*margin-right:\s*auto;[^}]*text-align:\s*left;/s);
+    assert.match(css, /\.landing-scroll-actions\s*\{[^}]*flex-shrink:\s*0;/s);
     assert.match(css, /\.landing-photo-row\s*\{[^}]*grid-auto-columns:\s*calc\(\(100% - 64px\) \/ 5\);/s);
-    assert.match(css, /\.landing-sections\s*\{[^}]*gap:\s*128px;/s);
+    assert.match(css, /\.landing-sections\s*\{[^}]*gap:\s*72px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*gap:\s*12px;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-heading\s*\{[^}]*margin-bottom:\s*24px;/s);
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-sections\.page-container\s*\{[^}]*gap:\s*72px;[^}]*padding-top:\s*36px;[^}]*padding-bottom:\s*56px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-heading\s*\{[^}]*margin-bottom:\s*16px;/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-sections\.page-container\s*\{[^}]*gap:\s*44px;/s);
 });
 
 test('모바일 사진 목록은 두 번째 사진을 중앙에 놓아 양옆 사진을 보여준다', async () => {

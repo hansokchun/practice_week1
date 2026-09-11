@@ -4,11 +4,14 @@ const LIBRARY_LABELS = {
     albums: '앨범'
 };
 
-export function getLibraryFailureState(section = 'photos', { online = true } = {}) {
+export function getLibraryFailureState(section = 'photos', { online = true, error = null } = {}) {
     const label = LIBRARY_LABELS[section] || LIBRARY_LABELS.photos;
+    const restricted = /exceed_egress_quota|service.*restricted/i.test(error?.message || '');
     return {
         title: `${label}을 불러오지 못했습니다.`,
-        body: online
+        body: restricted
+            ? '사진 서비스가 일시적으로 중단되었습니다. 잠시 후 다시 확인해주세요.'
+            : online
             ? '잠시 후 다시 시도해주세요.'
             : '인터넷 연결을 확인한 뒤 다시 시도해주세요.',
         action: '다시 시도'

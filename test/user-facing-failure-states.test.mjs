@@ -20,6 +20,13 @@ test('library failures stay distinct from empty states and offer a retry', () =>
     assert.equal(getLibraryFailureState('albums').action, '다시 시도');
 });
 
+test('quota restrictions explain service unavailability without exposing billing internals', () => {
+    const copy = getLibraryFailureState('photos', { error: { message: 'Service restricted: exceed_egress_quota', status: 402 } });
+    assert.match(copy.body, /서비스/);
+    assert.doesNotMatch(copy.body, /quota|supabase|402|과금|업그레이드/i);
+    assert.equal(copy.action, '다시 시도');
+});
+
 test('upload failures use safe copy without backend details', () => {
     const offline = getUploadFailureState({ online: false });
     const online = getUploadFailureState({ online: true });

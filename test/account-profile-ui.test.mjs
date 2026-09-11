@@ -43,7 +43,7 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.match(app, /imageNode\.src = resolvedAvatarUrl;/);
     assert.match(app, /imageNode\.onerror = \(\) => \{\s*imageNode\.onerror = null;\s*imageNode\.src = defaultProfileAvatarUrl;\s*\};/s);
     assert.match(app, /fallbackNode\.hidden = true;/);
-    assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = 'Login';\s*\}/s);
+    assert.match(app, /if \(button\) \{\s*button\.hidden = Boolean\(state\.currentUser\);\s*button\.textContent = '로그인';\s*\}/s);
     assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
 });
 

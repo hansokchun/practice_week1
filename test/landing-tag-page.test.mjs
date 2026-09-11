@@ -32,7 +32,7 @@ test('landing topic headings expose a right-side view-all action', () => {
     assert.match(appSource, /data-landing-view-all="\$\{escapeHtml\(section\.id\)\}"/);
     assert.match(appSource, />\s*전체보기\s*</);
     assert.match(appSource, /routeToLandingTag\(landingViewAllButton\.dataset\.landingViewAll\)/);
-    assert.match(cssSource, /\.landing-section-view-all\s*\{[\s\S]*position:\s*absolute;[\s\S]*right:\s*104px;/);
+    assert.match(cssSource, /\.landing-section-view-all\s*\{[^}]*flex-shrink:\s*0;[^}]*min-height:\s*44px;/);
     assert.match(cssSource, /@media \(max-width:\s*760px\)[\s\S]*\.landing-section-view-all\s*\{[\s\S]*right:\s*0;/s);
 });
 

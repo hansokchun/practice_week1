@@ -288,6 +288,12 @@ body[data-page="landing"] .account-avatar {
     }
 
     .brand-korean {
+        display: inline;
+        padding-left: 0;
+        font-size: 18px;
+    }
+
+    .brand-korean::before {
         display: none;
     }
 
@@ -1219,6 +1225,13 @@ img {
     flex: 0 0 auto;
 }
 
+@media (max-width: 520px) {
+    .brand-korean {
+        padding-left: 0;
+        font-size: 18px;
+    }
+}
+
 .account-area {
     display: flex;
     align-items: center;
@@ -1478,7 +1491,7 @@ body.is-logged-in #btn-open-auth {
     position: relative;
     justify-items: center;
     z-index: 1;
-    padding: clamp(94px, 12vw, 154px) 24px clamp(54px, 8vw, 86px);
+    padding: 64px 24px 36px;
     text-align: center;
 }
 
@@ -1490,7 +1503,7 @@ body.is-logged-in #btn-open-auth {
 .landing-search-globe {
     position: absolute;
     z-index: 0;
-    top: clamp(-40px, -2vw, -12px);
+    top: -140px;
     left: 50%;
     width: min(1180px, 96vw);
     max-width: none;
@@ -1522,7 +1535,7 @@ body.is-logged-in #btn-open-auth {
     border: 2px solid rgba(26, 77, 78, 0.18);
     border-radius: 18px;
     background: #fff;
-    box-shadow: 0 24px 54px rgba(26, 77, 78, 0.13);
+    box-shadow: 0 8px 24px rgba(26, 77, 78, 0.07);
     padding: 8px 9px 8px 22px;
 }
 
@@ -1626,8 +1639,8 @@ body.is-logged-in #btn-open-auth {
 
 .landing-sections {
     display: grid;
-    gap: 128px;
-    padding-top: 52px;
+    gap: 72px;
+    padding-top: 28px;
 }
 
 .landing-map-footer.page-container {
@@ -1663,17 +1676,17 @@ body.is-logged-in #btn-open-auth {
     filter: saturate(1.08) contrast(1.08) brightness(0.88);
     transform: scale(1.01);
     transition: filter 520ms ease-out, transform 700ms ease-out;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
 }
 
 .landing-map-footer.page-container::after {
     z-index: 1;
     background:
-        linear-gradient(90deg, rgba(0, 44, 45, 0.82) 0%, rgba(0, 54, 55, 0.48) 52%, rgba(0, 54, 55, 0.12) 100%),
-        linear-gradient(180deg, rgba(0, 25, 26, 0.04) 0%, rgba(0, 25, 26, 0.32) 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+        linear-gradient(90deg, rgba(0, 44, 45, 0.78) 0%, rgba(0, 54, 55, 0.36) 52%, rgba(0, 54, 55, 0.05) 100%),
+        linear-gradient(180deg, rgba(0, 25, 26, 0.04) 0%, rgba(0, 25, 26, 0.18) 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 3%, #000 97%, transparent 100%);
 }
 
 .landing-map-footer:hover::before,
@@ -1701,7 +1714,7 @@ body.is-logged-in #btn-open-auth {
 #landing-map-footer-title {
     display: grid;
     width: max-content;
-    font-size: clamp(30px, 3.4vw, 48px);
+    font-size: 42px;
     font-weight: 800;
     line-height: 1.35;
     word-break: keep-all;
@@ -1739,11 +1752,11 @@ body.is-logged-in #btn-open-auth {
 
 .landing-section-heading {
     position: relative;
-    display: grid;
-    place-items: center;
-    min-height: 42px;
-    margin-bottom: 36px;
-    padding-inline: 112px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 44px;
+    margin-bottom: 20px;
 }
 
 .landing-photo-section {
@@ -1752,10 +1765,13 @@ body.is-logged-in #btn-open-auth {
 
 .landing-section-heading h2 {
     margin: 0;
+    margin-right: auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
     color: var(--teal-dark);
-    font-size: clamp(25px, 3vw, 34px);
+    font-size: 28px;
     letter-spacing: 0;
-    text-align: center;
+    text-align: left;
 }
 
 .landing-section-heading p {
@@ -1764,9 +1780,8 @@ body.is-logged-in #btn-open-auth {
 }
 
 .landing-section-view-all {
-    position: absolute;
-    top: 50%;
-    right: 104px;
+    flex-shrink: 0;
+    min-height: 44px;
     border: 0;
     background: transparent;
     color: var(--teal);
@@ -1774,8 +1789,7 @@ body.is-logged-in #btn-open-auth {
     font: inherit;
     font-size: 14px;
     font-weight: 900;
-    padding: 8px 0;
-    transform: translateY(-50%);
+    padding: 8px 4px;
 }
 
 .landing-section-view-all:hover,
@@ -1791,12 +1805,9 @@ body.is-logged-in #btn-open-auth {
 }
 
 .landing-scroll-actions {
-    position: absolute;
-    top: 50%;
-    right: 0;
     display: flex;
+    flex-shrink: 0;
     gap: 8px;
-    transform: translateY(-50%);
 }
 
 .landing-scroll-actions button {
@@ -1859,11 +1870,40 @@ body.is-logged-in #btn-open-auth {
 
 .landing-empty-state {
     grid-column: 1 / -1;
-    min-height: 190px;
-    border: 1px dashed var(--line);
-    border-radius: 16px;
+    min-height: 96px;
     color: var(--muted);
-    padding: 32px;
+    padding: 24px 0;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.landing-photo-row.is-empty {
+    display: block;
+    padding-inline: 0;
+}
+
+.landing-sections .actionable-failure-state {
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 28px 0;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+
+.landing-loading-state {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.landing-loading-state > div {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--thumbnail-radius);
+    background: rgba(26, 77, 78, 0.06);
 }
 
 /* 새 랜딩이 기존 소개/개인 대시보드 표시를 대체한다. 데이터용 DOM은 회귀 호환을 위해 유지한다. */
@@ -2363,8 +2403,8 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 }
 
 .landing-sections.page-container {
-    padding-top: 52px;
-    padding-bottom: 78px;
+    padding-top: 28px;
+    padding-bottom: 64px;
 }
 
 @media (max-width: 760px) {
@@ -2382,11 +2422,11 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-search-hero {
-        padding: 84px 16px 44px;
+        padding: 32px 16px 24px;
     }
 
     .landing-search-globe {
-        top: 100px;
+        top: 24px;
         width: 100vw;
         opacity: 0.86;
     }
@@ -2439,8 +2479,12 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-section-heading {
-        margin-bottom: 24px;
-        padding-inline: 64px;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+
+    .landing-section-heading h2 {
+        font-size: 24px;
     }
 
     .landing-section-view-all {
@@ -2453,9 +2497,24 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     }
 
     .landing-sections.page-container {
-        gap: 72px;
-        padding-top: 36px;
-        padding-bottom: 56px;
+        gap: 44px;
+        padding-top: 16px;
+        padding-bottom: 40px;
+    }
+
+    .landing-loading-state {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .landing-loading-state > div:nth-child(n + 3) {
+        display: none;
+    }
+
+    .landing-map-footer.page-container::before,
+    .landing-map-footer.page-container::after {
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 1%, #000 99%, transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0%, #000 1%, #000 99%, transparent 100%);
     }
 
     .landing-section-toolbar,
@@ -2481,7 +2540,7 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
     #landing-map-footer-title {
         max-width: 100%;
-        font-size: clamp(26px, 8vw, 30px);
+        font-size: 26px;
     }
 
     #landing-map-footer-title > span:last-child {
@@ -3171,7 +3230,7 @@ body[data-page="explore"] .site-footer {
 
 .site-footer__inner {
     display: grid;
-    grid-template-columns: minmax(280px, 1.4fr) minmax(140px, auto) minmax(280px, 1fr);
+    grid-template-columns: minmax(0, 1.3fr) minmax(140px, 0.6fr) minmax(0, 1fr);
     align-items: start;
     gap: 28px;
 }
@@ -3202,32 +3261,31 @@ body[data-page="explore"] .site-footer {
 }
 
 .site-footer__nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    justify-items: start;
+    gap: 0;
 }
 
 .site-footer__nav a {
     display: inline-flex;
     align-items: center;
-    min-height: 38px;
-    border: 1px solid rgba(249, 247, 242, 0.28);
-    border-radius: 999px;
-    background: rgba(249, 247, 242, 0.08);
+    min-height: 44px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: var(--surface);
     font-size: 14px;
-    font-weight: 800;
-    line-height: 1;
+    font-weight: 700;
+    line-height: 1.4;
     text-decoration: none;
-    padding: 0 16px;
-    transition: transform 140ms ease, background 140ms ease, color 140ms ease;
+    padding: 6px 0;
+    text-underline-offset: 5px;
 }
 
 .site-footer__nav a:hover,
 .site-footer__nav a:focus-visible {
-    background: var(--surface);
-    color: var(--teal-dark);
-    transform: translateY(-1px);
+    color: #fff;
+    text-decoration: underline;
 }
 
 .site-footer__notes {
@@ -11822,9 +11880,8 @@ body.modal-open {
         font-size: 30px;
     }
 
-    .site-footer__nav a {
-        flex: 1 1 118px;
-        justify-content: center;
+    .site-footer__nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .site-footer__copyright {
