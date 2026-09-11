@@ -20,6 +20,7 @@ export function reusePhotoSignedUrls(photo, previous, now = Date.now()) {
         ...photo,
         url: previous.url,
         signed_url_expires_at: previous.signed_url_expires_at,
-        thumbnail_url: photo.thumbnail_path === previous.thumbnail_path ? previous.thumbnail_url : null
+        thumbnail_url: photo.thumbnail_path === previous.thumbnail_path ? previous.thumbnail_url : null,
+        preview_url: photo.preview_path === previous.preview_path ? previous.preview_url : null
     };
 }

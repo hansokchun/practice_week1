@@ -25,6 +25,10 @@ export function getPhotoThumbnailStoragePath(photo = {}) {
     return String(photo.thumbnail_path || '').trim() || null;
 }
 
+export function getPhotoPreviewStoragePath(photo = {}) {
+    return String(photo.preview_path || '').trim() || null;
+}
+
 export function applySignedAlbumCoverUrls(albums = [], signedUrlByPath = new Map()) {
     return albums.map((album) => {
         const storagePath = getPhotoStoragePath({ url: album.cover_url });
@@ -51,12 +55,15 @@ export function applySignedPhotoUrls(photos = [], signedUrlByPath = new Map()) {
     return photos.map((photo) => {
         const storagePath = getPhotoStoragePath(photo);
         const thumbnailPath = getPhotoThumbnailStoragePath(photo);
+        const previewPath = getPhotoPreviewStoragePath(photo);
         const signedUrl = storagePath ? signedUrlByPath.get(storagePath) : null;
         const thumbnailUrl = thumbnailPath ? signedUrlByPath.get(thumbnailPath) : null;
+        const previewUrl = previewPath ? signedUrlByPath.get(previewPath) : null;
         return {
             ...photo,
             ...(signedUrl ? { url: signedUrl } : {}),
-            ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {})
+            ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}),
+            ...(previewUrl ? { preview_url: previewUrl } : {})
         };
     });
 }

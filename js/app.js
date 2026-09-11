@@ -96,6 +96,7 @@ import {
 } from './photo-detail-map.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
 import { shouldRefreshPhotoSignedUrl, reusePhotoSignedUrls } from './photo-signed-url-freshness.mjs';
+import { getPhotoDeliverySource, getLandingWarmSlideIndexes } from './photo-delivery.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
@@ -110,6 +111,7 @@ import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-valida
 import { readPhotoExif } from './photo-exif-reader.mjs';
 import {
     createPhotoThumbnailForUpload,
+    createPhotoPreviewForUpload,
     getPhotoThumbnailFileName,
     optimizePhotoForUpload,
     shouldOptimizePhotoForUpload
@@ -579,6 +581,7 @@ function preparePhotoImageReveal(image) {
 
 function observePhotoImageUrl(image) {
     if (!(image instanceof HTMLImageElement) || !image.dataset.i || image.getAttribute('src')) return;
+    if (image.hasAttribute('data-photo-deferred') || image.hasAttribute('data-photo-unavailable')) return;
     if (photoImageUrlObserver) {
         photoImageUrlObserver.observe(image);
         return;
@@ -708,7 +711,9 @@ function setPhotoImageSource(image, photo = {}, { variant = 'detail' } = {}) {
     if (!image) return;
     image.dataset.i = String(photo.id || '');
     image.dataset.photoVariant = variant;
-    const source = variant === 'thumbnail' ? getPhotoThumbnailSrc(photo) : getPhotoImageSrc(photo);
+    const source = variant === 'thumbnail' ? getPhotoThumbnailSrc(photo)
+        : variant === 'preview' ? (shouldRefreshPhotoSignedUrl(photo) ? '' : getPhotoDeliverySource(photo, 'preview'))
+        : getPhotoImageSrc(photo);
     if (source) image.src = source;
     else {
         image.removeAttribute('src');
@@ -760,6 +765,7 @@ async function flushPhotoImageUrlRecoveryQueue() {
         if (!refreshed?.url) return;
         photo.url = refreshed.url;
         photo.thumbnail_url = refreshed.thumbnail_url || photo.thumbnail_url;
+        photo.preview_url = refreshed.preview_url || photo.preview_url;
         photo.signed_url_expires_at = refreshed.signed_url_expires_at;
     });
 
@@ -771,9 +777,14 @@ async function flushPhotoImageUrlRecoveryQueue() {
                 delete image.dataset.r;
                 return;
             }
-            const source = image.dataset.photoVariant === 'thumbnail'
-                ? (refreshed.thumbnail_url || refreshed.url)
-                : refreshed.url;
+            const variant = image.dataset.photoVariant || 'detail';
+            const source = variant === 'thumbnail' && !image.closest('.landing-photo-card')
+                ? getPhotoThumbnailSrc(refreshed)
+                : getPhotoDeliverySource(refreshed, variant);
+            if (!source) {
+                image.classList.add('is-photo-error');
+                return;
+            }
             image.dataset.r = source;
             image.onload = () => { delete image.dataset.r; };
             image.src = source;
@@ -1230,18 +1241,26 @@ function renderLandingHeroSlides() {
         .slice(0, LANDING_HERO_SLIDE_LIMIT)
         .map((photoId) => photoById.get(String(photoId)))
         .filter(Boolean);
-    const slides = curatedSlides.length ? curatedSlides : publicPhotos.slice(0, LANDING_HERO_SLIDE_LIMIT);
-    if (!slides.length) return;
+    const slides = (curatedSlides.length ? curatedSlides : publicPhotos.slice(0, LANDING_HERO_SLIDE_LIMIT))
+        .filter((photo) => photo.preview_path || photo.thumbnail_path);
+    if (!slides.length) {
+        container.replaceChildren();
+        container.removeAttribute('aria-busy');
+        const caption = $('#landing-hero-caption');
+        if (caption) {
+            caption.disabled = true;
+            caption.hidden = true;
+            delete caption.dataset.landingCaptionPhotoId;
+        }
+        return;
+    }
 
     container.setAttribute('aria-busy', 'true');
     container.innerHTML = slides.map((photo, index) => {
         const photoId = String(photo.id || photo.localId || '');
-        const source = getPhotoImageSrc(photo);
-        const sourceAttribute = source ? `src="${escapeHtml(source)}"` : '';
-        const priority = index === 0 ? 'fetchpriority="high"' : 'fetchpriority="low" loading="lazy"';
         return `
             <figure class="landing-hero-slide ${index === 0 ? 'is-active' : ''}" data-landing-slide-photo-id="${escapeHtml(photoId)}" data-landing-slide-location="${escapeHtml(getLandingHeroLocationLabel(photo))}">
-                <img ${sourceAttribute} data-i="${escapeHtml(photoId)}" data-photo-reveal alt="" ${priority} decoding="async">
+                <img data-i="${escapeHtml(photoId)}" data-photo-variant="preview" data-photo-deferred data-photo-reveal alt="" decoding="async">
             </figure>`;
     }).join('');
     container.removeAttribute('aria-busy');
@@ -1267,11 +1286,13 @@ function getLandingHeroLocationLabel(photo = {}) {
 function renderLandingPhotoCard(photo) {
     const photoId = String(photo.id || photo.localId || '');
     const label = getLandingPhotoLabel(photo);
-    const source = getPhotoThumbnailSrc(photo);
+    const prepared = Boolean(photo.thumbnail_path || photo.preview_path);
+    const source = prepared && !shouldRefreshPhotoSignedUrl(photo) ? getPhotoDeliverySource(photo, 'thumbnail') : '';
     const sourceAttribute = source ? `src="${escapeHtml(source)}"` : '';
     return `
         <button class="landing-photo-card" data-landing-photo-id="${escapeHtml(photoId)}" type="button" aria-label="${escapeHtml(label)} 상세 보기">
-            <img ${sourceAttribute} data-i="${escapeHtml(photoId)}" data-photo-variant="thumbnail" data-photo-reveal alt="${escapeHtml(label)}" loading="lazy" decoding="async" fetchpriority="low">
+            ${prepared ? '' : '<span class="landing-photo-pending">사진 준비 중</span>'}
+            <img ${sourceAttribute} ${prepared ? '' : 'data-photo-unavailable'} data-i="${escapeHtml(photoId)}" data-photo-variant="thumbnail" data-photo-reveal alt="${escapeHtml(label)}" loading="lazy" decoding="async" fetchpriority="low">
         </button>
     `;
 }
@@ -3931,9 +3952,11 @@ function normalizeSavedPhoto(photo) {
         description: photo.description || '',
         url: photo.url,
         thumbnail_url: photo.thumbnail_url || null,
+        preview_url: photo.preview_url || null,
         signed_url_expires_at: Number(photo.signed_url_expires_at) || null,
         storage_path: photo.storage_path || null,
         thumbnail_path: photo.thumbnail_path || null,
+        preview_path: photo.preview_path || null,
         date: photo.date || photo.created_at || new Date().toISOString(),
         created_at: photo.created_at || photo.uploaded_at || photo.createdAt || null,
         lat: hasLocation ? Number(photo.lat) : null,
@@ -3963,8 +3986,10 @@ function normalizePhotoUpdate(photo, update) {
         ...update,
         url: photo.url,
         thumbnail_url: photo.thumbnail_url,
+        preview_url: photo.preview_url,
         storage_path: update.storage_path || photo.storage_path,
-        thumbnail_path: update.thumbnail_path || photo.thumbnail_path
+        thumbnail_path: update.thumbnail_path || photo.thumbnail_path,
+        preview_path: update.preview_path || photo.preview_path
     });
 }
 
@@ -5155,64 +5180,82 @@ function getPhotoThumbnailStoragePathForUpload(photoId, ownerId) {
     return `${ownerId}/thumbnails/${getPhotoThumbnailFileName(photoId)}`;
 }
 
-async function createAndStorePhotoThumbnail(photo, sourceUrl) {
+async function createAndStorePhotoDerivatives(photo, sourceUrl) {
     const response = await fetch(sourceUrl, { cache: 'force-cache' });
     if (!response.ok) throw new Error();
+    if (Number(response.headers.get('content-length')) > 10 * 1024 * 1024) throw new Error();
     const sourceBlob = await response.blob();
+    if (sourceBlob.size > 10 * 1024 * 1024) throw new Error();
     const sourceFile = new File([sourceBlob], `${photo.id}-source`, {
         type: sourceBlob.type || 'image/jpeg',
         lastModified: Date.now()
     });
-    const thumbnailFile = await createPhotoThumbnailForUpload(sourceFile, photo.id);
-    if (!thumbnailFile) throw new Error();
-
-    const thumbnailPath = getPhotoThumbnailStoragePathForUpload(photo.id, photo.owner_id);
-    const uploaded = await uploadPhotoThumbnail(thumbnailFile, thumbnailPath);
-    if (uploaded.error || !uploaded.url) throw uploaded.error || new Error();
-
-    const updated = await updatePhotoThumbnailPath(photo.id, thumbnailPath);
-    if (updated.error) {
-        await removeUploadedImage(thumbnailPath);
-        throw updated.error;
+    const addedPaths = [];
+    const values = {};
+    try {
+        for (const [kind, create] of [['thumbnail', createPhotoThumbnailForUpload], ['preview', createPhotoPreviewForUpload]]) {
+            if (photo[`${kind}_path`]) continue;
+            const file = await create(sourceFile, photo.id);
+            if (!file) throw new Error();
+            const fileName = getPhotoThumbnailFileName(`${photo.id}-${Date.now()}`);
+            const path = `${photo.owner_id}/${kind}s/${fileName}`;
+            const uploaded = await uploadPhotoThumbnail(file, path);
+            if (uploaded.error || !uploaded.url) throw uploaded.error || new Error();
+            addedPaths.push(path);
+            values[`${kind}_path`] = path;
+            values[`${kind}_url`] = uploaded.url;
+        }
+        const updated = await updatePhotoThumbnailPath(photo.id, values.thumbnail_path || photo.thumbnail_path, values.preview_path);
+        if (updated.error) throw updated.error;
+        Object.assign(photo, values);
+    } catch (error) {
+        await Promise.all(addedPaths.map(removeUploadedImage));
+        throw error;
     }
-    photo.thumbnail_path = thumbnailPath;
-    photo.thumbnail_url = uploaded.url;
 }
 
-async function backfillMissingPhotoThumbnails() {
+async function prepareMyPhotoDerivatives() {
     if (state.isThumbnailBackfillRunning || !state.currentUser) return;
+    const button = $('#settings-optimize-photos');
+    const status = $('#settings-optimize-status');
+    if (state.savedPhotosLoadError || !state.hasLoadedSavedPhotos) {
+        if (status) status.textContent = '사진을 불러온 뒤 다시 시도해주세요.';
+        return;
+    }
+    const heroIds = new Set(state.landingHeroPhotoIds.map(String));
+    const featured = new Set([...heroIds, ...state.landingAssignments.map((item) => String(item.photo_id))]);
     const candidates = state.savedPhotos.filter((photo) => (
         photo.owner_id === state.currentUser.id
         && photo.storage_path
-        && !photo.thumbnail_path
-    ));
-    if (!candidates.length) return;
-
+        && (!photo.thumbnail_path || (heroIds.has(String(photo.id)) && !photo.preview_path))
+    )).sort((a, b) => Number(featured.has(String(b.id))) - Number(featured.has(String(a.id)))).slice(0, 3);
+    if (!candidates.length) {
+        if (status) status.textContent = '모든 사진이 준비되었습니다.';
+        return;
+    }
     state.isThumbnailBackfillRunning = true;
+    if (button) button.disabled = true;
+    const ownerId = state.currentUser.id;
     try {
-        for (const photo of candidates) {
-            const { data } = await hydratePhotoUrls([photo]);
+        for (const [index, photo] of candidates.entries()) {
+            if (state.currentUser?.id !== ownerId) break;
+            if (status) status.textContent = `${index + 1} / ${candidates.length}장 처리 중`;
+            const { data, error } = await hydratePhotoUrls([photo]);
+            if (error) throw error;
             const sourceUrl = data?.[0]?.url;
-            if (!sourceUrl) continue;
-            try {
-                await createAndStorePhotoThumbnail(photo, sourceUrl);
-            } catch (_) {
-                // A failed derivative never blocks the original photo from loading.
-            }
-            await new Promise((resolve) => window.setTimeout(resolve, 120));
+            if (!sourceUrl) throw new Error();
+            await createAndStorePhotoDerivatives(photo, sourceUrl);
         }
+        if (state.currentUser?.id !== ownerId) return;
+        if (status) status.textContent = `${candidates.length}장 준비 완료. 남은 사진은 다시 실행해주세요.`;
+        renderLandingSections();
+        renderLandingHeroSlides();
+    } catch {
+        if (status) status.textContent = '처리를 중단했습니다. 서버 상태를 확인한 뒤 다시 시도해주세요.';
     } finally {
         state.isThumbnailBackfillRunning = false;
+        if (button) button.disabled = false;
     }
-}
-
-function queueMissingPhotoThumbnailBackfill() {
-    if (!state.currentUser || state.isThumbnailBackfillRunning) return;
-    if (navigator.connection?.saveData || window.matchMedia('(max-width: 860px)').matches) return;
-    const schedule = window.requestIdleCallback
-        ? (callback) => window.requestIdleCallback(callback, { timeout: 8000 })
-        : (callback) => window.setTimeout(callback, 3000);
-    schedule(() => { void backfillMissingPhotoThumbnails(); });
 }
 
 async function loadSavedPhotos({ render = true } = {}) {
@@ -5238,7 +5281,6 @@ async function loadSavedPhotos({ render = true } = {}) {
     state.hasLoadedSavedPhotos = true;
     renderLandingSections();
     renderLandingHeroSlides();
-    queueMissingPhotoThumbnailBackfill();
 
     if (render) {
         renderSavedPhotoSurfaces();
@@ -5548,6 +5590,7 @@ async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
             ...photo,
             url: refreshed.url,
             thumbnail_url: refreshed.thumbnail_url || photo.thumbnail_url,
+            preview_url: refreshed.preview_url || photo.preview_url,
             signed_url_expires_at: refreshed.signed_url_expires_at
         } : photo;
     });
@@ -5686,7 +5729,7 @@ async function deleteSelectedPersonalPhotos() {
 
     try {
         for (const photo of selectedPhotos) {
-            const { error } = await deletePhoto(photo.id, photo.url, photo.storage_path, photo.thumbnail_path);
+            const { error } = await deletePhoto(photo.id, photo.url, photo.storage_path, photo.thumbnail_path, photo.preview_path);
             if (error) throw error;
         }
         state.savedPhotos = removeSelectedPersonalPhotos(state.savedPhotos, state.selectedPersonalPhotoIds);
@@ -6495,13 +6538,24 @@ function syncLandingHeroSlide(index) {
     const locationLabel = activeSlide.dataset.landingSlideLocation || '';
     if (place) place.textContent = locationLabel;
     if (caption) {
+        caption.hidden = false;
         caption.dataset.landingCaptionPhotoId = activeSlide.dataset.landingSlidePhotoId || '';
         caption.disabled = !caption.dataset.landingCaptionPhotoId;
         caption.setAttribute('aria-label', `${locationLabel || '현재 사진'} 상세 보기`);
     }
-    const nextIndex = getNextLandingSlideIndex(landingHeroIndex, slides.length);
-    const nextImage = slides[nextIndex]?.querySelector('img');
-    if (nextImage) nextImage.loading = 'eager';
+    for (const warmIndex of getLandingWarmSlideIndexes(landingHeroIndex, slides.length)) {
+        const image = slides[warmIndex]?.querySelector('img');
+        if (!image || image.getAttribute('src') || !image.hasAttribute('data-photo-deferred')) continue;
+        image.removeAttribute('data-photo-deferred');
+        image.loading = 'eager';
+        image.fetchPriority = warmIndex === landingHeroIndex ? 'high' : 'low';
+        const photo = state.savedPhotos.find((item) => String(item.id) === image.dataset.i);
+        if (!photo?.preview_path && !photo?.thumbnail_path) {
+            image.setAttribute('data-photo-unavailable', '');
+            continue;
+        }
+        setPhotoImageSource(image, photo, { variant: 'preview' });
+    }
 }
 
 function stopLandingHeroSlideshow() {
@@ -7033,6 +7087,7 @@ async function persistStagedPhotos() {
             if (uploadError) throw uploadError;
             pendingStoragePaths = [storagePath];
             const thumbnailFile = await createPhotoThumbnailForUpload(storageFile, id);
+            if (!thumbnailFile) throw new Error('Thumbnail preparation failed');
             const thumbnailPath = thumbnailFile
                 ? getPhotoThumbnailStoragePathForUpload(id, state.currentUser.id)
                 : null;
@@ -7040,6 +7095,13 @@ async function persistStagedPhotos() {
                 ? await uploadPhotoThumbnail(thumbnailFile, thumbnailPath)
                 : { url: null, storagePath: null, error: null };
             if (thumbnailUpload.storagePath) pendingStoragePaths.push(thumbnailUpload.storagePath);
+            if (thumbnailUpload.error) throw thumbnailUpload.error;
+            const previewFile = await createPhotoPreviewForUpload(storageFile, id);
+            const previewUpload = previewFile
+                ? await uploadPhotoThumbnail(previewFile, `${state.currentUser.id}/previews/${id}.jpg`)
+                : { url: null, storagePath: null, error: null };
+            if (previewUpload.storagePath) pendingStoragePaths.push(previewUpload.storagePath);
+            if (previewUpload.error) throw previewUpload.error;
             const visibility = visibilityPlan[index] || 'private';
             const record = {
                 id,
@@ -7047,6 +7109,8 @@ async function persistStagedPhotos() {
                 storage_path: storagePath,
                 thumbnail_url: thumbnailUpload.url || null,
                 thumbnail_path: thumbnailUpload.storagePath || null,
+                preview_url: previewUpload.url || null,
+                preview_path: previewUpload.storagePath || null,
                 date: exif.date || new Date().toISOString(),
                 description: '',
                 lat: hasExifLocation ? exif.lat : null,
@@ -7084,7 +7148,7 @@ async function persistStagedPhotos() {
     } catch (error) {
         await Promise.all(pendingStoragePaths.map((path) => removeUploadedImage(path)));
         for (const record of [...saved].reverse()) {
-            await deletePhoto(record.id, record.url, record.storage_path, record.thumbnail_path);
+            await deletePhoto(record.id, record.url, record.storage_path, record.thumbnail_path, record.preview_path);
         }
         const failure = getUploadFailureState({ online: navigator.onLine });
         if (status) status.textContent = `${failure.title} ${failure.body}`;
@@ -8722,6 +8786,7 @@ function bindEvents() {
         updateAccountSettings({ librarySummaryNotifications: event.currentTarget.checked });
     });
     $('#settings-feedback-open')?.addEventListener('click', openProductFeedbackDialog);
+    $('#settings-optimize-photos')?.addEventListener('click', prepareMyPhotoDerivatives);
     $('#settings-logout')?.addEventListener('click', handleLogout);
     $('#settings-delete-account')?.addEventListener('click', openAccountDeletionDialog);
     $('#account-feedback-open')?.addEventListener('click', openProductFeedbackDialog);

@@ -6,6 +6,8 @@ export const MIN_OPTIMIZED_PHOTO_EDGE = 1600;
 export const PHOTO_OPTIMIZATION_QUALITY_STEPS = [0.96, 0.93, 0.9, 0.86, 0.82, 0.76];
 export const PHOTO_THUMBNAIL_LONG_EDGE = 960;
 export const PHOTO_THUMBNAIL_QUALITY = 0.82;
+export const PHOTO_PREVIEW_LONG_EDGE = 1920;
+export const PHOTO_PREVIEW_MAX_BYTES = 450 * 1024;
 
 export function shouldOptimizePhotoForUpload(file) {
     const mimeType = String(file?.type || '').toLowerCase();
@@ -157,5 +159,33 @@ export async function createPhotoThumbnailForUpload(file, photoId = 'photo') {
         });
     } catch (_) {
         return null;
+    }
+}
+
+export async function createPhotoPreviewForUpload(file, photoId = 'photo') {
+    if (!OPTIMIZABLE_PHOTO_TYPE.test(file?.type || '') || typeof document === 'undefined') return null;
+    let source;
+    try {
+        source = await loadPhotoSource(file);
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (!context) return null;
+        for (const edge of [PHOTO_PREVIEW_LONG_EDGE, 1600, 1280, 960]) {
+            const size = getConstrainedPhotoSize(source.width, source.height, edge);
+            canvas.width = size.width;
+            canvas.height = size.height;
+            context.drawImage(source, 0, 0, size.width, size.height);
+            for (const quality of [0.82, 0.74, 0.65]) {
+                const blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+                if (blob && blob.size <= PHOTO_PREVIEW_MAX_BYTES) {
+                    return new File([blob], getPhotoThumbnailFileName(photoId), { type: 'image/jpeg' });
+                }
+            }
+        }
+        return null;
+    } catch {
+        return null;
+    } finally {
+        source?.close?.();
     }
 }

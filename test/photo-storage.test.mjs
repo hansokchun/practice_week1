@@ -23,6 +23,13 @@ test('getPhotoStoragePath prefers the saved private object path', () => {
     );
 });
 
+test('screen preview signing never replaces the original download URL', () => {
+    const [photo] = applySignedPhotoUrls([{ storage_path: 'owner/original', preview_path: 'owner/previews/p.jpg' }],
+        new Map([['owner/original', '/original'], ['owner/previews/p.jpg', '/preview']]));
+    assert.equal(photo.url, '/original');
+    assert.equal(photo.preview_url, '/preview');
+});
+
 test('getPhotoStoragePath extracts the path from a legacy public URL', () => {
     assert.equal(
         getPhotoStoragePath({

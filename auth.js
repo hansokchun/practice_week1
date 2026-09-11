@@ -13,7 +13,8 @@ import {
     applySignedAlbumCoverUrls,
     applySignedPhotoUrls,
     getPhotoStoragePath,
-    getPhotoThumbnailStoragePath
+    getPhotoThumbnailStoragePath,
+    getPhotoPreviewStoragePath
 } from './js/photo-storage.mjs';
 import {
     PHOTO_SIGNED_URL_TTL_SECONDS
@@ -22,7 +23,7 @@ import {
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url,cover_path';
-const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,thumbnail_path,date,created_at,title,description,lat,lng,location_precision,location_assignment_skipped,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
+const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,thumbnail_path,preview_path,date,created_at,title,description,lat,lng,location_precision,location_assignment_skipped,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
 const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
@@ -59,7 +60,8 @@ function getSignUpAuthOptions(options = {}) {
 async function hydrateSignedPhotoUrls(sb, photos = []) {
     const paths = [...new Set(photos.flatMap((photo) => [
         getPhotoStoragePath(photo),
-        getPhotoThumbnailStoragePath(photo)
+        getPhotoThumbnailStoragePath(photo),
+        getPhotoPreviewStoragePath(photo)
     ]).filter(Boolean))];
     if (!paths.length) return photos;
 
@@ -518,6 +520,7 @@ export async function upsertPhoto(photo) {
                 url: photo.url,
                 storage_path: photo.storage_path || null,
                 thumbnail_path: photo.thumbnail_path || null,
+                preview_path: photo.preview_path || null,
                 date: photo.date,
                 description: photo.description || '',
                 lat: photo.lat,
@@ -618,12 +621,12 @@ export async function updatePhotoInfo(photoId, updates = {}) {
     }
 }
 
-export async function updatePhotoThumbnailPath(photoId, thumbnailPath) {
+export async function updatePhotoThumbnailPath(photoId, thumbnailPath, previewPath) {
     try {
         const sb = getSupabase();
         const { data, error } = await sb
             .from('photos')
-            .update({ thumbnail_path: thumbnailPath || null })
+            .update({ thumbnail_path: thumbnailPath || null, ...(previewPath ? { preview_path: previewPath } : {}) })
             .eq('id', photoId.toString())
             .select(PHOTO_SELECT_COLUMNS)
             .single();
@@ -675,7 +678,7 @@ export async function fetchMyLikes(userId) {
  * RLS 정책으로 본인 사진만 DELETE 가능
  * 관련 댓글은 ON DELETE CASCADE로 DB가 자동 삭제
  */
-export async function deletePhoto(id, url, storagePath, thumbnailPath = null) {
+export async function deletePhoto(id, url, storagePath, thumbnailPath = null, previewPath = null) {
     try {
         const sb = getSupabase();
 
@@ -689,6 +692,7 @@ export async function deletePhoto(id, url, storagePath, thumbnailPath = null) {
             const uploadedPath = storagePath || getPhotoStoragePath({ url });
             if (uploadedPath) paths.push(uploadedPath);
             if (thumbnailPath) paths.push(thumbnailPath);
+            if (previewPath) paths.push(previewPath);
             await sb.storage.from('photos').remove([...new Set(paths)]);
         } catch {}
 

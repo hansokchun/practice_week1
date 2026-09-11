@@ -1883,6 +1883,16 @@ body.is-logged-in #btn-open-auth {
     padding-inline: 0;
 }
 
+.landing-photo-pending {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #e7ecea;
+    color: #476260;
+    font-size: 14px;
+}
+
 .landing-sections .actionable-failure-state {
     min-width: 0;
     border: 0;

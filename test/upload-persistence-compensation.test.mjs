@@ -25,7 +25,8 @@ test('photo upload batch compensates storage and database writes after a failure
     assert.match(persistBody, /let pendingStoragePaths = \[\];/);
     assert.match(persistBody, /pendingStoragePaths = \[storagePath\];/);
     assert.match(persistBody, /Promise\.all\(pendingStoragePaths\.map\(\(path\) => removeUploadedImage\(path\)\)\)/);
-    assert.match(persistBody, /await deletePhoto\(record\.id, record\.url, record\.storage_path, record\.thumbnail_path\)/);
+    assert.match(persistBody, /await deletePhoto\(record\.id, record\.url, record\.storage_path, record\.thumbnail_path, record\.preview_path\)/);
+    assert.match(persistBody, /pendingStoragePaths\.push\(previewUpload\.storagePath\)/);
 });
 
 test('private location foreign key is deferred until the photo insert completes', () => {

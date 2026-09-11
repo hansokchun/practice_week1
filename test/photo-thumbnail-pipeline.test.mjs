@@ -31,7 +31,8 @@ test('photo records persist thumbnail paths while retaining original URLs', () =
     assert.match(app, /thumbnail_url:\s*photo\.thumbnail_url/);
     assert.match(app, /function getPhotoThumbnailSrc/);
     assert.match(app, /data-photo-variant="thumbnail"/);
-    assert.match(app, /queueMissingPhotoThumbnailBackfill/);
+    assert.doesNotMatch(app, /queueMissingPhotoThumbnailBackfill/);
+    assert.match(app, /settings-optimize-photos/);
 });
 
 test('thumbnail migration adds the database column and public storage access', () => {
