@@ -240,7 +240,7 @@ body[data-page="landing"] .account-menu-chevron {
 }
 
 body[data-page="landing"] .brand img {
-    border-radius: 50%;
+    filter: brightness(0) invert(1);
 }
 
 body[data-page="landing"] .nav-action {

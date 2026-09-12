@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "master": "brand/ikkyee-symbol-v1.png",
+  "assets": [
+    {
+      "path": "brand/ikkyee-symbol-v1.png",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "sha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8"
+    },
+    {
+      "path": "images/logo.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "sha256": "97b831f23a0e625a6c5ba96ff8265aab734b049609ac5ddc8462a1e4b30cc34f"
+    },
+    {
+      "path": "mobile/assets/brand-logo.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true,
+      "sha256": "687d815cada655122179cea416261703c2a279916ad166a0ed90062f11378c36"
+    },
+    {
+      "path": "mobile/assets/favicon.png",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "sha256": "ad65c1cbf75561fa33b892bb73e1773fac2cabcf6afd1fe99ce570e97e7ca11b"
+    },
+    {
+      "path": "mobile/assets/app-icon-foreground.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true,
+      "sha256": "667f7ed022d68936af2c41fbe232259abd96e809e071182c1bd8096d6b106dc5"
+    },
+    {
+      "path": "mobile/assets/app-icon.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": false,
+      "sha256": "622498fdcd652814a0368158a3ee8fdcf6fd4994f6db6adca094ee69bca395ec"
+    }
+  ]
+}

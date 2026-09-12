@@ -54,6 +54,7 @@ Ikkyee is a Vite-powered vanilla JavaScript travel photo journal. The app stores
 
 ## CONVENTIONS
 
+- The fixed brand master is `brand/ikkyee-symbol-v1.png`; read `brand/README.md` before any logo work. Do not regenerate or replace it without an explicit user request. Web/app size variants must derive from this master and pass `test/brand-assets.test.mjs`.
 - Work on `dev` and push verified local changes to `origin/dev`; do not update `main` unless the user explicitly asks.
 - Existing dirty files may be user work. Read and work around them; do not revert unrelated changes.
 - Use `npm test` and `npm run build` before claiming behavior changes are complete.
