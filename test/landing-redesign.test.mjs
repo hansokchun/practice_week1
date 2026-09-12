@@ -49,7 +49,7 @@ test('메인 검색창 위의 소개 문구를 제거하고 비워진 간격만�
     assert.doesNotMatch(css, /\.landing-search-hero h1\s*\{/);
     assert.match(css, /\.landing-search\s*\{[^}]*margin-top:\s*0;/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*blur\(0\.35px\) saturate\(1\.02\) brightness\(0\.94\) contrast\(1\.13\);[^}]*mix-blend-mode:\s*multiply;/s);
+    assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*none;[^}]*mix-blend-mode:\s*normal;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*top:\s*-140px;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*mask-image:\s*linear-gradient\(to bottom,/s);
     assert.match(css, /linear-gradient\(to right, transparent 0%, #000 8%, #000 92%, transparent 100%\)/);
