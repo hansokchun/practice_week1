@@ -61,7 +61,7 @@ type PublicPhotoBoundsDependencies = {
 };
 
 const GENERIC_EXPLORE_ERROR = "공개 사진을 불러오지 못했습니다.";
-const PHOTO_COLUMNS = "id,date,description,liked,owner_id,created_at,storage_path,thumbnail_path,lat,lng,location_precision,visibility";
+const PHOTO_COLUMNS = "id,date,description,liked,owner_id,created_at,storage_path,thumbnail_path,preview_path,lat,lng,location_precision,visibility";
 
 function parseRow(value: unknown, imageUrl: string | undefined, scope: ExplorePhotoScope): ExplorePhoto | null {
   if (typeof value !== "object" || value === null || imageUrl === undefined) return null;

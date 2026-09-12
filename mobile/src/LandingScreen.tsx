@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { FlatList, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { fetchLandingContent, filterLandingPhotos, type LandingContent, type LandingPhoto } from "./landing-photo-repository";
@@ -44,18 +44,15 @@ export function LandingScreen({
 
   useEffect(() => {
     let mounted = true;
-    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
     void loadContent().then((content) => {
       if (mounted) {
         setState({ status: "ready", content });
-        refreshTimer = setTimeout(() => setReloadKey((value) => value + 1), 270_000);
       }
     }).catch(() => {
       if (mounted) setState({ status: "failed" });
     });
     return () => {
       mounted = false;
-      if (refreshTimer !== undefined) clearTimeout(refreshTimer);
     };
   }, [loadContent, refreshKey, reloadKey]);
 
@@ -177,14 +174,22 @@ export function LandingScreen({
             {section.photos.length === 0 ? (
               <Text style={styles.emptyText}>{query.length > 0 ? "검색 결과가 없어요." : "이 주제에 표시할 공개 사진이 아직 없어요."}</Text>
             ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoRow}>
-                {section.photos.map((photo) => {
+              <FlatList
+                horizontal
+                data={section.photos}
+                keyExtractor={(photo) => photo.id}
+                initialNumToRender={3}
+                maxToRenderPerBatch={4}
+                windowSize={3}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.photoRow}
+                renderItem={({ item: photo }) => {
                   const label = photoLabel(photo);
                   return (
                     <RecoverableRemoteImage accessibilityLabel={label} key={`${section.id}-${photo.id}`} onPress={() => openPhoto(photo.id)} onRetry={() => setReloadKey((value) => value + 1)} pressAccessibilityLabel={`${label} 상세 보기`} style={styles.photoCard} uri={photo.imageUrl} />
                   );
-                })}
-              </ScrollView>
+                }}
+              />
             )}
           </View>
         ))}

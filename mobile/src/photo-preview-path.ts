@@ -5,5 +5,6 @@ export function isSafePhotoStoragePath(value: unknown): value is string {
 
 export function getPhotoPreviewPath(row: Readonly<Record<string, unknown>>): string | null {
   if (isSafePhotoStoragePath(row["thumbnail_path"])) return row["thumbnail_path"];
+  if (isSafePhotoStoragePath(row["preview_path"])) return row["preview_path"];
   return isSafePhotoStoragePath(row["storage_path"]) ? row["storage_path"] : null;
 }

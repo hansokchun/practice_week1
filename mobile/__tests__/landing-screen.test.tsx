@@ -23,6 +23,21 @@ const content = {
 };
 
 describe("web-parity landing screen", () => {
+  it("refreshes only when its visibility key changes, without a second background timer", async () => {
+    jest.useFakeTimers();
+    try {
+      const loadContent = jest.fn(async () => content);
+      const screen = await render(<LandingScreen loadContent={loadContent} refreshKey={0} signedIn={false} />);
+      await act(async () => { await Promise.resolve(); });
+      expect(loadContent).toHaveBeenCalledTimes(1);
+      await act(async () => { jest.advanceTimersByTime(300_000); });
+      expect(loadContent).toHaveBeenCalledTimes(1);
+      await screen.rerender(<LandingScreen loadContent={loadContent} refreshKey={1} signedIn={false} />);
+      await act(async () => { await Promise.resolve(); });
+      expect(loadContent).toHaveBeenCalledTimes(2);
+      await screen.unmount();
+    } finally { jest.useRealTimers(); }
+  });
   it("starts with search, curated rows, map entry, photo upload, and the signed-in account menu", async () => {
     const navigate = jest.fn();
     const openPhoto = jest.fn();
@@ -38,7 +53,8 @@ describe("web-parity landing screen", () => {
     expect(screen.queryByRole("button", { name: "바다" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "사람" })).not.toBeOnTheScreen();
     expect(screen.queryByText("화면에는 표시하지 않을 설명")).not.toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: "한국 사진 9 상세 보기" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "한국 사진 1 상세 보기" })).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "한국 사진 9 상세 보기" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "부산" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "도쿄 골목" })).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "벚꽃 여행" })).not.toBeOnTheScreen();

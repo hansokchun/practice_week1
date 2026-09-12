@@ -104,8 +104,9 @@ export async function optimizePhotoForUpload(file) {
     if (!shouldOptimizePhotoForUpload(file)) return file;
     if (typeof document === 'undefined' || typeof File === 'undefined') return file;
 
+    let photoSource;
     try {
-        const photoSource = await loadPhotoSource(file);
+        photoSource = await loadPhotoSource(file);
         const sourceWidth = photoSource.width;
         const sourceHeight = photoSource.height;
         const mimeType = getOptimizedPhotoMimeType(file);
@@ -134,6 +135,8 @@ export async function optimizePhotoForUpload(file) {
         return bestFile;
     } catch (_) {
         return file;
+    } finally {
+        photoSource?.close?.();
     }
 }
 
@@ -141,8 +144,9 @@ export async function createPhotoThumbnailForUpload(file, photoId = 'photo') {
     if (!OPTIMIZABLE_PHOTO_TYPE.test(file?.type || '')) return null;
     if (typeof document === 'undefined' || typeof File === 'undefined') return null;
 
+    let photoSource;
     try {
-        const photoSource = await loadPhotoSource(file);
+        photoSource = await loadPhotoSource(file);
         const size = getPhotoThumbnailSize(photoSource.width, photoSource.height);
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -159,6 +163,8 @@ export async function createPhotoThumbnailForUpload(file, photoId = 'photo') {
         });
     } catch (_) {
         return null;
+    } finally {
+        photoSource?.close?.();
     }
 }
 

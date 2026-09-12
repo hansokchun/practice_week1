@@ -58,7 +58,7 @@ const defaultDependencies: PublicProfileDependencies = {
   async fetchPhotos(userId, limit, signal) {
     let query = getSupabaseClient()
       .from("photos")
-      .select("id,description,storage_path,thumbnail_path", { count: "exact" })
+      .select("id,description,storage_path,thumbnail_path,preview_path", { count: "exact" })
       .eq("owner_id", userId)
       .eq("visibility", "public")
       .order("created_at", { ascending: false })

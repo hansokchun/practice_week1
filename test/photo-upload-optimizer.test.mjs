@@ -9,6 +9,8 @@ import {
     getConstrainedPhotoSize,
     getOptimizedPhotoFileName,
     getOptimizedPhotoMimeType,
+    createPhotoThumbnailForUpload,
+    createPhotoPreviewForUpload,
     optimizePhotoForUpload,
     shouldOptimizePhotoForUpload
 } from '../js/photo-upload-optimizer.mjs';
@@ -19,6 +21,27 @@ test('photo upload optimization targets files over three megabytes only', () => 
     assert.equal(shouldOptimizePhotoForUpload({ type: 'image/jpeg', size: TARGET_PHOTO_UPLOAD_SIZE_BYTES + 1 }), true);
     assert.equal(shouldOptimizePhotoForUpload({ type: 'application/pdf', size: TARGET_PHOTO_UPLOAD_SIZE_BYTES + 1 }), false);
 });
+
+for (const process of [optimizePhotoForUpload, createPhotoThumbnailForUpload, createPhotoPreviewForUpload]) {
+    for (const mode of ['success', 'no-context', 'encode-error']) {
+        test(`${process.name} releases the decoded bitmap on ${mode}`, async (t) => {
+            const saved = Object.fromEntries(['document', 'createImageBitmap', 'File'].map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+            t.after(() => Object.entries(saved).forEach(([key, descriptor]) => {
+                if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+                else delete globalThis[key];
+            }));
+            let closed = 0;
+            globalThis.createImageBitmap = async () => ({ width: 4000, height: 3000, close() { closed++; } });
+            globalThis.File = class extends Blob { constructor(parts, name, options) { super(parts, options); this.name = name; } };
+            globalThis.document = { createElement: () => ({
+                getContext: () => mode === 'no-context' ? null : { drawImage() {}, clearRect() {} },
+                toBlob(callback) { if (mode === 'encode-error') throw new Error('encode'); callback(new Blob(['image'])); }
+            }) };
+            await process({ type: 'image/jpeg', name: 'photo.jpg', size: 5 * 1024 * 1024 });
+            assert.equal(closed, 1);
+        });
+    }
+}
 
 test('mobile HEIC selections are converted even when they are small', () => {
     assert.equal(shouldOptimizePhotoForUpload({ type: 'image/heic', size: 1024 }), true);

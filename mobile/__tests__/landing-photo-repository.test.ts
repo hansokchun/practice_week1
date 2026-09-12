@@ -8,6 +8,21 @@ const rows = [{
 }];
 
 describe("landing photo repository", () => {
+  it("fetches unique curated IDs in bounded batches, including older photos, and skips empty queries", async () => {
+    const ids = Array.from({ length: 205 }, (_, index) => `old-${index}`);
+    const fetchPhotos = jest.fn(async () => ({ rows: [], error: null }));
+    const signPaths = jest.fn();
+    const fetchCuration = async () => ({
+      sections: [{ id: "s", title: "추천" }],
+      assignments: [...ids, ids[0]].map((id) => ({ section_id: "s", photo_id: id })), error: null
+    });
+    await fetchLandingContent({ fetchPhotos, fetchCuration, signPaths });
+    expect(fetchPhotos.mock.calls).toEqual([[ids.slice(0, 100)], [ids.slice(100, 200)], [ids.slice(200)]]);
+    expect(signPaths).not.toHaveBeenCalled();
+    fetchPhotos.mockClear();
+    await fetchLandingContent({ fetchPhotos, signPaths, fetchCuration: async () => ({ sections: [], assignments: [], error: null }) });
+    expect(fetchPhotos).not.toHaveBeenCalled();
+  });
   it("loads visible curation and public photos from the shared web tables", async () => {
     const fetchCuration = jest.fn(async () => ({
       sections: [{ id: "section-a", title: "추천", description: "", sort_order: 0, is_visible: true }],
@@ -26,7 +41,7 @@ describe("landing photo repository", () => {
         curatedPhotoIds: ["photo-a"]
       }]
     });
-    expect(fetchPhotos).toHaveBeenCalledWith(200);
+    expect(fetchPhotos).toHaveBeenCalledWith(["photo-a"]);
     expect(signPaths).toHaveBeenCalledWith(["owner-a/thumbnails/photo-a.jpg"], 300);
   });
 

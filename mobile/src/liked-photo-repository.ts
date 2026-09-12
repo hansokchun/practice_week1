@@ -59,7 +59,7 @@ const defaultDependencies: LikedPhotoDependencies = {
   async fetchPublicPhotos(ids, signal) {
     let query = getSupabaseClient()
       .from("photos")
-      .select("id,date,description,storage_path,thumbnail_path,created_at")
+      .select("id,date,description,storage_path,thumbnail_path,preview_path,created_at")
       .in("id", [...ids])
       .eq("visibility", "public");
     if (signal !== undefined) query = query.abortSignal(signal);

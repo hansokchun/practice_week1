@@ -35,7 +35,7 @@ type LandingDependencies = {
     readonly assignments: unknown;
     readonly error: unknown;
   }>;
-  readonly fetchPhotos: (limit: number) => Promise<{ readonly rows: unknown; readonly error: unknown }>;
+  readonly fetchPhotos: (ids: readonly string[]) => Promise<{ readonly rows: unknown; readonly error: unknown }>;
   readonly signPaths: (paths: readonly string[], expiresIn: number) => Promise<{
     readonly urls: ReadonlyMap<string, string>;
     readonly error: unknown;
@@ -43,7 +43,7 @@ type LandingDependencies = {
 };
 
 const GENERIC_LANDING_ERROR = "랜딩 사진을 불러오지 못했어요.";
-const PHOTO_COLUMNS = "id,title,description,album,storage_path,thumbnail_path,owner_id,created_at,date,location_precision,lat,lng,ai_tags,ai_scene,ai_summary,ai_moods";
+const PHOTO_COLUMNS = "id,title,description,album,storage_path,thumbnail_path,preview_path,owner_id,created_at,date,location_precision,lat,lng,ai_tags,ai_scene,ai_summary,ai_moods";
 const DEFAULT_SECTIONS = ["추천", "시골", "도로", "바다", "사람", "도시"] as const;
 const SEARCH_CONCEPT_GROUPS = [
   ["길", "도로", "거리", "골목", "산책로", "오솔길", "시골길", "드라이브", "road"],
@@ -165,10 +165,10 @@ const defaultDependencies: LandingDependencies = {
       error: sections.error ?? assignments.error
     };
   },
-  async fetchPhotos(limit) {
+  async fetchPhotos(ids) {
     const { data, error } = await getSupabaseClient().from("photos").select(PHOTO_COLUMNS)
       .or("shared.eq.true,visibility.eq.public")
-      .order("created_at", { ascending: false }).limit(limit);
+      .in("id", [...ids]);
     return { rows: data, error };
   },
   async signPaths(paths, expiresIn) {
@@ -185,14 +185,11 @@ const defaultDependencies: LandingDependencies = {
 export async function fetchLandingContent(
   dependencies: LandingDependencies = defaultDependencies
 ): Promise<LandingContent> {
-  const results = await Promise.all([
-    dependencies.fetchCuration(), dependencies.fetchPhotos(200)
-  ]);
-  if (!isRecord(results[0]) || !isRecord(results[1])) throw new Error(GENERIC_LANDING_ERROR);
-  const { sections, assignments, error: curationError } = results[0];
-  const { rows, error: photoError } = results[1];
-  if (curationError !== null || photoError !== null || !Array.isArray(sections) ||
-      !Array.isArray(assignments) || !Array.isArray(rows)) throw new Error(GENERIC_LANDING_ERROR);
+  const curation = await dependencies.fetchCuration();
+  if (!isRecord(curation)) throw new Error(GENERIC_LANDING_ERROR);
+  const { sections, assignments, error: curationError } = curation;
+  if (curationError !== null || !Array.isArray(sections) ||
+      !Array.isArray(assignments)) throw new Error(GENERIC_LANDING_ERROR);
 
   const normalizedAssignments = assignments.filter(isRecord)
     .filter((item) => typeof item["section_id"] === "string" && typeof item["photo_id"] === "string")
@@ -204,12 +201,20 @@ export async function fetchLandingContent(
   const assignedPhotoIds = new Set(normalizedAssignments
     .filter((item) => visibleSectionIds.has(item["section_id"] as string))
     .map((item) => item["photo_id"] as string));
-  const assignedRows = rows.filter((row) => isRecord(row) && typeof row["id"] === "string" && assignedPhotoIds.has(row["id"]));
+  const ids = [...assignedPhotoIds];
+  const rows: unknown[] = [];
+  // Fetch saved selections, not the latest uploads; cap each URL and response size.
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const result = await dependencies.fetchPhotos(ids.slice(offset, offset + 100));
+    if (!isRecord(result) || result.error !== null || !Array.isArray(result.rows)) throw new Error(GENERIC_LANDING_ERROR);
+    rows.push(...result.rows);
+  }
+  const assignedRows = rows.filter(isRecord).filter((row) => typeof row["id"] === "string" && assignedPhotoIds.has(row["id"]));
   const paths = assignedRows.map((row) => getPhotoPreviewPath(row));
   if (!paths.every(isSafePhotoStoragePath)) throw new Error(GENERIC_LANDING_ERROR);
   const signed = paths.length === 0
     ? { urls: new Map<string, string>(), error: null }
-    : await dependencies.signPaths(paths, 300);
+    : await dependencies.signPaths([...new Set(paths)], 300);
   if (signed.error !== null) throw new Error(GENERIC_LANDING_ERROR);
   const photos = assignedRows.map((row, index) => parsePhoto(row, signed.urls.get(paths[index] as string)));
   if (photos.some((photo) => photo === null)) throw new Error(GENERIC_LANDING_ERROR);

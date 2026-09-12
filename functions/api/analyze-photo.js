@@ -83,7 +83,7 @@ async function fetchCurrentUser(token) {
 }
 
 async function fetchOwnedPhoto(token, userId, photoId) {
-    const select = 'id,owner_id,storage_path,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
+    const select = 'id,owner_id,storage_path,preview_path,thumbnail_path,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
     const query = `select=${encodeURIComponent(select)}&owner_id=eq.${encodeURIComponent(userId)}&id=eq.${encodeURIComponent(photoId)}&limit=1`;
     const response = await fetch(`${SUPABASE_URL}/rest/v1/photos?${query}`, {
         headers: getSupabaseHeaders(token)
@@ -113,11 +113,14 @@ async function getDailyAnalysisCount(token, userId) {
     return Number.isFinite(Number(total)) ? Number(total) : 0;
 }
 
-async function updatePhotoAnalysis(token, userId, photoId, updates) {
+async function updatePhotoAnalysis(token, userId, photoId, updates, expected = {}) {
     const query = new URLSearchParams({
         owner_id: `eq.${userId}`,
         id: `eq.${photoId}`
     });
+    for (const [key, value] of Object.entries(expected)) {
+        query.set(key, value == null ? 'is.null' : `eq.${value}`);
+    }
     const response = await fetch(`${SUPABASE_URL}/rest/v1/photos?${query}`, {
         method: 'PATCH',
         headers: getSupabaseHeaders(token, {
@@ -143,12 +146,32 @@ async function downloadPhoto(token, storagePath) {
 
     const contentType = response.headers.get('Content-Type') || '';
     const contentLength = Number(response.headers.get('Content-Length') || 0);
-    if (!contentType.startsWith('image/')) throw new Error('unsupported_photo_type');
-    if (contentLength > MAX_IMAGE_BYTES) throw new Error('photo_too_large');
+    if (!contentType.startsWith('image/') || contentLength > MAX_IMAGE_BYTES) {
+        await response.body?.cancel();
+        throw new Error(contentLength > MAX_IMAGE_BYTES ? 'photo_too_large' : 'unsupported_photo_type');
+    }
 
-    const image = await response.arrayBuffer();
-    if (image.byteLength > MAX_IMAGE_BYTES) throw new Error('photo_too_large');
-    return `data:${contentType};base64,${toBase64(image)}`;
+    const reader = response.body.getReader();
+    const chunks = [];
+    let length = 0;
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            length += value.byteLength;
+            if (length > MAX_IMAGE_BYTES) {
+                await reader.cancel();
+                throw new Error('photo_too_large');
+            }
+            chunks.push(value);
+        }
+    } finally {
+        reader.releaseLock();
+    }
+    const image = new Uint8Array(length);
+    let offset = 0;
+    for (const chunk of chunks) { image.set(chunk, offset); offset += chunk.byteLength; }
+    return `data:${contentType};base64,${toBase64(image.buffer)}`;
 }
 
 async function analyzePhoto(ai, image) {
@@ -254,17 +277,24 @@ export async function onRequestPost({ request, env }) {
     if (photo.ai_analysis_status === 'failed') return json({ error: 'analysis_failed' }, 422);
     if (!env.AI) return json({ error: 'ai_unavailable' }, 503);
 
+    let claim = null;
     try {
         const dailyCount = await getDailyAnalysisCount(token, user.id);
         if (dailyCount >= DAILY_ANALYSIS_LIMIT) {
             return json({ error: 'daily_limit', limit: DAILY_ANALYSIS_LIMIT }, 429);
         }
 
-        await updatePhotoAnalysis(token, user.id, photoId, {
+        const claimedPhoto = await updatePhotoAnalysis(token, user.id, photoId, {
             ai_analysis_status: 'processing',
             ai_analyzed_at: new Date().toISOString()
+        }, {
+            ai_analysis_status: photo.ai_analysis_status,
+            ai_analyzed_at: photo.ai_analyzed_at
         });
-        const image = await downloadPhoto(token, photo.storage_path);
+        if (!claimedPhoto) return json({ error: 'analysis_in_progress' }, 409);
+        // Only this claim may finish or fail this attempt, including after a stale-job retry.
+        claim = { ai_analysis_status: 'processing', ai_analyzed_at: claimedPhoto.ai_analyzed_at };
+        const image = await downloadPhoto(token, photo.preview_path || photo.thumbnail_path || photo.storage_path);
         const analysis = await analyzePhoto(env.AI, image);
         if (!analysis.tags.length && !analysis.summary) throw new Error('empty_ai_response');
 
@@ -277,12 +307,13 @@ export async function onRequestPost({ request, env }) {
             ai_analysis_status: 'complete',
             ai_analyzed_at: analyzedAt,
             ai_analysis_model: `${PHOTO_AI_MODEL}@${PHOTO_AI_ANALYSIS_VERSION}`
-        });
+        }, claim);
+        if (!updatedPhoto) return json({ error: 'analysis_in_progress' }, 409);
         return json({ cached: false, analysis, photo: updatedPhoto });
     } catch (error) {
-        await updatePhotoAnalysis(token, user.id, photoId, {
+        if (claim) await updatePhotoAnalysis(token, user.id, photoId, {
             ai_analysis_status: 'failed'
-        }).catch(() => null);
+        }, claim).catch(() => null);
         if (isLicenseError(error)) return json({ error: 'license_required' }, 503);
         return json({ error: 'analysis_failed' }, 502);
     }

@@ -32,20 +32,49 @@ function getSpreadPosition(center, index, count, zoom) {
 
 export function getExploreMarkerClusters(photos = [], zoom = 7, radiusPx = 54) {
     const clusters = [];
+    const cells = new Map();
+    const cellSize = Math.max(1, Number(radiusPx) || 1);
+    const keyAt = (point) => `${Math.floor(point.x / cellSize)},${Math.floor(point.y / cellSize)}`;
+    const indexCluster = (cluster) => {
+        const key = keyAt(cluster.point);
+        if (!cells.has(key)) cells.set(key, new Set());
+        cells.get(key).add(cluster);
+    };
     photos.forEach((photo) => {
         const point = toWorldPixel(photo.lat, photo.lng, zoom);
-        const cluster = clusters.find((candidate) => (
-            Math.hypot(candidate.point.x - point.x, candidate.point.y - point.y) <= radiusPx
-        ));
+        if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+            clusters.push({ point, photos: [photo], order: clusters.length });
+            return;
+        }
+        const cellX = Math.floor(point.x / cellSize);
+        const cellY = Math.floor(point.y / cellSize);
+        let cluster;
+        // Preserve the original first matching group even when several neighboring cells qualify.
+        for (let x = cellX - 1; x <= cellX + 1; x++) {
+            for (let y = cellY - 1; y <= cellY + 1; y++) {
+                for (const candidate of cells.get(`${x},${y}`) || []) {
+                    if ((!cluster || candidate.order < cluster.order)
+                        && Math.hypot(candidate.point.x - point.x, candidate.point.y - point.y) <= radiusPx) cluster = candidate;
+                }
+            }
+        }
         if (cluster) {
+            const previousKey = keyAt(cluster.point);
             cluster.photos.push(photo);
             cluster.point = {
                 x: (cluster.point.x * (cluster.photos.length - 1) + point.x) / cluster.photos.length,
                 y: (cluster.point.y * (cluster.photos.length - 1) + point.y) / cluster.photos.length
             };
+            if (previousKey !== keyAt(cluster.point)) {
+                cells.get(previousKey).delete(cluster);
+                if (!cells.get(previousKey).size) cells.delete(previousKey);
+                indexCluster(cluster);
+            }
             return;
         }
-        clusters.push({ point, photos: [photo] });
+        const next = { point, photos: [photo], order: clusters.length };
+        clusters.push(next);
+        indexCluster(next);
     });
 
     const normalizedClusters = clusters.map(({ photos: items }) => ({
