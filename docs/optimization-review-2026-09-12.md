@@ -30,10 +30,12 @@ issue or every authenticated device workflow has been verified.
 - Native main uses virtualized horizontal photo lists (initial three items,
   bounded batches). Its redundant refresh timer was removed; the existing
   foreground/focus-aware refresh hook remains responsible for expiration.
+- The web dev server ignores the separate mobile project. Native exports had
+  been triggering repeated web reloads and backend reads during development.
 
 ## Evidence
 
-- Web tests: 796 passing; Vite production build passes.
+- Web tests: 797 passing; Vite production build passes.
 - Native tests: 370 passing across 100 suites before final export verification;
   typecheck, lint, all-platform export, security and performance checks run.
 - Synthetic map benchmark, five runs averaged, zoom 12, same seeded coordinates:
