@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { mobileColors } from "../../src/mobile-theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -32,7 +34,7 @@ import { useContentVisibilityRefreshKey } from "../../src/content-visibility-ref
 import { formatPhotoDate } from "../../src/photo-date";
 
 const colors = {
-  paper: "#f9f7f2",
+  paper: mobileColors.paper,
   surface: "#ffffff",
   mist: "#edf1eb",
   ink: "#191c1c",
@@ -258,11 +260,10 @@ export function ExploreScreen({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} testID="explore-screen">
+    <SafeAreaView edges={["top", "left", "right"]} style={styles.safeArea} testID="explore-screen">
       <View style={styles.header}>
         <View>
-          <Text style={styles.brand}>{exploreContent.brand}</Text>
-          <Text style={styles.heading}>{exploreContent.title}</Text>
+          <Text style={styles.heading}>지도</Text>
         </View>
         <Pressable accessibilityLabel="프로필 열기" accessibilityRole="button" onPress={() => router.push(profileRoute)} style={styles.profileButton} testID="profile-open">
           <DefaultProfileAvatar size={44} />
@@ -293,7 +294,7 @@ export function ExploreScreen({
             value={query}
           />
           <Pressable accessibilityLabel="장소 검색 실행" accessibilityRole="button" disabled={searchState.status === "searching"} onPress={() => void submitPlaceSearch()} style={styles.searchButton} testID="place-search-submit">
-            <Text style={styles.searchButtonText}>{searchState.status === "searching" ? "…" : "검색"}</Text>
+            <Ionicons accessible={false} name={searchState.status === "searching" ? "ellipsis-horizontal" : "search-outline"} size={21} color={colors.pineDeep} />
           </Pressable>
           <Pressable
             accessibilityLabel={`사진 범위 ${scopeLabel}`}
@@ -369,12 +370,12 @@ export function ExploreScreen({
           <View accessibilityLabel="선택한 사진 미리보기" style={styles.preview}>
             <RecoverableRemoteImage accessibilityLabel="선택한 공개 사진" onRetry={() => setReloadKey((value) => value + 1)} style={styles.previewImage} uri={selectedPhoto.imageUrl} />
             <View style={styles.previewCopy}>
-              <Text numberOfLines={2} style={styles.previewTitle}>{selectedPhoto.description ?? "여행 사진"}</Text>
+              <Text numberOfLines={2} style={styles.previewTitle}>{selectedPhoto.description?.trim() || "여행 사진"}</Text>
               <Text style={styles.previewMeta}>{formatPhotoDate(selectedPhoto.date)}{normalizedScope === "mine" ? ` · ${selectedPhoto.visibility === "public" ? "공개" : selectedPhoto.visibility === "link" ? "링크 공개" : "비공개"}` : ""}</Text>
               {state.pageError ? <Text accessibilityLiveRegion="polite" style={styles.pageError}>{state.pageError === "offline" ? "인터넷 연결 후 사진을 더 불러올 수 있어요." : "사진을 더 불러오지 못했어요."}</Text> : null}
             </View>
             <Pressable accessibilityLabel="사진 자세히 보기" accessibilityRole="button" onPress={() => openPhoto(selectedPhoto.id)} style={styles.detailButton}>
-              <Text style={styles.detailButtonText}>자세히</Text>
+              <Ionicons accessible={false} name="arrow-forward" color={colors.pine} size={23} />
             </Pressable>
             {state.hasMore ? (
               <Pressable
@@ -400,20 +401,20 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     flexDirection: "row",
-    height: 96,
+    height: 64,
     justifyContent: "space-between",
-    paddingHorizontal: 16
+    paddingHorizontal: 20
   },
   brand: { color: colors.pine, fontFamily: "Georgia", fontSize: 16, fontWeight: "700" },
-  heading: { color: colors.ink, fontSize: 28, fontWeight: "800", lineHeight: 34 },
+  heading: { color: colors.ink, fontSize: 24, fontWeight: "700", lineHeight: 32 },
   profileButton: { alignItems: "center", borderRadius: 22, height: 44, justifyContent: "center", overflow: "hidden", width: 44 },
   map: { backgroundColor: colors.water, flex: 1, minHeight: 0, overflow: "hidden", position: "relative" },
-  searchRow: { flexDirection: "row", gap: 8, left: 16, position: "absolute", right: 16, top: 16 },
+  searchRow: { alignItems: "center", backgroundColor: colors.surface, borderRadius: 8, padding: 4, flexDirection: "row", gap: 4, left: 16, position: "absolute", right: 16, top: 16 },
   searchInput: {
     backgroundColor: colors.surface,
     borderColor: colors.line,
     borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 0,
     color: colors.ink,
     flex: 1,
     fontSize: 16,
@@ -422,15 +423,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16
   },
   searchButton: {
-    alignItems: "center", backgroundColor: colors.surface, borderColor: colors.line, borderRadius: 8,
-    borderWidth: 1, height: 48, justifyContent: "center", minWidth: 48, paddingHorizontal: 8
+    alignItems: "center", backgroundColor: colors.surface, borderRadius: 6,
+    height: 44, justifyContent: "center", minWidth: 44, paddingHorizontal: 8
   },
   searchButtonText: { color: colors.pineDeep, fontSize: 12, fontWeight: "800" },
   scopeButton: {
     alignItems: "center",
     backgroundColor: colors.pineDeep,
     borderRadius: 8,
-    height: 48,
+    height: 44,
     justifyContent: "center",
     maxWidth: 88,
     minWidth: 48,
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
   searchMessage: { color: colors.ink, fontSize: 13, fontWeight: "700", padding: 10 },
   searchRetry: { alignItems: "center", alignSelf: "flex-start", justifyContent: "center", minHeight: 44, paddingHorizontal: 10 },
   searchRetryText: { color: colors.pineDeep, fontSize: 13, fontWeight: "800" },
-  mapLabel: { color: colors.pineDeep, fontSize: 13, fontWeight: "700", left: 20, position: "absolute", top: 80 },
+  mapLabel: { color: colors.pineDeep, backgroundColor: colors.surface, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, fontWeight: "600", left: 16, position: "absolute", top: 84 },
   preview: {
     backgroundColor: colors.surface,
     borderColor: colors.line,
@@ -464,11 +465,11 @@ const styles = StyleSheet.create({
     bottom: 16,
     flexDirection: "row",
     left: 16,
-    padding: 8,
+    padding: 10,
     position: "absolute",
     right: 16
   },
-  previewImage: { backgroundColor: colors.mist, borderRadius: 6, height: 72, width: 88 },
+  previewImage: { backgroundColor: colors.mist, borderRadius: 6, height: 84, width: 72 },
   previewCopy: { flex: 1, justifyContent: "center", minWidth: 0, paddingHorizontal: 12 },
   previewTitle: { color: colors.ink, fontSize: 16, fontWeight: "800", lineHeight: 22 },
   previewMeta: { color: colors.muted, fontSize: 13, marginTop: 4 },

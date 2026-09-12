@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
   title: { color: mobileColors.ink, fontSize: 17, fontWeight: "800" },
   count: { color: mobileColors.muted, fontSize: 13, marginTop: 8 },
   copy: { color: mobileColors.muted, fontSize: 13, lineHeight: 20, marginTop: 10 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 12 },
-  photoButton: { aspectRatio: 1, width: "32%" },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 16 },
+  photoButton: { aspectRatio: 0.8, width: "31.8%", borderRadius: 6, overflow: "hidden" },
   photo: { backgroundColor: mobileColors.line, borderRadius: 4, height: "100%", width: "100%" },
   retryButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", marginTop: 12, minHeight: 44 },
   retryText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" }

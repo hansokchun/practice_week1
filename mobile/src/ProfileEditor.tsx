@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { pickPreparedAvatar, type PreparedAvatar } from "./avatar-image-runtime";
@@ -30,6 +31,7 @@ type EditorState =
 export function ProfileEditor({ userId, loadProfile = fetchEditableProfile, pickAvatar = pickPreparedAvatar, saveProfile = saveEditableProfile }: ProfileEditorProps) {
   const [state, setState] = useState<EditorState>({ status: "loading" });
   const [retryKey, setRetryKey] = useState(0);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -57,6 +59,7 @@ export function ProfileEditor({ userId, loadProfile = fetchEditableProfile, pick
     try {
       const profile = await saveProfile({ userId, nickname: state.nickname, bio: state.bio, currentAvatarPath: state.profile.avatarPath, avatarChange });
       setState({ status: "ready", profile, nickname: profile.nickname, bio: profile.bio, picked: null, removeAvatar: false, saving: false, message: profile.cleanupPending ? "프로필은 저장됐지만 이전 사진 정리가 지연되고 있어요." : "프로필을 저장했습니다." });
+      setEditing(false);
     } catch (error) {
       setState({ ...beforeSave, saving: false, message: error instanceof Error && /^(이름|소개|프로필 사진|안전한 JPEG)/u.test(error.message) ? error.message : "프로필을 저장하지 못했어요. 잠시 후 다시 시도해 주세요." });
     }
@@ -66,8 +69,26 @@ export function ProfileEditor({ userId, loadProfile = fetchEditableProfile, pick
   if (state.status === "failed") return <View style={styles.section}><Text accessibilityLiveRegion="polite" style={styles.copy}>프로필을 불러오지 못했어요.</Text><Pressable accessibilityLabel="프로필 다시 시도" accessibilityRole="button" onPress={() => { setState({ status: "loading" }); setRetryKey((value) => value + 1); }} style={styles.secondaryButton}><Text style={styles.secondaryText}>다시 시도</Text></Pressable></View>;
 
   const previewUri = state.picked?.previewUri ?? (state.removeAvatar ? null : state.profile.avatarUrl);
+  if (!editing) return <View style={styles.section}>
+    <View style={styles.identity}>
+      {previewUri === null ? <DefaultProfileAvatar size={88} /> : <Image accessibilityLabel="현재 프로필 사진" source={{ uri: previewUri }} style={styles.profileAvatar} />}
+      <View style={styles.identityCopy}>
+        <Text style={styles.profileName}>{state.profile.nickname || "여행자"}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="프로필 수정" onPress={() => setEditing(true)} style={styles.editTrigger}>
+          <Ionicons accessible={false} name="create-outline" size={16} color={mobileColors.pine} /><Text style={styles.secondaryText}>수정</Text>
+        </Pressable>
+      </View>
+    </View>
+    {state.profile.bio.trim().length > 0 && <Text style={styles.profileBio}>{state.profile.bio}</Text>}
+    {state.message !== null && <Text accessibilityLiveRegion="polite" style={styles.message}>{state.message}</Text>}
+  </View>;
   return <View style={styles.section}>
-    <Text style={styles.title}>프로필 설정</Text>
+    <View style={styles.editorHeader}><Text style={styles.title}>프로필 수정</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel="프로필 수정 취소" disabled={state.saving} onPress={() => {
+        setState({ ...state, nickname: state.profile.nickname, bio: state.profile.bio, picked: null, removeAvatar: false, message: null });
+        setEditing(false);
+      }} style={styles.linkButton}><Text style={styles.secondaryText}>취소</Text></Pressable>
+    </View>
     <View style={styles.avatarRow}>
       {previewUri === null ? <DefaultProfileAvatar size={80} /> : <Image accessibilityLabel={state.picked === null ? "현재 프로필 사진" : "선택한 프로필 사진 미리보기"} source={{ uri: previewUri }} style={styles.avatar} />}
       <View style={styles.avatarActions}>
@@ -88,6 +109,13 @@ export function ProfileEditor({ userId, loadProfile = fetchEditableProfile, pick
 
 const styles = StyleSheet.create({
   section: { alignSelf: "stretch" },
+  identity: { alignItems: "center", flexDirection: "row", gap: 20, paddingVertical: 12 },
+  identityCopy: { flex: 1, minWidth: 0 },
+  profileAvatar: { width: 88, height: 88, borderRadius: 44 },
+  profileName: { color: mobileColors.ink, fontSize: 26, lineHeight: 34, fontWeight: "700" },
+  profileBio: { color: mobileColors.muted, fontSize: 15, lineHeight: 24, marginTop: 14 },
+  editTrigger: { alignSelf: "flex-start", alignItems: "center", flexDirection: "row", gap: 6, minHeight: 44 },
+  editorHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   title: { color: mobileColors.ink, fontSize: 20, fontWeight: "800" },
   copy: { color: mobileColors.muted, fontSize: 14, lineHeight: 21 },
   avatarRow: { alignItems: "center", flexDirection: "row", gap: 16, marginTop: 18 },

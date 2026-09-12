@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuthSession } from "../../src/auth-session";
@@ -36,6 +37,7 @@ export function LikesScreen({
   signedIn = false,
   updateLike = setPhotoLiked
 }: LikesScreenProps) {
+  const { width } = useWindowDimensions();
   const [state, setState] = useState<LikesState>({ status: "loading" });
   const [retryKey, setRetryKey] = useState(0);
 
@@ -56,7 +58,7 @@ export function LikesScreen({
   if (!signedIn) return (
     <EmptyTabScreen
       actionLabel="로그인하기"
-      description="Explore에서 마음에 든 장소와 사진을 저장하고 여기서 다시 확인하세요."
+      description="마음에 든 장소와 사진을 모아보세요."
       emptyTitle="로그인하면 좋아요 한 사진을 모아볼 수 있어요"
       onAction={() => router.push(guestLoginRoute)}
       testID="likes-screen"
@@ -90,9 +92,8 @@ export function LikesScreen({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} testID="likes-screen">
+    <SafeAreaView edges={["top", "left", "right"]} style={styles.safeArea} testID="likes-screen">
       <View style={styles.header}>
-        <Text style={styles.brand}>Ikkyee</Text>
         <Text style={styles.heading}>좋아요</Text>
       </View>
       {state.status === "loading" ? (
@@ -110,7 +111,7 @@ export function LikesScreen({
           {state.photos.length === 0 ? (
             <View style={styles.center}><Text style={styles.title}>아직 좋아요 한 공개 사진이 없어요</Text></View>
           ) : state.photos.map((photo, index) => (
-            <View key={photo.id} style={styles.card}>
+            <View key={photo.id} style={[styles.card, { width: (width - 52) / 2 }]}>
               <RecoverableRemoteImage
                 accessibilityLabel={`${photo.description ?? "공개 사진"} 이미지`}
                 onPress={() => openPhoto(photo.id)}
@@ -120,7 +121,7 @@ export function LikesScreen({
                 uri={photo.imageUrl}
               />
               <Pressable accessibilityLabel={`${photo.description ?? "공개 사진"} 상세 열기`} accessibilityRole="button" onPress={() => openPhoto(photo.id)} style={styles.photoCopyButton}>
-                <Text style={styles.description}>{photo.description ?? "여행 사진"}</Text>
+                <Text numberOfLines={2} style={styles.description}>{photo.description?.trim() || "여행 사진"}</Text>
                 <Text style={styles.date}>{formatPhotoDate(photo.date)}</Text>
               </Pressable>
               <Pressable
@@ -130,7 +131,7 @@ export function LikesScreen({
                 onPress={() => void unlike(photo, index)}
                 style={styles.unlikeButton}
               >
-                <Text style={styles.unlikeText}>좋아요 취소</Text>
+                <Ionicons name="heart" size={22} color={mobileColors.pine} />
               </Pressable>
             </View>
           ))}
@@ -148,19 +149,19 @@ export default function LikesRoute() {
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: mobileColors.paper, flex: 1 },
-  header: { paddingBottom: 16, paddingHorizontal: 16, paddingTop: 18 },
+  header: { paddingBottom: 16, paddingHorizontal: 20, paddingTop: 18 },
   brand: { color: mobileColors.pine, fontFamily: "Georgia", fontSize: 16, fontWeight: "700" },
   heading: { color: mobileColors.ink, fontSize: 28, fontWeight: "800", marginTop: 3 },
   center: { alignItems: "center", flex: 1, justifyContent: "center", padding: 32 },
   title: { color: mobileColors.ink, fontSize: 20, fontWeight: "800", textAlign: "center" },
   retryButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", marginTop: 20, minHeight: 48, paddingHorizontal: 24 },
   retryText: { color: mobileColors.pineDeep, fontSize: 14, fontWeight: "800" },
-  content: { gap: 14, padding: 16, paddingBottom: 32 },
+  content: { flexDirection: "row", flexWrap: "wrap", gap: 12, padding: 20, paddingBottom: 32 },
   errorCopy: { color: "#9b2c2c", fontSize: 13, lineHeight: 19 },
-  card: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 10, borderWidth: 1, overflow: "hidden", paddingBottom: 10 },
-  photo: { backgroundColor: mobileColors.line, height: 220, width: "100%" },
-  photoCopyButton: { justifyContent: "center", minHeight: 60, paddingHorizontal: 14 },
-  description: { color: mobileColors.ink, fontSize: 17, fontWeight: "800" },
+  card: { paddingBottom: 8 },
+  photo: { backgroundColor: mobileColors.line, aspectRatio: 0.8, width: "100%", borderRadius: 8, overflow: "hidden" },
+  photoCopyButton: { justifyContent: "center", minHeight: 60, paddingHorizontal: 2 },
+  description: { color: mobileColors.ink, fontSize: 14, lineHeight: 20, fontWeight: "600" },
   date: { color: mobileColors.muted, fontSize: 12, marginTop: 5 },
   unlikeButton: { alignItems: "center", alignSelf: "flex-end", justifyContent: "center", marginRight: 8, marginTop: 4, minHeight: 44, paddingHorizontal: 10 },
   unlikeText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" }

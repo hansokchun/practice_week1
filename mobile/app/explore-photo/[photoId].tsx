@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
 import { AccessibilityInfo, Animated, Image, Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -314,10 +315,9 @@ export function PublicPhotoDetailScreen({
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Pressable accessibilityLabel="Explore로 돌아가기" accessibilityRole="button" onPress={goBack} style={styles.backButton}>
-          <Text style={styles.backText}>‹</Text>
+          <Ionicons accessible={false} name="arrow-back" size={24} color={mobileColors.ink} />
         </Pressable>
         <View>
-          <Text style={styles.brand}>Ikkyee</Text>
           <Text style={styles.heading}>사진 상세</Text>
         </View>
       </View>
@@ -335,7 +335,7 @@ export function PublicPhotoDetailScreen({
         <KeyboardSafeScrollView contentContainerStyle={[styles.content, { paddingHorizontal: gutter }]}>
           <View style={styles.photoFrame}>
             <RecoverableRemoteImage accessibilityLabel="여행 사진" onRetry={() => setRetryKey((value) => value + 1)} style={styles.photo} uri={displayState.photo.imageUrl} />
-            <View accessible={false} style={styles.scrollCue}><Text style={styles.scrollCueText}>⌄</Text></View>
+            <View accessible={false} style={styles.scrollCue}><Ionicons accessible={false} name="chevron-down" size={18} color={mobileColors.surface} /></View>
           </View>
           <Pressable
             accessibilityLabel={`${displayState.photo.owner.displayName} 프로필 열기`}
@@ -349,7 +349,7 @@ export function PublicPhotoDetailScreen({
             <Text style={styles.authorName}>{displayState.photo.owner.displayName}</Text>
           </Pressable>
           <View style={styles.titleRow}>
-            <Text style={styles.description}>{displayState.photo.description ?? "여행의 순간"}</Text>
+            <Text style={styles.description}>{displayState.photo.description?.trim() || "여행의 순간"}</Text>
             {currentUserId === displayState.photo.owner.id && saveOwnedPhoto !== undefined ? (
               <Pressable accessibilityLabel="사진 수정" accessibilityRole="button" onPress={() => openEdit(displayState.photo)} style={styles.editButton}>
                 <Text style={styles.editButtonText}>수정</Text>
@@ -357,12 +357,12 @@ export function PublicPhotoDetailScreen({
             ) : null}
             {currentUserId !== null && currentUserId !== displayState.photo.owner.id ? (
               <Pressable accessibilityLabel="사진 메뉴" accessibilityRole="button" onPress={() => setActionsOpen((open) => !open)} style={styles.menuButton}>
-                <Text style={styles.menuText}>•••</Text>
+                <Ionicons accessible={false} name="ellipsis-horizontal" size={23} color={mobileColors.ink} />
               </Pressable>
             ) : null}
           </View>
           <View style={styles.metaRow}>
-            <Text style={styles.meta}>{formatPhotoDate(displayState.photo.date)} · 좋아요 {displayState.photo.liked}</Text>
+            <Text style={styles.meta}>{formatPhotoDate(displayState.photo.date)}</Text>
             <Animated.View style={{ transform: [{ scale: likeScale }] }}>
               <Pressable
                 accessibilityLabel={displayState.photo.viewerHasLiked ? "좋아요 취소" : "좋아요"}
@@ -371,7 +371,8 @@ export function PublicPhotoDetailScreen({
                 onPress={handleLikePress}
                 style={[styles.likeButton, displayState.photo.viewerHasLiked && styles.likedButton]}
               >
-                <Text style={[styles.likeText, displayState.photo.viewerHasLiked && styles.likedText]}>{displayState.photo.viewerHasLiked ? "♥" : "♡"}</Text>
+                <Ionicons accessible={false} name={displayState.photo.viewerHasLiked ? "heart" : "heart-outline"} size={24} color={displayState.photo.viewerHasLiked ? mobileColors.pine : mobileColors.ink} />
+                <Text style={styles.likeCount}>{displayState.photo.liked}</Text>
               </Pressable>
             </Animated.View>
           </View>
@@ -379,11 +380,11 @@ export function PublicPhotoDetailScreen({
           {displayState.photo.location === undefined ? null : (
             <View style={styles.locationActions}>
               <Pressable accessibilityLabel="Explore 지도에서 보기" accessibilityRole="button" onPress={() => openOnMap(displayState.photo)} style={styles.locationButton}>
-                <Text style={styles.locationButtonText}>Explore 지도에서 보기</Text>
+                <Ionicons accessible={false} name="map-outline" size={20} color={mobileColors.pine} /><Text style={styles.locationButtonText}>지도에서 찾기</Text>
               </Pressable>
               {displayState.photo.location !== undefined ? (
                 <Pressable accessibilityLabel="거리뷰 열기" accessibilityRole="button" onPress={() => void openStreetView(displayState.photo)} style={styles.locationButton}>
-                  <Text style={styles.locationButtonText}>거리뷰</Text>
+                  <Ionicons accessible={false} name="navigate-outline" size={20} color={mobileColors.pine} /><Text style={styles.locationButtonText}>거리뷰</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -454,41 +455,42 @@ export default function PublicPhotoDetailRoute() {
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: mobileColors.paper, flex: 1 },
-  header: { alignItems: "center", flexDirection: "row", gap: 12, minHeight: 72, paddingHorizontal: 16 },
-  backButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 22, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
+  header: { alignItems: "center", flexDirection: "row", gap: 12, minHeight: 64, paddingHorizontal: 12 },
+  backButton: { alignItems: "center", height: 44, justifyContent: "center", width: 44 },
   backText: { color: mobileColors.ink, fontSize: 31, lineHeight: 34, marginTop: -3 },
   brand: { color: mobileColors.pine, fontFamily: "Georgia", fontSize: 13, fontWeight: "700" },
-  heading: { color: mobileColors.ink, fontSize: 21, fontWeight: "800", marginTop: 2 },
+  heading: { color: mobileColors.ink, fontSize: 18, fontWeight: "600" },
   center: { alignItems: "center", flex: 1, justifyContent: "center", padding: 32 },
   title: { color: mobileColors.ink, fontSize: 21, fontWeight: "800", textAlign: "center" },
   copy: { color: mobileColors.muted, fontSize: 14, lineHeight: 21, marginTop: 10, textAlign: "center" },
   retryButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", marginTop: 20, minHeight: 48, paddingHorizontal: 24 },
   retryText: { color: mobileColors.pineDeep, fontSize: 14, fontWeight: "800" },
-  content: { paddingBottom: 40, paddingTop: 20 },
+  content: { paddingBottom: 40, paddingTop: 4 },
   photoFrame: { position: "relative" },
-  photo: { backgroundColor: mobileColors.line, borderRadius: 8, height: 440, width: "100%" },
+  photo: { backgroundColor: mobileColors.line, borderRadius: 8, aspectRatio: 0.8, maxHeight: 560, width: "100%" },
   scrollCue: { alignItems: "center", backgroundColor: "rgba(0,54,55,0.72)", borderRadius: 14, bottom: 12, height: 28, justifyContent: "center", left: "50%", marginLeft: -14, position: "absolute", width: 28 },
   scrollCueText: { color: mobileColors.surface, fontSize: 21, lineHeight: 22, marginTop: -3 },
   authorRow: { alignItems: "center", flexDirection: "row", gap: 10, marginTop: 18 },
   avatar: { borderRadius: 20, height: 40, width: 40 },
   authorName: { color: mobileColors.ink, fontSize: 15, fontWeight: "800" },
   titleRow: { alignItems: "flex-start", flexDirection: "row", gap: 8, marginTop: 18 },
-  description: { color: mobileColors.ink, flex: 1, fontSize: 20, fontWeight: "800", lineHeight: 28 },
+  description: { color: mobileColors.ink, flex: 1, fontSize: 22, fontWeight: "700", lineHeight: 30 },
   menuButton: { alignItems: "center", height: 44, justifyContent: "center", marginTop: -8, width: 44 },
   menuText: { color: mobileColors.ink, fontSize: 17, fontWeight: "800", letterSpacing: 0 },
   editButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 40, paddingHorizontal: 14 },
   editButtonText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800" },
   metaRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
   meta: { color: mobileColors.muted, fontSize: 13 },
-  likeButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 22, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
-  likedButton: { backgroundColor: mobileColors.pineDeep },
+  likeButton: { alignItems: "center", flexDirection: "row", gap: 5, minHeight: 44, justifyContent: "center", minWidth: 48 },
+  likedButton: { opacity: 1 },
+  likeCount: { color: mobileColors.ink, fontSize: 14, fontWeight: "600" },
   likeText: { color: mobileColors.pineDeep, fontSize: 25, fontWeight: "800", lineHeight: 28 },
   likedText: { color: mobileColors.surface },
   likeError: { color: "#9b2c2c", fontSize: 13, lineHeight: 19, marginTop: 10 },
-  privacyCard: { backgroundColor: "#e1eadb", borderRadius: 8, marginTop: 20, padding: 16 },
+  privacyCard: { marginTop: 16, paddingVertical: 8 },
   privacyTitle: { color: mobileColors.pineDeep, fontSize: 14, fontWeight: "800" },
   locationActions: { flexDirection: "row", gap: 8, marginTop: 16 },
-  locationButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 46, paddingHorizontal: 10 },
+  locationButton: { alignItems: "center", flexDirection: "row", gap: 8, backgroundColor: mobileColors.mist, borderRadius: 8, flex: 1, justifyContent: "center", minHeight: 52, paddingHorizontal: 10 },
   locationButtonText: { color: mobileColors.pineDeep, fontSize: 13, fontWeight: "800", textAlign: "center" },
   editPanel: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, marginTop: 18, padding: 16 },
   editTitle: { color: mobileColors.ink, fontSize: 18, fontWeight: "800" },
@@ -511,7 +513,7 @@ const styles = StyleSheet.create({
   commentRetryButton: { alignItems: "center", borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, marginTop: 12, minHeight: 44, justifyContent: "center" },
   commentRetryText: { color: mobileColors.pineDeep, fontSize: 14, fontWeight: "800" },
   commentList: { gap: 10, marginTop: 12 },
-  commentCard: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, padding: 14 },
+  commentCard: { borderBottomColor: mobileColors.line, borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 16 },
   commentHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   commentAuthor: { color: mobileColors.ink, fontSize: 13, fontWeight: "800" },
   commentDelete: { color: "#9b2c2c", fontSize: 12, fontWeight: "700", padding: 6 },

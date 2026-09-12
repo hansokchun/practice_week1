@@ -2,7 +2,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { createEmailAuthActions } from "../../src/email-auth";
@@ -13,7 +14,7 @@ import { mobileColors } from "../../src/mobile-theme";
 import { resolvePostAuthRoute } from "../../src/post-auth-route";
 import { getSupabaseClient } from "../../src/supabase-client";
 
-const providers = ["이메일", "Google", "Kakao"] as const;
+const providers = ["Google", "Kakao", "이메일"] as const;
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
@@ -68,14 +69,16 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Pressable accessibilityLabel="로그인 닫기" accessibilityRole="button" onPress={() => router.back()} style={styles.closeButton}>
-          <Text style={styles.closeText}>닫기</Text>
+          <Ionicons name="close-outline" size={26} color={mobileColors.ink} />
         </Pressable>
       </View>
       <KeyboardSafeScrollView contentContainerStyle={[styles.body, { paddingHorizontal: gutter }]}>
+        <Image source={require("../../assets/brand-logo.png")} style={styles.brandImage} resizeMode="contain" accessibilityLabel="이끼 로고" />
         <Text style={styles.brand}>Ikkyee</Text>
         <Text style={styles.title}>로그인</Text>
         {emailMode ? (
           <View style={styles.emailForm}>
+            <Text style={styles.fieldLabel}>이메일</Text>
             <TextInput
               accessibilityLabel="이메일"
               autoCapitalize="none"
@@ -86,6 +89,7 @@ export default function LoginScreen() {
               style={styles.input}
               value={email}
             />
+            <Text style={styles.fieldLabel}>비밀번호</Text>
             <TextInput
               accessibilityLabel="비밀번호"
               autoCapitalize="none"
@@ -113,14 +117,16 @@ export default function LoginScreen() {
           <View style={styles.providerList}>
             {providers.map((provider) => (
               <Pressable
+                accessibilityLabel={`${provider}로 계속하기`}
                 accessibilityRole="button"
                 disabled={busy}
                 key={provider}
                 onPress={provider === "이메일"
                   ? () => setEmailMode(true)
                   : () => runOAuth(provider === "Google" ? "google" : "kakao")}
-                style={styles.providerButton}
+                style={[styles.providerButton, provider === "Kakao" && styles.kakaoButton, provider === "이메일" && styles.emailButton, busy && { opacity: 0.5 }]}
               >
+                <Ionicons accessible={false} name={provider === "Google" ? "logo-google" : provider === "Kakao" ? "chatbubble" : "mail-outline"} size={20} color={mobileColors.ink} />
                 <Text style={styles.providerText}>{provider}로 계속하기</Text>
               </Pressable>
             ))}
@@ -137,14 +143,18 @@ const styles = StyleSheet.create({
   header: { alignItems: "flex-start", height: 64, justifyContent: "center", paddingHorizontal: 16 },
   closeButton: { justifyContent: "center", minHeight: 44, minWidth: 44 },
   closeText: { color: mobileColors.pineDeep, fontSize: 15, fontWeight: "700" },
-  body: { flexGrow: 1, justifyContent: "center", paddingVertical: 24 },
-  brand: { color: mobileColors.pine, fontFamily: "Georgia", fontSize: 18, fontWeight: "700", textAlign: "center" },
-  title: { color: mobileColors.ink, fontSize: 28, fontWeight: "800", marginTop: 12, textAlign: "center" },
+  body: { flexGrow: 1, justifyContent: "center", paddingTop: 24, paddingBottom: 64, width: "100%", maxWidth: 480, alignSelf: "center" },
+  brandImage: { width: 104, height: 104, alignSelf: "center", marginBottom: 12 },
+  brand: { color: mobileColors.pine, fontFamily: "Georgia", fontSize: 32, fontWeight: "600", textAlign: "center" },
+  title: { color: mobileColors.muted, fontSize: 17, fontWeight: "500", marginTop: 12, textAlign: "center" },
+  fieldLabel: { color: mobileColors.ink, fontSize: 13, fontWeight: "600" },
+  kakaoButton: { backgroundColor: "#FEE500", borderColor: "#FEE500" },
+  emailButton: { backgroundColor: mobileColors.mist, borderColor: mobileColors.mist },
   providerList: { gap: 12, marginTop: 32 },
   emailForm: { gap: 12, marginTop: 32 },
   input: { backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, color: mobileColors.ink, fontSize: 16, minHeight: 52, paddingHorizontal: 16 },
-  providerButton: { alignItems: "center", backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 52, paddingHorizontal: 16 },
-  providerText: { color: mobileColors.ink, fontSize: 16, fontWeight: "800" },
+  providerButton: { alignItems: "center", flexDirection: "row", gap: 12, backgroundColor: mobileColors.surface, borderColor: mobileColors.line, borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 54, paddingHorizontal: 16 },
+  providerText: { color: mobileColors.ink, fontSize: 15, fontWeight: "600" },
   primaryButton: { alignItems: "center", backgroundColor: mobileColors.pineDeep, borderRadius: 8, justifyContent: "center", minHeight: 52, paddingHorizontal: 16 },
   primaryButtonText: { color: mobileColors.surface, fontSize: 16, fontWeight: "800" },
   textButton: { alignItems: "center", justifyContent: "center", minHeight: 44 },

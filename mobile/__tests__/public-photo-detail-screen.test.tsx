@@ -38,7 +38,7 @@ describe("public photo detail screen", () => {
     expect(getByLabelText("여행 사진")).toBeOnTheScreen();
     expect(getByText("여행자")).toBeOnTheScreen();
     expect(queryByText("대략 위치")).toBeNull();
-    expect(getByRole("button", { name: "좋아요" })).toHaveTextContent("♡");
+    expect(getByRole("button", { name: "좋아요" })).toHaveTextContent(/7$/);
     expect(queryByText("좋아요 취소")).toBeNull();
     expect(queryByText(/11111111|storage_path|37\.|127\./)).not.toBeOnTheScreen();
     fireEvent.press(getByLabelText("여행자 프로필 열기"));
@@ -59,7 +59,8 @@ describe("public photo detail screen", () => {
     );
 
     await waitFor(() => expect(screen.getByText("공개 · 정확한 위치")).toBeOnTheScreen());
-    expect(screen.getByText("-- -- · 좋아요 2")).toBeOnTheScreen();
+    expect(screen.getByText("-- --")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "좋아요" })).toHaveTextContent(/2$/);
     await fireEvent.press(screen.getByRole("button", { name: "Explore 지도에서 보기" }));
     expect(openOnMap).toHaveBeenCalledWith(photo);
   });
@@ -106,7 +107,7 @@ describe("public photo detail screen", () => {
       <PublicPhotoDetailScreen loadPhoto={async () => photo} photoId="photo-date" />
     );
 
-    await waitFor(() => expect(screen.getByText("2026. 07. 24. · 좋아요 0")).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText("2026. 07. 24.")).toBeOnTheScreen());
     expect(screen.queryByText(/T04:30/u)).toBeNull();
   });
 
@@ -126,7 +127,7 @@ describe("public photo detail screen", () => {
     await act(async () => fireEvent.press(getByRole("button", { name: "좋아요" })));
     await waitFor(() => expect(getByText("좋아요를 변경하지 못했어요. 로그인 상태를 확인해 주세요.")).toBeOnTheScreen());
     expect(getByRole("button", { name: "좋아요" })).toBeOnTheScreen();
-    expect(getByText(/좋아요 7/)).toBeOnTheScreen();
+    expect(getByRole("button", { name: "좋아요" })).toHaveTextContent(/7$/);
   });
 
   it("sends guests to login without an optimistic like or server mutation", async () => {
@@ -147,7 +148,7 @@ describe("public photo detail screen", () => {
 
     expect(requestLogin).toHaveBeenCalledTimes(1);
     expect(updateLike).not.toHaveBeenCalled();
-    expect(screen.getByText(/좋아요 7/)).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "좋아요" })).toHaveTextContent(/7$/);
   });
 
   it("shows a generic retryable state without backend details", async () => {
