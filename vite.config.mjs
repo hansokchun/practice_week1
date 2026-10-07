@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
+import { compactPiexifPlugin } from './scripts/compact-piexif.mjs';
 
 export default defineConfig({
+    plugins: [compactPiexifPlugin()],
     // index.html이 프로젝트 루트에 있으므로 root는 기본값(.) 사용
     build: {
         outDir: 'dist',
