@@ -14,7 +14,7 @@ test('account notifications summarize missing locations, liked photos, and recei
         ]
     });
 
-    assert.deepEqual(items.map((item) => item.route), ['photos', 'liked', 'photos']);
+    assert.deepEqual(items.map((item) => item.route), ['location-assign', 'liked', 'photos']);
     assert.equal(items[0].icon, 'location_off');
     assert.equal(items[0].title, '1장의 사진에 위치를 지정해보세요!');
     assert.equal(items[1].title, '좋아요 누른 사진 1장');
@@ -22,7 +22,7 @@ test('account notifications summarize missing locations, liked photos, and recei
     assert.ok(items.every(item => !item.title.includes('공개 중')));
 });
 
-test('dismissed missing-location guidance is omitted and an empty state is non-actionable', () => {
+test('dismissing the page banner keeps unresolved photos in notifications', () => {
     const dismissedItems = buildAccountNotificationItems({
         currentUserId: 'me',
         savedPhotos: [{ id: 'missing', owner_id: 'me', lat: null, lng: null }],
@@ -33,8 +33,8 @@ test('dismissed missing-location guidance is omitted and an empty state is non-a
     });
 
     assert.equal(dismissedItems.length, 1);
-    assert.equal(dismissedItems[0].title, '새 알림 없음');
-    assert.equal(dismissedItems[0].route, '');
+    assert.equal(dismissedItems[0].title, '1장의 사진에 위치를 지정해보세요!');
+    assert.equal(dismissedItems[0].route, 'location-assign');
     assert.deepEqual(loggedOutItems, []);
 });
 
@@ -61,7 +61,32 @@ test('notification preferences can hide location guidance and library summaries'
 test('public photo counts alone do not create notifications', () => {
     const items = buildAccountNotificationItems({
         currentUserId: 'me',
-        savedPhotos: [{ id: 'public', owner_id: 'me', lat: 0, lng: 0, visibility: 'public' }]
+        savedPhotos: [{ id: 'public', owner_id: 'me', lat: 37, lng: 127, visibility: 'public' }]
     });
     assert.equal(items[0].title, '새 알림 없음');
+});
+
+test('missing photos accumulate across reloads until explicitly skipped or located', () => {
+    const savedPhotos = [
+        { id: 'old', owner_id: 'me', lat: null, lng: null, date: '2020-01-01' },
+        { id: 'new', owner_id: 'me', lat: null, lng: null, date: '2026-10-08' },
+        { id: 'skipped', owner_id: 'me', lat: null, lng: null, location_assignment_skipped: true },
+        { id: 'other', owner_id: 'other', lat: null, lng: null }
+    ];
+    const reload = () => buildAccountNotificationItems({ currentUserId: 'me', savedPhotos: JSON.parse(JSON.stringify(savedPhotos)) });
+    assert.equal(reload()[0].title, '2장의 사진에 위치를 지정해보세요!');
+    assert.equal(reload()[0].route, 'location-assign');
+    savedPhotos[0].location_assignment_skipped = true;
+    assert.equal(reload()[0].title, '1장의 사진에 위치를 지정해보세요!');
+    Object.assign(savedPhotos[1], { lat: 37, lng: 127 });
+    assert.equal(reload()[0].title, '새 알림 없음');
+});
+
+test('unusable and partial coordinates stay in the location editing queue', () => {
+    const items = buildAccountNotificationItems({ currentUserId: 'me', savedPhotos: [
+        { id: 'zero', owner_id: 'me', lat: 0, lng: 0 },
+        { id: 'partial', owner_id: 'me', lat: 37, lng: null },
+        { id: 'invalid', owner_id: 'me', lat: 100, lng: 127 }
+    ] });
+    assert.equal(items[0].title, '3장의 사진에 위치를 지정해보세요!');
 });

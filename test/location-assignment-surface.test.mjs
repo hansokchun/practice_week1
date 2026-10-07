@@ -54,9 +54,15 @@ test('location assignment loads queue thumbnails lazily and keeps nearby coordin
 });
 
 test('photos can leave the queue without a location and return when one is saved later', () => {
+    assert.match(html, /id="btn-skip-location-assignment"[^>]*>[\s\S]*?위치 없음\s*<\/button>/);
     assert.match(app, /skip \? \{ location_assignment_skipped: true \}/);
     assert.match(app, /async function saveLocationAssignment\(event\)[\s\S]*location_assignment_skipped: false/);
     assert.match(app, /async function saveManualLocation\(event\)[\s\S]*hasPickedLocation: state\.locationEditorHasPickedLocation/);
+});
+
+test('direct location queue entry refreshes after saved photo metadata loads', () => {
+    const loader = app.slice(app.indexOf('async function loadSavedPhotos('), app.indexOf('async function loadMyLikedPhotos('));
+    assert.match(loader, /state\.hasLoadedSavedPhotos = true;[\s\S]*if \(document\.body\.dataset\.page === 'location-assign'\) \{\s*renderLocationAssignmentPage\(\);\s*requestAnimationFrame\(\(\) => ensureLocationAssignmentMap\(\)\);/);
 });
 
 test('location assignment confirms either save action with a short bottom-center notice', () => {

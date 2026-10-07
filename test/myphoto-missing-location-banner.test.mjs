@@ -77,7 +77,7 @@ test('missing location dismiss button hides the page alert', () => {
     assert.match(source, /renderSavedPhotoSurfaces\(\)/);
 });
 
-test('missing location dismiss also removes the account notification item', () => {
+test('missing location dismiss only hides the banner and retains the notification queue', () => {
     const fnStart = source.indexOf('function getAccountNotificationItems');
     const fnEnd = source.indexOf('function setAccountNotificationsOpen', fnStart);
     const body = source.slice(fnStart, fnEnd);
@@ -85,8 +85,9 @@ test('missing location dismiss also removes the account notification item', () =
     const dismissEnd = source.indexOf("$('#btn-open-album')", dismissStart);
     const dismissHandler = source.slice(dismissStart, dismissEnd);
 
-    assert.match(body, /isMissingLocationBannerDismissed: state\.isMissingLocationBannerDismissed/);
-    assert.match(notificationSource, /if \(missingLocationNotifications && missingLocationCount && !isMissingLocationBannerDismissed\) \{/);
+    assert.doesNotMatch(body, /isMissingLocationBannerDismissed/);
+    assert.match(notificationSource, /getMissingLocationAssignmentPhotos\(myPhotos\)/);
+    assert.match(notificationSource, /route: 'location-assign'/);
     assert.match(dismissHandler, /state\.isMissingLocationBannerDismissed = true/);
     assert.match(dismissHandler, /renderSavedPhotoSurfaces\(\)/);
     assert.match(dismissHandler, /renderAccountNotifications\(\)/);

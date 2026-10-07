@@ -3756,7 +3756,6 @@ function getAccountNotificationItems() {
         currentUserId: state.currentUser?.id || '',
         savedPhotos: state.savedPhotos,
         likedPhotoIds: state.likedPhotoIds,
-        isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed,
         missingLocationNotifications: state.accountSettings.missingLocationNotifications,
         librarySummaryNotifications: state.accountSettings.librarySummaryNotifications,
         welcomeNotices: loadAccountGuidance(window.localStorage, state.currentUser?.id).welcomeNotices
@@ -5333,6 +5332,10 @@ async function loadSavedPhotos({ render = true } = {}) {
         .map((photo) => normalizeSavedPhoto(reusePhotoSignedUrls(photo, previousPhotos.get(String(photo.id)))));
     state.savedPhotos = metadataPhotos;
     state.hasLoadedSavedPhotos = true;
+    if (document.body.dataset.page === 'location-assign') {
+        renderLocationAssignmentPage();
+        requestAnimationFrame(() => ensureLocationAssignmentMap());
+    }
     renderLandingSections();
     renderLandingHeroSlides();
 

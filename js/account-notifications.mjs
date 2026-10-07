@@ -1,14 +1,10 @@
 import { getProfilePhotoMetrics } from './profile-photo-metrics.mjs';
-
-function hasCoordinate(value) {
-    return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
-}
+import { getMissingLocationAssignmentPhotos } from './location-assignment.mjs';
 
 export function buildAccountNotificationItems({
     currentUserId = '',
     savedPhotos = [],
     likedPhotoIds = [],
-    isMissingLocationBannerDismissed = false,
     missingLocationNotifications = true,
     librarySummaryNotifications = true,
     welcomeNotices = []
@@ -18,19 +14,17 @@ export function buildAccountNotificationItems({
 
     const likedIds = new Set(likedPhotoIds.map(String));
     const myPhotos = savedPhotos.filter((photo) => String(photo.owner_id || '') === viewerId);
-    const missingLocationCount = myPhotos.filter((photo) => (
-        !hasCoordinate(photo.lat) || !hasCoordinate(photo.lng)
-    )).length;
+    const missingLocationCount = getMissingLocationAssignmentPhotos(myPhotos).length;
     const likedPhotoCount = savedPhotos.filter((photo) => likedIds.has(String(photo.id))).length;
     const { receivedLikeCount } = getProfilePhotoMetrics(myPhotos, viewerId);
     const items = [...welcomeNotices];
 
-    if (missingLocationNotifications && missingLocationCount && !isMissingLocationBannerDismissed) {
+    if (missingLocationNotifications && missingLocationCount) {
         items.push({
             icon: 'location_off',
             title: `${missingLocationCount}장의 사진에 위치를 지정해보세요!`,
             body: '어디서 찍었는지 알려주면 지도에 담을 수 있어요.',
-            route: 'photos'
+            route: 'location-assign'
         });
     }
     if (librarySummaryNotifications && likedPhotoCount) {
