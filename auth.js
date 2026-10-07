@@ -8,6 +8,7 @@
  */
 
 import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
+import { fetchPhotoMetadataPages } from './js/photo-metadata-pages.mjs';
 import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
 import {
     applySignedAlbumCoverUrls,
@@ -306,11 +307,7 @@ export async function fetchProfilesByIds(userIds) {
 export async function fetchPhotos({ hydrateUrls = true } = {}) {
     try {
         const sb = getSupabase();
-        const { data, error } = await sb
-            .from('photos')
-            .select(PHOTO_SELECT_COLUMNS)
-            .order('date', { ascending: false });
-        if (error) throw error;
+        const data = await fetchPhotoMetadataPages(sb, PHOTO_SELECT_COLUMNS);
         if (!hydrateUrls) return { data: data || [], error: null };
         return { data: await hydrateSignedPhotoUrls(sb, data || []), error: null };
     } catch (error) {
