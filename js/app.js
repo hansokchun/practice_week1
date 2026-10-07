@@ -209,7 +209,7 @@ import {
     setPendingOAuthProvider,
     takePendingOAuthProvider
 } from './oauth-profile-import.mjs';
-import { getExploreMapOptions } from './explore-map-options.mjs';
+import { getExploreMapOptions, getProfileMapOptions } from './explore-map-options.mjs';
 import { getExplorePinSymbolIcon } from './explore-pin-icon.mjs';
 import { getProfileMapPinSize } from './profile-map-pin-size.mjs';
 import { getStreetViewStaticImageUrl } from './street-view-static.mjs';
@@ -255,6 +255,7 @@ import {
     getNextLandingSlideIndex
 } from './landing-slideshow.mjs';
 import { normalizeLandingHeroLocationLabel } from './landing-location-label.mjs';
+import { uploadLandingHeroPhoto } from './landing-hero-upload.mjs';
 import {
     buildLandingTagHash,
     canOpenLandingTagPage,
@@ -1283,6 +1284,8 @@ function getLandingPhotoLabel(photo) {
 
 function getLandingHeroLocationLabel(photo = {}) {
     const photoId = String(photo.id || photo.localId || '');
+    const manualLabel = String(state.landingHeroLocationLabels[photoId] || '').trim().slice(0, 80);
+    if (manualLabel) return manualLabel;
     const locationLabel = normalizeLandingHeroLocationLabel(
         state.landingHeroLocationLabels[photoId]
         || photo.placeName
@@ -1489,6 +1492,48 @@ function renderLandingAdminForm() {
     renderLandingAdminDock();
 }
 
+async function handleLandingHeroFiles(files) {
+    if (!isLandingAdmin(state.currentUser) || state.isUploadingLandingHero) return;
+    const { accepted, rejected } = filterAcceptedPhotoFiles(files);
+    const remaining = Math.max(0, LANDING_HERO_SLIDE_LIMIT - state.landingHeroPhotoIds.length);
+    if (!remaining) { showToast('배경 슬라이드는 최대 5장입니다. 기존 사진을 먼저 제거해주세요.'); return; }
+    if (accepted.length > remaining) { showToast(`사진은 ${remaining}장까지 추가할 수 있습니다. 선택한 사진 수를 줄여주세요.`); return; }
+    if (!accepted.length) { showToast(rejected[0]?.reason || '사진을 선택해주세요.'); return; }
+    syncLandingAdminDrafts();
+    const ownerId = state.currentUser.id;
+    const input = $('#landing-hero-file-input');
+    const saveButton = $('#landing-admin-form [type="submit"]');
+    const message = $('#landing-hero-upload-status');
+    state.isUploadingLandingHero = true;
+    if (input) input.disabled = true;
+    if (saveButton) saveButton.disabled = true;
+    let added = 0;
+    try {
+        for (const file of accepted) {
+            if (message) message.textContent = `사진을 추가하는 중입니다… (${added + 1}/${accepted.length})`;
+            const record = await uploadLandingHeroPhoto(file, { ownerId, id: crypto.randomUUID() }, {
+                optimize: optimizePhotoForUpload,
+                createThumbnail: createPhotoThumbnailForUpload,
+                createPreview: createPhotoPreviewForUpload,
+                upload: uploadImage, uploadVariant: uploadPhotoThumbnail,
+                save: upsertPhoto, remove: removeUploadedImage
+            });
+            state.savedPhotos.unshift(normalizeSavedPhoto(record));
+            state.landingHeroPhotoIds.push(record.id);
+            state.landingHeroLocationLabels[record.id] = '';
+            added++;
+        }
+        if (message) message.textContent = `${added}장을 추가했습니다.${rejected.length ? ` 지원하지 않는 파일 ${rejected.length}개는 제외했습니다.` : ''} 아래에 위치를 입력하고 메인 구성을 저장해주세요.`;
+    } catch (error) {
+        if (message) message.textContent = `${added ? `${added}장은 추가되었습니다. ` : ''}사진을 추가하지 못했습니다. ${error.message || '다시 시도해주세요.'}`;
+    } finally {
+        state.isUploadingLandingHero = false;
+        if (input) { input.disabled = false; input.value = ''; }
+        if (saveButton) saveButton.disabled = false;
+        renderLandingAdminHeroForm();
+    }
+}
+
 function renderLandingAdminHeroForm() {
     const container = $('#landing-admin-hero-photos');
     if (!container || !isLandingAdmin(state.currentUser)) return;
@@ -1507,7 +1552,7 @@ function renderLandingAdminHeroForm() {
             <div class="admin-selected-photo" data-admin-hero-selected="${escapeHtml(photoId)}">
                 <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
                 <label class="admin-hero-location-field">
-                    <span>지역명</span>
+                    <span>아래에 표시할 위치</span>
                     <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 일본 · 도쿄" required>
                 </label>
                 <button data-admin-hero-move="previous" type="button" aria-label="슬라이드를 앞으로 이동" ${index === 0 ? 'disabled' : ''}>↑</button>
@@ -1567,6 +1612,7 @@ function selectLandingAdminTarget(target) {
 }
 
 function addPhotoFromLandingAdminDock(photoId) {
+    if (state.isUploadingLandingHero) return;
     if (!isLandingAdmin(state.currentUser) || !state.landingAdminTarget) return;
     if (!getLandingAdminCandidates().some(photo => String(photo.id) === photoId)) return;
     syncLandingAdminDrafts();
@@ -1590,7 +1636,7 @@ function addPhotoFromLandingAdminDock(photoId) {
 function getLandingHeroSlidesToSave() {
     return state.landingHeroPhotoIds.slice(0, LANDING_HERO_SLIDE_LIMIT).map((photoId) => ({
         photoId,
-        locationLabel: normalizeLandingHeroLocationLabel(state.landingHeroLocationLabels[photoId] || '')
+        locationLabel: String(state.landingHeroLocationLabels[photoId] || '').trim().slice(0, 80)
     }));
 }
 
@@ -1630,6 +1676,7 @@ async function saveLandingAdminForm(event) {
     event.preventDefault();
     const message = $('#landing-admin-message');
     if (!isLandingAdmin(state.currentUser)) return;
+    if (state.isUploadingLandingHero) return;
     syncLandingAdminDrafts();
     const fieldsets = $$('[data-admin-landing-section]');
     const candidatePhotos = getLandingAdminCandidates();
@@ -2774,7 +2821,7 @@ async function ensureProfileMap() {
         return null;
     }
 
-    state.profileMap = new maps.Map(container, getExploreMapOptions({
+    state.profileMap = new maps.Map(container, getProfileMapOptions({
         center: { lat: 36.45, lng: 127.85 },
         zoom: 7,
         mapId: state.googleMapsMapId
@@ -3388,7 +3435,6 @@ function ensureProfileHeaderShell() {
             </div>
             <div id="account-profile-view" class="account-profile-view profile-header-view">
                 <div class="account-profile-metrics">
-                    <span>받은 좋아요 <strong id="profile-like-count">0</strong></span>
                     <span>등록한 사진 <strong id="profile-photo-count">0</strong></span>
                     <span>공개 중인 사진 <strong id="profile-public-count">0</strong></span>
                 </div>
@@ -3470,7 +3516,7 @@ function renderAccountProfilePanel() {
     clearAccountProfileAvatarPreview();
     clearAccountProfileCoverPreview();
     const profile = getCurrentAccountProfile();
-    const { photoCount, publicCount, receivedLikeCount } = getProfilePhotoMetrics(getMySavedPhotos(), state.currentUser?.id);
+    const { photoCount, publicCount } = getProfilePhotoMetrics(getMySavedPhotos(), state.currentUser?.id);
     const title = $('#profile-title');
     const bio = $('#profile-bio');
     const photoCountNode = $('#profile-photo-count');
@@ -3483,7 +3529,6 @@ function renderAccountProfilePanel() {
     }
     if (photoCountNode) photoCountNode.textContent = String(photoCount);
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
-    if ($('#profile-like-count')) $('#profile-like-count').textContent = String(receivedLikeCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
     setAvatarDisplay(
@@ -4374,7 +4419,6 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-photo-count')) $('#profile-photo-count').textContent = String(ownerPhotos.length);
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
-    if ($('#profile-like-count')) $('#profile-like-count').textContent = String(getProfilePhotoMetrics(ownerPhotos, ownerId).receivedLikeCount);
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
     setProfileCoverDisplay(cover, `${authorName} public profile cover`);
@@ -7955,6 +7999,9 @@ function bindEvents() {
         renderLandingSections();
     }));
     $('#landing-admin-form')?.addEventListener('submit', saveLandingAdminForm);
+    $('#landing-hero-file-input')?.addEventListener('change', event => {
+        handleLandingHeroFiles(event.target.files);
+    });
     $('#landing-admin-form')?.addEventListener('focusin', event => {
         const node = event.target.closest('[data-admin-landing-section], #landing-admin-hero');
         if (node) selectLandingAdminTarget(node.dataset.adminLandingSection || 'hero');

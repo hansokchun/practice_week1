@@ -90,8 +90,10 @@ test('profile and library photo thumbnails share the same original-ratio masonry
     assert.doesNotMatch(css, /\.profile-photo-grid img,\s*\.profile-album-grid img\s*\{[^}]*height:\s*180px;/s);
 });
 
-test('public profile map uses Google Maps JS with greedy wheel gestures and inert markers', () => {
+test('public profile map uses fixed Google Maps with inert markers', () => {
     assert.match(app, /async function ensureProfileMap/);
+    const optionsBody = app.slice(app.indexOf('async function ensureProfileMap'), app.indexOf('async function renderProfileMap'));
+    assert.match(optionsBody, /getProfileMapOptions\(/);
     assert.match(app, /getExploreMapOptions\(\{/);
     assert.match(app, /state\.profileMarkers = locatedPhotos\.map/);
     const fnStart = app.indexOf('async function renderProfileMap');

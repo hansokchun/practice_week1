@@ -2,6 +2,16 @@ import { withGoogleMapsMapId } from './google-maps-runtime-config.mjs';
 
 export const EXPLORE_MAP_MIN_ZOOM = 4;
 
+export function getProfileMapOptions(options = {}) {
+    return {
+        ...getExploreMapOptions(options),
+        gestureHandling: 'none',
+        draggable: false,
+        scrollwheel: false,
+        disableDoubleClickZoom: true
+    };
+}
+
 const QUIET_EXPLORE_MAP_STYLES = [
     { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
     { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },

@@ -37,7 +37,7 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.match(app, /id="profile-bio"/);
     assert.match(app, /id="profile-photo-count"/);
     assert.match(app, /id="profile-public-count"/);
-    assert.match(app, /id="profile-like-count"/);
+    assert.doesNotMatch(app, /profile-like-count/);
     assert.doesNotMatch(app, /id="profile-album-count"/);
     assert.match(app, />등록한 사진 <strong id="profile-photo-count">0<\/strong></);
     assert.match(app, />공개 중인 사진 <strong id="profile-public-count">0<\/strong></);

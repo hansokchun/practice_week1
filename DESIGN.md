@@ -29,11 +29,13 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 ### Rules
 
 - Teal remains the main product accent for navigation, maps, and primary commands.
-- Page canvases and the profile information area share `--bg`; elevated cards retain their surface tokens. Profile information follows nickname (32px below the cover edge), photo/like metrics, then biography. Landing section titles use a 16px left inset.
+- Page canvases and the profile information area share `--bg`; elevated cards retain their surface tokens. Profile information follows nickname (32px below the cover edge), registered/public photo metrics, then biography. Landing section titles use a 16px left inset.
 - Warm feature colors are reserved for editorial landing sections, not app dashboards.
 - Add a token here before adding any new semantic color to CSS.
 
 ## 3. Typography
+
+- Default text tracking uses `--text-tracking: 0.02em` across page copy, headings and controls, including legal pages. Existing wider editorial tracking and icon fonts retain their own settings.
 
 ### Scale
 
@@ -135,13 +137,15 @@ All spacing derives from a base of 4px.
 
 ### Landing Admin Photo Dock
 
+- Hero slides also accept local image files through an admin-only multi-file picker (maximum five slides, existing 15MB validation and optimized original/thumbnail/preview uploads). The image preview sits above an editable location label. Adding files keeps drafts; saving publishes slide assignments and captions. Uploaded photos are stored as public photos with no inferred coordinates. Upload errors clean newly created storage objects; successful files remain available when a later file fails.
+
 - A single shared photo picker stays fixed at the bottom of the admin page; the document owns vertical scrolling and reserves space for the dock and mobile safe area.
 - Click or focus a section to choose its destination. A teal border and pressed destination button identify the active section; the dock repeats its title.
 - Eight thumbnails per page, with previous/next controls, public/liked filters and search. Desktop uses one row; mobile uses four columns and two rows. Selected photos remain in their section with reorder/remove controls.
 - Adding photos preserves text drafts. Already-added photos are marked and cannot be added twice. Save remains an explicit action.
 - Use existing surface, line, teal and thumbnail tokens; keyboard selection and focus-visible states remain available. No new animation.
 
-- **Structure**: Public Explore and profile maps use the shared `getExploreMapOptions` helper.
+- **Structure**: Explore uses `getExploreMapOptions`; profile uses `getProfileMapOptions` with the same visual styling. Profile camera input is disabled (drag, touch, wheel, double click and keyboard); initial photo bounds still fit automatically.
 - **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels, and removes transit line geometry so uploaded photo pins remain the visual focus.
 - **Controls**: Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces with teal-dark actions, coral metadata accents, and restrained media shadows so Explore feels connected to the landing feature rows. Large map panels use squared archive corners around 8-10px rather than soft rounded cards.
 - **Discovery Cards**: Public photo cards in the Explore discovery panel render as image-only thumbnail entries. Each thumbnail fills the panel width in a consistent 4:3 frame, matching the default preview photo rhythm so the list scans evenly. Thumbnail corners use the shared 8px thumbnail radius, while description or relative-time metadata appears only after opening the photo preview.

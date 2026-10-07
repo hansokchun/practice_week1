@@ -1,7 +1,21 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { EXPLORE_MAP_MIN_ZOOM, getExploreMapOptions } from '../js/explore-map-options.mjs';
+import { EXPLORE_MAP_MIN_ZOOM, getExploreMapOptions, getProfileMapOptions } from '../js/explore-map-options.mjs';
+
+test('profile map keeps its photo frame fixed for all user camera inputs', () => {
+    const options = getProfileMapOptions({ center: { lat: 35, lng: 135 }, zoom: 8, mapId: 'profile-map' });
+    assert.deepEqual(options.center, { lat: 35, lng: 135 });
+    assert.equal(options.zoom, 8);
+    assert.equal(options.mapId, 'profile-map');
+    assert.equal(options.gestureHandling, 'none');
+    assert.equal(options.draggable, false);
+    assert.equal(options.scrollwheel, false);
+    assert.equal(options.disableDoubleClickZoom, true);
+    assert.equal(options.keyboardShortcuts, false);
+    assert.equal(options.zoomControl, false);
+    assert.equal(getExploreMapOptions().gestureHandling, 'greedy');
+});
 
 test('Explore map has a minimum zoom so wheel zoom-out stops at the limit', () => {
     const options = getExploreMapOptions({

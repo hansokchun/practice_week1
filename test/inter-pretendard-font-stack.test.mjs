@@ -6,6 +6,13 @@ const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 const legalCss = readFileSync('public/legal.css', 'utf8');
 
+test('site and legal pages give text subtle shared tracking', () => {
+  assert.match(css, /--text-tracking:\s*0\.02em;/);
+  assert.match(css, /body\s*\{[^}]*letter-spacing:\s*var\(--text-tracking\);/s);
+  assert.doesNotMatch(css, /letter-spacing:\s*0;/);
+  assert.match(legalCss, /letter-spacing:\s*0\.02em;/);
+});
+
 test('site loads version-pinned Pretendard variable subsets for public and legal text', () => {
   assert.match(html, /<link rel="preconnect" href="https:\/\/fonts\.googleapis\.com">/);
   assert.match(html, /<link rel="preconnect" href="https:\/\/fonts\.gstatic\.com" crossorigin>/);

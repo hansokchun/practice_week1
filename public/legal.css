@@ -19,6 +19,7 @@ html {
     background: var(--paper);
     font-family: 'Pretendard Variable', Pretendard, system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     line-height: 1.7;
+    letter-spacing: 0.02em;
     color: var(--ink);
 }
 
