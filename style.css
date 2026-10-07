@@ -11219,21 +11219,64 @@ body.modal-open {
     display: none;
 }
 
-.location-sharing-notice {
+.upload-location-notice {
+    display: flex;
+    align-items: start;
+    gap: 8px;
     margin: 0;
     padding: 12px;
-    border-radius: 8px;
-    background: var(--surface-soft);
-    color: var(--text);
+    color: var(--muted);
     font-size: 14px;
     line-height: 1.6;
     word-break: keep-all;
     overflow-wrap: anywhere;
 }
 
-.location-sharing-notice strong {
-    display: block;
-    margin-bottom: 4px;
+.upload-location-notice[hidden] {
+    display: none;
+}
+
+.upload-location-notice p {
+    flex: 1;
+    margin: 0;
+}
+
+.upload-location-notice button,
+.account-guidance-dismiss {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 20px;
+}
+
+.account-guidance-entry {
+    position: relative;
+}
+
+.account-guidance-entry .account-notification-item {
+    padding-right: 48px;
+}
+
+.account-guidance-entry .account-notification-copy > span {
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.account-guidance-dismiss {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.account-notification-popover {
+    max-height: calc(100dvh - 96px);
+    overflow-y: auto;
 }
 
 .kakao-profile-import-card {

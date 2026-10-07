@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -459,6 +459,10 @@
                     <article><span>2</span><strong>위치 확인</strong><p>GPS가 있는 사진은 자동으로 지도에 연결됩니다.</p></article>
                     <article><span>3</span><strong>기본 비공개</strong><p>업로드된 사진은 공개 전까지 Home에만 보관됩니다.</p></article>
                 </div>
+                <aside id="upload-location-notice" class="upload-location-notice" aria-label="사진 위치 안내">
+                    <p>사진에는 촬영 위치가 담겨 있을 수 있어요. 공개하기 전에 집·직장 등 민감한 장소가 포함돼 있지 않은지 확인해 주세요. 사진은 기본 비공개로 저장돼요.</p>
+                    <button id="btn-dismiss-upload-location-notice" type="button" aria-label="사진 위치 안내 삭제">×</button>
+                </aside>
             </div>
         </section>
 
@@ -1238,10 +1242,9 @@
     </div>
 
     <div id="auth-modal" class="modal" aria-hidden="true">
-        <div class="modal-card auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title" aria-describedby="auth-location-sharing-notice">
+        <div class="modal-card auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
             <button class="modal-close" data-close-modal type="button" aria-label="&#45803;&#44592;">&times;</button>
             <h2 id="auth-title">&#47196;&#44536;&#51064;</h2>
-            <p id="auth-location-sharing-notice" class="location-sharing-notice"><strong>위치정보 공유 주의</strong>사진을 공개하면 저장된 위치가 지도와 공개 프로필에 표시되어 다른 사람이 확인할 수 있습니다. 집·직장 등 민감한 장소가 드러나지 않도록 공유 전에 사진의 위치와 공개 범위를 확인하세요.</p>
             <div class="social-login">
                 <button id="btn-google-login" class="auth-choice-button" type="button">
                     <span>G</span>
@@ -1296,7 +1299,7 @@
     </div>
 
     <div id="kakao-profile-import-modal" class="modal" aria-hidden="true">
-        <div class="modal-card kakao-profile-import-card" role="dialog" aria-modal="true" aria-labelledby="kakao-profile-import-title" aria-describedby="kakao-location-sharing-notice">
+        <div class="modal-card kakao-profile-import-card" role="dialog" aria-modal="true" aria-labelledby="kakao-profile-import-title">
             <button class="modal-close" data-kakao-profile-dismiss type="button" aria-label="닫기">&times;</button>
             <p class="eyebrow">Kakao Profile</p>
             <h2 id="kakao-profile-import-title">카카오 프로필을 적용할까요?</h2>
@@ -1308,7 +1311,6 @@
                 </div>
                 <strong id="kakao-profile-import-name">Kakao</strong>
             </div>
-            <p id="kakao-location-sharing-notice" class="location-sharing-notice"><strong>위치정보 공유 주의</strong>사진을 공개하면 저장된 위치가 지도와 공개 프로필에 표시되어 다른 사람이 확인할 수 있습니다. 집·직장 등 민감한 장소가 드러나지 않도록 공유 전에 사진의 위치와 공개 범위를 확인하세요.</p>
             <div class="auth-actions kakao-profile-import-actions">
                 <button id="btn-apply-kakao-profile" class="btn-primary" type="button">카카오 프로필 적용</button>
                 <button id="btn-keep-ikkyee-profile" class="btn-secondary" data-kakao-profile-dismiss type="button">현재 프로필 유지</button>

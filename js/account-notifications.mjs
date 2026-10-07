@@ -8,7 +8,8 @@ export function buildAccountNotificationItems({
     likedPhotoIds = [],
     isMissingLocationBannerDismissed = false,
     missingLocationNotifications = true,
-    librarySummaryNotifications = true
+    librarySummaryNotifications = true,
+    welcomeNotices = []
 } = {}) {
     const viewerId = String(currentUserId || '');
     if (!viewerId) return [];
@@ -22,7 +23,7 @@ export function buildAccountNotificationItems({
     const publicPhotoCount = myPhotos.filter((photo) => (
         photo.shared || ['public', 'link'].includes(photo.visibility)
     )).length;
-    const items = [];
+    const items = [...welcomeNotices];
 
     if (missingLocationNotifications && missingLocationCount && !isMissingLocationBannerDismissed) {
         items.push({

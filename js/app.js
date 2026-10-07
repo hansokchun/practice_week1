@@ -54,6 +54,7 @@ import {
     resolveAccountProfile
 } from './account-profile.mjs';
 import { buildAccountNotificationItems } from './account-notifications.mjs';
+import { initializeAccountGuidance, loadAccountGuidance, dismissAccountGuidance } from './account-guidance.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { getPhotoPage } from './photo-pagination.mjs';
 import { getPhotoDownloadPlan, insertGpsExifIntoJpegDataUrl } from './photo-download.mjs';
@@ -290,6 +291,7 @@ const state = {
     profileNames: {},
     publicProfiles: {},
     pendingKakaoProfile: null,
+    hasNewAccountGuidance: false,
     lastSavedPhotoIds: [],
     albumDrafts: [],
     visibility: 'private',
@@ -3358,10 +3360,9 @@ function ensureProfileHeaderShell() {
                     <span>공개 중 <strong id="profile-public-count">0</strong></span>
                 </div>
             </div>
-            <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden aria-describedby="profile-location-sharing-notice">
+            <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
                 <input id="profile-avatar-input" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
                 <input id="profile-cover-input" class="profile-cover-file-input" type="file" accept="image/jpeg,image/png,image/webp" disabled>
-                <p id="profile-location-sharing-notice" class="location-sharing-notice"><strong>위치정보 공유 주의</strong>사진을 공개하면 저장된 위치가 지도와 공개 프로필에 표시되어 다른 사람이 확인할 수 있습니다. 집·직장 등 민감한 장소가 드러나지 않도록 공유 전에 사진의 위치와 공개 범위를 확인하세요.</p>
                 <div class="account-profile-fields">
                     <div class="account-profile-field profile-edit-name-field">
                         <label for="profile-nickname-input">닉네임</label>
@@ -3719,7 +3720,8 @@ function getAccountNotificationItems() {
         likedPhotoIds: state.likedPhotoIds,
         isMissingLocationBannerDismissed: state.isMissingLocationBannerDismissed,
         missingLocationNotifications: state.accountSettings.missingLocationNotifications,
-        librarySummaryNotifications: state.accountSettings.librarySummaryNotifications
+        librarySummaryNotifications: state.accountSettings.librarySummaryNotifications,
+        welcomeNotices: loadAccountGuidance(window.localStorage, state.currentUser?.id).welcomeNotices
     });
 }
 
@@ -3744,7 +3746,9 @@ function renderAccountNotifications() {
     const list = $('#account-notification-list');
     const isLoggedIn = Boolean(state.currentUser);
     const items = getAccountNotificationItems();
-    const actionableCount = items.filter((item) => item.route).length;
+    const actionableCount = items.filter((item) => item.route || item.id).length;
+    const uploadNotice = $('#upload-location-notice');
+    if (uploadNotice) uploadNotice.hidden = loadAccountGuidance(window.localStorage, state.currentUser?.id).uploadNoticeDismissed;
 
     if (!isLoggedIn) state.isNotificationPopoverOpen = false;
     if (trigger) {
@@ -3767,11 +3771,24 @@ function renderAccountNotifications() {
                 <span>${escapeHtml(item.body)}</span>
             </span>
         `;
+        if (item.id) {
+            const action = item.route
+                ? `<button class="account-notification-item" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`
+                : `<article class="account-notification-item">${content}</article>`;
+            return `<div class="account-guidance-entry">${action}<button class="account-guidance-dismiss" data-dismiss-account-guidance="${escapeHtml(item.id)}" type="button" aria-label="${escapeHtml(item.title)} 알림 삭제">×</button></div>`;
+        }
         if (!item.route) {
             return `<article class="account-notification-item is-empty">${content}</article>`;
         }
         return `<button class="account-notification-item" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`;
     }).join('');
+}
+
+function showNewAccountGuidance() {
+    if (!state.hasNewAccountGuidance) return;
+    state.hasNewAccountGuidance = false;
+    if (!$('.modal.is-open')) setAccountNotificationsOpen(true);
+    showToast('이끼에 오신 걸 환영해요! 알림에 첫 여행 지도를 위한 안내를 담아뒀어요.');
 }
 
 async function handleLogout() {
@@ -3786,6 +3803,7 @@ async function handleLogout() {
 
 function resetAccountState() {
     state.currentUser = null;
+    state.hasNewAccountGuidance = false;
     state.savedPhotos = [];
     state.savedAlbums = [];
     state.likedPhotoIds = [];
@@ -3848,9 +3866,14 @@ async function handleAccountDeletionSubmit(event) {
 async function ensureCurrentUserPublicProfile() {
     const user = state.currentUser;
     if (!user?.id) return;
-    const { data } = await fetchProfilesByIds([user.id]);
+    const { data, error: profileReadError } = await fetchProfilesByIds([user.id]);
     const profile = (data || []).find((row) => getProfileUserId(row) === user.id);
     let storedProfile = profile || null;
+    const previousGuidance = loadAccountGuidance(window.localStorage, user.id);
+    const accountAge = Date.now() - Date.parse(user.created_at || '');
+    const isNewAccount = (!profile && !profileReadError) || (accountAge >= 0 && accountAge < 24 * 60 * 60 * 1000);
+    const guidance = initializeAccountGuidance(window.localStorage, user.id, isNewAccount);
+    state.hasNewAccountGuidance = previousGuidance.welcomeNotices.length === 0 && guidance.welcomeNotices.length > 0;
 
     if (!storedProfile) {
         const providerProfile = getProviderAccountProfile(user);
@@ -7732,6 +7755,7 @@ async function handleAuthSubmit(event) {
     dismissModal($('#auth-modal'));
     showToast('\uB85C\uADF8\uC778\uD588\uC5B4\uC694.');
     await runPendingAuthAction();
+    showNewAccountGuidance();
 }
 
 async function handleSignup() {
@@ -7930,6 +7954,12 @@ function bindEvents() {
     }));
     document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
+        const guidanceDismiss = event.target.closest('[data-dismiss-account-guidance], #btn-dismiss-upload-location-notice');
+        if (guidanceDismiss) {
+            dismissAccountGuidance(window.localStorage, state.currentUser?.id, guidanceDismiss.dataset.dismissAccountGuidance || 'upload-location');
+            renderAccountNotifications();
+            return;
+        }
         if (!event.target.closest('.account-menu-shell')) setAccountMenuOpen(false);
         if (!event.target.closest('.account-notification-shell')) setAccountNotificationsOpen(false);
         if (state.isExplorePhotoScopeMenuOpen && !event.target.closest('.explore-photo-scope')) {
@@ -8870,6 +8900,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setVisibilityMode(state.visibility);
         setProfileTab(state.profileTab);
         if (state.currentUser) await runPendingAuthAction();
+        showNewAccountGuidance();
         if (isPasswordRecoveryCallback(initialAuthHash)) {
             openModal('#password-recovery-modal');
             $('#new-password-input')?.focus();

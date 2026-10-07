@@ -94,12 +94,12 @@ All spacing derives from a base of 4px.
 
 ## 5. Components
 
-### Location Sharing Notice
+### Account Welcome Guidance and Upload Location Note
 
-- **Structure**: A `.location-sharing-notice` paragraph with a bold, visible “위치정보 공유 주의” label before authentication, profile editing, and Kakao profile import actions.
-- **Content**: Explain that public photos expose their saved location on maps and public profiles; ask users to check sensitive places and visibility before sharing.
-- **Style**: Soft surface, primary text, 14px type with 1.6 line height, 12px padding, 8px corners, and Korean word-preserving wrapping.
-- **Accessibility**: Ordinary readable text; no blocking consent checkbox or transient alert. Associate forms and dialogs with the notice using `aria-describedby`.
+- **Structure**: Two dismissible welcome entries in the existing account notifications: a friendly location reminder and an upload invitation that routes directly to `upload`. Auth and profile dialogs carry no warning block.
+- **Content**: Explain public photo location exposure in friendly Korean and invite the first travel photo. The upload page repeats the location reminder in a small persistent note below its steps.
+- **Style**: Existing notification surfaces; welcome body and upload note use 14px/1.6 text with Korean word-preserving wrapping. The upload note uses muted text, 12px padding, and no colored warning panel. Dismiss targets are 44px.
+- **Accessibility**: A separately named dismiss button beside each notice. The popover scrolls on short viewports. Dismissal is stored per account in this browser and remains until storage is cleared.
 
 ### Primary and Secondary Buttons
 
