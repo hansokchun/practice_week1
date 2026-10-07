@@ -68,6 +68,7 @@
                         <button data-account-route="photos" type="button"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>내 사진</button>
                         <button data-account-route="liked" type="button"><span class="material-symbols-outlined" aria-hidden="true">favorite</span>좋아요한 사진</button>
                         <button data-account-route="settings" type="button"><span class="material-symbols-outlined" aria-hidden="true">settings</span>설정</button>
+                        <button id="account-profile-logout" type="button"><span class="material-symbols-outlined" aria-hidden="true">logout</span>로그아웃</button>
                     </div>
                 </div>
             </div>
@@ -891,7 +892,7 @@
                     <label class="settings-row settings-toggle-row" for="settings-library-summary-notifications">
                         <div class="settings-row-copy">
                             <strong>사진 활동 요약</strong>
-                            <span>좋아요한 사진과 공개 중인 사진을 상단 알림에서 요약합니다.</span>
+                            <span>좋아요 누른 사진과 받은 좋아요를 상단 알림에서 알려드려요.</span>
                         </div>
                         <span class="settings-toggle">
                             <input id="settings-library-summary-notifications" type="checkbox">
@@ -951,13 +952,8 @@
                                 <h1 id="profile-title">Ikkyee</h1>
                             </div>
                             <div class="profile-owner-actions">
-                                <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" hidden>
+                                <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" aria-label="프로필 수정" title="프로필 수정" hidden>
                                     <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                                    <span>수정</span>
-                                </button>
-                                <button id="account-profile-logout" class="profile-action profile-action--logout" type="button" hidden>
-                                    <span class="material-symbols-outlined" aria-hidden="true">logout</span>
-                                    <span>로그아웃</span>
                                 </button>
                             </div>
                         </div>

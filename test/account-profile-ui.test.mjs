@@ -73,6 +73,11 @@ test('logged-in header exposes compact recommended notifications beside profile'
 });
 
 test('header keeps only the landing logo and account actions', () => {
+    const dock = app.slice(app.indexOf('function renderLandingAdminDock'), app.indexOf('function selectLandingAdminTarget'));
+    assert.match(dock, /admin-dock-selected-mark/);
+    assert.doesNotMatch(dock, /추가됨 · /);
+    assert.match(css, /\.landing-section-heading h2\s*\{[^}]*padding-left:\s*8px;/);
+    assert.match(app, /document\.addEventListener\('pointerdown',[\s\S]*?account-notification-shell[\s\S]*?setAccountNotificationsOpen\(false\)[\s\S]*?\}, true\)/);
     assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
     assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);
     assert.doesNotMatch(html, /class="top-nav"/);
@@ -105,7 +110,7 @@ test('public profile page includes shared nickname, avatar, and cover editing fi
     assert.match(app, /type="file"/);
     assert.match(app, /accept="image\/\*"/);
     assert.match(app, /id="account-profile-save"/);
-    assert.match(app, /id="account-profile-logout"/);
+    assert.match(html, /id="account-profile-logout"/);
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.account-profile-metrics\s*\{/);
     assert.match(app, /class="account-profile-fields"/);

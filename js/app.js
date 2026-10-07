@@ -55,6 +55,7 @@ import {
 } from './account-profile.mjs';
 import { getLandingAdminDockPage, addLandingAdminPhoto } from './landing-admin-dock.mjs';
 import { buildAccountNotificationItems } from './account-notifications.mjs';
+import { getProfilePhotoMetrics } from './profile-photo-metrics.mjs';
 import { initializeAccountGuidance, loadAccountGuidance, dismissAccountGuidance } from './account-guidance.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
 import { getPhotoPage } from './photo-pagination.mjs';
@@ -1555,7 +1556,7 @@ function renderLandingAdminDock() {
     grid.innerHTML = page.items.map(photo => {
         const id = String(photo.id);
         const selected = ids.includes(id);
-        return '<button class="admin-photo-option ' + (selected ? 'is-selected' : '') + '" data-admin-dock-photo="' + escapeHtml(id) + '" type="button" aria-pressed="' + selected + '" aria-label="' + escapeHtml(getLandingPhotoLabel(photo)) + (selected ? ' · 추가됨' : ' · 선택한 섹션에 추가') + '" ' + (!state.landingAdminTarget ? 'disabled' : selected ? 'aria-disabled="true"' : '') + '><img src="' + escapeHtml(getPhotoThumbnailSrc(photo)) + '" alt="" loading="lazy" decoding="async"><span>' + (selected ? '✓ 추가됨 · ' : '') + escapeHtml(getLandingPhotoLabel(photo)) + '</span></button>';
+        return '<button class="admin-photo-option ' + (selected ? 'is-selected' : '') + '" data-admin-dock-photo="' + escapeHtml(id) + '" type="button" aria-pressed="' + selected + '" aria-label="' + escapeHtml(getLandingPhotoLabel(photo)) + (selected ? ' · 추가됨' : ' · 선택한 섹션에 추가') + '" ' + (!state.landingAdminTarget ? 'disabled' : selected ? 'aria-disabled="true"' : '') + '><img src="' + escapeHtml(getPhotoThumbnailSrc(photo)) + '" alt="" loading="lazy" decoding="async">' + (selected ? '<span class="admin-dock-selected-mark material-symbols-outlined" aria-hidden="true">check</span>' : '') + '</button>';
     }).join('') || '<p class="admin-dock-empty">조건에 맞는 공개 사진이 없어요.</p>';
 }
 
@@ -3380,21 +3381,17 @@ function ensureProfileHeaderShell() {
                     <h1 id="profile-title">Ikkyee</h1>
                 </div>
                 <div class="profile-owner-actions">
-                    <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" hidden>
+                    <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" aria-label="프로필 수정" title="프로필 수정" hidden>
                         <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                        <span>수정</span>
-                    </button>
-                    <button id="account-profile-logout" class="profile-action profile-action--logout" type="button" hidden>
-                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
-                        <span>로그아웃</span>
                     </button>
                 </div>
             </div>
             <div id="account-profile-view" class="account-profile-view profile-header-view">
                 <p id="profile-bio" class="account-profile-bio" hidden></p>
                 <div class="account-profile-metrics">
-                    <span>총 사진 <strong id="profile-photo-count">0</strong></span>
-                    <span>공개 중 <strong id="profile-public-count">0</strong></span>
+                    <span>받은 좋아요 <strong id="profile-like-count">0</strong></span>
+                    <span>등록한 사진 <strong id="profile-photo-count">0</strong></span>
+                    <span>공개 중인 사진 <strong id="profile-public-count">0</strong></span>
                 </div>
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
@@ -3467,8 +3464,7 @@ function renderAccountProfilePanel() {
     clearAccountProfileAvatarPreview();
     clearAccountProfileCoverPreview();
     const profile = getCurrentAccountProfile();
-    const photoCount = getMySavedPhotos().length;
-    const publicCount = getMySavedPhotos().filter((photo) => photo.shared || photo.visibility === 'public').length;
+    const { photoCount, publicCount, receivedLikeCount } = getProfilePhotoMetrics(getMySavedPhotos(), state.currentUser?.id);
     const title = $('#profile-title');
     const bio = $('#profile-bio');
     const photoCountNode = $('#profile-photo-count');
@@ -3481,6 +3477,7 @@ function renderAccountProfilePanel() {
     }
     if (photoCountNode) photoCountNode.textContent = String(photoCount);
     if (publicCountNode) publicCountNode.textContent = String(publicCount);
+    if ($('#profile-like-count')) $('#profile-like-count').textContent = String(receivedLikeCount);
 
     setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), profile.avatarUrl, profile.nickname);
     setAvatarDisplay(
@@ -3507,7 +3504,6 @@ function setAccountProfileEditMode(isEditing) {
     const view = $('#account-profile-view');
     const form = $('#account-profile-form');
     const editButton = $('#account-profile-edit');
-    const logoutButton = $('#account-profile-logout');
     const message = $('#account-profile-message');
     const profileCover = $('.profile-cover');
     const profileCard = $('.profile-card');
@@ -3521,7 +3517,6 @@ function setAccountProfileEditMode(isEditing) {
     if (view) view.hidden = state.accountProfileEditMode;
     if (form) form.hidden = !state.accountProfileEditMode;
     if (editButton) editButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
-    if (logoutButton) logoutButton.hidden = state.accountProfileEditMode || state.selectedPublicOwnerId !== state.currentUser?.id;
     if (message) message.textContent = '';
     profileCover?.classList.toggle('is-editing', state.accountProfileEditMode);
     if (profileCard) profileCard.classList.toggle('is-editing', state.accountProfileEditMode);
@@ -4375,7 +4370,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-photo-count')) $('#profile-photo-count').textContent = String(ownerPhotos.length);
     if ($('#profile-public-count')) $('#profile-public-count').textContent = String(ownerPhotos.filter((photo) => photo.shared || photo.visibility === 'public').length);
     if ($('#account-profile-edit')) $('#account-profile-edit').hidden = !isOwnProfile || state.accountProfileEditMode;
-    if ($('#account-profile-logout')) $('#account-profile-logout').hidden = !isOwnProfile;
+    if ($('#profile-like-count')) $('#profile-like-count').textContent = String(getProfilePhotoMetrics(ownerPhotos, ownerId).receivedLikeCount);
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
     const profileHeroImage = $('.profile-cover > img');
@@ -8009,6 +8004,11 @@ function bindEvents() {
         updatePhotoDetailModal(getDefaultDetailPhoto(), { context });
         openModal('#photo-detail-modal');
     }));
+    document.addEventListener('pointerdown', (event) => {
+        if (!(event.target instanceof Element)) return;
+        if (!event.target.closest('.account-notification-shell')) setAccountNotificationsOpen(false);
+        if (!event.target.closest('.account-menu-shell')) setAccountMenuOpen(false);
+    }, true);
     document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
         const guidanceDismiss = event.target.closest('[data-dismiss-account-guidance], #btn-dismiss-upload-location-notice');

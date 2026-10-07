@@ -12,14 +12,11 @@ test('public profile header does not render the numeric stats block', () => {
 });
 
 test('public profile card stays inside the cover as a legible information panel', () => {
-    const cardStart = css.indexOf('.profile-card {');
-    const cardEnd = css.indexOf('.large-avatar', cardStart);
-    const cardCss = css.slice(cardStart, cardEnd);
 
-    assert.match(cardCss, /grid-template-columns:\s*minmax\(0, 1fr\)/);
-    assert.match(cardCss, /margin:\s*0 auto;/);
-    assert.doesNotMatch(cardCss, /-\d+px/);
-    assert.match(css, /\.profile-card\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*border-radius:\s*16px;[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.88\);[^}]*box-shadow:\s*0 18px 48px rgba\(26,\s*77,\s*78,\s*0\.12\);[^}]*padding:\s*24px 26px;/s);
+    assert.match(css, /\.profile-cover\s*\{[^}]*--profile-cover-height:\s*280px;[^}]*padding:\s*var\(--profile-cover-height\) 0 0;/s);
+    assert.match(css, /\.profile-cover > img\s*\{[^}]*height:\s*var\(--profile-cover-height\);/s);
+    assert.match(css, /\.profile-avatar-pick\s*\{[^}]*margin-top:\s*calc\(var\(--profile-avatar-size\) \/ -2\);/s);
+    assert.match(css, /\.profile-card\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent;/s);
 });
 
 test('public profile header supports inline owner metadata and editing actions', () => {
@@ -31,9 +28,10 @@ test('public profile header supports inline owner metadata and editing actions',
     assert.match(app, /id="profile-bio"/);
     assert.match(app, /id="profile-photo-count"/);
     assert.match(app, /id="profile-public-count"/);
+    assert.match(app, /id="profile-like-count"/);
     assert.doesNotMatch(app, /id="profile-album-count"/);
-    assert.match(app, />총 사진 <strong id="profile-photo-count">0<\/strong></);
-    assert.match(app, />공개 중 <strong id="profile-public-count">0<\/strong></);
+    assert.match(app, />등록한 사진 <strong id="profile-photo-count">0<\/strong></);
+    assert.match(app, />공개 중인 사진 <strong id="profile-public-count">0<\/strong></);
     assert.match(app, /class="profile-owner-actions"/);
     assert.match(css, /\.profile-owner-actions\s*\{/);
     assert.match(css, /\.profile-card-copy\s*\{/);
@@ -41,27 +39,15 @@ test('public profile header supports inline owner metadata and editing actions',
 });
 
 test('own profile actions use a clear primary edit action and a quieter logout action', () => {
-    const staticActionsStart = html.indexOf('class="profile-owner-actions"');
-    const staticActionsEnd = html.indexOf('</div>', staticActionsStart);
-    const staticActions = html.slice(staticActionsStart, staticActionsEnd);
-    const shellStart = app.indexOf('function ensureProfileHeaderShell');
-    const shellEnd = app.indexOf('function setAvatarDisplay', shellStart);
-    const shell = app.slice(shellStart, shellEnd);
 
-    assert.ok(staticActions.indexOf('id="account-profile-edit"') < staticActions.indexOf('id="account-profile-logout"'));
-    assert.ok(shell.indexOf('id="account-profile-edit"') < shell.indexOf('id="account-profile-logout"'));
-    assert.match(staticActions, /class="material-symbols-outlined"[^>]*>edit</);
-    assert.match(staticActions, /class="material-symbols-outlined"[^>]*>logout</);
-    assert.match(shell, /class="profile-action profile-action--edit"/);
-    assert.match(shell, /class="profile-action profile-action--logout"/);
-    assert.match(staticActions, />수정<\/span>/);
-    assert.match(shell, />수정<\/span>/);
-    assert.doesNotMatch(staticActions, />프로필 수정<\/span>/);
-    assert.match(css, /\.profile-owner-actions\s*\{[^}]*flex-direction:\s*column;[^}]*align-items:\s*stretch;[^}]*justify-content:\s*flex-start;[^}]*gap:\s*8px;[^}]*align-self:\s*start;/s);
-    assert.match(css, /\.profile-owner-actions \.profile-action\s*\{[^}]*width:\s*100%;/s);
-    assert.match(css, /\.profile-action\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*8px;/s);
-    assert.match(css, /\.profile-action--edit\s*\{[^}]*background:\s*var\(--teal\);[^}]*color:\s*#ffffff;/s);
-    assert.match(css, /\.profile-action--logout\s*\{[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\);/s);
+    const shell = app.slice(app.indexOf('function ensureProfileHeaderShell'), app.indexOf('function setAvatarDisplay'));
+    assert.match(shell, /id="account-profile-edit"[^>]*aria-label="프로필 수정"[^>]*title="프로필 수정"/);
+    assert.doesNotMatch(shell, />수정<\/span>|id="account-profile-logout"/);
+    const menu = html.slice(html.indexOf('id="account-menu-popover"'), html.indexOf('</header>'));
+    assert.ok(menu.indexOf('id="account-profile-logout"') > menu.indexOf('data-account-route="settings"'));
+    assert.equal((html.match(/id="account-profile-logout"/g) || []).length, 1);
+    assert.match(css, /\.profile-owner-actions\s*\{[^}]*position:\s*absolute;[^}]*top:\s*-60px;[^}]*right:\s*0;/s);
+    assert.match(css, /\.profile-owner-actions \.profile-action\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/s);
 });
 
 test('profile biography and metrics remain legible over the cover image', () => {
@@ -71,16 +57,18 @@ test('profile biography and metrics remain legible over the cover image', () => 
 });
 
 test('profile edit form has breathing room above the editing fields', () => {
-    assert.match(css, /\.profile-cover\s*\{[^}]*padding:\s*24px 0 42px;/s);
+    assert.match(css, /\.profile-cover\s*\{[^}]*padding:\s*var\(--profile-cover-height\) 0 0;/s);
     assert.match(css, /\.profile-edit-form\s*\{[^}]*max-width:\s*520px;[^}]*margin-top:\s*32px;[^}]*padding-top:\s*24px;[^}]*border-top:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(css, /\.profile-edit-form \.auth-actions\s*\{[^}]*justify-self:\s*end;[^}]*width:\s*min\(280px,\s*100%\);/s);
 });
 
 test('profile edit mode reserves a separate cover action row without overlapping the profile card', () => {
+    assert.match(css, /\.profile-header-view\[hidden\],\s*\.profile-owner-actions \.profile-action\[hidden\]\s*\{\s*display:\s*none;/);
+
     assert.match(app, /profileCover\?\.classList\.toggle\('is-editing', state\.accountProfileEditMode\)/);
-    assert.match(app, /logoutButton\.hidden = state\.accountProfileEditMode \|\| state\.selectedPublicOwnerId !== state\.currentUser\?\.id/);
-    assert.match(css, /\.profile-cover\.is-editing\s*\{[^}]*padding-top:\s*88px;/s);
-    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.profile-cover\.is-editing\s*\{[^}]*padding-top:\s*72px;/s);
+    assert.doesNotMatch(app, /logoutButton\.hidden = state\.accountProfileEditMode/);
+    assert.match(css, /\.profile-cover\.is-editing\s*\{[^}]*padding-top:\s*var\(--profile-cover-height\);/s);
+    assert.match(css, /\.profile-cover-edit-trigger\s*\{[^}]*top:\s*24px;/s);
 });
 
 test('profile edit mode keeps the profile avatar beside the account name and removes the extra edit circle', () => {
@@ -100,7 +88,7 @@ test('profile edit mode keeps the profile avatar beside the account name and rem
     assert.doesNotMatch(shell, /profile-edit-avatar-pick/);
     assert.doesNotMatch(shell, /id="profile-bio-input"/);
     assert.doesNotMatch(shell, /<textarea/);
-    assert.match(css, /\.profile-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*14px;/s);
+    assert.match(css, /\.profile-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*flex-start;[^}]*gap:\s*24px;/s);
     assert.match(css, /\.profile-avatar-file-input\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /\.profile-card\.is-editing \.profile-avatar-pick\s*\{[^}]*box-shadow:\s*0 0 0 3px rgba\(26,\s*77,\s*78,\s*0\.12\);/s);
     assert.match(css, /\.profile-edit-photo-field\s*\{[^}]*grid-template-columns:\s*1fr auto;/s);
