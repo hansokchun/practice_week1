@@ -80,7 +80,7 @@ test('header keeps only the landing logo and account actions', () => {
     const dock = app.slice(app.indexOf('function renderLandingAdminDock'), app.indexOf('function selectLandingAdminTarget'));
     assert.match(dock, /admin-dock-selected-mark/);
     assert.doesNotMatch(dock, /추가됨 · /);
-    assert.match(css, /\.landing-section-heading h2\s*\{[^}]*padding-left:\s*8px;/);
+    assert.match(css, /\.landing-section-heading h2\s*\{[^}]*padding-left:\s*16px;/);
     assert.match(app, /document\.addEventListener\('pointerdown',[\s\S]*?account-notification-shell[\s\S]*?setAccountNotificationsOpen\(false\)[\s\S]*?\}, true\)/);
     assert.match(css, /\.site-header\s*\{[^}]*height:\s*64px;[^}]*border-bottom:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.08\);[^}]*box-shadow:\s*0 10px 24px rgba\(26,\s*77,\s*78,\s*0\.035\);/s);
     assert.match(css, /\.site-header-inner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/s);

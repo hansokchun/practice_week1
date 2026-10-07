@@ -6,6 +6,15 @@ const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('style.css', 'utf8');
 const app = readFileSync('js/app.js', 'utf8');
 
+test('profile information follows nickname, metrics, then biography with shared page background', () => {
+    const shell = app.slice(app.indexOf('function ensureProfileHeaderShell'), app.indexOf('function setAvatarDisplay'));
+    assert.ok(shell.indexOf('id="profile-title"') < shell.indexOf('class="account-profile-metrics"'));
+    assert.ok(shell.indexOf('class="account-profile-metrics"') < shell.indexOf('id="profile-bio"'));
+    assert.match(css, /\.profile-title-row h1\s*\{[^}]*margin:\s*32px 0 0;/s);
+    assert.match(css, /\.page\s*\{[^}]*background:\s*var\(--bg\);/s);
+    assert.match(css, /\.profile-cover\s*\{[^}]*background:\s*var\(--bg\);/s);
+});
+
 test('public profile header does not render the numeric stats block', () => {
     assert.doesNotMatch(html, /profile-stats/);
     assert.doesNotMatch(app, /profile-stats/);

@@ -29,6 +29,7 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 ### Rules
 
 - Teal remains the main product accent for navigation, maps, and primary commands.
+- Page canvases and the profile information area share `--bg`; elevated cards retain their surface tokens. Profile information follows nickname (32px below the cover edge), photo/like metrics, then biography. Landing section titles use a 16px left inset.
 - Warm feature colors are reserved for editorial landing sections, not app dashboards.
 - Add a token here before adding any new semantic color to CSS.
 

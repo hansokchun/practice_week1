@@ -3387,12 +3387,12 @@ function ensureProfileHeaderShell() {
                 </div>
             </div>
             <div id="account-profile-view" class="account-profile-view profile-header-view">
-                <p id="profile-bio" class="account-profile-bio" hidden></p>
                 <div class="account-profile-metrics">
                     <span>받은 좋아요 <strong id="profile-like-count">0</strong></span>
                     <span>등록한 사진 <strong id="profile-photo-count">0</strong></span>
                     <span>공개 중인 사진 <strong id="profile-public-count">0</strong></span>
                 </div>
+                <p id="profile-bio" class="account-profile-bio" hidden></p>
             </div>
             <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
                 <input id="profile-avatar-input" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
