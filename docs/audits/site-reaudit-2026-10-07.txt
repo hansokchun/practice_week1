@@ -1,0 +1,57 @@
+Ikkyee 최신 코드 재검수 — 2026-10-07
+
+기준과 동기화
+- ‘대략적인 위치’는 정확도 안내다. 실제 좌표 저장·공개는 사용자가 허용한 동작으로 분류한다.
+- 로컬 dev가 오래된 상태였다. GitHub 최신 48077b6으로 fast-forward pull했고 기존 Canny 및 미추적 작업을 보존했다. 당시 origin/dev와 origin/main은 동일했다.
+- 최신 location_precision exact/approximate, 썸네일·프리뷰·프로필 cover 컬럼은 live DB와 일치한다. 이전 로컬 버전의 hidden 기본값 및 최신 기능 누락으로 인한 재배포 위험은 해소했다. 모든 DB 기능의 완전한 동등성을 주장하지 않는다.
+- 기존 로컬/원격 마이그레이션 이력의 여러 버전 번호가 다르다. 기존 이력은 임의 repair/reset하지 않았다. 전체 db push 전에 이력 정합 확인이 필요하다. 이번 새 파일은 원격 실제 버전 20261007093900과 맞췄다.
+- 이 결과가 site-audit-2026-10-07.txt의 이전 판단을 대체한다.
+
+수정
+- 개발 의존성 source-map-js 1.2.1 → 1.2.2 취약점 패치. Vite 설치를 코드/lock의 8.2.1과 동기화. 다른 플랫폼 lock 메타데이터 유지.
+- Windows CRLF 때문에 실패하던 Android Places 테스트를 LF/CRLF 모두 지원하도록 수정. 검증 대상 패키지 조건 유지.
+- live DB에 harden_photo_write_boundaries 적용:
+  · 직접 user_likes 쓰기 권한을 제거하고 기존 atomic RPC를 유지.
+  · 클라이언트의 photos.liked 조작을 무시하며 정상 RPC 집계 갱신은 허용.
+  · 차단한 작성자의 사진에 좋아요를 누르는 RPC 우회를 거절.
+  · 기존 화면 정책인 계정 100장, 신규 7일 동안 하루 20장 및 공개 총 5장을 서버에서도 검사.
+  · 계정별 advisory transaction lock 사용. 기존 사진 수정/UPSERT 허용. 신규 업로드 시각은 서버 시간으로 기록.
+  · photos 버킷의 새 업로드를 15MiB 및 JPEG/PNG/WebP/HEIC/HEIF MIME으로 제한. 이미지 내용 검증이나 전체 비용 상한을 의미하지 않는다.
+- 개인정보 안내의 오래된 숨김 기본값, 웹/모바일 전송 차이, 웹 서명 URL 최대 15분을 실제 동작에 맞게 수정. 운영자 연락처/법적 승인 상태는 임의 확정하지 않음.
+
+검증
+- npm test: 817 passed, 0 failed, 0 skipped. 기존 로컬 Canny 테스트 포함.
+- npm run build: Vite 8.2.1 정상 빌드. npm audit: 0 vulnerabilities. npm ls: 버전 오류 없음.
+- 실제 DB에서 적용 전후 동일한 트랜잭션 검사가 통과했다. 좋아요/취소/중복 요청, 직접 쓰기/개수 조작 거절, 차단, 3종 업로드 한도, 제한에 도달한 계정의 수정/UPSERT를 확인.
+- 임시 인증 계정·사진은 모두 롤백했다. 원래 사진/사용자 데이터는 변경하거나 삭제하지 않았다.
+- 재실행 가능한 DB 검사: scripts/verify-photo-write-boundaries.sql.
+- 실제 브라우저에서 로컬 빌드의 개인정보 문구 및 live 사진을 사용하는 메인 화면 확인. 가로 넘침 없음. 준비 중 카드 11개 재확인.
+- 로그인한 브라우저에서 업로드/좋아요 전체 여정은 검사하지 않았다. 실제 DB authenticated 역할 검사는 수행했다.
+- Lighthouse/Core Web Vitals는 측정하지 않았다.
+
+남은 항목
+- perf:budget FAIL: JS Brotli 71.48KiB > 70.5KiB (0.98KiB 초과). CSS 28.35/30, 정적 이미지 2147.74/2200, 최대 이미지 348.74/450KiB는 통과.
+- 효과 없는 압축기 교체 실험의 설정·추가 의존성은 제거했다. 용량 기준은 완화하지 않았으며 성능 검수 전체 통과로 판정하지 않는다.
+- 공개 사진 65장에 thumbnail_path가 없음. 메인 준비 중 카드 11개의 원인이다. 소유자 로그인 후 설정 > 사진 최적화 실행이 필요하다. 자동 원본 다운로드로 우회하지 않았다.
+- fetchPhotos의 전체 메타데이터 읽기와 서버 페이지 처리는 이용자 확대 전에 개선할 항목. 165개 현재 데이터로 높은 동시 부하를 보장하지 않는다.
+- Supabase 경고 2종: 의도된 인증 사용자용 SECURITY DEFINER 좋아요 RPC, 유출 비밀번호 차단 미활성화. 전자는 접근/차단/권한 검증 완료. 후자는 Pro 이상에서 활성화해야 한다.
+- 개인정보 안내는 아직 승인 전 초안. 운영자 지원 연락처 확정이 남아 있음.
+- 웹 수정은 dev 반영 대상이다. production/main 웹 배포 및 유료 구매는 수행하지 않았다. DB 보안 수정은 live 적용 완료.
+
+비용 판단 — 2026-10-07 공식 가격 확인
+- 과거 HTTP 402 exceed_egress_quota는 Supabase Free 전송량 한도였다. JS/CSS 압축 용량 기준은 별개다. 현재 익명 REST는 정상 응답했다.
+- 공개 서비스는 Pro + Micro, 단일 프로젝트 월 $25부터 권장. 세금·초과 사용·별도 서비스 비용 제외.
+- Pro: Auth 100,000 MAU, DB disk 8GB/project, 파일 저장 100GB, 일반 egress 250GB 및 cached egress 별도 250GB 포함.
+- 부하 측정 후 Pro 안에서 compute 확장: Small 약 $30, Medium 약 $75, Large 약 $125/월. 단일 프로젝트에 $10 compute credit을 적용한 추정.
+- 이용자 수만으로 compute를 결정하지 않고 쿼리 지연·CPU·메모리·연결·사진 전송량을 측정한다. Team $599/월은 조직 권한/보안/지원 요건이 필요할 때 검토한다.
+- 계산 예: 월 10,000회 방문 × 50장 × 썸네일 200KB ≈ 100GB. 같은 조건의 2MB 원본이면 약 1TB. 실제 캐시 분포·이미지 크기에 따라 청구 항목은 달라진다.
+- Pro Spend Cap을 우선 유지하고 사용량 관찰. 대상 사용량 초과 시 제한될 수 있으며 compute 등 모든 비용을 막는 총액 상한은 아니다.
+- Google Maps/Places 및 Cloudflare/AI는 Supabase 구독과 별도. 결제/billing 설정은 변경하지 않았다.
+
+공식 근거
+https://supabase.com/pricing
+https://supabase.com/docs/guides/platform/manage-your-usage/egress
+https://supabase.com/docs/guides/platform/cost-control
+https://supabase.com/docs/guides/auth/password-security
+https://developers.google.com/maps/billing-and-pricing/overview
+https://github.com/advisories/GHSA-68fv-2mgg-jv7q
