@@ -22,18 +22,15 @@ export function getPhotoDetailMapViewport(photo = {}) {
     };
 }
 
-export function getPhotoDetailOwnerMapItems(selectedPhoto = {}, candidates = [], currentUserId = '') {
+export function getPhotoDetailOwnerMapItems(selectedPhoto = {}, _candidates = [], currentUserId = '') {
     const selectedKey = getPhotoKey(selectedPhoto);
     const ownerId = String(selectedPhoto.owner_id || '');
     const viewerId = String(currentUserId || '');
     const isOwner = Boolean(ownerId && viewerId === ownerId);
-    const seen = new Set();
-
-    return [selectedPhoto, ...candidates]
+    return [selectedPhoto]
         .filter((photo) => {
             const key = getPhotoKey(photo);
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
+            if (!key) return false;
             if (String(photo.owner_id || '') !== ownerId) return false;
             if (!hasCoordinate(photo.lat) || !hasCoordinate(photo.lng)) return false;
             return isOwner || (isPublicPhoto(photo) && canShowPhotoOnPublicMap(photo));

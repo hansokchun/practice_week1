@@ -2769,16 +2769,6 @@ function clearPhotoDetailMapMarkers() {
     state.photoDetailMarkers = [];
 }
 
-function getPhotoDetailMapCandidates() {
-    const publicAlbumPhotos = getPublicAlbums().flatMap((album) => album.photos || []);
-    return [
-        ...getAllDisplayPhotos(),
-        ...state.albumDetailPhotos,
-        ...publicAlbumPhotos,
-        ...getLandingPublicPhotos()
-    ];
-}
-
 async function renderPhotoDetailMap(photo) {
     const renderToken = ++state.photoDetailMapRenderToken;
     const mapShell = $('#photo-detail-map');
@@ -2786,7 +2776,7 @@ async function renderPhotoDetailMap(photo) {
     const viewport = getPhotoDetailMapViewport(photo);
     const mapItems = getPhotoDetailOwnerMapItems(
         photo,
-        getPhotoDetailMapCandidates(),
+        [],
         state.currentUser?.id || ''
     );
     const selectedItem = mapItems.find((item) => item.isSelected);
@@ -2798,7 +2788,7 @@ async function renderPhotoDetailMap(photo) {
     }
 
     mapShell.removeAttribute('hidden');
-    mapCanvas.setAttribute('aria-label', `올린 사람의 사진 위치 ${mapItems.length}개가 표시된 지도`);
+    mapCanvas.setAttribute('aria-label', '현재 사진의 위치가 표시된 지도');
     const maps = await loadGoogleMapsApi();
     if (renderToken !== state.photoDetailMapRenderToken) return;
     if (!maps) {

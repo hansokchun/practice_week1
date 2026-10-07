@@ -24,18 +24,17 @@ test('photo detail viewport keeps the selected photo centered at the existing zo
     });
 });
 
-test('photo detail map includes all located photos for the owner viewing their own photo', () => {
+test('photo detail map shows only the selected photo even for its owner', () => {
     const items = getPhotoDetailOwnerMapItems(selected, [
         { id: 'private', owner_id: 'author', lat: 35.1, lng: 129.1, visibility: 'private', location_precision: 'hidden' },
         { id: 'other-author', owner_id: 'other', lat: 36, lng: 128, visibility: 'public', location_precision: 'exact' }
     ], 'author');
 
-    assert.deepEqual(items.map((photo) => photo.id), ['selected', 'private']);
+    assert.deepEqual(items.map((photo) => photo.id), ['selected']);
     assert.equal(items[0].isSelected, true);
-    assert.equal(items[1].isSelected, false);
 });
 
-test('photo detail map exposes only public map-eligible photos to another viewer', () => {
+test('photo detail map excludes all other photos for another viewer', () => {
     const items = getPhotoDetailOwnerMapItems(selected, [
         { id: 'public', owner_id: 'author', lat: 35, lng: 129, visibility: 'public', location_precision: 'approximate' },
         { id: 'link', owner_id: 'author', lat: 36, lng: 128, visibility: 'link', location_precision: 'exact' },
@@ -44,5 +43,11 @@ test('photo detail map exposes only public map-eligible photos to another viewer
         { id: 'missing', owner_id: 'author', lat: null, lng: null, visibility: 'public', location_precision: 'exact' }
     ], 'viewer');
 
-    assert.deepEqual(items.map((photo) => photo.id), ['selected', 'public', 'link', 'hidden']);
+    assert.deepEqual(items.map((photo) => photo.id), ['selected']);
+});
+
+test('photo detail map preserves selected-photo privacy and missing-location rules', () => {
+    assert.deepEqual(getPhotoDetailOwnerMapItems({ ...selected, visibility: 'private' }, [], 'viewer'), []);
+    assert.equal(getPhotoDetailOwnerMapItems({ ...selected, visibility: 'private' }, [], 'author').length, 1);
+    assert.deepEqual(getPhotoDetailOwnerMapItems({ ...selected, lat: null }, [], 'author'), []);
 });
