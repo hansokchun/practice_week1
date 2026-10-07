@@ -1,0 +1,41 @@
+Ikkyee Pro optimization verification — 2026-10-07
+
+Live infrastructure
+- Project pqczcponriukilrtpbdl upgraded Nano -> Micro (t4g.micro, 1 GB).
+- Review Changes displayed +$0.00/month; infrastructure showed Micro after restart.
+- Billing after change: projected $27.50, Spend Cap enabled.
+- No additional projects, paid add-ons, or larger compute purchased.
+- Prior auth changes retained: leaked-password protection on; connection allocation 17%.
+
+Code
+- Photo metadata uses ascending primary-key cursors, at most 200 rows per request.
+- Errors on later pages reject the complete operation; partial results are not reported as success.
+- Complete visible metadata is still loaded for maps/search. Viewport-only loading is not implemented.
+- Concurrent inserts with keys below the current cursor appear on the next refresh.
+- Build-only adaptation of pinned piexifjs 1.0.6 removes unused labels/helpers/constants.
+- EXIF tag types, GPS constants, internal pointer constants, and MIT license remain.
+- GPS and existing metadata dump/insert/load results match the original library using a real JPEG.
+- Future application usage is checked against the retained API; unsupported library structures fail visibly.
+
+Validation
+- npm test: 826 passed, 0 failed.
+- npm run perf:budget: build and all budgets passed.
+- JavaScript Brotli 68.68 KiB (previous 71.48), budget 70.5.
+- CSS 28.35/30 KiB; static images 2147.74/2200 KiB; largest image 348.74/450 KiB.
+- Local production build: landing -> public photo lists render against live Supabase, console error logs empty.
+- Placeholder cards remain for missing derivatives; they are not pagination errors.
+- Work targets dev only. Production main is not changed by this code commit.
+
+Outstanding
+- 65 public photos owned by two accounts lack thumbnails. Storage bucket is private.
+- Automatic approval review rejected reading their originals because explicit access authorization was missing.
+- No alternative access route was attempted and no originals were changed.
+- Approval is required to read these originals and create derivatives while preserving originals and visibility.
+- Custom SMTP still requires a verified sender domain and provider credentials. Pro does not configure SMTP.
+- No large-scale load test, email signup/reset delivery test, or complete upload/delete journey performed.
+- Spend Cap limits covered usage; it is not a universal cap on compute/add-ons or a capacity guarantee.
+
+Evidence (local, ignored)
+tmp/site-audit-2026-10-07/micro-upgrade-completed.png
+tmp/site-audit-2026-10-07/micro-billing-confirmed.png
+tmp/site-audit-2026-10-07/optimized-local-home.png

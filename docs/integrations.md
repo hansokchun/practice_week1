@@ -1,6 +1,6 @@
 # Project Integrations
 
-Last checked: 2026-08-29
+Last checked: 2026-10-07 (Supabase infrastructure and billing; other integrations retain their earlier observations)
 
 This document is for Codex/operator context. It describes which connected
 services are available through the Codex plugins and which external resources
@@ -33,11 +33,16 @@ the app currently uses.
 
 Current app data model:
 
-- `public.photos`: photo metadata; 7 rows at last check.
+- `public.photos`: photo metadata; 165 rows at the 2026-10-07 check.
 - `public.comments`: photo comments; 8 rows at last check.
 - `public.profiles`: user profile nicknames; 1 row at last check.
 - `public.user_likes`: per-user likes; 0 rows at last check.
-- Storage bucket `photos`: public bucket; 20 objects at last check.
+- Storage bucket `photos`: private bucket; access uses RLS and signed URLs.
+
+The ikkyee organization is Pro with a single project and Micro compute (1 GB).
+The 2026-10-07 billing screen projected $27.50 including tax, with Spend Cap enabled.
+The separate aiconnect project is in its own Free organization.
+See `docs/audits/pro-optimization-2026-10-07.txt` for verification and remaining SMTP/thumbnail work.
 
 All checked public app tables have RLS enabled.
 
