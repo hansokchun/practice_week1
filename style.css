@@ -18,6 +18,8 @@
     --header-height: 76px;
     --container: 1280px;
     --thumbnail-radius: 8px;
+    --home-header-extra: 12px;
+    --home-discovery-gap: 24px;
     --headline: 'Nanum Gothic', sans-serif;
     --body: 'Nanum Gothic', sans-serif;
     --brand: 'Nanum Gothic', sans-serif;
@@ -1179,6 +1181,14 @@ img {
     padding-top: 64px;
 }
 
+body[data-page="home"] .site-header {
+    height: calc(64px + var(--home-header-extra));
+}
+
+body[data-page="home"] #site-main {
+    padding-top: calc(64px + var(--home-header-extra));
+}
+
 .brand {
     display: inline-flex;
     align-items: center;
@@ -1493,6 +1503,14 @@ body.is-logged-in #btn-open-auth {
     z-index: 1;
     padding: 64px 24px 36px;
     text-align: center;
+}
+
+body[data-page="home"] .landing-search-hero {
+    padding-bottom: calc(36px + var(--home-discovery-gap));
+}
+
+body[data-page="home"] .landing-search-globe {
+    translate: 0 var(--home-discovery-gap);
 }
 
 .landing-discovery > :not(.landing-search-globe) {
@@ -2425,6 +2443,10 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
     .landing-search-hero {
         padding: 32px 16px 24px;
+    }
+
+    body[data-page="home"] .landing-search-hero {
+        padding-bottom: calc(24px + var(--home-discovery-gap));
     }
 
     .landing-search-globe {
@@ -11454,6 +11476,10 @@ body.modal-open {
     }
 
     #site-main {
+        padding-top: 0;
+    }
+
+    body[data-page="home"] #site-main {
         padding-top: 0;
     }
 
