@@ -140,6 +140,9 @@ test('public profile page includes shared nickname, avatar, and cover editing fi
 });
 
 test('profile updates persist the selected cover image with the shared profile', () => {
+    const coverDisplay = app.slice(app.indexOf('function setProfileCoverDisplay'), app.indexOf('function renderAccountProfilePanel'));
+    assert.match(coverDisplay, /profileHeroImage\.onerror = \(\) => \{\s*profileHeroImage\.onerror = null;\s*profileHeroImage\.src = MAIN_BG_4_URL;\s*preparePhotoImageReveal\(profileHeroImage\);/);
+    assert.match(app, /setProfileCoverDisplay\(cover, `\$\{authorName\} public profile cover`\)/);
     assert.match(auth, /export async function updateUserMetadata\(metadata\)/);
     assert.match(auth, /export async function uploadImage\(file, fileName\)/);
     assert.match(auth, /export async function uploadProfileCover\(file, userId\)/);

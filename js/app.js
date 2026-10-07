@@ -3451,12 +3451,18 @@ function clearAccountProfileCoverPreview() {
     state.accountProfileCoverPreviewUrl = null;
 }
 
-function setProfileCoverDisplay(coverUrl = '') {
+function setProfileCoverDisplay(coverUrl = '', alt = '') {
     const profileHeroImage = $('.profile-cover > img');
     if (!profileHeroImage) return;
-    const fallbackUrl = getMySavedPhotos()[0]?.url || MAIN_BG_4_URL;
+    const fallbackUrl = getPhotoThumbnailSrc(getMySavedPhotos()[0] || {}) || MAIN_BG_4_URL;
+    profileHeroImage.onerror = () => {
+        profileHeroImage.onerror = null;
+        profileHeroImage.src = MAIN_BG_4_URL;
+        preparePhotoImageReveal(profileHeroImage);
+    };
     profileHeroImage.src = coverUrl || fallbackUrl;
-    profileHeroImage.alt = '';
+    profileHeroImage.alt = alt;
+    preparePhotoImageReveal(profileHeroImage);
 }
 
 function renderAccountProfilePanel() {
@@ -4373,11 +4379,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     if ($('#profile-like-count')) $('#profile-like-count').textContent = String(getProfilePhotoMetrics(ownerPhotos, ownerId).receivedLikeCount);
     if (isOwnProfile) renderAccountProfilePanel();
     else setAccountProfileEditMode(false);
-    const profileHeroImage = $('.profile-cover > img');
-    if (profileHeroImage) {
-        profileHeroImage.src = cover;
-        profileHeroImage.alt = `${authorName} public profile cover`;
-    }
+    setProfileCoverDisplay(cover, `${authorName} public profile cover`);
     const profileMapPhotos = getOwnerProfileMapPhotos(
         state.savedPhotos.map(normalizePhotoMapItem),
         ownerId,
@@ -5195,16 +5197,12 @@ function renderPublicSurfaces() {
         `).join('');
     }
 
-    const profileHeroImage = $('.profile-cover > img');
-    if (profileHeroImage) {
-        profileHeroImage.src = getProfileHeroImage(
+    setProfileCoverDisplay(getProfileHeroImage(
             getPublicProfileDetails(selected.owner_id).coverUrl,
             selected,
             profileAlbums,
             MAIN_BG_4_URL
-        );
-        profileHeroImage.alt = `${authorName} public profile cover`;
-    }
+        ), `${authorName} public profile cover`);
 
     $$('[data-public-album-id]').forEach((item) => {
         item.addEventListener('click', () => {
