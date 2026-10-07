@@ -94,6 +94,13 @@ All spacing derives from a base of 4px.
 
 ## 5. Components
 
+### Location Sharing Notice
+
+- **Structure**: A `.location-sharing-notice` paragraph with a bold, visible “위치정보 공유 주의” label before authentication, profile editing, and Kakao profile import actions.
+- **Content**: Explain that public photos expose their saved location on maps and public profiles; ask users to check sensitive places and visibility before sharing.
+- **Style**: Soft surface, primary text, 14px type with 1.6 line height, 12px padding, 8px corners, and Korean word-preserving wrapping.
+- **Accessibility**: Ordinary readable text; no blocking consent checkbox or transient alert. Associate forms and dialogs with the notice using `aria-describedby`.
+
 ### Primary and Secondary Buttons
 
 - **Structure**: Native `button` with `.btn-primary`, `.btn-secondary`, `.nav-action`, or feature-specific action class.

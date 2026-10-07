@@ -11219,6 +11219,23 @@ body.modal-open {
     display: none;
 }
 
+.location-sharing-notice {
+    margin: 0;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--surface-soft);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.location-sharing-notice strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
 .kakao-profile-import-card {
     width: min(440px, 100%);
 }

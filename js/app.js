@@ -3358,9 +3358,10 @@ function ensureProfileHeaderShell() {
                     <span>공개 중 <strong id="profile-public-count">0</strong></span>
                 </div>
             </div>
-            <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden>
+            <form id="account-profile-form" class="account-profile-form profile-edit-form" hidden aria-describedby="profile-location-sharing-notice">
                 <input id="profile-avatar-input" class="profile-avatar-file-input" type="file" accept="image/*" disabled>
                 <input id="profile-cover-input" class="profile-cover-file-input" type="file" accept="image/jpeg,image/png,image/webp" disabled>
+                <p id="profile-location-sharing-notice" class="location-sharing-notice"><strong>위치정보 공유 주의</strong>사진을 공개하면 저장된 위치가 지도와 공개 프로필에 표시되어 다른 사람이 확인할 수 있습니다. 집·직장 등 민감한 장소가 드러나지 않도록 공유 전에 사진의 위치와 공개 범위를 확인하세요.</p>
                 <div class="account-profile-fields">
                     <div class="account-profile-field profile-edit-name-field">
                         <label for="profile-nickname-input">닉네임</label>
