@@ -98,7 +98,7 @@ All spacing derives from a base of 4px.
 
 - **Structure**: Two dismissible welcome entries in the existing account notifications: a friendly location reminder and an upload invitation that routes directly to `upload`. Auth and profile dialogs carry no warning block.
 - **Content**: Explain public photo location exposure in friendly Korean and invite the first travel photo. The upload page repeats the location reminder in a small persistent note below its steps.
-- **Style**: Existing notification surfaces; welcome body and upload note use 14px/1.6 text with Korean word-preserving wrapping. The upload note uses muted text, 12px padding, and no colored warning panel. Dismiss targets are 44px.
+- **Style**: Notifications use one title line with ellipsis for overflow and the full title available on hover. Location-sharing guidance is included in its title. The upload note uses 14px/1.6 muted text, 12px padding, and Korean word-preserving wrapping. Dismiss targets are 44px. Profile menu buttons center their icons and labels vertically with balanced padding, including settings and logout.
 - **Accessibility**: A separately named dismiss button beside each notice. The popover scrolls on short viewports. Dismissal is stored per account in this browser and remains until storage is cleared.
 
 ### Primary and Secondary Buttons

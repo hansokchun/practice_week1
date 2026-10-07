@@ -1,5 +1,5 @@
 const WELCOME_NOTICES = [
-    { id: 'welcome-location', icon: 'location_on', title: '사진 속 장소도 함께 나눠요', body: '사진을 공개하면 지도에서 촬영 장소도 볼 수 있어요. 집·직장처럼 소중한 일상이 드러나는 곳은 공유 전에 한 번 더 확인해 주세요.', route: '' },
+    { id: 'welcome-location', icon: 'location_on', title: '공개 사진의 위치도 공유돼요. 공유 전 확인해 주세요.', body: '사진을 공개하면 지도에서 촬영 장소도 볼 수 있어요. 집·직장처럼 소중한 일상이 드러나는 곳은 공유 전에 한 번 더 확인해 주세요.', route: '' },
     { id: 'welcome-upload', icon: 'add_a_photo', title: '첫 사진으로 나만의 지도를 채워볼까요?', body: '마음에 드는 여행 사진을 올려보세요. 사진 속 장소들이 모여 나만의 여행 지도가 돼요. 여기를 누르면 사진을 추가할 수 있어요.', route: 'upload' }
 ];
 

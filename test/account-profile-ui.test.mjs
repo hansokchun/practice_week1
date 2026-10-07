@@ -48,6 +48,9 @@ test('logged-in header exposes an image-only profile trigger', () => {
 });
 
 test('logged-in header exposes compact recommended notifications beside profile', () => {
+    const notificationRenderer = app.slice(app.indexOf('function renderAccountNotifications()'), app.indexOf('function showNewAccountGuidance()'));
+    assert.doesNotMatch(notificationRenderer, /escapeHtml\(item\.body\)/);
+    assert.match(css, /\.account-notification-copy strong\s*\{[^}]*white-space:\s*nowrap;[^}]*overflow:\s*hidden;[^}]*text-overflow:\s*ellipsis;/s);
     const notificationIndex = html.indexOf('id="btn-open-notifications"');
     const profileIndex = html.indexOf('id="btn-open-profile"');
 
@@ -174,6 +177,9 @@ test('profile updates persist the selected cover image with the shared profile',
 });
 
 test('header profile trigger opens the account menu and profile menu item routes to the shared profile page', () => {
+    assert.match(css, /\.account-menu-popover button\s*\{[^}]*align-items:\s*center;[^}]*line-height:\s*1;/s);
+    assert.match(css, /#account-profile-logout\s*\{[^}]*padding:\s*0 12px;/s);
+    assert.doesNotMatch(css, /#account-profile-logout\s*\{[^}]*padding-top:/s);
     assert.match(app, /function openAccountProfilePage\(\)/);
     assert.match(app, /function setAccountProfileEditMode\(isEditing\)/);
     assert.match(app, /function handleAccountProfileAvatarChange\(event\)/);

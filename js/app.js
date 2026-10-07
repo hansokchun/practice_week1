@@ -3804,8 +3804,7 @@ function renderAccountNotifications() {
         const content = `
             <span class="material-symbols-outlined" aria-hidden="true">${escapeHtml(item.icon)}</span>
             <span class="account-notification-copy">
-                <strong>${escapeHtml(item.title)}</strong>
-                <span>${escapeHtml(item.body)}</span>
+                <strong title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong>
             </span>
         `;
         if (item.id) {

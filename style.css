@@ -1359,8 +1359,8 @@ body[data-page="home"] #site-main {
 
 .account-notification-item {
     display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
     gap: 8px;
     width: 100%;
     border: 1px solid rgba(26, 77, 78, 0.1);
@@ -1377,24 +1377,19 @@ body[data-page="home"] #site-main {
     line-height: 1.2;
 }
 
-.account-notification-copy strong,
-.account-notification-copy > span {
-    display: block;
+.account-notification-copy {
+    min-width: 0;
 }
 
 .account-notification-copy strong {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--ink);
     font-size: 12px;
     font-weight: 900;
     line-height: 1.35;
-}
-
-.account-notification-copy > span {
-    margin-top: 3px;
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.45;
 }
 
 .account-notification-item:hover {
@@ -1478,6 +1473,7 @@ body.is-logged-in #btn-open-auth {
     background: transparent;
     color: var(--ink);
     font-weight: 800;
+    line-height: 1;
     padding: 0 12px;
     text-align: left;
 }
@@ -9469,7 +9465,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 #account-profile-logout {
     margin-top: 8px;
     border-top: 1px solid var(--line);
-    padding-top: 14px;
+    padding: 0 12px;
 }
 
 .profile-action {

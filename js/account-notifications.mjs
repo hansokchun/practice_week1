@@ -23,7 +23,6 @@ export function buildAccountNotificationItems({
         items.push({
             icon: 'location_off',
             title: `${missingLocationCount}장의 사진에 위치를 지정해보세요!`,
-            body: '어디서 찍었는지 알려주면 지도에 담을 수 있어요.',
             route: 'location-assign'
         });
     }
@@ -31,7 +30,6 @@ export function buildAccountNotificationItems({
         items.push({
             icon: 'favorite',
             title: `좋아요 누른 사진 ${likedPhotoCount}장`,
-            body: '마음에 든 사진들을 모아뒀어요.',
             route: 'liked'
         });
     }
@@ -39,7 +37,6 @@ export function buildAccountNotificationItems({
         items.push({
             icon: 'favorite',
             title: `${receivedLikeCount}개의 좋아요를 받았어요!`,
-            body: '내 사진에 마음을 남겨줬어요.',
             route: 'photos'
         });
     }
@@ -48,7 +45,6 @@ export function buildAccountNotificationItems({
         items.push({
             icon: 'notifications',
             title: '새 알림 없음',
-            body: '사진을 올리면 필요한 알림을 알려드릴게요.',
             route: ''
         });
     }
