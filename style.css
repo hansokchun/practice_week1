@@ -20,9 +20,9 @@
     --thumbnail-radius: 8px;
     --home-header-extra: 12px;
     --home-discovery-gap: 56px;
-    --headline: 'Nanum Gothic', sans-serif;
-    --body: 'Nanum Gothic', sans-serif;
-    --brand: 'Nanum Gothic', sans-serif;
+    --headline: 'Pretendard Variable', Pretendard, system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    --body: 'Pretendard Variable', Pretendard, system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    --brand: 'Pretendard Variable', Pretendard, system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 
 * {

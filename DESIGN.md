@@ -50,8 +50,8 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 
 ### Font Stack
 
-- Primary UI, headings, menus, descriptions, metadata: `SUIT Variable`, `SUIT`, `Inter`, system sans-serif.
-- Brand-only serif: Georgia and Times New Roman only for the Ikkyee wordmark and the oversized decorative Ikkyee word.
+- Primary UI, headings, menus, descriptions, metadata, and standalone legal/support pages: `Pretendard Variable`, `Pretendard`, system sans-serif. Load the official v1.3.9 variable dynamic subsets so only needed glyph ranges download and all existing weights render consistently.
+- Brand-only serif: Cormorant Garamond for the Ikkyee wordmark. Korean brand labels and decorative text follow the primary stack.
 - Icon: Material Symbols Outlined.
 
 ### Rules
