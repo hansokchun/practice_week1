@@ -70,14 +70,15 @@ test('recommended admin curation may use every unused liked public photo', () =>
     );
 });
 
-test('landing admin explains that photo choices come from the admins liked photos', () => {
+test('landing admin uses one shared public-photo dock with an optional liked filter', () => {
     const html = readFileSync('index.html', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');
 
-    assert.match(html, /관리자가 좋아요한 공개 사진/u);
-    assert.match(app, /function getLandingAdminLikedPhotoCandidates\(\)/u);
-    assert.match(app, /getLandingAdminPhotoCandidates\(getLandingPublicPhotos\(\), state\.likedPhotoIds\)/u);
-    assert.match(app, /지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다\./u);
+    assert.match(html, /id="landing-admin-dock"/u);
+    assert.match(html, /전체 공개 사진/u);
+    assert.match(app, /function getLandingAdminCandidates\(\)/u);
+    assert.match(app, /getLandingAdminPhotoCandidates\(photos, state\.likedPhotoIds\)/u);
+    assert.doesNotMatch(app, /class="admin-photo-picker"/u);
     assert.match(app, /data-admin-photo-randomize/u);
     assert.match(app, /if \(!photoIds\.length\)[\s\S]*getLandingAdminRandomPhotoIds\(/u);
 });

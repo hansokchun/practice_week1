@@ -132,6 +132,14 @@ All spacing derives from a base of 4px.
 
 ### Quiet Explore Map
 
+### Landing Admin Photo Dock
+
+- A single shared photo picker stays fixed at the bottom of the admin page; the document owns vertical scrolling and reserves space for the dock and mobile safe area.
+- Click or focus a section to choose its destination. A teal border and pressed destination button identify the active section; the dock repeats its title.
+- Eight thumbnails per page, with previous/next controls, public/liked filters and search. Desktop uses one row; mobile uses four columns and two rows. Selected photos remain in their section with reorder/remove controls.
+- Adding photos preserves text drafts. Already-added photos are marked and cannot be added twice. Save remains an explicit action.
+- Use existing surface, line, teal and thumbnail tokens; keyboard selection and focus-visible states remain available. No new animation.
+
 - **Structure**: Public Explore and profile maps use the shared `getExploreMapOptions` helper.
 - **Map Styling**: Embedded Google Maps JSON styling hides non-essential POI, transit, road, and neighborhood labels, and removes transit line geometry so uploaded photo pins remain the visual focus.
 - **Controls**: Search, photo-scope filters, discovery panels, and pin previews sit on warm white elevated surfaces with teal-dark actions, coral metadata accents, and restrained media shadows so Explore feels connected to the landing feature rows. Large map panels use squared archive corners around 8-10px rather than soft rounded cards.

@@ -82,7 +82,7 @@ test('landing tag page keeps placeholders stable and reveals a loaded page as on
 test('landing admin limits the saved tag curation to twenty photos', () => {
     assert.match(appSource, /getLandingAdminSelectedPhotoIds\(section\.photo_ids, candidatePhotos, LANDING_TAG_PIN_LIMIT\)/);
     assert.match(appSource, /태그 사진 \(최대 20장\)/);
-    assert.match(appSource, /section\.photo_ids\.length >= LANDING_TAG_PIN_LIMIT/);
+    assert.match(appSource, /addLandingAdminPhoto\([^\n]+LANDING_TAG_PIN_LIMIT\)/);
 });
 
 test('a refreshed landing tag route waits for remote curation before validating its section', () => {

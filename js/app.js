@@ -53,6 +53,7 @@ import {
     getProviderAccountProfile,
     resolveAccountProfile
 } from './account-profile.mjs';
+import { getLandingAdminDockPage, addLandingAdminPhoto } from './landing-admin-dock.mjs';
 import { buildAccountNotificationItems } from './account-notifications.mjs';
 import { initializeAccountGuidance, loadAccountGuidance, dismissAccountGuidance } from './account-guidance.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
@@ -384,6 +385,10 @@ const state = {
     landingSections: getDefaultLandingSections(),
     landingAssignments: [],
     landingHeroPhotoIds: [],
+    landingAdminTarget: '',
+    landingAdminDockPage: 1,
+    landingAdminDockFilter: 'all',
+    landingAdminDockQuery: '',
     landingHeroLocationLabels: {},
     hasLoadedLandingCuration: false,
     landingCurationLoadError: null,
@@ -1424,8 +1429,9 @@ function syncPhotosAlbumList() {
     target.innerHTML = source.innerHTML.replace('id="btn-open-album-inline"', 'data-start-album');
 }
 
-function getLandingAdminLikedPhotoCandidates() {
-    return getLandingAdminPhotoCandidates(getLandingPublicPhotos(), state.likedPhotoIds);
+function getLandingAdminCandidates() {
+    const photos = getLandingPublicPhotos().filter(photo => photo.owner_id !== 'demo');
+    return getLandingAdminPhotoCandidates(photos, photos.map(photo => String(photo.id)));
 }
 
 function renderLandingAdminForm() {
@@ -1436,7 +1442,7 @@ function renderLandingAdminForm() {
         return;
     }
     renderLandingAdminHeroForm();
-    const candidatePhotos = getLandingAdminLikedPhotoCandidates();
+    const candidatePhotos = getLandingAdminCandidates();
     container.innerHTML = state.landingSections.map((section, index) => {
         const selectedIds = getLandingAdminSelectedPhotoIds(section.photo_ids, candidatePhotos, LANDING_TAG_PIN_LIMIT);
         section.photo_ids = selectedIds;
@@ -1450,20 +1456,13 @@ function renderLandingAdminForm() {
                     <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
                     <button data-admin-photo-move="previous" type="button" aria-label="사진을 앞으로 이동" ${photoIndex === 0 ? 'disabled' : ''}>↑</button>
                     <button data-admin-photo-move="next" type="button" aria-label="사진을 뒤로 이동" ${photoIndex === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button data-admin-photo-remove type="button" aria-label="섹션에서 사진 제거">삭제</button>
                 </div>`;
-        }).join('');
-        const pickerMarkup = candidatePhotos.map((photo) => {
-            const selected = selectedIds.includes(String(photo.id));
-            return `
-                <button class="admin-photo-option ${selected ? 'is-selected' : ''}" data-admin-photo-toggle="${escapeHtml(photo.id)}" type="button" aria-pressed="${selected}">
-                    <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
-                    <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
-                </button>`;
         }).join('');
         return `
         <fieldset class="admin-landing-section" data-admin-landing-section="${escapeHtml(section.id)}">
             <div class="admin-landing-section__topline">
-                <strong>섹션 ${index + 1}</strong>
+                <button data-admin-select-target="${escapeHtml(section.id)}" class="admin-target-button" type="button">섹션 ${index + 1} · 사진 추가 대상</button>
                 <div>
                     <button data-admin-section-move="previous" type="button" ${index === 0 ? 'disabled' : ''}>위로</button>
                     <button data-admin-section-move="next" type="button" ${index === state.landingSections.length - 1 ? 'disabled' : ''}>아래로</button>
@@ -1480,18 +1479,19 @@ function renderLandingAdminForm() {
                 </div>
                 ${selectedMarkup || '<p>저장하면 주제에 맞는 사진을 한 번 무작위로 구성하며, 다음 편집 전까지 같은 사진과 순서가 유지됩니다.</p>'}
             </div>
-            <div class="admin-photo-picker" aria-label="좋아요한 공개 사진 선택">${pickerMarkup || '<p>지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다.</p>'}</div>
             <input name="photo_ids" type="hidden" value="${escapeHtml(selectedIds.join(','))}">
             <input name="sort_order" type="hidden" value="${index}">
         </fieldset>
     `;
     }).join('');
+    syncLandingAdminTarget();
+    renderLandingAdminDock();
 }
 
 function renderLandingAdminHeroForm() {
     const container = $('#landing-admin-hero-photos');
     if (!container || !isLandingAdmin(state.currentUser)) return;
-    const candidatePhotos = getLandingAdminLikedPhotoCandidates();
+    const candidatePhotos = getLandingAdminCandidates();
     const photoById = new Map(candidatePhotos.map((photo) => [String(photo.id), photo]));
     const selectedIds = getLandingAdminSelectedPhotoIds(
         state.landingHeroPhotoIds,
@@ -1514,28 +1514,76 @@ function renderLandingAdminHeroForm() {
                 <button data-admin-hero-remove type="button" aria-label="슬라이드에서 제거">삭제</button>
             </div>`;
     }).join('');
-    const pickerMarkup = candidatePhotos.map((photo) => {
-        const photoId = String(photo.id);
-        const selected = selectedIds.includes(photoId);
-        return `
-            <button class="admin-photo-option ${selected ? 'is-selected' : ''}" data-admin-hero-toggle="${escapeHtml(photoId)}" type="button" aria-pressed="${selected}">
-                <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
-                <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
-            </button>`;
-    }).join('');
     container.innerHTML = `
         <div class="admin-selected-photos">
             <strong>선택된 슬라이드 (${selectedIds.length}/${LANDING_HERO_SLIDE_LIMIT})</strong>
-            ${selectedMarkup || '<p>첫 화면에 사용할 좋아요한 사진을 선택하세요.</p>'}
+            ${selectedMarkup || '<p>하단 사진칸에서 첫 화면에 사용할 사진을 추가하세요.</p>'}
         </div>
-        <div class="admin-photo-picker" aria-label="첫 화면에 사용할 좋아요한 공개 사진 선택">
-            ${pickerMarkup || '<p>지도에서 공개 사진에 좋아요를 누르면 선택 후보에 나타납니다.</p>'}
-        </div>`;
+        `;
+    syncLandingAdminTarget();
+    renderLandingAdminDock();
     container.querySelectorAll('[data-admin-hero-location-label]').forEach((input) => {
         input.addEventListener('input', () => {
             state.landingHeroLocationLabels[input.dataset.adminHeroLocationLabel] = input.value.slice(0, 80);
         });
     });
+}
+
+
+function syncLandingAdminTarget() {
+    if (state.landingAdminTarget !== 'hero' && !state.landingSections.some(section => String(section.id) === state.landingAdminTarget)) state.landingAdminTarget = '';
+    $('#landing-admin-hero')?.classList.toggle('is-edit-target', state.landingAdminTarget === 'hero');
+    $$('[data-admin-landing-section]').forEach(node => node.classList.toggle('is-edit-target', node.dataset.adminLandingSection === state.landingAdminTarget));
+    $$('[data-admin-select-target]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.adminSelectTarget === state.landingAdminTarget)));
+}
+
+function renderLandingAdminDock() {
+    const grid = $('#landing-admin-dock-photos');
+    if (!grid || !isLandingAdmin(state.currentUser)) return;
+    const target = state.landingSections.find(section => String(section.id) === state.landingAdminTarget);
+    const ids = state.landingAdminTarget === 'hero' ? state.landingHeroPhotoIds : target?.photo_ids || [];
+    const label = state.landingAdminTarget === 'hero' ? '배경 슬라이드' : target?.title || '섹션을 먼저 선택하세요';
+    $('#landing-admin-dock-target').textContent = label;
+    let photos = getLandingAdminCandidates();
+    if (state.landingAdminDockFilter === 'liked') photos = getLandingAdminPhotoCandidates(photos, state.likedPhotoIds);
+    if (state.landingAdminDockQuery.trim()) photos = getLandingSearchResults(photos, state.landingAdminDockQuery);
+    const page = getLandingAdminDockPage(photos, state.landingAdminDockPage);
+    state.landingAdminDockPage = page.currentPage;
+    $('#landing-admin-dock-page').textContent = page.currentPage + ' / ' + page.totalPages + ' · ' + photos.length + '장';
+    $('#landing-admin-dock-previous').disabled = !page.hasPrevious;
+    $('#landing-admin-dock-next').disabled = !page.hasNext;
+    grid.innerHTML = page.items.map(photo => {
+        const id = String(photo.id);
+        const selected = ids.includes(id);
+        return '<button class="admin-photo-option ' + (selected ? 'is-selected' : '') + '" data-admin-dock-photo="' + escapeHtml(id) + '" type="button" aria-pressed="' + selected + '" aria-label="' + escapeHtml(getLandingPhotoLabel(photo)) + (selected ? ' · 추가됨' : ' · 선택한 섹션에 추가') + '" ' + (!state.landingAdminTarget ? 'disabled' : selected ? 'aria-disabled="true"' : '') + '><img src="' + escapeHtml(getPhotoThumbnailSrc(photo)) + '" alt="" loading="lazy" decoding="async"><span>' + (selected ? '✓ 추가됨 · ' : '') + escapeHtml(getLandingPhotoLabel(photo)) + '</span></button>';
+    }).join('') || '<p class="admin-dock-empty">조건에 맞는 공개 사진이 없어요.</p>';
+}
+
+function selectLandingAdminTarget(target) {
+    state.landingAdminTarget = target;
+    syncLandingAdminTarget();
+    renderLandingAdminDock();
+}
+
+function addPhotoFromLandingAdminDock(photoId) {
+    if (!isLandingAdmin(state.currentUser) || !state.landingAdminTarget) return;
+    if (!getLandingAdminCandidates().some(photo => String(photo.id) === photoId)) return;
+    syncLandingAdminDrafts();
+    const target = state.landingSections.find(section => String(section.id) === state.landingAdminTarget);
+    const hero = state.landingAdminTarget === 'hero';
+    if (!hero && !target) return;
+    const result = addLandingAdminPhoto(hero ? state.landingHeroPhotoIds : target.photo_ids, photoId, hero ? LANDING_HERO_SLIDE_LIMIT : LANDING_TAG_PIN_LIMIT);
+    if (result.status === 'full') { showToast(hero ? '배경 슬라이드는 최대 5장까지 넣을 수 있어요.' : '한 섹션에는 최대 20장까지 넣을 수 있어요.'); return; }
+    if (result.status !== 'added') return;
+    if (hero) state.landingHeroPhotoIds = result.photoIds;
+    else {
+        state.landingSections.forEach((candidate) => {
+            if (candidate !== target) candidate.photo_ids = candidate.photo_ids.filter((id) => id !== photoId);
+        });
+        target.photo_ids = result.photoIds;
+    }
+    renderLandingAdminForm();
+    $('#landing-admin-dock-photos [data-admin-dock-photo="' + CSS.escape(photoId) + '"]')?.focus();
 }
 
 function getLandingHeroSlidesToSave() {
@@ -1583,7 +1631,7 @@ async function saveLandingAdminForm(event) {
     if (!isLandingAdmin(state.currentUser)) return;
     syncLandingAdminDrafts();
     const fieldsets = $$('[data-admin-landing-section]');
-    const candidatePhotos = getLandingAdminLikedPhotoCandidates();
+    const candidatePhotos = getLandingAdminCandidates();
     const reservedPhotoIds = new Set(state.landingSections.flatMap((section) => section.photo_ids || []));
     if (message) message.textContent = '메인 구성을 저장하는 중입니다…';
     const { error: heroError } = await saveLandingHeroSlides(getLandingHeroSlidesToSave());
@@ -7912,7 +7960,26 @@ function bindEvents() {
         renderLandingSections();
     }));
     $('#landing-admin-form')?.addEventListener('submit', saveLandingAdminForm);
+    $('#landing-admin-form')?.addEventListener('focusin', event => {
+        const node = event.target.closest('[data-admin-landing-section], #landing-admin-hero');
+        if (node) selectLandingAdminTarget(node.dataset.adminLandingSection || 'hero');
+    });
+    $('#landing-admin-dock-search')?.addEventListener('input', event => {
+        state.landingAdminDockQuery = event.target.value;
+        state.landingAdminDockPage = 1;
+        renderLandingAdminDock();
+    });
+    $('#landing-admin-dock-filter')?.addEventListener('change', event => {
+        state.landingAdminDockFilter = event.target.value;
+        state.landingAdminDockPage = 1;
+        renderLandingAdminDock();
+    });
+    ['previous', 'next'].forEach(direction => $('#landing-admin-dock-' + direction)?.addEventListener('click', () => {
+        state.landingAdminDockPage += direction === 'previous' ? -1 : 1;
+        renderLandingAdminDock();
+    }));
     $('#btn-add-landing-section')?.addEventListener('click', () => {
+        syncLandingAdminDrafts();
         state.landingSections.push({
             id: crypto.randomUUID(),
             title: '새 여행 주제',
@@ -7921,6 +7988,7 @@ function bindEvents() {
             is_visible: true,
             photo_ids: []
         });
+        state.landingAdminTarget = String(state.landingSections.at(-1).id);
         renderLandingAdminForm();
     });
     $('#btn-load-street-view')?.addEventListener('click', loadPhotoDetailStreetView);
@@ -7955,21 +8023,10 @@ function bindEvents() {
             setExplorePhotoScopeMenuOpen(false);
         }
 
-        const adminHeroToggle = event.target.closest('[data-admin-hero-toggle]');
-        if (adminHeroToggle) {
-            const photoId = adminHeroToggle.dataset.adminHeroToggle;
-            if (state.landingHeroPhotoIds.includes(photoId)) {
-                state.landingHeroPhotoIds = state.landingHeroPhotoIds.filter((id) => id !== photoId);
-            } else if (state.landingHeroPhotoIds.length < LANDING_HERO_SLIDE_LIMIT) {
-                state.landingHeroPhotoIds = [...state.landingHeroPhotoIds, photoId];
-            } else {
-                const message = $('#landing-admin-message');
-                if (message) message.textContent = '첫 화면 슬라이드는 최대 5장까지 선택할 수 있습니다.';
-                return;
-            }
-            renderLandingAdminHeroForm();
-            return;
-        }
+        const adminDockPhoto = event.target.closest('[data-admin-dock-photo]');
+        if (adminDockPhoto) { addPhotoFromLandingAdminDock(adminDockPhoto.dataset.adminDockPhoto); return; }
+        const adminTarget = event.target.closest('[data-admin-select-target], [data-admin-landing-section], #landing-admin-hero');
+        if (adminTarget) selectLandingAdminTarget(adminTarget.dataset.adminSelectTarget || adminTarget.dataset.adminLandingSection || 'hero');
 
         const adminHeroAction = event.target.closest('[data-admin-hero-move], [data-admin-hero-remove]');
         if (adminHeroAction) {
@@ -8033,44 +8090,19 @@ function bindEvents() {
                 .flatMap((candidate) => candidate.photo_ids || []);
             section.photo_ids = getLandingAdminRandomPhotoIds(
                 section,
-                getLandingAdminLikedPhotoCandidates(),
+                getLandingAdminCandidates(),
                 reservedIds,
                 LANDING_TAG_PIN_LIMIT
             );
             const message = $('#landing-admin-message');
             if (message) message.textContent = section.photo_ids.length
                 ? '무작위 구성을 만들었습니다. 저장하면 이 구성이 고정됩니다.'
-                : '이 주제와 맞는 좋아요한 공개 사진이 없습니다.';
+                : '이 주제와 맞는 공개 사진이 없습니다.';
             renderLandingAdminForm();
             return;
         }
 
-        const adminPhotoToggle = event.target.closest('[data-admin-photo-toggle]');
-        if (adminPhotoToggle) {
-            syncLandingAdminDrafts();
-            const fieldset = adminPhotoToggle.closest('[data-admin-landing-section]');
-            const section = state.landingSections.find((candidate) => String(candidate.id) === fieldset?.dataset.adminLandingSection);
-            if (!section) return;
-            const photoId = adminPhotoToggle.dataset.adminPhotoToggle;
-            if (!section.photo_ids.includes(photoId) && section.photo_ids.length >= LANDING_TAG_PIN_LIMIT) {
-                const message = $('#landing-admin-message');
-                if (message) message.textContent = '상단에 고정할 사진은 최대 20장까지 선택할 수 있습니다.';
-                return;
-            }
-            const wasSelected = section.photo_ids.includes(photoId);
-            if (!wasSelected) {
-                state.landingSections.forEach((candidate) => {
-                    if (candidate !== section) candidate.photo_ids = candidate.photo_ids.filter((id) => id !== photoId);
-                });
-            }
-            section.photo_ids = wasSelected
-                ? section.photo_ids.filter((id) => id !== photoId)
-                : [...section.photo_ids, photoId];
-            renderLandingAdminForm();
-            return;
-        }
-
-        const adminPhotoMove = event.target.closest('[data-admin-photo-move]');
+        const adminPhotoMove = event.target.closest('[data-admin-photo-move], [data-admin-photo-remove]');
         if (adminPhotoMove) {
             syncLandingAdminDrafts();
             const fieldset = adminPhotoMove.closest('[data-admin-landing-section]');
@@ -8079,7 +8111,8 @@ function bindEvents() {
             if (!section || !selected) return;
             const index = section.photo_ids.indexOf(selected.dataset.adminSelectedPhoto);
             const targetIndex = index + (adminPhotoMove.dataset.adminPhotoMove === 'previous' ? -1 : 1);
-            if (index >= 0 && targetIndex >= 0 && targetIndex < section.photo_ids.length) {
+            if (adminPhotoMove.hasAttribute('data-admin-photo-remove')) section.photo_ids = section.photo_ids.filter(id => id !== selected.dataset.adminSelectedPhoto);
+            else if (index >= 0 && targetIndex >= 0 && targetIndex < section.photo_ids.length) {
                 [section.photo_ids[index], section.photo_ids[targetIndex]] = [section.photo_ids[targetIndex], section.photo_ids[index]];
             }
             renderLandingAdminForm();

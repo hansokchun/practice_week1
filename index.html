@@ -356,14 +356,15 @@
                 <div class="page-intro">
                     <p class="eyebrow">관리자 전용</p>
                     <h1 id="admin-landing-title">메인 사진 구성</h1>
-                    <p>관리자가 좋아요한 공개 사진으로 첫 화면 슬라이드와 주제별 사진을 구성하세요.</p>
+                    <p>섹션을 선택한 뒤 하단 사진칸에서 사진을 눌러 추가하세요.</p>
                 </div>
                 <form id="landing-admin-form" class="admin-landing-form">
                     <section id="landing-admin-hero" class="admin-landing-hero" aria-labelledby="landing-admin-hero-title">
                         <div>
                             <p class="eyebrow">첫 화면</p>
                             <h2 id="landing-admin-hero-title">배경 슬라이드</h2>
-                            <p>좋아요한 공개 사진 중 최대 5장을 선택할 수 있습니다.</p>
+                            <button data-admin-select-target="hero" class="admin-target-button" type="button">배경 슬라이드에 사진 추가</button>
+                            <p>하단 사진칸에서 최대 5장을 추가할 수 있습니다.</p>
                         </div>
                         <div id="landing-admin-hero-photos"></div>
                     </section>
@@ -393,6 +394,17 @@
                     <p id="landing-admin-feedback-message" class="auth-message" aria-live="polite"></p>
                 </section>
             </div>
+
+            <aside id="landing-admin-dock" class="admin-photo-dock" aria-label="메인 구성 사진 선택">
+                <div class="admin-dock-toolbar">
+                    <div class="admin-dock-context"><span>사진 추가 대상</span><strong id="landing-admin-dock-target" aria-live="polite">섹션을 먼저 선택하세요</strong></div>
+                    <label class="sr-only" for="landing-admin-dock-search">사진 검색</label><input id="landing-admin-dock-search" type="search" placeholder="장소·사진 검색">
+                    <label class="sr-only" for="landing-admin-dock-filter">사진 후보 필터</label><select id="landing-admin-dock-filter"><option value="all">전체 공개 사진</option><option value="liked">좋아요한 사진</option></select>
+                    <div class="admin-dock-paging"><button id="landing-admin-dock-previous" type="button" aria-label="이전 사진">←</button><span id="landing-admin-dock-page">1 / 1</span><button id="landing-admin-dock-next" type="button" aria-label="다음 사진">→</button></div>
+                </div>
+                <div id="landing-admin-dock-photos" class="admin-dock-photos"></div>
+                <p class="admin-dock-help">설정칸을 선택하고 사진을 눌러 추가하세요. 변경을 마치면 ‘메인 구성 저장’을 눌러주세요.</p>
+            </aside>
         </section>
 
         <section id="page-liked" class="page page-liked" aria-labelledby="liked-photos-title">
