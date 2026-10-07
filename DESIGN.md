@@ -84,7 +84,7 @@ All spacing derives from a base of 4px.
 
 - Max content width: `--container` = `1280px`.
 - Header height: 64px in active CSS, with `--header-height` retained for older surfaces.
-- Home header adds `--home-header-extra` = `12px` to the 64px shell height. Home search keeps its position within the content, while `--home-discovery-gap` = `24px` moves the globe and all following photo content down together. Mobile retains its sticky header and adds the same height without a main-content offset.
+- Home header adds `--home-header-extra` = `12px` to the 64px shell height. Home search keeps its position within the content, while `--home-discovery-gap` = `56px` moves the globe and all following photo content down together. Mobile retains its sticky header and adds the same height without a main-content offset.
 - Breakpoints: mobile rules currently pivot at 860px.
 
 ### Rules
