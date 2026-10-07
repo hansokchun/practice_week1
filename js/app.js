@@ -2799,8 +2799,7 @@ async function renderPhotoDetailMap(photo) {
     if (!state.photoDetailMap) {
         mapCanvas.replaceChildren();
         state.photoDetailMap = new maps.Map(mapCanvas, getExploreMapOptions({
-            ...viewport,
-            mapId: state.googleMapsMapId
+            ...viewport
         }));
     } else {
         state.photoDetailMap.setCenter(viewport.center);
@@ -2814,7 +2813,7 @@ async function renderPhotoDetailMap(photo) {
         icon: getExplorePinIcon(maps, { type: 'photo', selected: item.isSelected }),
         label: null,
         zIndex: item.isSelected ? 100 : 10
-    }, { mapId: state.googleMapsMapId }));
+    }));
 
     window.requestAnimationFrame(() => {
         if (renderToken !== state.photoDetailMapRenderToken || !state.photoDetailMap) return;

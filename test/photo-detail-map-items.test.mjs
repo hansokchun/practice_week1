@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import {
     PHOTO_DETAIL_MAP_ZOOM,
@@ -50,4 +51,11 @@ test('photo detail map preserves selected-photo privacy and missing-location rul
     assert.deepEqual(getPhotoDetailOwnerMapItems({ ...selected, visibility: 'private' }, [], 'viewer'), []);
     assert.equal(getPhotoDetailOwnerMapItems({ ...selected, visibility: 'private' }, [], 'author').length, 1);
     assert.deepEqual(getPhotoDetailOwnerMapItems({ ...selected, lat: null }, [], 'author'), []);
+});
+
+test('photo detail map retains quiet inline styles instead of unrelated cloud-map pins', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const renderer = source.slice(source.indexOf('async function renderPhotoDetailMap('), source.indexOf('function updatePhotoDetailModal('));
+    assert.doesNotMatch(renderer, /mapId: state\.googleMapsMapId/);
+    assert.match(renderer, /getExploreMapOptions\(/);
 });
