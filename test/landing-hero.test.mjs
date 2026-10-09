@@ -50,7 +50,7 @@ test('landing slideshow advances every ten seconds and wraps around', () => {
     assert.doesNotMatch(app, /prefers-reduced-motion[^\n]+return/);
 });
 
-test('admins can select and order up to seven server photos for the landing slideshow', () => {
+test('admins can select and order up to twelve server photos for the landing slideshow', () => {
     assert.match(html, /id="landing-admin-hero"/);
     assert.match(html, /id="landing-admin-hero-photos"/);
     assert.match(app, /function renderLandingAdminHeroForm\(\)/);

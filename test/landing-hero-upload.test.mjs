@@ -42,15 +42,17 @@ for (const failure of ['variant', 'save']) {
     });
 }
 
-test('hero local picker keeps admin authorization, seven-slide limit and manual location input', () => {
+test('hero local picker keeps admin authorization, twelve-slide limit and manual location input', () => {
     const html = readFileSync('index.html', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');
     assert.match(html, /id="landing-hero-file-input"[^>]*type="file"[^>]*multiple/);
     const body = app.slice(app.indexOf('async function handleLandingHeroFiles'), app.indexOf('function renderLandingAdminHeroForm'));
     assert.match(body, /isLandingAdmin\(state.currentUser\)/);
     assert.match(body, /LANDING_HERO_SLIDE_LIMIT/);
-    assert.match(app, /const LANDING_HERO_SLIDE_LIMIT = 7;/);
-    assert.match(readFileSync('auth.js', 'utf8'), /\}\)\.slice\(0, 7\)/);
+    assert.match(app, /const LANDING_HERO_SLIDE_LIMIT = 12;/);
+    assert.match(readFileSync('auth.js', 'utf8'), /\}\)\.slice\(0, 12\)/);
+    assert.match(html, /최대 12장/);
+    assert.match(readFileSync('supabase/migrations/20261009192623_allow_twelve_landing_slides.sql', 'utf8'), /sort_order between 0 and 11/);
     assert.match(readFileSync('supabase/migrations/20261009173522_allow_admin_landing_uploads_and_seven_slides.sql', 'utf8'), /sort_order between 0 and 6/);
     assert.match(body, /filterAcceptedPhotoFiles/);
     assert.match(body, /uploadLandingHeroPhoto/);

@@ -431,7 +431,7 @@ let lastModalTrigger = null;
 let landingHeroTimer = null;
 let landingHeroIndex = 0;
 let lastLandingSectionsMarkup = null;
-const LANDING_HERO_SLIDE_LIMIT = 7;
+const LANDING_HERO_SLIDE_LIMIT = 12;
 const MODAL_FOCUSABLE_SELECTOR = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function renderActionableFailure(copy, action = 'data-retry-saved-library') {
@@ -1497,7 +1497,7 @@ async function handleLandingHeroFiles(files) {
     if (!isLandingAdmin(state.currentUser) || state.isUploadingLandingHero) return;
     const { accepted, rejected } = filterAcceptedPhotoFiles(files);
     const remaining = Math.max(0, LANDING_HERO_SLIDE_LIMIT - state.landingHeroPhotoIds.length);
-    if (!remaining) { showToast('배경 슬라이드는 최대 7장입니다. 기존 사진을 먼저 제거해주세요.'); return; }
+    if (!remaining) { showToast('배경 슬라이드는 최대 12장입니다. 기존 사진을 먼저 제거해주세요.'); return; }
     if (accepted.length > remaining) { showToast(`사진은 ${remaining}장까지 추가할 수 있습니다. 선택한 사진 수를 줄여주세요.`); return; }
     if (!accepted.length) { showToast(rejected[0]?.reason || '사진을 선택해주세요.'); return; }
     syncLandingAdminDrafts();
@@ -1621,7 +1621,7 @@ function addPhotoFromLandingAdminDock(photoId) {
     const hero = state.landingAdminTarget === 'hero';
     if (!hero && !target) return;
     const result = addLandingAdminPhoto(hero ? state.landingHeroPhotoIds : target.photo_ids, photoId, hero ? LANDING_HERO_SLIDE_LIMIT : LANDING_TAG_PIN_LIMIT);
-    if (result.status === 'full') { showToast(hero ? '배경 슬라이드는 최대 7장까지 넣을 수 있어요.' : '한 섹션에는 최대 20장까지 넣을 수 있어요.'); return; }
+    if (result.status === 'full') { showToast(hero ? '배경 슬라이드는 최대 12장까지 넣을 수 있어요.' : '한 섹션에는 최대 20장까지 넣을 수 있어요.'); return; }
     if (result.status !== 'added') return;
     if (hero) state.landingHeroPhotoIds = result.photoIds;
     else {
