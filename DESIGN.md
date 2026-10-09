@@ -137,7 +137,7 @@ All spacing derives from a base of 4px.
 
 ### Landing Admin Photo Dock
 
-- Hero slides also accept local image files through an admin-only multi-file picker (maximum five slides, existing 15MB validation and optimized original/thumbnail/preview uploads). The image preview sits above an editable location label. Adding files keeps drafts; saving publishes slide assignments and captions. Uploaded photos are stored as public photos with no inferred coordinates. Upload errors clean newly created storage objects; successful files remain available when a later file fails.
+- Hero slides also accept local image files through an admin-only multi-file picker (maximum seven slides, existing 15MB validation and optimized original/thumbnail/preview uploads). The image preview sits above an editable location label. Adding files keeps drafts; saving publishes slide assignments and captions. Uploaded photos are stored as public photos with no inferred coordinates. Upload errors clean newly created storage objects; successful files remain available when a later file fails. The site owner's account alone is exempt from the 100-photo quota; other accounts, including other admins, retain the limit in both client and database.
 
 - A single shared photo picker stays fixed at the bottom of the admin page; the document owns vertical scrolling and reserves space for the dock and mobile safe area.
 - Click or focus a section to choose its destination. A teal border and pressed destination button identify the active section; the dock repeats its title.

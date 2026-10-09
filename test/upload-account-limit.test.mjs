@@ -1,5 +1,22 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+
+test('only the site owner account has unlimited photo uploads', () => {
+    const ownerId = 'c46ae404-a8b3-4a13-8722-65b2f9d20c35';
+    const photos = Array.from({ length: 150 }, (_, index) => ({ id: String(index), owner_id: ownerId }));
+    const status = getAccountUploadLimitStatus({ user: { id: ownerId }, photos, incomingUploadCount: 7 });
+    assert.equal(status.canUpload, true);
+    assert.equal(status.photoLimit, Infinity);
+    assert.equal(status.remainingUploads, Infinity);
+    assert.equal(getAccountUploadLimitMessage(status), '');
+    const otherAdmin = getAccountUploadLimitStatus({ user: { id: 'another-admin', app_metadata: { role: 'admin' } }, photos: Array.from({ length: 100 }, () => ({ owner_id: 'another-admin' })), incomingUploadCount: 1 });
+    assert.equal(otherAdmin.canUpload, false);
+    const sql = readFileSync('supabase/migrations/20261009173522_allow_admin_landing_uploads_and_seven_slides.sql', 'utf8');
+    assert.match(sql, /viewer_id <> 'c46ae404-a8b3-4a13-8722-65b2f9d20c35'::uuid/);
+    assert.match(sql, /photo_count >= 100/);
+    assert.match(sql, /new\.owner_id is distinct from viewer_id/);
+});
 
 import {
     ACCOUNT_PHOTO_UPLOAD_LIMIT,

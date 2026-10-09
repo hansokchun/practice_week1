@@ -368,7 +368,7 @@ export async function saveLandingHeroSlides(slides = []) {
             if (!slide.photoId || seen.has(slide.photoId)) return false;
             seen.add(slide.photoId);
             return true;
-        }).slice(0, 5);
+        }).slice(0, 7);
         const normalizedIds = normalizedSlides.map((slide) => slide.photoId);
         if (normalizedIds.length) {
             const rows = normalizedSlides.map((slide, sortOrder) => ({

@@ -1,4 +1,5 @@
 export const ACCOUNT_PHOTO_UPLOAD_LIMIT = 100;
+const UNLIMITED_PHOTO_OWNER_ID = 'c46ae404-a8b3-4a13-8722-65b2f9d20c35';
 
 export function getOwnedPhotoCount(user, photos = []) {
     const ownerId = user?.id;
@@ -12,11 +13,12 @@ export function getAccountUploadLimitStatus({
     incomingUploadCount = 0
 } = {}) {
     const ownedPhotoCount = getOwnedPhotoCount(user, photos);
-    const remainingUploads = Math.max(0, ACCOUNT_PHOTO_UPLOAD_LIMIT - ownedPhotoCount);
+    const photoLimit = user?.id === UNLIMITED_PHOTO_OWNER_ID ? Infinity : ACCOUNT_PHOTO_UPLOAD_LIMIT;
+    const remainingUploads = Math.max(0, photoLimit - ownedPhotoCount);
     const incomingCount = Math.max(0, Number(incomingUploadCount || 0));
 
     return {
-        photoLimit: ACCOUNT_PHOTO_UPLOAD_LIMIT,
+        photoLimit,
         ownedPhotoCount,
         remainingUploads,
         canUpload: incomingCount <= remainingUploads
