@@ -37,6 +37,7 @@ import {
     removeProfileAsset,
     requestPhotoAiAnalysis,
     saveLandingHeroSlides,
+    cleanupLandingHeroUploads,
     saveLandingSection,
     submitProductFeedback,
     updateProductFeedbackStatus,
@@ -1456,7 +1457,7 @@ function renderLandingAdminForm() {
             if (!photo) return '';
             return `
                 <div class="admin-selected-photo" data-admin-selected-photo="${escapeHtml(photoId)}">
-                    <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
+                    ${renderPhotoImage(photo, '')}
                     <span>${escapeHtml(getLandingPhotoLabel(photo))}</span>
                     <button data-admin-photo-move="previous" type="button" aria-label="사진을 앞으로 이동" ${photoIndex === 0 ? 'disabled' : ''}>↑</button>
                     <button data-admin-photo-move="next" type="button" aria-label="사진을 뒤로 이동" ${photoIndex === selectedIds.length - 1 ? 'disabled' : ''}>↓</button>
@@ -1550,7 +1551,7 @@ function renderLandingAdminHeroForm() {
         if (!photo) return '';
         return `
             <div class="admin-selected-photo" data-admin-hero-selected="${escapeHtml(photoId)}">
-                <img src="${escapeHtml(getPhotoThumbnailSrc(photo))}" alt="">
+                ${renderPhotoImage(photo, '')}
                 <label class="admin-hero-location-field">
                     <span>아래에 표시할 위치</span>
                     <input data-admin-hero-location-label="${escapeHtml(photoId)}" type="text" maxlength="80" value="${escapeHtml(state.landingHeroLocationLabels[photoId] || '')}" placeholder="예: 일본 · 도쿄" required>
@@ -1601,7 +1602,7 @@ function renderLandingAdminDock() {
     grid.innerHTML = page.items.map(photo => {
         const id = String(photo.id);
         const selected = ids.includes(id);
-        return '<button class="admin-photo-option ' + (selected ? 'is-selected' : '') + '" data-admin-dock-photo="' + escapeHtml(id) + '" type="button" aria-pressed="' + selected + '" aria-label="' + escapeHtml(getLandingPhotoLabel(photo)) + (selected ? ' · 추가됨' : ' · 선택한 섹션에 추가') + '" ' + (!state.landingAdminTarget ? 'disabled' : selected ? 'aria-disabled="true"' : '') + '><img src="' + escapeHtml(getPhotoThumbnailSrc(photo)) + '" alt="" loading="lazy" decoding="async">' + (selected ? '<span class="admin-dock-selected-mark material-symbols-outlined" aria-hidden="true">check</span>' : '') + '</button>';
+        return '<button class="admin-photo-option ' + (selected ? 'is-selected' : '') + '" data-admin-dock-photo="' + escapeHtml(id) + '" type="button" aria-pressed="' + selected + '" aria-label="' + escapeHtml(getLandingPhotoLabel(photo)) + (selected ? ' · 추가됨' : ' · 선택한 섹션에 추가') + '" ' + (!state.landingAdminTarget ? 'disabled' : selected ? 'aria-disabled="true"' : '') + '>' + renderPhotoImage(photo, '') + (selected ? '<span class="admin-dock-selected-mark material-symbols-outlined" aria-hidden="true">check</span>' : '') + '</button>';
     }).join('') || '<p class="admin-dock-empty">조건에 맞는 공개 사진이 없어요.</p>';
 }
 
@@ -1716,8 +1717,20 @@ async function saveLandingAdminForm(event) {
         }
     }
     await loadLandingCuration();
+    if (state.landingCurationLoadError) {
+        if (message) message.textContent = '저장된 구성을 확인하지 못해 이전 사진은 유지했습니다. 다시 저장해주세요.';
+        return;
+    }
+    const { deletedIds, error: cleanupError } = await cleanupLandingHeroUploads(
+        state.savedPhotos, state.currentUser.id,
+        [...state.landingHeroPhotoIds, ...state.landingAssignments.map(item => String(item.photo_id))]
+    );
+    const removedIds = new Set(deletedIds);
+    state.savedPhotos = state.savedPhotos.filter(photo => !removedIds.has(String(photo.id)));
     renderLandingAdminForm();
-    if (message) message.textContent = '메인 구성을 저장했습니다.';
+    if (message) message.textContent = cleanupError
+        ? '메인 구성은 저장했어요. 이전 사진 파일을 정리하지 못해 다시 저장하면 정리를 재시도합니다.'
+        : '메인 구성을 저장했습니다.';
 }
 
 function getFeedbackAuthorName(feedback) {

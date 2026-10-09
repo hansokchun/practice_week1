@@ -8,6 +8,7 @@
  */
 
 import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
+import { cleanupLandingUploads } from './js/landing-upload-cleanup.mjs';
 import { fetchPhotoMetadataPages } from './js/photo-metadata-pages.mjs';
 import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
 import {
@@ -392,6 +393,27 @@ export async function saveLandingHeroSlides(slides = []) {
     } catch (error) {
         return { error };
     }
+}
+
+export async function cleanupLandingHeroUploads(photos, ownerId, retainedIds) {
+    const key = `ikkyee:landing-cleanup:${ownerId}`;
+    let pendingPaths = [];
+    try {
+        pendingPaths = JSON.parse(window.localStorage.getItem(key) || '[]');
+        if (!Array.isArray(pendingPaths)) pendingPaths = [];
+    } catch {}
+    const sb = getSupabase();
+    const result = await cleanupLandingUploads(photos, ownerId, retainedIds, {
+        claim: photoId => sb.rpc('delete_unused_landing_upload', { target_photo_id: String(photoId) }),
+        remove: paths => sb.storage.from('photos').remove(paths)
+    }, pendingPaths);
+    try {
+        if (result.pendingPaths.length) window.localStorage.setItem(key, JSON.stringify(result.pendingPaths));
+        else window.localStorage.removeItem(key);
+    } catch (error) {
+        if (result.pendingPaths.length) result.error ||= error;
+    }
+    return result;
 }
 
 export async function saveLandingSection(section, photoIds = []) {
