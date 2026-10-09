@@ -23,3 +23,18 @@ test('the root opts out of automatic dark recoloring while home keeps the shared
     assert.match(css, /body\s*\{[^}]*background:\s*var\(--bg\);/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*background:\s*var\(--bg\);/s);
 });
+
+test('the decorative globe follows the rendered canvas without blending photo cards or controls', async () => {
+    const css = await readFile(new URL('style.css', root), 'utf8');
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    const canvas = css.match(/\.landing-discovery\s*\{([^}]*)\}/)?.[1] ?? '';
+    const globe = css.match(/^\.landing-search-globe\s*\{([^}]*)\}/m)?.[1] ?? '';
+
+    assert.match(canvas, /isolation:\s*isolate;/);
+    assert.match(canvas, /background:\s*var\(--bg\);/);
+    assert.match(globe, /mix-blend-mode:\s*multiply;/);
+    assert.match(globe, /z-index:\s*0;/);
+    assert.match(globe, /filter:\s*none;/);
+    assert.match(css, /\.landing-discovery\s*>\s*:not\(\.landing-search-globe\)\s*\{[^}]*z-index:\s*1;/s);
+    assert.match(html, /<img\s+class="landing-search-globe"[^>]*aria-hidden="true"/);
+});
