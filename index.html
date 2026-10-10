@@ -899,8 +899,8 @@
                     </label>
                     <label class="settings-row settings-toggle-row" for="settings-library-summary-notifications">
                         <div class="settings-row-copy">
-                            <strong>사진 활동 요약</strong>
-                            <span>좋아요 누른 사진과 받은 좋아요를 상단 알림에서 알려드려요.</span>
+                            <strong>받은 좋아요 알림</strong>
+                            <span>내 사진에 새 좋아요가 도착하면 알려드려요.</span>
                         </div>
                         <span class="settings-toggle">
                             <input id="settings-library-summary-notifications" type="checkbox">
@@ -1103,6 +1103,9 @@
             <section class="photo-detail-info">
                 <div class="photo-detail-title-row">
                     <p id="photo-detail-description" class="photo-detail-description" hidden></p>
+                    <button class="photo-detail-more-button" data-open-photo-share type="button" aria-label="사진 공유" data-tooltip="사진 공유">
+                        <span class="material-symbols-outlined" aria-hidden="true">ios_share</span>
+                    </button>
                     <div class="photo-detail-more">
                         <button class="photo-detail-more-button" data-photo-detail-more type="button" aria-label="더보기" aria-expanded="false">
                             <span class="material-symbols-outlined" aria-hidden="true">more_vert</span>
@@ -1336,6 +1339,19 @@
         </div>
     </div>
 
+    <div id="content-share-modal" class="modal content-share-modal" aria-hidden="true">
+        <section class="content-share-card" role="dialog" aria-modal="true" aria-labelledby="content-share-title">
+            <header><h2 id="content-share-title">공유하기</h2><button class="modal-close" data-close-modal type="button" aria-label="공유 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></header>
+            <p id="content-share-name"></p>
+            <div class="content-share-actions">
+                <button id="btn-share-kakao" class="btn-primary" type="button"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span>카카오톡</button>
+                <button id="btn-share-copy" class="btn-secondary" type="button"><span class="material-symbols-outlined" aria-hidden="true">link</span>링크 복사</button>
+            </div>
+            <label for="content-share-url">공유 링크</label>
+            <input id="content-share-url" type="url" readonly>
+            <p id="content-share-status" role="status"></p>
+        </section>
+    </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2/dist/umd/supabase.min.js" defer></script>

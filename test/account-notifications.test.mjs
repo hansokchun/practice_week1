@@ -3,10 +3,11 @@ import { test } from 'node:test';
 
 import { buildAccountNotificationItems } from '../js/account-notifications.mjs';
 
-test('account notifications summarize missing locations, liked photos, and received likes', () => {
+test('account notifications show unread received likes but never liked-photo summaries', () => {
     const items = buildAccountNotificationItems({
         currentUserId: 'me',
         likedPhotoIds: ['liked'],
+        receivedLikes: { received_count: 10, read_count: 3 },
         savedPhotos: [
             { id: 'missing', owner_id: 'me', lat: null, lng: null, visibility: 'private' },
             { id: 'public', owner_id: 'me', lat: 37.5, lng: 127, visibility: 'public', liked: 7 },
@@ -14,11 +15,11 @@ test('account notifications summarize missing locations, liked photos, and recei
         ]
     });
 
-    assert.deepEqual(items.map((item) => item.route), ['location-assign', 'liked', 'photos']);
+    assert.deepEqual(items.map((item) => item.route), ['location-assign', 'photos']);
     assert.equal(items[0].icon, 'location_off');
     assert.equal(items[0].title, '1장의 사진에 위치를 지정해보세요!');
-    assert.equal(items[1].title, '좋아요 누른 사진 1장');
-    assert.equal(items[2].title, '7개의 좋아요를 받았어요!');
+    assert.equal(items[1].title, '7개의 좋아요를 받았어요!');
+    assert.equal(items[1].seenCount, 10);
     assert.ok(items.every(item => !item.title.includes('공개 중')));
 });
 
@@ -51,11 +52,19 @@ test('notification preferences can hide location guidance and library summaries'
     const summaryOnly = buildAccountNotificationItems({
         currentUserId: 'me',
         savedPhotos: photos,
+        receivedLikes: { received_count: 2, read_count: 0 },
         missingLocationNotifications: false
     });
 
     assert.deepEqual(locationOnly.map((item) => item.title), ['1장의 사진에 위치를 지정해보세요!']);
     assert.deepEqual(summaryOnly.map((item) => item.title), ['2개의 좋아요를 받았어요!']);
+});
+
+test('read likes stay dismissed and a later like appears even after an unlike', () => {
+    const build = receivedLikes => buildAccountNotificationItems({ currentUserId: 'me', receivedLikes });
+    assert.equal(build({ received_count: 7, read_count: 7 })[0].title, '새 알림 없음');
+    assert.equal(build({ received_count: 8, read_count: 7 })[0].title, '1개의 좋아요를 받았어요!');
+    assert.equal(build({ received_count: 8, read_count: 8 })[0].title, '새 알림 없음');
 });
 
 test('public photo counts alone do not create notifications', () => {

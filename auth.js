@@ -696,6 +696,19 @@ export async function fetchMyLikes(userId) {
     }
 }
 
+export async function fetchReceivedLikes(userId) {
+    try {
+        return await getSupabase().from('received_like_inbox')
+            .select('received_count,read_count').eq('user_id', userId).maybeSingle();
+    } catch (error) { return { data: null, error }; }
+}
+
+export async function markReceivedLikesRead(seenCount) {
+    try {
+        return await getSupabase().rpc('mark_received_likes_read', { seen_count: seenCount });
+    } catch (error) { return { error }; }
+}
+
 /**
  * 사진 삭제
  * RLS 정책으로 본인 사진만 DELETE 가능

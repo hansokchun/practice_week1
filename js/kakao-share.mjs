@@ -6,21 +6,21 @@ export const KAKAO_JAVASCRIPT_KEY = 'c9aeb54d262be3dc1d1ec2cd3ebd5c69';
 
 let sdkPromise = null;
 
-export function getKakaoSharePayload(url) {
+export function getKakaoSharePayload(url, content = {}) {
     const shareUrl = String(url || '');
     return {
         objectType: 'feed',
         content: {
-            title: 'Ikkyee 여행 앨범',
-            description: '여행 사진과 장소를 지도에서 함께 둘러보세요.',
-            imageUrl: 'https://practice-week1-cws.pages.dev/social-preview.jpg',
+            title: content.title || 'Ikkyee 여행 앨범',
+            description: content.description || '여행 사진과 장소를 지도에서 함께 둘러보세요.',
+            imageUrl: content.imageUrl || 'https://practice-week1-cws.pages.dev/social-preview.jpg',
             link: {
                 mobileWebUrl: shareUrl,
                 webUrl: shareUrl
             }
         },
         buttons: [{
-            title: '앨범 보기',
+            title: content.buttonTitle || '앨범 보기',
             link: {
                 mobileWebUrl: shareUrl,
                 webUrl: shareUrl
@@ -67,8 +67,8 @@ export function loadKakaoShareSdk(documentObject = globalThis.document, windowOb
     return sdkPromise;
 }
 
-export async function sendKakaoShare(kakao, url, javascriptKey = KAKAO_JAVASCRIPT_KEY) {
+export async function sendKakaoShare(kakao, url, javascriptKey = KAKAO_JAVASCRIPT_KEY, content = {}) {
     initializeKakaoShare(kakao, javascriptKey);
     if (!kakao?.Share?.sendDefault) throw new Error('Kakao 공유 기능을 사용할 수 없습니다.');
-    return kakao.Share.sendDefault(getKakaoSharePayload(url));
+    return kakao.Share.sendDefault(getKakaoSharePayload(url, content));
 }

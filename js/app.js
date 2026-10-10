@@ -8,6 +8,8 @@ import {
     fetchLandingCuration,
     fetchProductFeedback,
     fetchMyLikes,
+    fetchReceivedLikes,
+    markReceivedLikesRead,
     fetchPhotos,
     fetchProfilesByIds,
     hydratePhotoUrls,
@@ -87,6 +89,7 @@ import {
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { getGoogleMapsLocationUrl } from './location-copy.mjs';
 import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
+import { buildContentShare, parseSharedPhotoId } from './content-sharing.mjs';
 import {
     normalizeGoogleMapsRuntimeConfig,
     withGoogleMapsMapId
@@ -148,7 +151,7 @@ import {
 import { formatRelativeTime } from './relative-time.mjs';
 import { formatMissingLocationSummary, getMyphotoStats } from './myphoto-stats.mjs';
 import { getShareCompletionHash, getShareTargetAlbumId } from './share-completion.mjs';
-import { buildAlbumRouteHash, buildOwnerProfileHash, buildOwnerProfilePhotosHash, buildTripHash, buildTripShareUrl, getSharedRouteState, getShareUrlAlbumId, parseSharedAlbumId, parseSharedProfileView } from './share-link.mjs';
+import { buildAlbumRouteHash, buildOwnerProfileHash, buildOwnerProfilePhotosHash, buildTripHash, getSharedRouteState, parseSharedAlbumId, parseSharedProfileView } from './share-link.mjs';
 import { getShareSaveControlState } from './share-save-state.mjs';
 import { getVisibilityStatusText } from './visibility-label.mjs';
 import { getVisibilityShortcutAction } from './visibility-shortcut.mjs';
@@ -308,6 +311,9 @@ const state = {
     likedPhotoPage: 1,
     lastToggledPersonalPhotoId: null,
     albumBuilderPhotoIds: [],
+    albumComposeDraft: null,
+    receivedLikes: null,
+    contentShare: null,
     albumPhotoPickerIds: [],
     albumPhotoPickerReturnRoute: null,
     editingAlbumId: null,
@@ -1154,6 +1160,17 @@ function applyRouteHash(hash, options = {}) {
     }
     renderRoute(normalized);
     if (sharedRoute.albumId || sharedRoute.ownerId) renderPublicSurfaces();
+    if (state.hasLoadedSavedPhotos) openSharedPhotoFromHash();
+}
+
+function openSharedPhotoFromHash() {
+    const id = parseSharedPhotoId(window.location.hash);
+    if (!id) return;
+    const photo = state.savedPhotos.find(item => String(item.id) === id && item.visibility === 'public');
+    if (photo) {
+        updatePhotoDetailModal(photo);
+        openModal('#photo-detail-modal');
+    } else showToast('공개되지 않았거나 삭제된 사진입니다.');
 }
 
 function getModalFocusableElements(modal) {
@@ -1194,6 +1211,14 @@ function closeModals() {
 }
 
 function dismissModal(modal) {
+    if (modal?.id === 'content-share-modal') {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        syncModalScrollLock();
+        if ($('#photo-detail-modal.is-open')) $('[data-open-photo-share]')?.focus();
+        else if (lastModalTrigger?.isConnected) lastModalTrigger.focus();
+        return;
+    }
     if (modal?.dataset.likeAuth !== '1') {
         closeModals();
         return;
@@ -3848,7 +3873,7 @@ function getAccountNotificationItems() {
     return buildAccountNotificationItems({
         currentUserId: state.currentUser?.id || '',
         savedPhotos: state.savedPhotos,
-        likedPhotoIds: state.likedPhotoIds,
+        receivedLikes: state.receivedLikes,
         missingLocationNotifications: state.accountSettings.missingLocationNotifications,
         librarySummaryNotifications: state.accountSettings.librarySummaryNotifications,
         welcomeNotices: loadAccountGuidance(window.localStorage, state.currentUser?.id).welcomeNotices
@@ -3867,6 +3892,16 @@ function toggleAccountNotifications(event) {
     event?.preventDefault();
     event?.stopPropagation();
     setAccountNotificationsOpen(!state.isNotificationPopoverOpen);
+    if (state.isNotificationPopoverOpen) loadReceivedLikes();
+}
+
+async function loadReceivedLikes() {
+    const userId = state.currentUser?.id;
+    if (!userId) { state.receivedLikes = null; return; }
+    const { data, error } = await fetchReceivedLikes(userId);
+    if (state.currentUser?.id !== userId || error) return;
+    state.receivedLikes = data;
+    renderAccountNotifications();
 }
 
 function renderAccountNotifications() {
@@ -3909,7 +3944,7 @@ function renderAccountNotifications() {
         if (!item.route) {
             return `<article class="account-notification-item is-empty">${content}</article>`;
         }
-        return `<button class="account-notification-item" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`;
+        return `<button class="account-notification-item" ${item.seenCount != null ? `data-read-received-likes="${item.seenCount}"` : `data-route="${escapeHtml(item.route)}"`} type="button">${content}</button>`;
     }).join('');
 }
 
@@ -3931,6 +3966,9 @@ async function handleLogout() {
 }
 
 function resetAccountState() {
+    state.receivedLikes = null;
+    state.contentShare = null;
+    state.albumComposeDraft = null;
     state.currentUser = null;
     state.hasNewAccountGuidance = false;
     state.savedPhotos = [];
@@ -4321,15 +4359,17 @@ function routeToProfileFromAuthor(albumId, ownerId) {
 }
 
 function getCurrentShareUrl() {
-    return buildTripShareUrl(window.location.origin, getShareUrlAlbumId(state.selectedPublicAlbumId, getSelectedPublicAlbum()));
+    return buildContentShare(window.location.origin, 'album', getSelectedPublicAlbum())?.url || '';
 }
 
 async function copyCurrentShareLink() {
     const url = getCurrentShareUrl();
+    if (!url) { showToast('공개 앨범만 공유할 수 있어요.'); return ''; }
     const output = $('#share-link-output');
     if (output) output.value = url;
     try {
-        await navigator.clipboard?.writeText(url);
+        if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(url);
         showToast('공유 링크를 복사했습니다.');
     } catch {
         output?.select?.();
@@ -4338,16 +4378,39 @@ async function copyCurrentShareLink() {
     return url;
 }
 
-async function shareCurrentTripWithKakao() {
-    const url = getCurrentShareUrl();
+function openContentShare(type, item) {
+    const content = buildContentShare(window.location.origin, type, item);
+    if (!content) { showToast(type === 'photo' ? '공개 사진만 공유할 수 있어요. 사진 수정에서 공개로 변경해주세요.' : '공개 앨범만 공유할 수 있어요. 앨범 메뉴에서 공개로 변경해주세요.'); return; }
+    state.contentShare = content;
+    $('#content-share-title').textContent = type === 'photo' ? '사진 공유' : '앨범 공유';
+    $('#content-share-name').textContent = content.title;
+    $('#content-share-url').value = content.url;
+    $('#content-share-status').textContent = '';
+    loadKakaoShareSdk().catch(() => {});
+    openModal('#content-share-modal');
+}
+
+async function shareContentToKakao() {
+    const content = state.contentShare;
+    if (!content) return;
     try {
         const kakao = await loadKakaoShareSdk();
-        await sendKakaoShare(kakao, url);
-        showToast('카카오톡 공유창을 열었습니다.');
-        return url;
+        await sendKakaoShare(kakao, content.url, undefined, content);
+        $('#content-share-status').textContent = '카카오톡에서 보낼 대상을 선택해주세요.';
     } catch {
-        await copyCurrentShareLink();
-        return url;
+        $('#content-share-status').textContent = '공유창을 열지 못했어요. 링크를 복사해서 카카오톡에 붙여넣어주세요.';
+    }
+}
+
+async function copyContentShareLink() {
+    if (!state.contentShare) return;
+    try {
+        if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(state.contentShare.url);
+        $('#content-share-status').textContent = '링크를 복사했어요.';
+    } catch {
+        $('#content-share-url').select();
+        $('#content-share-status').textContent = '아래 선택된 링크를 복사해주세요.';
     }
 }
 
@@ -4539,7 +4602,7 @@ function renderTripReviewShell() {
                     <div id="trip-review-meta" class="trip-review-meta"></div>
                 </div>
                 <div class="trip-actions">
-                    <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="카카오톡으로 공유" data-tooltip="카카오톡으로 공유">
+                    <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="앨범 공유" data-tooltip="앨범 공유">
                         <span class="material-symbols-outlined">ios_share</span>
                     </button>
                 </div>
@@ -5147,7 +5210,7 @@ function renderPublicSurfaces() {
                 </button>
             ` : ''}
             ${!state.albumDetailEditMode ? `
-                <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="카카오톡으로 공유" data-tooltip="카카오톡으로 공유">
+                <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="앨범 공유" data-tooltip="앨범 공유">
                     <span class="material-symbols-outlined">ios_share</span>
                 </button>
             ` : ''}
@@ -5492,6 +5555,7 @@ function loadSavedLibrary() {
     return Promise.all([
         loadSavedPhotos({ render: false }),
         loadMyLikedPhotos({ render: false }),
+        loadReceivedLikes(),
         loadSavedAlbums({ render: false })
     ]).then(() => {
         state.isSavedLibraryLoading = false;
@@ -5499,6 +5563,7 @@ function loadSavedLibrary() {
         renderSavedPhotoSurfaces();
         renderPublicSurfaces();
         renderLikedPhotoSurfaces();
+        openSharedPhotoFromHash();
     });
 }
 
@@ -6486,35 +6551,38 @@ function renderAlbumComposePage() {
     page.innerHTML = `
         <button class="back-link" data-go-myphoto type="button">
             <span class="material-symbols-outlined">arrow_back</span>
-            Home
+            내 사진
         </button>
         <div class="album-compose-header">
             <div>
-                <p class="eyebrow">Album Builder</p>
                 <h1 id="album-title">${editingAlbum ? '앨범 수정하기' : '앨범 만들기'}</h1>
             </div>
-            <button id="btn-save-album-draft" class="btn-primary" type="button">저장하기</button>
+            <button id="btn-save-album-draft" class="btn-primary" type="button"><span class="material-symbols-outlined" aria-hidden="true">check</span>앨범 저장</button>
         </div>
+        <div class="album-compose-workspace">
         <section class="album-compose-bar" aria-label="앨범 기본 정보">
+            <h2>앨범 정보</h2>
             <label class="album-compose-field" for="album-name-input">
                 <span>앨범 이름</span>
-                <input id="album-name-input" type="text" placeholder="예: 부산 주말 여행" value="${escapeHtml(editingAlbum?.title || '')}">
+                <input id="album-name-input" type="text" maxlength="120" placeholder="예: 부산 주말 여행" value="${escapeHtml(state.albumComposeDraft?.title ?? editingAlbum?.title ?? '')}">
             </label>
             <label class="album-compose-field" for="album-note-input">
                 <span>설명</span>
-                <textarea id="album-note-input" rows="2" placeholder="이 앨범에 남길 설명을 적어주세요.">${escapeHtml(getAlbumVisibleNote(editingAlbum))}</textarea>
+                <textarea id="album-note-input" rows="4" maxlength="2000" placeholder="여행에서 기억하고 싶은 순간">${escapeHtml(state.albumComposeDraft?.note ?? getAlbumVisibleNote(editingAlbum))}</textarea>
             </label>
+            <div class="album-visibility-field"><span>공개 여부</span>
             <div class="album-visibility-toggle" aria-label="공개 여부">
-                <button class="${state.visibility === 'private' ? 'active' : ''}" data-visibility="private" type="button">비공개</button>
-                <button class="${state.visibility === 'public' ? 'active' : ''}" data-visibility="public" type="button">공개</button>
+                <button class="${state.visibility === 'private' ? 'active' : ''}" data-visibility="private" aria-pressed="${state.visibility === 'private'}" type="button"><span class="material-symbols-outlined" aria-hidden="true">lock</span>비공개</button>
+                <button class="${state.visibility === 'public' ? 'active' : ''}" data-visibility="public" aria-pressed="${state.visibility === 'public'}" type="button"><span class="material-symbols-outlined" aria-hidden="true">public</span>공개</button>
             </div>
+            </div>
+            <p class="album-privacy-note"><span class="material-symbols-outlined" aria-hidden="true">info</span>공개 앨범에서도 공개한 사진만 다른 사람에게 보여요.</p>
         </section>
         <div class="album-compose-layout">
             <section class="album-compose-photos">
                 <div class="panel-topline">
                     <div>
-                        <p class="eyebrow">Album Photos</p>
-                        <h2 id="analysis-title">나의 여행 앨범</h2>
+                        <h2 id="analysis-title">담은 사진</h2>
                     </div>
                     <span><strong id="analysis-photo-count">0</strong>장</span>
                 </div>
@@ -6522,13 +6590,14 @@ function renderAlbumComposePage() {
                     <span><strong id="analysis-place-count">0</strong>곳</span>
                     <span><strong id="analysis-day-count">0일</strong> 타임라인</span>
                 </div>
-                <button id="btn-open-album-photo-picker" class="btn-secondary album-add-button" type="button">사진 추가</button>
+                <button id="btn-open-album-photo-picker" class="btn-secondary album-add-button" type="button"><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>사진 추가</button>
                 <div id="album-day-photo-list" class="album-day-photo-list"></div>
             </section>
-            <section class="album-compose-map" aria-label="앨범 지도">
+            <details class="album-compose-map" aria-label="앨범 지도">
+                <summary><span class="material-symbols-outlined" aria-hidden="true">map</span>첫 촬영 장소<span class="material-symbols-outlined album-map-chevron" aria-hidden="true">expand_more</span></summary>
                 <iframe id="album-map-frame" class="google-map-frame" title="Google map album photo locations" src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                <div id="album-map-pins" class="album-map-pins" aria-hidden="true"></div>
-            </section>
+            </details>
+        </div>
         </div>
     `;
     renderTravelDraftSurfaces();
@@ -6567,10 +6636,9 @@ function renderAlbumPhotoPickerPage() {
     root.innerHTML = `
         <div class="album-compose-header">
             <div>
-                <p class="eyebrow">Album Photos</p>
-                <h1 id="album-photos-title">앨범에 추가할 사진 선택</h1>
+                <h1 id="album-photos-title">사진 고르기</h1>
             </div>
-            <button id="btn-add-selected-album-photos" class="btn-primary" type="button">선택 사진 추가</button>
+            <button id="btn-add-selected-album-photos" class="btn-primary" type="button">${selected.size ? `${selected.size}장 담기` : '선택 완료'}</button>
         </div>
         <section class="album-photo-picker-panel">
             ${photos.length ? `
@@ -6588,8 +6656,8 @@ function renderAlbumPhotoPickerPage() {
             ` : `
                 <button class="album-add-photos" id="btn-picker-upload-photos" type="button">
                     <span class="material-symbols-outlined">add_photo_alternate</span>
-                    <strong>개별사진 저장소가 비어 있습니다</strong>
-                    <small>먼저 사진을 업로드한 뒤 앨범에 추가할 수 있습니다.</small>
+                    <strong>아직 올린 사진이 없어요</strong>
+                    <small>사진 올리기</small>
                 </button>
             `}
         </section>
@@ -6612,7 +6680,7 @@ function renderTravelDraftSurfaces() {
     const photoCount = summary.photoCount || fallbackPhotoCount;
     const albumLocatedPhotos = albumPhotos.filter(hasPhotoLocation);
 
-    $('#analysis-title') && ($('#analysis-title').textContent = summary.title);
+    $('#analysis-title') && ($('#analysis-title').textContent = '담은 사진');
     $('#analysis-photo-count') && ($('#analysis-photo-count').textContent = String(albumPhotos.length));
     $('#analysis-place-count') && ($('#analysis-place-count').textContent = String(albumLocatedPhotos.length));
     $('#analysis-day-count') && ($('#analysis-day-count').textContent = formatDayCount(getTravelDaySummaries(albumPhotos).length));
@@ -6637,7 +6705,7 @@ function renderTravelDraftSurfaces() {
                             <small>${formatPhotoPlaceMeta(day.photos.length, day.places)}</small>
                         </div>
                         <div class="album-day-thumbs">
-                            ${day.photos.slice(0, 6).map((photo) => `
+                            ${day.photos.map((photo) => `
                                 <figure>
                                     <button class="album-photo-remove" data-remove-album-photo="${escapeHtml(photo.id)}" type="button" aria-label="앨범에서 사진 제거">×</button>
                                     ${renderPhotoImage(photo)}
@@ -6646,22 +6714,17 @@ function renderTravelDraftSurfaces() {
                         </div>
                     </article>
                 `).join('')
-            : '';
+            : '<div class="album-compose-empty"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span><strong>아직 담은 사진이 없어요</strong><button class="btn-secondary" data-add-album-photos type="button">내 사진에서 고르기</button></div>';
     }
 
     const albumMap = $('#album-map-frame');
-    const albumPins = $('#album-map-pins');
+    const mapSection = $('#page-album .album-compose-map');
+    if (mapSection) mapSection.hidden = !albumLocatedPhotos.length;
     if (albumMap) {
         const center = albumLocatedPhotos[0] || { lat: 36.45, lng: 127.85 };
         const zoom = albumLocatedPhotos.length ? 9 : 7;
-        albumMap.src = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=${zoom}&output=embed`;
-    }
-    if (albumPins) {
-        albumPins.innerHTML = albumLocatedPhotos.slice(0, 8).map((photo, index) => `
-            <button class="album-map-pin pin-${index + 1}" type="button" data-open-photo-detail data-photo-id="${escapeHtml(photo.id || photo.localId)}">
-                <img src="${escapeHtml(photo.url)}" alt="" loading="lazy" decoding="async">
-            </button>
-        `).join('');
+        const src = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=${zoom}&output=embed`;
+        if (albumLocatedPhotos.length && albumMap.src !== src) albumMap.src = src;
     }
 
 }
@@ -6670,6 +6733,7 @@ function setVisibilityMode(mode) {
     state.visibility = ['private', 'link', 'public'].includes(mode) ? mode : 'private';
     $$('[data-visibility]').forEach((button) => {
         button.classList.toggle('active', button.dataset.visibility === state.visibility);
+        button.setAttribute('aria-pressed', String(button.dataset.visibility === state.visibility));
     });
     const status = $('[data-visibility-status]');
     if (status) status.textContent = getVisibilityStatusText(state.visibility);
@@ -6837,6 +6901,7 @@ function openMyphotoAlbum(albumRow) {
 }
 
 function startNewAlbum() {
+    state.albumComposeDraft = null;
     state.editingAlbumId = null;
     state.albumBuilderPhotoIds = [];
     state.albumPhotoPickerIds = [];
@@ -7457,11 +7522,6 @@ async function saveAlbumAndOpenDetail() {
     }
 
     const savedAlbum = normalizeSavedAlbum(album);
-    state.savedAlbums = [
-        savedAlbum,
-        ...state.savedAlbums.filter((albumItem) => albumItem.id !== savedAlbum.id)
-    ];
-    state.selectedPublicAlbumId = savedAlbum.id;
     {
         const { error: replaceError } = await replaceAlbumPhotos(savedAlbum.id, draftPhotoIds);
         if (replaceError) {
@@ -7480,8 +7540,14 @@ async function saveAlbumAndOpenDetail() {
             return photo;
         });
     }
+    state.savedAlbums = [
+        savedAlbum,
+        ...state.savedAlbums.filter((albumItem) => albumItem.id !== savedAlbum.id)
+    ];
+    state.selectedPublicAlbumId = savedAlbum.id;
     state.editingAlbumId = null;
     await loadPublicProfileNames();
+    state.albumComposeDraft = null;
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
     showToast('앨범을 저장했습니다.');
@@ -8153,6 +8219,24 @@ function bindEvents() {
     }, true);
     document.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
+        const readLike = event.target.closest('[data-read-received-likes]');
+        if (readLike) {
+            const userId = state.currentUser?.id;
+            readLike.disabled = true;
+            const { error } = await markReceivedLikesRead(Number(readLike.dataset.readReceivedLikes));
+            if (state.currentUser?.id !== userId) return;
+            if (error) { readLike.disabled = false; showToast('알림을 확인하지 못했어요. 다시 시도해주세요.'); return; }
+            await loadReceivedLikes();
+            setAccountNotificationsOpen(false);
+            routeTo('photos');
+            return;
+        }
+        if (event.target.closest('[data-open-photo-share]')) {
+            const photo = getAllDisplayPhotos().find(item => String(item.id) === String(state.selectedPhotoId))
+                || state.albumDetailPhotos.find(item => String(item.id) === String(state.selectedPhotoId));
+            openContentShare('photo', photo);
+            return;
+        }
         const guidanceDismiss = event.target.closest('[data-dismiss-account-guidance], #btn-dismiss-upload-location-notice');
         if (guidanceDismiss) {
             dismissAccountGuidance(window.localStorage, state.currentUser?.id, guidanceDismiss.dataset.dismissAccountGuidance || 'upload-location');
@@ -8628,7 +8712,7 @@ function bindEvents() {
             return;
         }
 
-        const openAlbumPhotoPickerButton = event.target.closest('#btn-open-album-photo-picker');
+        const openAlbumPhotoPickerButton = event.target.closest('#btn-open-album-photo-picker, [data-add-album-photos]');
         if (openAlbumPhotoPickerButton) {
             state.albumPhotoPickerReturnRoute = null;
             state.albumPhotoPickerIds = [...state.albumBuilderPhotoIds];
@@ -8673,7 +8757,7 @@ function bindEvents() {
 
         const copyTripLinkButton = event.target.closest('#btn-copy-trip-link');
         if (copyTripLinkButton) {
-            await shareCurrentTripWithKakao();
+            openContentShare('album', getSelectedPublicAlbum());
             return;
         }
 
@@ -8728,7 +8812,17 @@ function bindEvents() {
 
         const saveAlbumButton = event.target.closest('#btn-save-album-draft');
         if (saveAlbumButton) {
-            saveAlbumAndOpenDetail();
+            if (saveAlbumButton.disabled) return;
+            saveAlbumButton.disabled = true;
+            saveAlbumButton.setAttribute('aria-busy', 'true');
+            try {
+                await saveAlbumAndOpenDetail();
+            } catch {
+                showToast('앨범을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+            } finally {
+                saveAlbumButton.disabled = false;
+                saveAlbumButton.removeAttribute('aria-busy');
+            }
             return;
         }
 
@@ -8906,7 +9000,11 @@ function bindEvents() {
         renderStagedPhotos();
         showToast('업로드 초안을 비웠습니다.');
     });
-    $('#btn-save-album-draft')?.addEventListener('click', saveAlbumAndOpenDetail);
+    document.addEventListener('input', (event) => {
+        if (event.target.matches('#album-name-input, #album-note-input')) {
+            state.albumComposeDraft = { title: $('#album-name-input').value, note: $('#album-note-input').value };
+        }
+    });
     bindPhotoInput();
     const uploadDropzone = $('#upload-dropzone');
     if (uploadDropzone) {
@@ -8953,6 +9051,8 @@ function bindEvents() {
         setAccountMenuOpen(!state.isAccountMenuOpen);
     });
     $('#btn-open-notifications')?.addEventListener('click', toggleAccountNotifications);
+    $('#btn-share-kakao')?.addEventListener('click', shareContentToKakao);
+    $('#btn-share-copy')?.addEventListener('click', copyContentShareLink);
     $('#btn-open-auth')?.addEventListener('click', () => {
         openModal('#auth-modal');
     });
@@ -9033,7 +9133,9 @@ function bindEvents() {
     window.addEventListener('resize', () => layoutTripReviewPhotoRows());
     document.addEventListener('visibilitychange', () => {
         setLandingHeroSlideshowActive(document.body.dataset.page === LANDING_ROUTE && !document.hidden);
+        if (!document.hidden) loadReceivedLikes();
     });
+    window.setInterval(() => { if (!document.hidden && state.currentUser) loadReceivedLikes(); }, 60000);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

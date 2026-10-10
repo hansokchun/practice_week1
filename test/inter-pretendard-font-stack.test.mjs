@@ -9,7 +9,7 @@ const legalCss = readFileSync('public/legal.css', 'utf8');
 test('site and legal pages give text subtle shared tracking', () => {
   assert.match(css, /--text-tracking:\s*0\.02em;/);
   assert.match(css, /body\s*\{[^}]*letter-spacing:\s*var\(--text-tracking\);/s);
-  assert.doesNotMatch(css, /letter-spacing:\s*0;/);
+  assert.match(css, /#page-album \.album-compose-header h1\s*\{[^}]*letter-spacing:\s*0;/);
   assert.match(legalCss, /letter-spacing:\s*0\.02em;/);
 });
 

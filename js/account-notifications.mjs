@@ -1,10 +1,9 @@
-import { getProfilePhotoMetrics } from './profile-photo-metrics.mjs';
 import { getMissingLocationAssignmentPhotos } from './location-assignment.mjs';
 
 export function buildAccountNotificationItems({
     currentUserId = '',
     savedPhotos = [],
-    likedPhotoIds = [],
+    receivedLikes = null,
     missingLocationNotifications = true,
     librarySummaryNotifications = true,
     welcomeNotices = []
@@ -12,11 +11,9 @@ export function buildAccountNotificationItems({
     const viewerId = String(currentUserId || '');
     if (!viewerId) return [];
 
-    const likedIds = new Set(likedPhotoIds.map(String));
     const myPhotos = savedPhotos.filter((photo) => String(photo.owner_id || '') === viewerId);
     const missingLocationCount = getMissingLocationAssignmentPhotos(myPhotos).length;
-    const likedPhotoCount = savedPhotos.filter((photo) => likedIds.has(String(photo.id))).length;
-    const { receivedLikeCount } = getProfilePhotoMetrics(myPhotos, viewerId);
+    const receivedLikeCount = Math.max(0, Number(receivedLikes?.received_count || 0) - Number(receivedLikes?.read_count || 0));
     const items = [...welcomeNotices];
 
     if (missingLocationNotifications && missingLocationCount) {
@@ -26,17 +23,11 @@ export function buildAccountNotificationItems({
             route: 'location-assign'
         });
     }
-    if (librarySummaryNotifications && likedPhotoCount) {
-        items.push({
-            icon: 'favorite',
-            title: `좋아요 누른 사진 ${likedPhotoCount}장`,
-            route: 'liked'
-        });
-    }
     if (librarySummaryNotifications && receivedLikeCount) {
         items.push({
             icon: 'favorite',
             title: `${receivedLikeCount}개의 좋아요를 받았어요!`,
+            seenCount: Number(receivedLikes.received_count),
             route: 'photos'
         });
     }

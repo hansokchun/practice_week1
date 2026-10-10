@@ -109,7 +109,7 @@ test('mobile upload, album, trip, and personal photo surfaces keep thumb grids u
     assert.match(mobile, /\.photo-select-button\s*\{[^}]*width:\s*30px;[^}]*height:\s*30px;[^}]*opacity:\s*1;[^}]*transform:\s*scale\(1\);/s);
     assert.match(mobile, /\.album-photo-picker-grid,\s*\.public-trip-photo-grid,\s*\.profile-album-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s);
     assert.match(mobile, /\.profile-photo-grid\s*\{[^}]*column-count:\s*2;[^}]*column-gap:\s*12px;/s);
-    assert.match(mobile, /\.album-compose-map\s*\{[^}]*order:\s*-1;/s);
+    assert.match(mobile, /\.album-compose-map\s*\{[^}]*order:\s*0;/s);
     assert.match(mobile, /\.public-trip-hero\s*\{[^}]*min-height:\s*420px;/s);
     assert.match(mobile, /\.profile-tabs\s*\{[^}]*overflow-x:\s*auto;/s);
     assert.match(mobile, /\.attention-banner\s*\{[^}]*grid-template-columns:\s*1fr;/s);

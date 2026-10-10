@@ -31,13 +31,14 @@ test('Kakao share initializes once with the public JavaScript key', () => {
     assert.deepEqual(calls, ['browser-key']);
 });
 
-test('trip share actions open Kakao share and preserve link-copy fallback', () => {
+test('photo and album share actions offer Kakao and link-copy fallback', () => {
     const source = readFileSync('js/app.js', 'utf8');
 
-    assert.match(source, /async function shareCurrentTripWithKakao/);
+    assert.match(source, /async function shareContentToKakao/);
     assert.match(source, /await sendKakaoShare/);
-    assert.match(source, /await copyCurrentShareLink\(\)/);
-    assert.match(source, /shareCurrentTripWithKakao\(\)/);
+    assert.match(source, /openContentShare\('album', getSelectedPublicAlbum\(\)\)/);
+    assert.match(source, /openContentShare\('photo', photo\)/);
+    assert.match(source, /addEventListener\('click', copyContentShareLink\)/);
 });
 
 test('Cloudflare allows the pinned Kakao SDK origin', () => {
