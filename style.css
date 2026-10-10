@@ -2421,6 +2421,8 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
 .photo-detail-street-view {
     display: grid;
+    grid-auto-rows: max-content;
+    align-content: start;
     gap: 12px;
     min-height: 0;
     border-top: 1px solid var(--line);
@@ -9957,6 +9959,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .photo-detail-card > .photo-detail-info {
     display: grid;
+    grid-auto-rows: max-content;
     align-self: stretch;
     align-content: start;
     gap: 18px;

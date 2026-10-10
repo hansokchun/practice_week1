@@ -2,6 +2,7 @@
 
 ## 2026-10-11
 
+- In the height-constrained photo-detail sidebar, use content-sized grid rows for both the sidebar and Street View. Auto rows can shrink a `min-height: 0` Street View section below its image, painting the preview over map actions and the map. Verify short desktop viewports as well as mobile scrolling.
 - Kakao's desktop share SDK posts a form to `sharer.kakao.com`. Loading the SDK is not enough: CSP must permit that exact form destination and its account-login redirect. Keep other form destinations blocked and verify the deployed popup, not just the click handler.
 - Prepare sharing SDKs before enabling their buttons. Call the share API directly from the user click and remove failed script elements before retrying; otherwise a completed error event can leave later attempts waiting forever.
 

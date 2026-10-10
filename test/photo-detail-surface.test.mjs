@@ -2,6 +2,16 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
+test('photo detail keeps street view and map rows at content height in short viewports', () => {
+    const css = readFileSync('style.css', 'utf8');
+    const info = css.match(/\.photo-detail-card > \.photo-detail-info\s*\{([^}]*)\}/s)?.[1] || '';
+    const streetView = css.match(/\.photo-detail-street-view\s*\{([^}]*)\}/s)?.[1] || '';
+    assert.match(info, /grid-auto-rows:\s*max-content;/);
+    assert.match(info, /overflow-y:\s*auto;/);
+    assert.match(streetView, /grid-auto-rows:\s*max-content;/);
+    assert.match(streetView, /align-content:\s*start;/);
+});
+
 test('photo detail modal shows visibility only for the current user photo', () => {
     const html = readFileSync('index.html', 'utf8');
 
