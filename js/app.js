@@ -520,15 +520,15 @@ function getPhotoImageSrc(photo = {}) {
     return photo.url || photo.albumCoverUrl || (!photo.storage_path && MAIN_BG_2_URL) || '';
 }
 
-function getPhotoThumbnailSrc(photo = {}) {
-    if (photo.thumbnail_path) {
-        return shouldRefreshPhotoSignedUrl(photo) ? '' : (photo.thumbnail_url || '');
-    }
-    return photo.thumbnail_url || getPhotoImageSrc(photo);
+function getPhotoThumbnailSrc(photo = {}, { allowOriginal = false } = {}) {
+    if (shouldRefreshPhotoSignedUrl(photo)) return '';
+    if (photo.thumbnail_url || photo.preview_url) return photo.thumbnail_url || photo.preview_url;
+    if (photo.thumbnail_path || photo.preview_path) return allowOriginal ? getPhotoImageSrc(photo) : '';
+    return getPhotoImageSrc(photo);
 }
 
-function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'auto' } = {}) {
-    const src = escapeHtml(getPhotoThumbnailSrc(photo));
+function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'auto', allowOriginal = false } = {}) {
+    const src = escapeHtml(getPhotoThumbnailSrc(photo, { allowOriginal }));
     const alt = escapeHtml(getPhotoFallbackLabel(photo, fallback));
     const photoId = escapeHtml(photo.id || photo.localId || '');
     const priority = ['high', 'low'].includes(fetchPriority) ? ` fetchpriority="${fetchPriority}"` : '';
@@ -540,8 +540,25 @@ const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
 const PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000;
 const LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS = 15000;
 const photoImageUrlRecoveryQueue = new Map();
+const photoImageRecoveryAttempts = new WeakMap();
 let photoImageUrlRecoveryTimer = null;
 let photoImageUrlObserver = null;
+
+function resetPhotoImageRecovery(image) {
+    photoImageRecoveryAttempts.delete(image);
+    delete image.dataset.r;
+}
+
+function getPhotoImageRecoveryFallback(image, photo, currentSource) {
+    const attempt = photoImageRecoveryAttempts.get(image) || { failedSources: new Set(), signingRequested: false };
+    if (currentSource) attempt.failedSources.add(currentSource);
+    photoImageRecoveryAttempts.set(image, attempt);
+    const variant = image.dataset.photoVariant || 'detail';
+    const candidates = variant === 'thumbnail'
+        ? [photo.thumbnail_url, photo.preview_url, image.closest('.personal-photo-card') ? photo.url : '']
+        : variant === 'preview' ? [photo.preview_url, photo.thumbnail_url] : [];
+    return candidates.find((source) => source && !attempt.failedSources.has(source)) || '';
+}
 
 function isPhotoImageRevealCandidate(image) {
     return image instanceof HTMLImageElement
@@ -719,6 +736,7 @@ function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
 
 function setPhotoImageSource(image, photo = {}, { variant = 'detail' } = {}) {
     if (!image) return;
+    resetPhotoImageRecovery(image);
     image.dataset.i = String(photo.id || '');
     image.dataset.photoVariant = variant;
     const source = variant === 'thumbnail' ? getPhotoThumbnailSrc(photo)
@@ -732,6 +750,23 @@ function setPhotoImageSource(image, photo = {}, { variant = 'detail' } = {}) {
 }
 
 async function recoverPhotoImageUrl(image) {
+    const photo = state.savedPhotos.find((item) => String(item.id) === String(image.dataset.i));
+    const currentSource = image.getAttribute('src') || '';
+    if (!photo?.storage_path) return;
+    const fallbackSource = getPhotoImageRecoveryFallback(image, photo, currentSource);
+    if (fallbackSource) {
+        image.dataset.r = fallbackSource;
+        image.onload = () => { resetPhotoImageRecovery(image); };
+        image.src = fallbackSource;
+        return;
+    }
+    const attempt = photoImageRecoveryAttempts.get(image);
+    if (attempt?.signingRequested) {
+        image.classList.add('is-photo-error');
+        return;
+    }
+    if (attempt) attempt.signingRequested = true;
+    delete image.dataset.r;
     queuePhotoImageUrlRecovery(image);
 }
 
@@ -772,10 +807,10 @@ async function flushPhotoImageUrlRecoveryQueue() {
     const refreshedById = new Map((refreshedPhotos || []).map((photo) => [String(photo.id), photo]));
     state.savedPhotos.forEach((photo) => {
         const refreshed = refreshedById.get(String(photo.id));
-        if (!refreshed?.url) return;
-        photo.url = refreshed.url;
-        photo.thumbnail_url = refreshed.thumbnail_url || photo.thumbnail_url;
-        photo.preview_url = refreshed.preview_url || photo.preview_url;
+        if (!refreshed) return;
+        photo.url = refreshed.url || null;
+        photo.thumbnail_url = refreshed.thumbnail_url || null;
+        photo.preview_url = refreshed.preview_url || null;
         photo.signed_url_expires_at = refreshed.signed_url_expires_at;
     });
 
@@ -783,20 +818,17 @@ async function flushPhotoImageUrlRecoveryQueue() {
         const refreshed = refreshedById.get(String(photoId));
         images.forEach((image) => {
             if (!image.isConnected || String(image.dataset.i) !== String(photoId)) return;
-            if (!refreshed?.url) {
-                delete image.dataset.r;
-                return;
-            }
+            if (!refreshed) return;
             const variant = image.dataset.photoVariant || 'detail';
             const source = variant === 'thumbnail' && !image.closest('.landing-photo-card')
-                ? getPhotoThumbnailSrc(refreshed)
+                ? getPhotoThumbnailSrc(refreshed, { allowOriginal: Boolean(image.closest('.personal-photo-card')) })
                 : getPhotoDeliverySource(refreshed, variant);
             if (!source) {
                 image.classList.add('is-photo-error');
                 return;
             }
             image.dataset.r = source;
-            image.onload = () => { delete image.dataset.r; };
+            image.onload = () => { resetPhotoImageRecovery(image); };
             image.src = source;
         });
     });
@@ -3077,7 +3109,10 @@ function updatePhotoDetailModal(photo = getDefaultDetailPhoto(), { context = 'ph
         likeButton.setAttribute('aria-label', isLiked ? '좋아요 취소' : '좋아요');
     }
     if (likeCount) likeCount.textContent = String(likeTotal);
-    if (editButton) editButton.hidden = !canEdit;
+    if (editButton) {
+        editButton.hidden = !canEdit;
+        editButton.dataset.photoId = String(photo.id || '');
+    }
     if (downloadButton) {
         downloadButton.hidden = !photo?.url;
         downloadButton.disabled = false;
@@ -5658,7 +5693,7 @@ function renderLikedPhotoSurfaces() {
     state.likedPhotoPage = likedPage.currentPage;
     fullGrid.innerHTML = likedPage.items.map((photo) => `
             <article class="personal-photo-card liked-photo-card" data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                ${renderPhotoImage(photo)}
+                ${renderPhotoImage(photo, '사진', { allowOriginal: true })}
             </article>
         `).join('');
     revealPhotoThumbnailGridWhenReady(fullGrid);
@@ -5702,8 +5737,8 @@ async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
         return refreshed ? {
             ...photo,
             url: refreshed.url,
-            thumbnail_url: refreshed.thumbnail_url || photo.thumbnail_url,
-            preview_url: refreshed.preview_url || photo.preview_url,
+            thumbnail_url: refreshed.thumbnail_url || null,
+            preview_url: refreshed.preview_url || null,
             signed_url_expires_at: refreshed.signed_url_expires_at
         } : photo;
     });
@@ -5772,7 +5807,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${isSelected && state.lastToggledPersonalPhotoId === photo.id ? 'is-selection-animated' : ''}" ${selectedCount ? `data-toggle-personal-photo="${escapeHtml(photo.id)}"` : ''} data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
                 <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
-                ${renderPhotoImage(photo)}
+                ${renderPhotoImage(photo, '사진', { allowOriginal: true })}
             </article>
         `;
     }).join('');
@@ -7540,7 +7575,12 @@ function syncLocationEditorPhotoState(photo = getEditablePhoto()) {
         image.alt = '';
     }
     if (title) title.textContent = getPhotoFallbackLabel(photo, '선택한 사진');
-    if (status) status.textContent = hasLocation ? '위치가 지정된 사진' : '위치 없음';
+    if (status) {
+        status.textContent = hasLocation ? '' : '위치 없음';
+        status.hidden = hasLocation;
+    }
+    const deleteButton = $('#btn-delete-location-editor-photo');
+    if (deleteButton) deleteButton.hidden = !photo || photo.owner_id !== state.currentUser?.id;
     precisionEditor?.classList.toggle('is-disabled', !hasLocation);
     $$('[data-photo-location-precision]').forEach((button) => {
         button.disabled = !hasLocation;
@@ -7685,26 +7725,68 @@ function setLocationEditorPhoto(photoId) {
         button.classList.toggle('active', button.dataset.photoLocationPrecision === state.editingPhotoLocationPrecision);
     });
     syncLocationEditorPhotoState(photo);
-    if (message) {
-        message.textContent = photo
-            ? `${getPhotoFallbackLabel(photo, '선택한 사진')}의 위치를 직접 지정합니다.`
-            : '저장된 사진이 없어서 화면 흐름만 확인할 수 있습니다.';
-    }
+    if (message) message.textContent = '';
 }
 
 function openLocationEditor(eventOrPhotoId) {
     const photoId = typeof eventOrPhotoId === 'string'
         ? eventOrPhotoId
         : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
-    const photo = getLocationEditorPhoto(getMySavedPhotos(), photoId);
-    const message = $('#location-editor-message');
-    if (message) {
-        message.textContent = photo
-            ? `${getPhotoFallbackLabel(photo, '선택한 사진')}의 위치를 수정합니다.`
-            : '저장된 사진이 없으면 화면에서만 위치 지정 흐름을 확인할 수 있습니다.';
+    const photo = getMySavedPhotos().find((candidate) => String(candidate.id) === String(photoId));
+    if (!photo || photo.owner_id !== state.currentUser?.id) {
+        showToast('본인 사진만 수정할 수 있습니다.');
+        return;
     }
+    closeModals();
     openModal('#location-editor-modal');
-    setLocationEditorPhoto(photo?.id || null);
+    setLocationEditorPhoto(photo.id);
+}
+
+async function deleteLocationEditorPhoto() {
+    const photo = state.savedPhotos.find((candidate) => String(candidate.id) === String(state.selectedLocationPhotoId));
+    const button = $('#btn-delete-location-editor-photo');
+    const message = $('#location-editor-message');
+    if (!state.currentUser?.id || !photo || photo.owner_id !== state.currentUser.id || button?.disabled) return;
+    if (!window.confirm('이 사진을 정말 삭제할까요? 원본과 썸네일, 앨범에 연결된 사진도 삭제되며 복구할 수 없습니다.')) return;
+    const controls = $$('#location-editor-modal button').map((control) => [control, control.disabled]);
+    controls.forEach(([control]) => { control.disabled = true; });
+    if (button) button.disabled = true;
+    if (message) message.textContent = '사진을 삭제하는 중입니다…';
+    try {
+        const { error } = await deletePhoto(photo.id, photo.url, photo.storage_path, photo.thumbnail_path, photo.preview_path);
+        if (error) throw error;
+        const id = String(photo.id);
+        state.savedPhotos = state.savedPhotos.filter((item) => String(item.id) !== id);
+        for (const key of ['selectedPersonalPhotoIds', 'lastSavedPhotoIds', 'likedPhotoIds', 'landingHeroPhotoIds']) {
+            state[key] = state[key].filter((item) => String(item) !== id);
+        }
+        state.albumDetailPhotos = state.albumDetailPhotos.filter((item) => getTripReviewPhotoId(item) !== id);
+        state.landingAssignments = state.landingAssignments.filter((item) => String(item.photo_id) !== id);
+        state.landingSections.forEach((section) => {
+            section.photo_ids = (section.photo_ids || []).filter((item) => String(item) !== id);
+        });
+        delete state.landingHeroLocationLabels[id];
+        state.selectedPhotoId = null;
+        state.selectedLocationPhotoId = null;
+        state.locationEditorHasPickedLocation = false;
+        state.locationEditorDraftCoordinates = null;
+        document.body.classList.remove('explore-pin-selected');
+        $('#explore-pin-preview')?.setAttribute('hidden', '');
+        closeModals();
+        await loadSavedAlbums({ render: false });
+        renderSavedPhotoSurfaces();
+        renderTravelDraftSurfaces();
+        renderPublicSurfaces();
+        renderLandingHeroSlides();
+        renderLandingSections();
+        if (document.body.dataset.page === 'location-assign') renderLocationAssignmentPage();
+        showToast('사진을 삭제했습니다.');
+    } catch (error) {
+        if (message) message.textContent = error?.message || '사진 삭제에 실패했습니다. 다시 시도해주세요.';
+    } finally {
+        controls.forEach(([control, disabled]) => { control.disabled = disabled; });
+        if (button) button.disabled = false;
+    }
 }
 
 async function startLocationEditorMapPick() {
@@ -8932,6 +9014,7 @@ function bindEvents() {
     $('#btn-save-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-skip-location-assignment')?.addEventListener('click', saveLocationAssignment);
     $('#btn-pick-photo-location')?.addEventListener('click', startLocationEditorMapPick);
+    $('#btn-delete-location-editor-photo')?.addEventListener('click', deleteLocationEditorPhoto);
     $('#location-editor-form')?.addEventListener('submit', saveManualLocation);
     $('#pin-preview-edit-form')?.addEventListener('submit', saveExplorePreviewEdits);
     $$('[data-close-modal]').forEach((button) => button.addEventListener('click', (event) => {

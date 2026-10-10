@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { createContext, runInContext } from 'node:vm';
 import test from 'node:test';
 
 import {
@@ -43,6 +45,59 @@ test('stored photos refresh missing or untracked URLs while bundled images do no
     assert.equal(shouldRefreshPhotoSignedUrl({ storage_path: 'owner/photo.jpg' }, now), true);
     assert.equal(shouldRefreshPhotoSignedUrl({ storage_path: 'owner/photo.jpg', url: 'legacy-url' }, now), true);
     assert.equal(shouldRefreshPhotoSignedUrl({ url: '/images/sample.jpg' }, now), false);
+});
+
+test('visible-page refresh keeps a signed thumbnail when its original was unavailable in the batch', async () => {
+    const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+    const refreshSource = app.slice(
+        app.indexOf('async function refreshVisiblePhotoPageUrls'),
+        app.indexOf('function renderPersonalPhotosPage')
+    );
+    const state = {
+        savedPhotos: [{
+            id: 'partial', storage_path: 'owner/original.jpg', thumbnail_path: 'owner/thumbnails/photo.jpg',
+            url: '/expired-original', thumbnail_url: null, signed_url_expires_at: 1_000
+        }],
+        personalPhotoPage: 1,
+        likedPhotoPage: 1
+    };
+    const freshExpiry = Date.now() + 900_000;
+    const context = createContext({
+        hydratedRequests: [],
+        freshExpiry,
+        Map,
+        Set,
+        state,
+        shouldRefreshPhotoSignedUrl,
+        getMySavedPhotos: () => state.savedPhotos,
+        getLikedPhotos: () => [],
+        getPhotoPage: (photos) => ({ items: photos, currentPage: 1 }),
+        hydratePhotoUrls: async (photos) => {
+            context.hydratedRequests.push(photos.map((photo) => photo.id));
+            return {
+                data: [{
+                    ...photos[0],
+                    url: null,
+                    thumbnail_url: '/fresh-thumbnail',
+                    signed_url_expires_at: context.freshExpiry
+                }]
+            };
+        },
+        renderLikedPhotoSurfaces: () => {},
+        renderPersonalPhotosPage: () => {}
+    });
+    const refreshVisiblePhotoPageUrls = runInContext(
+        `${refreshSource}; refreshVisiblePhotoPageUrls`,
+        context
+    );
+
+    await refreshVisiblePhotoPageUrls('personal', 1);
+
+    const refreshedState = runInContext('state', context);
+    assert.deepEqual(runInContext('hydratedRequests', context), [['partial']]);
+    assert.equal(refreshedState.savedPhotos[0].url, null);
+    assert.equal(refreshedState.savedPhotos[0].thumbnail_url, '/fresh-thumbnail');
+    assert.equal(refreshedState.savedPhotos[0].signed_url_expires_at, freshExpiry);
 });
 
 test('photo pagination refreshes expiring signed URLs for only the visible page', async () => {

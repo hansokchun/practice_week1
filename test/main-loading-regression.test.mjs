@@ -5,17 +5,27 @@ import test from 'node:test';
 import { shouldRefreshPhotoSignedUrl } from '../js/photo-signed-url-freshness.mjs';
 
 const source = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
-const imageHelpers = source.slice(source.indexOf('function getPhotoImageSrc'), source.indexOf('function renderPhotoImage'));
-const helpers = runInNewContext(`${imageHelpers}; ({ getPhotoImageSrc, getPhotoThumbnailSrc })`, { shouldRefreshPhotoSignedUrl, MAIN_BG_2_URL: '/sample.jpg' });
+const imageHelpers = source.slice(source.indexOf('function getPhotoImageSrc'), source.indexOf('const PHOTO_THUMBNAIL_EAGER_COUNT'));
+const helpers = runInNewContext(`${imageHelpers}; ({ getPhotoImageSrc, getPhotoThumbnailSrc, renderPhotoImage })`, {
+    shouldRefreshPhotoSignedUrl,
+    MAIN_BG_2_URL: '/sample.jpg',
+    escapeHtml: (value) => String(value),
+    getPhotoFallbackLabel: (_photo, fallback) => fallback
+});
 
-test('thumbnail cards do not request the original while the thumbnail URL is pending', () => {
+test('discovery thumbnails use a signed preview but never an original while derivative paths exist', () => {
     const photo = { storage_path: 'a/p.jpg', thumbnail_path: 'a/thumbnails/p.jpg', url: 'stored-stale' };
     assert.equal(helpers.getPhotoThumbnailSrc(photo), '');
     assert.equal(helpers.getPhotoImageSrc(photo), '');
     const hydrated = { ...photo, url: '/signed-original', thumbnail_url: '/signed-thumbnail', signed_url_expires_at: Date.now() + 900000 };
     assert.equal(helpers.getPhotoThumbnailSrc(hydrated), '/signed-thumbnail');
     assert.equal(helpers.getPhotoImageSrc(hydrated), '/signed-original');
-    assert.equal(helpers.getPhotoThumbnailSrc({ ...hydrated, thumbnail_url: null }), '');
+    assert.equal(helpers.getPhotoThumbnailSrc({ ...hydrated, thumbnail_url: null, preview_url: '/signed-preview' }), '/signed-preview');
+    const originalOnlyDerivative = { ...hydrated, thumbnail_url: null, preview_url: null };
+    assert.equal(helpers.getPhotoThumbnailSrc(originalOnlyDerivative), '');
+    assert.doesNotMatch(helpers.renderPhotoImage(originalOnlyDerivative), /src="\/signed-original"/);
+    assert.equal(helpers.getPhotoThumbnailSrc(originalOnlyDerivative, { allowOriginal: true }), '/signed-original');
+    assert.match(helpers.renderPhotoImage(originalOnlyDerivative, '사진', { allowOriginal: true }), /src="\/signed-original"/);
     assert.equal(helpers.getPhotoThumbnailSrc({ ...hydrated, thumbnail_url: null, thumbnail_path: null }), '/signed-original');
 });
 

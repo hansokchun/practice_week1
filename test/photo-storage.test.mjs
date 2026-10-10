@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
 import {
@@ -7,8 +8,10 @@ import {
     applySignedAlbumCoverUrls,
     applySignedPhotoUrls,
     getPhotoStoragePath,
+    getPhotoPreviewStoragePath,
     getPhotoThumbnailStoragePath
 } from '../js/photo-storage.mjs';
+import { PHOTO_SIGNED_URL_TTL_SECONDS } from '../js/photo-signed-url-freshness.mjs';
 
 const authSource = readFileSync('auth.js', 'utf8');
 const appSource = readFileSync('js/app.js', 'utf8');
@@ -94,6 +97,59 @@ test('photo thumbnail storage paths remain separate from downloadable originals'
             thumbnail_url: 'https://signed.example/thumbnail.jpg'
         }]
     );
+});
+
+test('batch photo signing keeps a usable signed preview when another requested variant is absent', async () => {
+    const hydrateSource = authSource.slice(
+        authSource.indexOf('async function hydrateSignedPhotoUrls'),
+        authSource.indexOf('async function hydrateSignedAlbumCoverUrls')
+    );
+    const hydrateSignedPhotoUrls = runInNewContext(
+        `${hydrateSource}; hydrateSignedPhotoUrls`,
+        {
+            Map,
+            Set,
+            Date: { now: () => 1_000_000 },
+            PHOTO_SIGNED_URL_TTL_SECONDS,
+            applySignedPhotoUrls,
+            getPhotoStoragePath,
+            getPhotoThumbnailStoragePath,
+            getPhotoPreviewStoragePath
+        }
+    );
+    const requestedPaths = [];
+    const sb = {
+        storage: {
+            from: () => ({
+                createSignedUrls: async (paths) => {
+                    requestedPaths.push(...paths);
+                    return {
+                        data: [{ path: 'owner/previews/photo.jpg', signedUrl: '/signed-preview' }],
+                        error: null
+                    };
+                }
+            })
+        }
+    };
+
+    const [hydrated] = await hydrateSignedPhotoUrls(sb, [{
+        id: 'photo',
+        storage_path: 'owner/original.jpg',
+        thumbnail_path: 'owner/thumbnails/photo.jpg',
+        preview_path: 'owner/previews/photo.jpg',
+        url: '/expired-original',
+        thumbnail_url: '/expired-thumbnail'
+    }]);
+
+    assert.deepEqual(requestedPaths, [
+        'owner/original.jpg',
+        'owner/thumbnails/photo.jpg',
+        'owner/previews/photo.jpg'
+    ]);
+    assert.equal(hydrated.url, null);
+    assert.equal(hydrated.thumbnail_url, null);
+    assert.equal(hydrated.preview_url, '/signed-preview');
+    assert.equal(hydrated.signed_url_expires_at, 1_900_000);
 });
 
 test('applySignedAlbumCoverUrls replaces legacy album covers with signed URLs', () => {

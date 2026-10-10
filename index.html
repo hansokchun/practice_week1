@@ -1198,7 +1198,7 @@
                 <img data-location-editor-image data-photo-reveal alt="수정 중인 사진">
                 <div>
                     <strong id="location-editor-photo-title">선택한 사진</strong>
-                    <span id="location-editor-location-status">위치 정보를 확인하는 중입니다.</span>
+                    <span id="location-editor-location-status" hidden></span>
                 </div>
             </div>
             <div id="location-editor-map" class="location-editor-map">
@@ -1251,6 +1251,7 @@
                 <div class="auth-actions">
                     <button class="btn-primary" type="submit">수정 저장</button>
                     <button class="btn-secondary" data-close-modal type="button">취소</button>
+                    <button id="btn-delete-location-editor-photo" class="btn-secondary danger" type="button">사진 삭제</button>
                 </div>
             </form>
             <p id="location-editor-message" class="auth-message"></p>

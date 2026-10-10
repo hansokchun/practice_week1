@@ -79,7 +79,11 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
     );
     const expiresAt = Date.now() + (PHOTO_SIGNED_URL_TTL_SECONDS * 1000);
     return applySignedPhotoUrls(photos, signedUrlByPath).map((photo) => (
-        signedUrlByPath.has(getPhotoStoragePath(photo))
+        [
+            getPhotoStoragePath(photo),
+            getPhotoThumbnailStoragePath(photo),
+            getPhotoPreviewStoragePath(photo)
+        ].some((path) => path && signedUrlByPath.has(path))
             ? { ...photo, signed_url_expires_at: expiresAt }
             : photo
     ));
@@ -701,6 +705,15 @@ export async function deletePhoto(id, url, storagePath, thumbnailPath = null, pr
     try {
         const sb = getSupabase();
 
+        const { data, error } = await sb
+            .from('photos')
+            .delete()
+            .eq('id', id.toString())
+            .select('id')
+            .maybeSingle();
+        if (error) throw error;
+        if (!data?.id) throw new Error('사진을 삭제하지 못했습니다. 본인 사진인지 확인해주세요.');
+
         // Storage에서 업로드된 3가지 사이즈의 이미지를 모두 삭제 (실패해도 무시)
         try {
             const paths = [
@@ -715,11 +728,6 @@ export async function deletePhoto(id, url, storagePath, thumbnailPath = null, pr
             await sb.storage.from('photos').remove([...new Set(paths)]);
         } catch {}
 
-        const { error } = await sb
-            .from('photos')
-            .delete()
-            .eq('id', id.toString());
-        if (error) throw error;
         return { error: null };
     } catch (error) {
         return { error };

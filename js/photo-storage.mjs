@@ -61,9 +61,9 @@ export function applySignedPhotoUrls(photos = [], signedUrlByPath = new Map()) {
         const previewUrl = previewPath ? signedUrlByPath.get(previewPath) : null;
         return {
             ...photo,
-            ...(signedUrl ? { url: signedUrl } : {}),
-            ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}),
-            ...(previewUrl ? { preview_url: previewUrl } : {})
+            ...(storagePath ? { url: signedUrl || null } : {}),
+            ...(thumbnailPath ? { thumbnail_url: thumbnailUrl || null } : {}),
+            ...(previewPath ? { preview_url: previewUrl || null } : {})
         };
     });
 }
