@@ -1,5 +1,10 @@
 # Lessons Learned
 
+## 2026-10-11
+
+- Kakao's desktop share SDK posts a form to `sharer.kakao.com`. Loading the SDK is not enough: CSP must permit that exact form destination and its account-login redirect. Keep other form destinations blocked and verify the deployed popup, not just the click handler.
+- Prepare sharing SDKs before enabling their buttons. Call the share API directly from the user click and remove failed script elements before retrying; otherwise a completed error event can leave later attempts waiting forever.
+
 ## 2026-05-15
 
 - Some Korean text appears broken in PowerShell output even when JSON parses correctly. Verify with Node or UTF-8-aware tools before assuming file corruption.

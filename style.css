@@ -13669,17 +13669,25 @@ body.modal-open {
 #page-album .album-compose-map[open] .album-map-chevron { transform: rotate(180deg); }
 #page-album .album-compose-map .google-map-frame { display: block; height: 260px; min-height: 260px; }
 .content-share-modal { z-index: 1500; }
-.content-share-card { width: min(440px, calc(100vw - 32px)); padding: 24px; border-radius: 8px; background: var(--bg); box-shadow: var(--shadow); max-height: calc(100dvh - 40px); overflow-y: auto; }
-.content-share-card header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.content-share-card h2 { font-size: 22px; margin: 0; }
-.content-share-card .modal-close { position: static; flex-shrink: 0; }
-#content-share-name { overflow-wrap: anywhere; color: var(--muted); line-height: 1.6; }
-.content-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
-.content-share-actions button { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 48px; border-radius: 6px; box-shadow: none; padding: 10px; }
-#btn-share-kakao { background: #fee500; color: #191919; }
-.content-share-card label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-#content-share-url { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-size: 13px; }
-#content-share-status { min-height: 20px; font-size: 13px; line-height: 1.6; color: var(--teal); }
+.content-share-card { width: min(420px, calc(100vw - 32px)); padding: 24px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 16px 64px rgba(20, 40, 40, .18); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.content-share-card header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.content-share-card h2 { font: 700 20px/1.4 var(--body); margin: 0; color: var(--text); }
+.content-share-card .modal-close { position: static; display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; min-height: 0; padding: 0; border: 0; border-radius: 50%; background: #f2f5f4; color: var(--text); line-height: 1; }
+.content-share-card .modal-close .material-symbols-outlined { display: block; width: 24px; height: 24px; font-size: 24px; line-height: 1; }
+.content-share-card .modal-close:hover { background: #e6edeb; }
+.content-share-actions { margin: 24px 0; }
+#btn-share-kakao { display: flex; width: 100%; justify-content: center; align-items: center; gap: 10px; min-height: 52px; padding: 12px 16px; border: 0; border-radius: 6px; background: #fee500; color: #191919; font: 700 15px/1.5 var(--body); box-shadow: none; transition: background .15s ease; }
+#btn-share-kakao:hover:not(:disabled) { background: #f6db00; }
+#btn-share-kakao:disabled { opacity: .6; cursor: wait; }
+#btn-share-kakao .material-symbols-outlined { font-size: 22px; line-height: 1; font-variation-settings: 'FILL' 1; }
+.content-share-card label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+.content-share-link-row { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: #f8faf9; }
+#content-share-url { flex: 1; min-width: 0; width: 100%; height: 40px; padding: 0 8px; border: 0; border-radius: 3px; background: transparent; font: 400 13px/1.5 var(--body); color: var(--muted); text-overflow: ellipsis; }
+#btn-share-copy { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--teal); font: 700 13px/1.5 var(--body); }
+#btn-share-copy .material-symbols-outlined { font-size: 18px; line-height: 1; }
+.content-share-card :is(button, input):focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+#content-share-status { min-height: 20px; margin: 12px 0 0; font-size: 12px; line-height: 1.6; color: var(--teal); overflow-wrap: anywhere; }
+#content-share-status[data-error="true"] { color: #a13429; }
 .photo-detail-title-row > [data-open-photo-share] { margin-left: auto; flex-shrink: 0; }
 #page-album-photos .flow-page { max-width: 1240px; padding-bottom: 72px; }
 #page-album-photos .album-compose-header { align-items: center; gap: 16px; margin: 22px 0 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }

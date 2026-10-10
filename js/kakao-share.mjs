@@ -34,7 +34,7 @@ export function initializeKakaoShare(kakao, javascriptKey = KAKAO_JAVASCRIPT_KEY
     return kakao;
 }
 
-export function loadKakaoShareSdk(documentObject = globalThis.document, windowObject = globalThis.window) {
+export function loadKakaoShareSdk(documentObject = globalThis.document, windowObject = globalThis.window, timeoutMs = 10000) {
     if (windowObject?.Kakao) return Promise.resolve(windowObject.Kakao);
     if (sdkPromise) return sdkPromise;
 
@@ -46,11 +46,25 @@ export function loadKakaoShareSdk(documentObject = globalThis.document, windowOb
             return;
         }
 
-        script.addEventListener('load', () => {
-            if (windowObject?.Kakao) resolve(windowObject.Kakao);
-            else reject(new Error('Kakao SDK가 준비되지 않았습니다.'));
-        }, { once: true });
-        script.addEventListener('error', () => reject(new Error('Kakao SDK를 불러오지 못했습니다.')), { once: true });
+        const cleanup = () => {
+            clearTimeout(timer);
+            script.removeEventListener('load', onLoad);
+            script.removeEventListener('error', onError);
+        };
+        const fail = (message) => {
+            cleanup();
+            script.remove();
+            reject(new Error(message));
+        };
+        const onLoad = () => {
+            if (!windowObject?.Kakao) { fail('Kakao SDK가 준비되지 않았습니다.'); return; }
+            cleanup();
+            resolve(windowObject.Kakao);
+        };
+        const onError = () => fail('Kakao SDK를 불러오지 못했습니다.');
+        const timer = setTimeout(() => fail('Kakao SDK 연결 시간이 초과되었습니다.'), timeoutMs);
+        script.addEventListener('load', onLoad, { once: true });
+        script.addEventListener('error', onError, { once: true });
 
         if (!existing) {
             script.id = KAKAO_SDK_ID;
@@ -67,7 +81,7 @@ export function loadKakaoShareSdk(documentObject = globalThis.document, windowOb
     return sdkPromise;
 }
 
-export async function sendKakaoShare(kakao, url, javascriptKey = KAKAO_JAVASCRIPT_KEY, content = {}) {
+export function sendKakaoShare(kakao, url, javascriptKey = KAKAO_JAVASCRIPT_KEY, content = {}) {
     initializeKakaoShare(kakao, javascriptKey);
     if (!kakao?.Share?.sendDefault) throw new Error('Kakao 공유 기능을 사용할 수 없습니다.');
     return kakao.Share.sendDefault(getKakaoSharePayload(url, content));

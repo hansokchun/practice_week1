@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildContentShare, parseSharedPhotoId } from '../js/content-sharing.mjs';
 import { getKakaoSharePayload } from '../js/kakao-share.mjs';
+import { readFileSync } from 'node:fs';
 
 test('public photos and albums have crawlable URLs and their own thumbnail endpoint', () => {
     for (const type of ['photo', 'album']) {
@@ -22,4 +23,14 @@ test('private items, unsaved photos and unsupported types cannot be shared', () 
 test('photo share destinations preserve exact IDs', () => {
     assert.equal(parseSharedPhotoId('#/?photo=abc%2F123'), 'abc/123');
     assert.equal(parseSharedPhotoId('#/trip?album=123'), null);
+});
+
+test('untitled shared photos use neutral metadata and the modal has no generic scene caption', () => {
+    const content = buildContentShare('https://example.com', 'photo', { id: '1', visibility: 'public' });
+    assert.equal(content.title, '이끼 사진');
+    const html = readFileSync('index.html', 'utf8');
+    assert.doesNotMatch(html, /id="content-share-name"/);
+    assert.match(html, /class="content-share-link-row"/);
+    const css = readFileSync('style.css', 'utf8');
+    assert.match(css, /\.content-share-card \.modal-close\s*\{[^}]*display: grid;[^}]*place-items: center;[^}]*padding: 0;/s);
 });

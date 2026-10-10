@@ -1341,15 +1341,19 @@
 
     <div id="content-share-modal" class="modal content-share-modal" aria-hidden="true">
         <section class="content-share-card" role="dialog" aria-modal="true" aria-labelledby="content-share-title">
-            <header><h2 id="content-share-title">공유하기</h2><button class="modal-close" data-close-modal type="button" aria-label="공유 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></header>
-            <p id="content-share-name"></p>
+            <header>
+                <h2 id="content-share-title">공유하기</h2>
+                <button class="modal-close" data-close-modal type="button" aria-label="공유 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+            </header>
             <div class="content-share-actions">
-                <button id="btn-share-kakao" class="btn-primary" type="button"><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span>카카오톡</button>
-                <button id="btn-share-copy" class="btn-secondary" type="button"><span class="material-symbols-outlined" aria-hidden="true">link</span>링크 복사</button>
+                <button id="btn-share-kakao" type="button" disabled><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span><span id="content-share-kakao-label">카카오톡 준비 중</span></button>
             </div>
             <label for="content-share-url">공유 링크</label>
-            <input id="content-share-url" type="url" readonly>
-            <p id="content-share-status" role="status"></p>
+            <div class="content-share-link-row">
+                <input id="content-share-url" type="url" readonly spellcheck="false">
+                <button id="btn-share-copy" type="button" aria-label="링크 복사"><span class="material-symbols-outlined" aria-hidden="true">content_copy</span><span>복사</span></button>
+            </div>
+            <p id="content-share-status" role="status" aria-live="polite" aria-atomic="true"></p>
         </section>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>

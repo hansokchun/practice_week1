@@ -16,7 +16,7 @@ test('Cloudflare Pages static responses use baseline security headers', () => {
     assert.match(headers, /frame-src https:\/\/challenges\.cloudflare\.com \*\.google\.com;/);
     assert.match(headers, /object-src 'none';/);
     assert.match(headers, /base-uri 'self';/);
-    assert.match(headers, /form-action 'self';/);
+    assert.match(headers, /form-action 'self' https:\/\/sharer\.kakao\.com https:\/\/accounts\.kakao\.com;/);
     assert.match(headers, /frame-ancestors 'none'/);
 });
 

@@ -88,7 +88,7 @@ import {
 } from './location-assignment-street-view.mjs';
 import { getLocationEditorMapOptions } from './location-editor-map-options.mjs';
 import { getGoogleMapsLocationUrl } from './location-copy.mjs';
-import { loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
+import { initializeKakaoShare, loadKakaoShareSdk, sendKakaoShare } from './kakao-share.mjs';
 import { buildContentShare, parseSharedPhotoId } from './content-sharing.mjs';
 import {
     normalizeGoogleMapsRuntimeConfig,
@@ -4383,22 +4383,55 @@ function openContentShare(type, item) {
     if (!content) { showToast(type === 'photo' ? '공개 사진만 공유할 수 있어요. 사진 수정에서 공개로 변경해주세요.' : '공개 앨범만 공유할 수 있어요. 앨범 메뉴에서 공개로 변경해주세요.'); return; }
     state.contentShare = content;
     $('#content-share-title').textContent = type === 'photo' ? '사진 공유' : '앨범 공유';
-    $('#content-share-name').textContent = content.title;
     $('#content-share-url').value = content.url;
     $('#content-share-status').textContent = '';
-    loadKakaoShareSdk().catch(() => {});
+    $('#content-share-status').removeAttribute('data-error');
     openModal('#content-share-modal');
+    prepareContentShareKakao(content);
 }
 
-async function shareContentToKakao() {
+async function prepareContentShareKakao(content) {
+    const button = $('#btn-share-kakao');
+    const label = $('#content-share-kakao-label');
+    button.disabled = true;
+    button.dataset.sdkReady = '0';
+    button.setAttribute('aria-busy', 'true');
+    label.textContent = '카카오톡 준비 중';
+    try {
+        initializeKakaoShare(await loadKakaoShareSdk());
+        if (state.contentShare !== content) return;
+        button.dataset.sdkReady = '1';
+        label.textContent = '카카오톡으로 공유';
+        $('#content-share-status').textContent = '';
+        $('#content-share-status').removeAttribute('data-error');
+    } catch {
+        if (state.contentShare !== content) return;
+        label.textContent = '카카오톡 다시 연결';
+        $('#content-share-status').textContent = '카카오톡에 연결하지 못했어요. 다시 시도하거나 링크를 복사해주세요.';
+        $('#content-share-status').dataset.error = 'true';
+    } finally {
+        if (state.contentShare === content) {
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+        }
+    }
+}
+
+function shareContentToKakao() {
     const content = state.contentShare;
     if (!content) return;
+    if ($('#btn-share-kakao').dataset.sdkReady !== '1') {
+        prepareContentShareKakao(content);
+        return;
+    }
     try {
-        const kakao = await loadKakaoShareSdk();
-        await sendKakaoShare(kakao, content.url, undefined, content);
-        $('#content-share-status').textContent = '카카오톡에서 보낼 대상을 선택해주세요.';
+        // Keep the SDK call in the click event so browsers retain popup permission.
+        sendKakaoShare(window.Kakao, content.url, undefined, content);
+        $('#content-share-status').removeAttribute('data-error');
+        $('#content-share-status').textContent = '공유창이 보이지 않으면 브라우저의 팝업 차단을 확인해주세요.';
     } catch {
         $('#content-share-status').textContent = '공유창을 열지 못했어요. 링크를 복사해서 카카오톡에 붙여넣어주세요.';
+        $('#content-share-status').dataset.error = 'true';
     }
 }
 
@@ -4407,6 +4440,7 @@ async function copyContentShareLink() {
     try {
         if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
         await navigator.clipboard.writeText(state.contentShare.url);
+        $('#content-share-status').removeAttribute('data-error');
         $('#content-share-status').textContent = '링크를 복사했어요.';
     } catch {
         $('#content-share-url').select();
