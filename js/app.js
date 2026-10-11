@@ -6769,9 +6769,8 @@ function renderAlbumPhotoPickerPage() {
                     ${photos.map((photo) => {
                         const isSelected = selected.has(photo.id);
                         return `
-                            <button class="album-photo-picker-card ${isSelected ? 'is-selected' : ''}" data-toggle-album-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}">
+                            <button class="album-photo-picker-card ${isSelected ? 'is-selected' : ''}" data-toggle-album-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="${escapeHtml(getPhotoFallbackLabel(photo))}">
                                 ${renderPhotoImage(photo)}
-                                <span>${escapeHtml(getPhotoFallbackLabel(photo))}</span>
                             </button>
                         `;
                     }).join('')}
