@@ -597,6 +597,7 @@ function preparePhotoImageReveal(image) {
         } else {
             image.classList.remove('is-photo-ready');
             image.classList.add('is-photo-error');
+            if (image.dataset.i) void recoverPhotoImageUrl(image);
         }
     };
 
@@ -707,6 +708,8 @@ function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
     };
     const revealLoadedImage = async (image) => {
         if (container.dataset.thumbnailLoadId !== loadId) return;
+        const source = image.getAttribute('src');
+        if (!source || !image.complete || image.naturalWidth <= 0) return;
         if (typeof image.decode === 'function') {
             try {
                 await image.decode();
@@ -714,6 +717,7 @@ function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
                 // naturalWidth below decides whether decoding produced a usable image.
             }
         }
+        if (image.getAttribute('src') !== source) return;
         settleImage(image, image.complete && image.naturalWidth > 0);
     };
 
@@ -722,12 +726,12 @@ function revealPhotoThumbnailGridWhenReady(container, { atomic = false } = {}) {
         image.classList.remove('is-thumbnail-ready', 'is-thumbnail-error');
         image.classList.add('is-thumbnail-pending');
         host?.classList.add('is-thumbnail-loading');
-        if (image.complete) {
+        // Keep listening when an empty/failed source is replaced by a recovered URL.
+        image.addEventListener('load', () => { void revealLoadedImage(image); });
+        image.addEventListener('error', () => settleImage(image, false));
+        if (image.complete && image.naturalWidth > 0) {
             void revealLoadedImage(image);
-            return;
         }
-        image.addEventListener('load', () => { void revealLoadedImage(image); }, { once: true });
-        image.addEventListener('error', () => settleImage(image, false), { once: true });
     });
 
     timeoutId = window.setTimeout(() => {
@@ -5848,7 +5852,7 @@ async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
     else renderPersonalPhotosPage();
 }
 
-function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
+function renderPersonalPhotosPage(photos = getMySavedPhotos(), { preserveThumbnails = false } = {}) {
     const grid = $('#personal-photo-grid');
     const selectAllButton = $('#btn-select-all-photos');
     const clearButton = $('#btn-clear-selected-photos');
@@ -5901,11 +5905,29 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos()) {
 
     const personalPage = getPhotoPage(photos, state.personalPhotoPage);
     state.personalPhotoPage = personalPage.currentPage;
+    const cards = [...grid.querySelectorAll('.personal-photo-card')];
+    if (preserveThumbnails && cards.length === personalPage.items.length
+        && cards.every((card, index) => card.dataset.photoId === String(personalPage.items[index].id))) {
+        const selectedIds = new Set(state.selectedPersonalPhotoIds.map(String));
+        cards.forEach((card) => {
+            const photoId = card.dataset.photoId;
+            const isSelected = selectedIds.has(photoId);
+            card.classList.toggle('is-selected', isSelected);
+            card.classList.toggle('is-selection-animated', isSelected && photoId === String(state.lastToggledPersonalPhotoId));
+            if (selectedCount) card.dataset.togglePersonalPhoto = photoId;
+            else delete card.dataset.togglePersonalPhoto;
+            const button = card.querySelector('.photo-select-button');
+            button.setAttribute('aria-pressed', String(isSelected));
+            button.setAttribute('aria-label', isSelected ? '사진 선택 해제' : '사진 선택');
+        });
+        state.lastToggledPersonalPhotoId = null;
+        return;
+    }
     grid.innerHTML = personalPage.items.map((photo) => {
         const isSelected = state.selectedPersonalPhotoIds.includes(photo.id);
         return `
             <article class="personal-photo-card ${isSelected ? 'is-selected' : ''} ${isSelected && state.lastToggledPersonalPhotoId === photo.id ? 'is-selection-animated' : ''}" ${selectedCount ? `data-toggle-personal-photo="${escapeHtml(photo.id)}"` : ''} data-open-photo-detail data-photo-id="${escapeHtml(photo.id)}">
-                <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="사진 선택"></button>
+                <button class="photo-select-button" data-toggle-personal-photo="${escapeHtml(photo.id)}" type="button" aria-pressed="${isSelected}" aria-label="${isSelected ? '사진 선택 해제' : '사진 선택'}"></button>
                 ${renderPhotoImage(photo, '사진', { allowOriginal: true })}
             </article>
         `;
@@ -8869,7 +8891,7 @@ function bindEvents() {
                 ? getMySavedPhotos().map((photo) => photo.id)
                 : togglePersonalPhotoSelection(state.selectedPersonalPhotoIds, photoId);
             state.lastToggledPersonalPhotoId = photoId || null;
-            renderPersonalPhotosPage();
+            renderPersonalPhotosPage(undefined, { preserveThumbnails: true });
             return;
         }
 

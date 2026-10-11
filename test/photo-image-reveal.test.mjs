@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { runInNewContext } from 'node:vm';
 
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
@@ -28,4 +29,32 @@ test('photo URLs are recovered in batches only when images approach the viewport
     assert.match(app, /async function flushPhotoImageUrlRecoveryQueue\(\)/);
     assert.match(app, /await hydratePhotoUrls\(photosToHydrate\)/);
     assert.match(app, /if \(!source\)\s*\{\s*observePhotoImageUrl\(image\);\s*return;/s);
+});
+
+test('an already failed cached image starts recovery even when its error event was missed', async () => {
+    let recoveries = 0;
+    class Image {
+        dataset = { i: 'cached-photo' };
+        classes = new Set();
+        complete = true;
+        naturalWidth = 0;
+        classList = {
+            add: (...names) => names.forEach(name => this.classes.add(name)),
+            remove: (...names) => names.forEach(name => this.classes.delete(name))
+        };
+        hasAttribute() { return false; }
+        setAttribute() {}
+        getAttribute() { return '/expired-thumbnail.jpg'; }
+        closest() { return {}; }
+        async decode() { throw new Error('cached failure'); }
+    }
+    const source = app.slice(app.indexOf('function isPhotoImageRevealCandidate'), app.indexOf('function observePhotoImageUrl'));
+    const prepare = runInNewContext(`${source}; preparePhotoImageReveal`, {
+        HTMLImageElement: Image,
+        recoverPhotoImageUrl: () => { recoveries++; }
+    });
+    const image = new Image();
+    prepare(image);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(recoveries, 1);
 });

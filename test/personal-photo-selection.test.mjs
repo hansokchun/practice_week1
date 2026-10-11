@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import {
     getSelectedPersonalPhotos,
     prunePersonalPhotoSelection,
@@ -51,9 +52,8 @@ test('recent photo selection controls use Google Photos style hover and selected
     assert.match(styles, /\.photo-select-button\s*\{[^}]*cubic-bezier\(0\.16,\s*1,\s*0\.3,\s*1\)/s);
     assert.match(styles, /\.photo-select-button::after\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*scale\(0\.72\);/s);
     assert.match(styles, /\.personal-photo-card:hover\s+\.photo-select-button,[\s\S]*\.personal-photo-card\.is-selected\s+\.photo-select-button\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*scale\(1\);/s);
-    assert.match(styles, /\.photo-select-button\[aria-pressed="true"\]\s*\{[^}]*width:\s*76px;/s);
-    assert.match(styles, /\.photo-select-button::before\s*\{[^}]*content:\s*"선택됨";[^}]*opacity:\s*0;/s);
-    assert.match(styles, /\.photo-select-button\[aria-pressed="true"\]::before\s*\{[^}]*opacity:\s*1;/s);
+    assert.doesNotMatch(styles, /\.photo-select-button[^}]*\{[^}]*content:\s*"선택됨"/s);
+    assert.doesNotMatch(styles, /\.photo-select-button\[aria-pressed="true"\]\s*\{[^}]*width:/s);
     assert.match(styles, /\.selection-clear-button\[hidden\]\s*\{[^}]*display:\s*none;/s);
     assert.match(styles, /\.personal-photo-card\.is-selected\s*\{[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;[^}]*transform:\s*scale\(0\.96\);/s);
     assert.doesNotMatch(styles, /\.personal-photo-card\.is-selected\s+img\s*\{[^}]*transform:/s);
@@ -91,4 +91,51 @@ test('removeSelectedPersonalPhotos removes selected photos only', () => {
 
 test('prunePersonalPhotoSelection removes ids no longer present', () => {
     assert.deepEqual(prunePersonalPhotoSelection(['a', 'missing', 'c'], photos), ['a', 'c']);
+});
+
+test('selection, select all, and clear keep the existing thumbnail nodes and pending loads', () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const body = source.slice(source.indexOf('function renderPersonalPhotosPage'), source.indexOf('async function updateSelectedPersonalPhotosVisibility'));
+    const cards = photos.map(photo => {
+        const classes = new Set(['personal-photo-card']);
+        const attributes = new Map();
+        const image = { src: `/${photo.id}.jpg`, pending: photo.id === 'b' };
+        return {
+            dataset: { photoId: photo.id }, classes, attributes, image,
+            classList: { toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) },
+            querySelector: () => ({ setAttribute: (name, value) => attributes.set(name, value) })
+        };
+    });
+    let replacements = 0;
+    let reloads = 0;
+    const grid = { querySelectorAll: () => cards, set innerHTML(value) { replacements++; } };
+    const controls = new Map([['#personal-photo-grid', grid]]);
+    const state = { selectedPersonalPhotoIds: ['a'], currentUser: { id: 'owner' }, personalPhotoPage: 1, lastToggledPersonalPhotoId: 'a' };
+    const render = runInNewContext(`${body}; renderPersonalPhotosPage`, {
+        state, prunePersonalPhotoSelection, getSelectedPersonalPhotos,
+        getMySavedPhotos: () => photos,
+        getPhotoPage: items => ({ items, currentPage: 1 }),
+        $: selector => {
+            if (!controls.has(selector)) controls.set(selector, {});
+            return controls.get(selector);
+        },
+        revealPhotoThumbnailGridWhenReady: () => { reloads++; },
+        renderPhotoPagination() {}, renderPhotoImage: () => '', escapeHtml: value => value
+    });
+    render(undefined, { preserveThumbnails: true });
+    assert.ok(cards[0].classes.has('is-selected'));
+    assert.equal(cards[0].attributes.get('aria-pressed'), 'true');
+    assert.ok(cards[1].image.pending);
+    assert.equal(cards[1].dataset.togglePersonalPhoto, 'b');
+    state.selectedPersonalPhotoIds = ['a', 'b', 'c'];
+    render(undefined, { preserveThumbnails: true });
+    assert.ok(cards.every(card => card.classes.has('is-selected')));
+    state.selectedPersonalPhotoIds = [];
+    render(undefined, { preserveThumbnails: true });
+    assert.ok(cards.every(card => !card.classes.has('is-selected')));
+    assert.ok(cards.every(card => !card.dataset.togglePersonalPhoto));
+    assert.equal(cards[0].attributes.get('aria-label'), '사진 선택');
+    assert.equal(replacements, 0);
+    assert.equal(reloads, 0);
+    assert.match(source, /renderPersonalPhotosPage\(undefined, \{ preserveThumbnails: true \}\)/);
 });

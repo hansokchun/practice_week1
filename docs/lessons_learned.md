@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-10-11: Keep Thumbnail Recovery Listening
+
+- `img.complete` is also true for images without a source and cached failures. It is not a success signal without positive `naturalWidth`.
+- Grid reveal listeners must survive late signed URLs and fallback loads; otherwise a healthy recovered image retains the hidden thumbnail error state.
+- Selection-only updates must preserve existing image nodes, decoded pixels, and pending requests instead of replacing the entire personal grid.
+- The shared reveal observer must recover cached failures whose original error event was missed. Verify delayed URLs, cached errors, pagination, and selection together.
+
 ## 2026-10-11
 
 - In the height-constrained photo-detail sidebar, use content-sized grid rows for both the sidebar and Street View. Auto rows can shrink a `min-height: 0` Street View section below its image, painting the preview over map actions and the map. Verify short desktop viewports as well as mobile scrolling.
