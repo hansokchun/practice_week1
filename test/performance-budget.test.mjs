@@ -6,10 +6,9 @@ const markup = () => readFileSync('index.html', 'utf8');
 const packageJson = () => JSON.parse(readFileSync('package.json', 'utf8'));
 const appSource = () => readFileSync('js/app.js', 'utf8');
 
-test('home feature imagery uses the compact JPEG assets directly', () => {
+test('home feature imagery uses compact JPEGs and a transparent WebP globe directly', () => {
     const source = markup();
     const assets = [
-        'landing-globe-sprout-route',
         'home-section-divider',
         'home-map-memory-board',
         'home-travel-replay',
@@ -20,6 +19,8 @@ test('home feature imagery uses the compact JPEG assets directly', () => {
         assert.match(source, new RegExp(`src="images/${asset}\\.jpg"`));
         assert.doesNotMatch(source, new RegExp(`images/${asset}\\.png`));
     }
+    assert.match(source, /src="images\/landing-globe-sprout-transparent\.webp"/);
+    assert.doesNotMatch(source, /src="images\/landing-globe-sprout-route\.jpg"/);
 });
 
 test('below-the-fold home imagery remains lazy and asynchronously decoded', () => {

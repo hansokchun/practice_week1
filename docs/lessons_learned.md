@@ -1,5 +1,11 @@
 # Lessons Learned
 
+## 2026-10-12: Transparent Artwork And Visible Carousel Initialization
+
+- Browser-forced dark themes can recolor CSS while keeping raster backgrounds light. Use real alpha for decorative artwork, not a baked-in canvas or multiply-only blending. Preserve artwork dimensions and edge masks; leave photo pixels untouched.
+- A hidden SPA route has no useful carousel geometry. Initialize mobile centering only after a row has width, retry after cached route renders, and avoid resetting the user's later swipes. Temporarily disable smooth scrolling for the initial placement.
+- Check direct home entry, landing-to-home navigation, viewport breakpoints, and both light/dark backing colors. A desktop Chrome viewport is not a physical Samsung Internet dark-mode test.
+
 ## 2026-10-12: Keep Optional Album Titles Separate From Display Labels
 
 - Persist an absent album title as an empty string; use a display-only label in lists and an accessible, visually hidden heading in details. Creating, editing, and draft sharing must all preserve an intentionally empty input.

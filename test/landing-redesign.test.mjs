@@ -19,7 +19,7 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /id="landing-search"/);
     assert.match(html, /id="landing-search-input"/);
     assert.match(html, /class="landing-search-suggestions"/);
-    assert.match(html, /class="landing-search-globe" src="images\/landing-globe-sprout-route\.jpg"[^>]*width="1536"[^>]*height="1024"/);
+    assert.match(html, /class="landing-search-globe" src="images\/landing-globe-sprout-transparent\.webp"[^>]*width="1536"[^>]*height="1024"/);
     assert.match(html, /id="landing-sections"/);
     assert.match(html, /data-landing-scroll/);
     assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
@@ -43,13 +43,13 @@ test('메인 검색창 위의 소개 문구를 제거하고 비워진 간격만�
     const searchStart = html.indexOf('id="landing-search"', heroStart);
     const beforeSearch = html.slice(heroStart, searchStart);
     const beforeHero = html.slice(landingStart, heroStart);
-    assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-globe-sprout-route\.jpg"[^>]*width="1536"[^>]*height="1024"/);
+    assert.match(beforeHero, /class="landing-search-globe" src="images\/landing-globe-sprout-transparent\.webp"[^>]*width="1536"[^>]*height="1024"/);
     assert.doesNotMatch(beforeSearch, /<h1|<p|eyebrow|이끼에서 당신만의 장소를 찾아보세요|공개 여행 사진|다음 여행의 장면/);
     assert.match(html, /class="landing-discovery" aria-label="사진과 장소 검색"/);
     assert.doesNotMatch(css, /\.landing-search-hero h1\s*\{/);
     assert.match(css, /\.landing-search\s*\{[^}]*margin-top:\s*0;/s);
     assert.match(css, /\.landing-discovery\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;/s);
-    assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*none;[^}]*mix-blend-mode:\s*multiply;/s);
+    assert.match(css, /\.landing-search-globe\s*\{[^}]*position:\s*absolute;[^}]*opacity:\s*0\.92;[^}]*filter:\s*none;[^}]*mix-blend-mode:\s*normal;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*top:\s*-140px;/s);
     assert.match(css, /\.landing-search-globe\s*\{[^}]*mask-image:\s*linear-gradient\(to bottom,/s);
     assert.match(css, /linear-gradient\(to right, transparent 0%, #000 8%, #000 92%, transparent 100%\)/);
@@ -177,12 +177,13 @@ test('메인 소제목과 동작은 한 줄에 정렬되고 사진 행은 다섯
 test('모바일 사진 목록은 두 번째 사진을 중앙에 놓아 양옆 사진을 보여준다', async () => {
     const app = await readFile(new URL('js/app.js', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
-    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*display:\s*flex;[^}]*--landing-mobile-card-width:\s*calc\(\(100vw - 32px\) \* 0\.6\);[^}]*padding-left:\s*calc\(\(100% - var\(--landing-mobile-card-width\)\) \/ 2\);/s);
+    assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-row\s*\{[^}]*display:\s*flex;[^}]*--landing-mobile-card-width:\s*60vw;[^}]*padding-left:\s*calc\(\(100vw - var\(--landing-mobile-card-width\)\) \/ 2\);/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-photo-card\s*\{[^}]*flex:\s*0 0 var\(--landing-mobile-card-width\);[^}]*scroll-snap-align:\s*center;/s);
     assert.match(app, /function centerLandingRowsOnMobile\(\)/);
     assert.match(app, /window\.matchMedia\('\(max-width: 760px\)'\)\.matches/);
-    assert.match(app, /const target = cards\[1\]/);
-    assert.match(app, /row\.scrollLeft = target\.offsetLeft - \(row\.clientWidth - target\.clientWidth\) \/ 2/);
+    assert.match(app, /const target = cards\[Math\.min\(1, cards\.length - 1\)\]/);
+    assert.match(app, /getLandingRowInitialScroll\(\{/);
+    assert.match(app, /row\.scrollLeft = initialScroll/);
 });
 
 test('로그인 여부와 관계없이 기본 홈은 새 랜딩만 표시한다', async () => {

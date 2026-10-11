@@ -1531,7 +1531,7 @@ body[data-page="home"] .landing-search-globe {
     height: auto;
     opacity: 0.92;
     filter: none;
-    mix-blend-mode: multiply;
+    mix-blend-mode: normal;
     -webkit-mask-image:
         linear-gradient(to bottom, transparent 0%, transparent 34%, #000 43%, #000 88%, transparent 100%),
         linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
@@ -2596,11 +2596,13 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
     .landing-photo-row {
         display: flex;
-        --landing-mobile-card-width: calc((100vw - 32px) * 0.6);
+        --landing-mobile-card-width: 60vw;
         position: relative;
+        width: calc(100% + 32px);
+        margin-inline: -16px;
         gap: 12px;
-        padding-left: calc((100% - var(--landing-mobile-card-width)) / 2);
-        padding-right: calc((100% - var(--landing-mobile-card-width)) / 2);
+        padding-left: calc((100vw - var(--landing-mobile-card-width)) / 2);
+        padding-right: calc((100vw - var(--landing-mobile-card-width)) / 2);
         padding-bottom: 4px;
     }
 

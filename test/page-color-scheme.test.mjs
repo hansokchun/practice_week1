@@ -32,9 +32,22 @@ test('the decorative globe follows the rendered canvas without blending photo ca
 
     assert.match(canvas, /isolation:\s*isolate;/);
     assert.match(canvas, /background:\s*var\(--bg\);/);
-    assert.match(globe, /mix-blend-mode:\s*multiply;/);
+    assert.match(globe, /mix-blend-mode:\s*normal;/);
     assert.match(globe, /z-index:\s*0;/);
     assert.match(globe, /filter:\s*none;/);
     assert.match(css, /\.landing-discovery\s*>\s*:not\(\.landing-search-globe\)\s*\{[^}]*z-index:\s*1;/s);
     assert.match(html, /<img\s+class="landing-search-globe"[^>]*aria-hidden="true"/);
+});
+
+test('the globe has real alpha instead of a baked-in light canvas', async () => {
+    const html = await readFile(new URL('index.html', root), 'utf8');
+    assert.match(html, /class="landing-search-globe" src="images\/landing-globe-sprout-transparent\.webp"/);
+    const bytes = await readFile(new URL('images/landing-globe-sprout-transparent.webp', root));
+    assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP');
+    assert.equal(bytes.toString('ascii', 12, 16), 'VP8X');
+    assert.ok(bytes[20] & 0x10, 'Transparent WebP must retain its alpha channel');
+    assert.equal(bytes.readUIntLE(24, 3) + 1, 1536);
+    assert.equal(bytes.readUIntLE(27, 3) + 1, 1024);
+    assert.ok(bytes.length < 250 * 1024, 'Keep the transparent artwork lightweight');
 });

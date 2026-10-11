@@ -161,3 +161,10 @@ export function getLandingScrollControlState({ scrollLeft = 0, scrollWidth = 0, 
         canNext: currentScroll < maxScroll - 4
     };
 }
+
+export function getLandingRowInitialScroll({ clientWidth, scrollWidth, cardOffset, cardWidth } = {}) {
+    if (![clientWidth, scrollWidth, cardOffset, cardWidth].every(Number.isFinite)
+        || clientWidth <= 0 || cardWidth <= 0) return null;
+    const centered = cardOffset - (clientWidth - cardWidth) / 2;
+    return Math.max(0, Math.min(centered, scrollWidth - clientWidth));
+}

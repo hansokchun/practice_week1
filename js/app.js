@@ -257,6 +257,7 @@ import {
 import { isPasswordRecoveryCallback } from './password-recovery.mjs';
 import {
     getDefaultLandingSections,
+    getLandingRowInitialScroll,
     getLandingSearchResults,
     getLandingSectionPhotos,
     getLandingScrollControlState,
@@ -1533,7 +1534,10 @@ function renderLandingSections() {
         `;
     }).join('');
     // Keep image elements and horizontal scroll positions when only unrelated UI changes.
-    if (lastLandingSectionsMarkup === sectionsMarkup) return;
+    if (lastLandingSectionsMarkup === sectionsMarkup) {
+        centerLandingRowsOnMobile();
+        return;
+    }
     lastLandingSectionsMarkup = sectionsMarkup;
     container.innerHTML = sectionsMarkup || '<div class="landing-empty-state"><strong>아직 공개된 사진이 없습니다.</strong></div>';
     centerLandingRowsOnMobile();
@@ -1541,13 +1545,29 @@ function renderLandingSections() {
 }
 
 function centerLandingRowsOnMobile() {
-    if (!window.matchMedia('(max-width: 760px)').matches) return;
     requestAnimationFrame(() => {
+        const isMobile = window.matchMedia('(max-width: 760px)').matches;
         $$('[data-landing-scroll]').forEach((row) => {
+            if (!row.clientWidth) return;
+            if (isMobile && row.dataset.landingMobileCentered) return;
+            if (!isMobile && !row.dataset.landingMobileCentered) return;
             const cards = row.querySelectorAll('.landing-photo-card');
-            if (cards.length < 3) return;
-            const target = cards[1];
-            row.scrollLeft = target.offsetLeft - (row.clientWidth - target.clientWidth) / 2;
+            const target = cards[Math.min(1, cards.length - 1)];
+            if (!target) return;
+            const initialScroll = isMobile ? getLandingRowInitialScroll({
+                clientWidth: row.clientWidth,
+                scrollWidth: row.scrollWidth,
+                cardOffset: target.offsetLeft,
+                cardWidth: target.clientWidth
+            }) : 0;
+            if (initialScroll === null) return;
+            // Initial placement must not animate past the first card or reset later swipes.
+            const scrollBehavior = row.style.scrollBehavior;
+            row.style.scrollBehavior = 'auto';
+            row.scrollLeft = initialScroll;
+            row.style.scrollBehavior = scrollBehavior;
+            if (isMobile) row.dataset.landingMobileCentered = '1';
+            else delete row.dataset.landingMobileCentered;
             updateLandingScrollButtons(row);
         });
     });
@@ -9384,7 +9404,10 @@ function bindEvents() {
         if (authModal?.dataset.likeAuth === '1') dismissModal(authModal);
     });
     window.addEventListener('hashchange', () => applyRouteHash(window.location.hash));
-    window.addEventListener('resize', () => layoutTripReviewPhotoRows());
+    window.addEventListener('resize', () => {
+        layoutTripReviewPhotoRows();
+        centerLandingRowsOnMobile();
+    });
     document.addEventListener('visibilitychange', () => {
         setLandingHeroSlideshowActive(document.body.dataset.page === LANDING_ROUTE && !document.hidden);
         if (!document.hidden) {
