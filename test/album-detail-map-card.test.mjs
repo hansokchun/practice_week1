@@ -12,19 +12,19 @@ test('album detail date dividers do not show per-day photo counts', () => {
 test('album detail uses a compact map card beside the photo timeline', () => {
     assert.match(appSource, /trip-review-map-summary/);
     assert.match(appSource, /class="trip-review-map-author" data-go-profile/);
-    assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*border-radius: 20px/);
+    assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*border-radius: 8px/);
     assert.match(cssSource, /\.trip-review-map\s*\{[\s\S]*height: 390px/);
     assert.match(cssSource, /\.trip-review-map-author\s*\{[\s\S]*width: calc\(100% - 36px\);[\s\S]*margin: 0 18px 18px;/);
-    assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*margin-top: 30px/);
+    assert.match(cssSource, /\.trip-review-map-panel\s*\{[\s\S]*margin-top: 24px/);
     assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*gap: 36px/);
 });
 
 test('album detail uses a Google Photos style title header without a cover background', () => {
     assert.doesNotMatch(appSource, /trip-review-cover-image/);
-    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: clamp\(300px, 39vh, 420px\);[\s\S]*background: var\(--bg\);/);
+    assert.match(cssSource, /\.trip-review-header\s*\{[\s\S]*min-height: 0;[\s\S]*background: var\(--bg\);/);
     assert.doesNotMatch(cssSource, /\.trip-review-header::before/);
     assert.doesNotMatch(cssSource, /\.trip-review-header::after/);
-    assert.match(cssSource, /\.trip-review-title-block h1\s*\{[\s\S]*font-size: clamp\(58px, 9\.2vw, 118px\);[\s\S]*font-weight: 800;/);
+    assert.match(cssSource, /\.trip-review-title-block h1\s*\{[\s\S]*font-size: 48px;[\s\S]*font-weight: 800;/);
     assert.match(cssSource, /\.trip-review-meta\s*\{[\s\S]*justify-content: center;/);
     assert.match(cssSource, /\.trip-review-meta span\s*\{[\s\S]*font-size: 14px;[\s\S]*font-weight: 700;/);
     assert.match(cssSource, /\.trip-review-layout\s*\{[\s\S]*margin-top: 0;/);
@@ -58,7 +58,7 @@ test('album header keeps owner actions on the right and simplifies edit mode act
 });
 
 test('album edit fields use a lightweight Google Photos style', () => {
-    assert.match(appSource, /<div class="trip-review-title-block">\s*<p class="eyebrow">Album Review Map<\/p>\s*<h1 id="trip-title">Album<\/h1>\s*<div class="trip-edit-fields">[\s\S]*<input id="trip-edit-title"/);
+    assert.match(appSource, /<div class="trip-review-title-block">\s*<h1 id="trip-title">앨범<\/h1>\s*<div class="trip-edit-fields">[\s\S]*<input id="trip-edit-title"/);
     assert.doesNotMatch(appSource, /trip-edit-note/);
     assert.doesNotMatch(appSource, /titleBlock\.appendChild\(form\)/);
     assert.match(cssSource, /\.trip-edit-fields\s*\{[\s\S]*grid-template-columns: 1fr;[\s\S]*justify-items: center;[\s\S]*background: transparent;/);
@@ -66,7 +66,7 @@ test('album edit fields use a lightweight Google Photos style', () => {
     assert.match(cssSource, /\.trip-review-header\.is-editing \.trip-edit-fields\s*\{[\s\S]*display: grid;/);
     assert.match(cssSource, /\.trip-edit-fields label\s*\{[\s\S]*display: none;/);
     assert.match(cssSource, /\.trip-edit-fields input\s*\{[\s\S]*border: 0;[\s\S]*border-bottom: 1px solid var\(--line\);[\s\S]*background: transparent;/);
-    assert.match(cssSource, /#trip-edit-title\s*\{[\s\S]*font-size: clamp\(40px, 7vw, 92px\);[\s\S]*text-align: center;/);
+    assert.match(cssSource, /#trip-edit-title\s*\{[\s\S]*font-size: 40px;[\s\S]*text-align: center;/);
 });
 
 test('album edit mode can add text blocks between photos and persist them in album note metadata', () => {

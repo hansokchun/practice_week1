@@ -88,3 +88,12 @@ test('packAlbumReviewRowsForWidth wraps before a row exceeds the available timel
         ['wide-2', 'tall']
     ]);
 });
+
+test('rounded row widths never overflow the available column', () => {
+    for (const ratios of [[1.5, 0.67, 0.67, 0.67], [1, 1, 1], [4], [2, 2]]) {
+        for (const width of [320, 393, 700, 860]) {
+            const layout = calculateAlbumReviewRowLayout(ratios, width, { gap: 6 });
+            assert.ok(layout.widths.reduce((sum, value) => sum + value, 0) + (ratios.length - 1) * 6 <= width);
+        }
+    }
+});

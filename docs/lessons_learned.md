@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-10-12: Keep Optional Album Titles Separate From Display Labels
+
+- Persist an absent album title as an empty string; use a display-only label in lists and an accessible, visually hidden heading in details. Creating, editing, and draft sharing must all preserve an intentionally empty input.
+- Untitled albums must resolve their photos by album ID. Never match unassigned photos against an empty legacy album name, and restrict legacy name matching to the same owner.
+- Constrain every nested grid in the album timeline with `min-width: 0`. Fit rounded thumbnail widths to the actual column so photos do not paint below the map.
+- Editing a title must preserve the album description and the photo-story metadata.
+
 ## 2026-10-12: Separate Album Loading From Empty Results
 
 - Do not render the public empty-album shell until both photo and album metadata have finished loading. Album route entry happens before the initial library request completes.

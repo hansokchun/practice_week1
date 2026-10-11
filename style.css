@@ -8497,6 +8497,8 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 }
 
 .trip-review-shell {
+    width: min(var(--container), calc(100% - 64px));
+    margin: 0 auto;
     min-height: calc(100vh - 60px);
     background: var(--bg);
     color: var(--ink);
@@ -8507,10 +8509,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: start;
-    gap: 24px;
-    min-height: clamp(300px, 39vh, 420px);
-    padding: 20px 28px 68px;
-    border-bottom: 0;
+    gap: 20px;
+    min-height: 0;
+    padding: 20px 0 32px;
+    border-bottom: 1px solid var(--line);
     background: var(--bg);
 }
 
@@ -8533,23 +8535,49 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: grid;
     justify-items: center;
     width: min(980px, 100%);
-    margin-top: 58px;
+    margin-top: 12px;
+    gap: 16px;
     text-align: center;
 }
 
-.trip-review-title-block .eyebrow,
-.trip-review-title-block > p:not(.eyebrow) {
-    display: none;
+.trip-review-title-block > p {
+    max-width: 640px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
 }
 
 .trip-review-title-block h1 {
     margin: 0;
-    color: rgba(5, 5, 5, 0.76);
+    color: var(--ink);
     font-family: var(--headline);
-    font-size: clamp(58px, 9.2vw, 118px);
+    font-size: 48px;
     font-weight: 800;
-    letter-spacing: var(--text-tracking);
-    line-height: 1.02;
+    letter-spacing: 0;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.trip-review-header.is-untitled {
+    padding-bottom: 24px;
+}
+
+.trip-review-title-block h1.is-untitled {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.album-field-optional {
+    margin-left: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
 }
 
 .trip-review-state .trip-review-header {
@@ -8707,7 +8735,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     justify-items: center;
     gap: 12px;
     width: min(780px, 100%);
-    margin-top: 18px;
+    margin-top: 0;
     background: transparent;
 }
 
@@ -8743,7 +8771,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 #trip-edit-title {
     color: rgba(5, 5, 5, 0.76);
-    font-size: clamp(40px, 7vw, 92px);
+    font-size: 40px;
     font-weight: 800;
     line-height: 1.08;
     text-align: center;
@@ -8837,7 +8865,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px 14px;
-    margin-top: 20px;
+    margin-top: 0;
 }
 
 .trip-review-meta span {
@@ -8855,11 +8883,11 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     gap: 36px;
     align-items: start;
     margin-top: 0;
-    padding-right: 28px;
+    padding-right: 0;
 }
 
 .trip-review-timeline {
-    padding: 26px 0 56px 40px;
+    padding: 24px 0 56px;
     min-width: 0;
 }
 
@@ -8873,6 +8901,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .trip-review-photo-flow {
     display: grid;
+    min-width: 0;
     gap: 34px;
 }
 
@@ -9064,6 +9093,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .trip-review-day {
     display: grid;
+    min-width: 0;
     gap: 12px;
     padding-top: 4px;
 }
@@ -9121,11 +9151,13 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 
 .trip-review-day-rows {
     display: grid;
+    min-width: 0;
     gap: 6px;
 }
 
 .trip-review-photo-row {
     display: flex;
+    min-width: 0;
     justify-content: flex-start;
     gap: 6px;
     height: var(--row-height, 220px);
@@ -9135,7 +9167,7 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
 .trip-review-photo-card {
     position: relative;
     flex: 0 0 var(--photo-width, 220px);
-    min-width: 96px;
+    min-width: 0;
     max-width: 100%;
     overflow: hidden;
     border: 0;
@@ -9213,11 +9245,11 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     display: grid;
     gap: 14px;
     align-self: start;
-    margin-top: 30px;
+    margin-top: 24px;
     border: 1px solid rgba(26, 77, 78, 0.13);
-    border-radius: 20px;
+    border-radius: 8px;
     background: #ffffff;
-    box-shadow: 0 18px 45px rgba(10, 41, 42, 0.09);
+    box-shadow: 0 4px 18px rgba(10, 41, 42, 0.04);
     overflow: hidden;
 }
 
@@ -13078,17 +13110,26 @@ body.modal-open {
         padding-right: 0;
     }
 
+    .trip-review-shell {
+        width: calc(100% - 32px);
+    }
+
     .trip-review-header {
-        min-height: 260px;
-        padding: 18px 16px 48px;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        min-height: 0;
+        padding: 16px 0 24px;
     }
 
     .trip-review-title-block {
-        margin-top: 34px;
+        margin-top: 8px;
     }
 
     .trip-review-title-block h1 {
-        font-size: clamp(44px, 16vw, 72px);
+        font-size: 30px;
+    }
+
+    #trip-edit-title {
+        font-size: 28px;
     }
 
     .trip-review-layout {
@@ -13096,7 +13137,7 @@ body.modal-open {
     }
 
     .trip-review-timeline {
-        padding: 18px 16px 0;
+        padding: 0 0 32px;
     }
 
     .trip-review-photo-row {
@@ -13108,13 +13149,13 @@ body.modal-open {
         position: relative;
         order: -1;
         top: auto;
-        margin: 0 16px 28px;
+        margin: 20px 0 0;
         border-left: 0;
         border-top: 1px solid rgba(26, 77, 78, 0.14);
     }
 
     .trip-review-map {
-        height: 320px;
+        height: 240px;
     }
 
     .trip-review-actions,

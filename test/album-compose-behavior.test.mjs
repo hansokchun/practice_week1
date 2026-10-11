@@ -11,12 +11,13 @@ function source(name) {
     return rest.slice(0, rest.indexOf('\n}') + 2);
 }
 
-function saveHarness(linkError = null) {
+function saveHarness(linkError = null, title = '여행') {
     const state = { currentUser: { id: 'owner' }, savedAlbums: [], savedPhotos: [{ id: 'p1', visibility: 'private' }], albumBuilderPhotoIds: ['p1'], visibility: 'public', albumComposeDraft: { title: '여행', note: '기록' } };
     const calls = [];
     const save = runInNewContext(`${source('saveAlbumAndOpenDetail')}; saveAlbumAndOpenDetail`, {
         state,
-        $: selector => ({ value: selector === '#album-name-input' ? '여행' : '기록' }),
+        $: selector => ({ value: selector === '#album-name-input' ? title : '기록' }),
+        normalizeAlbumTitle: value => String(value ?? '').trim(),
         serializeAlbumNoteWithStory: note => note, parseAlbumStoryEntries: () => [],
         getAlbumCandidatePhotos: () => state.savedPhotos,
         createAlbum: async payload => { calls.push(['create', payload]); return { data: { id: 'a1', ...payload } }; },
@@ -36,6 +37,15 @@ test('saving a public album attaches selected photos without publishing private 
     assert.equal(h.state.savedPhotos[0].visibility, 'private');
     assert.equal(h.state.savedAlbums[0].visibility, 'public');
     assert.equal(h.state.albumComposeDraft, null);
+    assert.ok(h.calls.some(c => c[0] === 'route' && c[1] === 'a1'));
+});
+
+test('a new album can be saved without a title while keeping its selected photos', async () => {
+    const h = saveHarness(null, '   ');
+    await h.save();
+    assert.equal(h.calls.find(c => c[0] === 'create')?.[1].title, '');
+    assert.deepEqual(h.calls.find(c => c[0] === 'attach'), ['attach', 'a1', ['p1']]);
+    assert.equal(h.state.savedAlbums[0].title, '');
     assert.ok(h.calls.some(c => c[0] === 'route' && c[1] === 'a1'));
 });
 

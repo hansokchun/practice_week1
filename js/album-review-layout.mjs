@@ -42,10 +42,17 @@ export function calculateAlbumReviewRowLayout(rowPhotos = [], availableWidth = 0
     const ratioSum = ratios.reduce((sum, ratio) => sum + ratio, 0);
     const fitHeight = ratioSum > 0 && usableWidth > 0 ? usableWidth / ratioSum : baseHeight;
     const height = Math.round(Math.min(maxHeight, Math.max(minHeight, fitHeight || baseHeight)));
+    const fittedHeight = usableWidth > 0 ? Math.min(height, fitHeight) : height;
+    const widths = ratios.map((ratio) => Math.round(ratio * fittedHeight));
+    const overflow = widths.reduce((sum, width) => sum + width, 0) - usableWidth;
+    if (usableWidth > 0 && overflow > 0) {
+        const widestIndex = widths.indexOf(Math.max(...widths));
+        widths[widestIndex] = Math.max(0, widths[widestIndex] - overflow);
+    }
 
     return {
-        height,
-        widths: ratios.map((ratio) => Math.round(ratio * height))
+        height: fittedHeight,
+        widths
     };
 }
 

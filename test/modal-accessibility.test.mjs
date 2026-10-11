@@ -22,6 +22,6 @@ test('modal lifecycle moves, traps, and restores keyboard focus', () => {
 });
 
 test('album compose fields keep each label with its own control', () => {
-    assert.match(app, /<label class="album-compose-field" for="album-name-input">[\s\S]*<span>앨범 이름<\/span>[\s\S]*<input id="album-name-input"/);
+    assert.match(app, /<label class="album-compose-field" for="album-name-input">[\s\S]*<span>앨범 이름<span class="album-field-optional">선택<\/span><\/span>[\s\S]*<input id="album-name-input"/);
     assert.match(app, /<label class="album-compose-field" for="album-note-input">[\s\S]*<span>설명<\/span>[\s\S]*<textarea id="album-note-input"/);
 });

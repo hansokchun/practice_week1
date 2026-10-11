@@ -61,6 +61,7 @@ import { buildAccountNotificationItems } from './account-notifications.mjs';
 import { getProfilePhotoMetrics } from './profile-photo-metrics.mjs';
 import { initializeAccountGuidance, loadAccountGuidance, dismissAccountGuidance } from './account-guidance.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
+import { getAlbumDisplayTitle, normalizeAlbumTitle } from './album-title.mjs';
 import { createAlbumComposeMapController } from './album-compose-map.mjs';
 import { getPhotoPage } from './photo-pagination.mjs';
 import { getPhotoDownloadPlan, insertGpsExifIntoJpegDataUrl } from './photo-download.mjs';
@@ -2452,7 +2453,7 @@ function updateExploreAlbumPreview(album) {
             delete image.dataset.i;
             image.src = album.cover_url || MAIN_BG_2_URL;
         }
-        image.alt = album.title || 'Public album';
+        image.alt = getAlbumDisplayTitle(album.title);
     }
     if (story) {
         const albumNote = getAlbumVisibleNote(album);
@@ -4339,7 +4340,7 @@ function queuePhotoAiAnalysis(photos = [], { notifyOnComplete = false } = {}) {
 function normalizeSavedAlbum(album) {
     return {
         id: album.id,
-        title: album.title,
+        title: normalizeAlbumTitle(album.title),
         note: album.note || '',
         visibility: album.visibility || 'private',
         cover_url: album.cover_url,
@@ -4422,7 +4423,7 @@ function getSavedPublicAlbums() {
                 const publicPhoto = photo.owner_id === state.currentUser?.id || photo.shared || ['public', 'link'].includes(photo.visibility);
                 const sameAlbum = photo.album_id
                     ? photo.album_id === album.id
-                    : photo.album === album.title;
+                    : Boolean(album.title) && photo.owner_id === album.owner_id && photo.album === album.title;
                 return publicPhoto && sameAlbum;
             });
             const locatedPhotos = photos.filter(hasPhotoLocation);
@@ -4730,7 +4731,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
             ? ownerAlbums.slice(0, 12).map((album) => `
                 <article class="${getPublicAlbumCardClass(album.id, state.selectedPublicAlbumId)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                     ${renderAlbumCoverImage(album)}
-                    <strong>${escapeHtml(album.title)}</strong>
+                    <strong>${escapeHtml(getAlbumDisplayTitle(album.title))}</strong>
                     <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
                 </article>
             `).join('')
@@ -4771,16 +4772,15 @@ function renderTripReviewShell() {
             <header class="trip-review-header ${state.albumDetailEditMode ? 'is-editing' : ''}">
                 <button class="back-link" data-route="explore" type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
-                    <span id="trip-review-back-label">Explore</span>
+                    <span id="trip-review-back-label">지도</span>
                 </button>
                 <div class="trip-review-title-block">
-                    <p class="eyebrow">Album Review Map</p>
-                    <h1 id="trip-title">Album</h1>
+                    <h1 id="trip-title">앨범</h1>
                     <div class="trip-edit-fields">
-                        <label for="trip-edit-title">앨범 이름</label>
-                        <input id="trip-edit-title" type="text" aria-label="앨범 이름">
+                        <label for="trip-edit-title">앨범 이름 (선택)</label>
+                        <input id="trip-edit-title" type="text" maxlength="120" placeholder="앨범 이름 (선택)" aria-label="앨범 이름 (선택)">
                     </div>
-                    <p id="trip-review-description">사진이 날짜별로 정리된 앨범 지도입니다.</p>
+                    <p id="trip-review-description" hidden></p>
                     <div id="trip-review-meta" class="trip-review-meta"></div>
                 </div>
                 <div class="trip-actions">
@@ -5322,6 +5322,8 @@ function renderPublicSurfaces() {
     state.tripReviewMarkers = [];
     state.tripReviewMap = null;
     renderTripReviewShell();
+    const albumTitle = normalizeAlbumTitle(selected.title);
+    const albumLabel = getAlbumDisplayTitle(albumTitle);
     const cover = selected.cover_url || MAIN_BG_2_URL;
     const note = getAlbumVisibleNote(selected) || '공개할 사진만 골라 만든 여행 기록입니다.';
     const photoCount = Number(selected.photo_count || 0);
@@ -5342,7 +5344,7 @@ function renderPublicSurfaces() {
     const previewMeta = preview?.querySelector('.pin-preview-meta');
     if (previewImage) {
         previewImage.src = cover;
-        previewImage.alt = selected.title;
+        previewImage.alt = albumLabel;
     }
     if (previewStory) {
         previewStory.textContent = note;
@@ -5370,17 +5372,24 @@ function renderPublicSurfaces() {
     const routeMeta = $('.trip-route-card .compact-heading p');
     if (tripHeroImage) {
         tripHeroImage.src = cover;
-        tripHeroImage.alt = selected.title;
+        tripHeroImage.alt = albumLabel;
     }
-    if (tripTitle) tripTitle.textContent = selected.title;
+    if (tripTitle) {
+        tripTitle.textContent = albumTitle || '앨범';
+        tripTitle.classList.toggle('is-untitled', !albumTitle);
+    }
+    $('.trip-review-header')?.classList.toggle('is-untitled', !albumTitle);
     if (tripCopy) tripCopy.textContent = note;
-    if (tripReviewDescription) tripReviewDescription.textContent = note;
+    if (tripReviewDescription) {
+        tripReviewDescription.textContent = getAlbumVisibleNote(selected);
+        tripReviewDescription.hidden = !getAlbumVisibleNote(selected);
+    }
     const tripEditTitle = $('#trip-edit-title');
     if (tripEditTitle) tripEditTitle.value = selected.title || '';
     const reviewBackButton = $('.trip-review-header .back-link');
     const reviewBackLabel = $('#trip-review-back-label');
     if (reviewBackButton) reviewBackButton.dataset.route = isOwnAlbum ? 'home' : 'explore';
-    if (reviewBackLabel) reviewBackLabel.textContent = isOwnAlbum ? 'Home' : 'Explore';
+    if (reviewBackLabel) reviewBackLabel.textContent = isOwnAlbum ? '홈' : '지도';
     if (tripReviewMeta) {
         tripReviewMeta.innerHTML = `
             <span>${tripSummary.dateRange || '날짜 없음'}</span>
@@ -5486,7 +5495,7 @@ function renderPublicSurfaces() {
 
     const tripPhotoGrid = $('#public-trip-photo-grid');
     if (tripPhotoGrid) {
-        renderTripReviewPhotoFlow(tripPhotos, selected.title, cover, {
+        renderTripReviewPhotoFlow(tripPhotos, albumLabel, cover, {
             isEditing: isOwnAlbum && state.albumDetailEditMode,
             storyMap: getAlbumStoryMap(selected)
         });
@@ -5505,7 +5514,7 @@ function renderPublicSurfaces() {
         relatedGrid.innerHTML = getRelatedAlbums(albums, selected).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 ${renderAlbumCoverImage(album)}
-                <strong>${escapeHtml(album.title)}</strong>
+                <strong>${escapeHtml(getAlbumDisplayTitle(album.title))}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
         `).join('');
@@ -5540,7 +5549,7 @@ function renderPublicSurfaces() {
         profileAlbumGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
                 ${renderAlbumCoverImage(album)}
-                <strong>${escapeHtml(album.title)}</strong>
+                <strong>${escapeHtml(getAlbumDisplayTitle(album.title))}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
         `).join('');
@@ -6666,12 +6675,13 @@ function renderSavedAlbumRows(albums) {
     const myPhotos = getMySavedPhotos();
     list.innerHTML = albums.map((album) => {
         const albumPhotos = getAlbumCoverPhotos(album, myPhotos);
-        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.length ? albumPhotos : [album.cover_url], album.title);
+        const albumLabel = getAlbumDisplayTitle(album.title);
+        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.length ? albumPhotos : [album.cover_url], albumLabel);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
                 ${coverMarkup}
                 <div class="album-row-content">
-                    <strong>${escapeHtml(album.title)}</strong>
+                    <strong>${escapeHtml(albumLabel)}</strong>
                     <p>${escapeHtml(getAlbumVisibleNote(album) || '저장된 여행 앨범입니다.')}</p>
                     <small><span class="album-count-icon" aria-hidden="true"></span>${formatPhotoCount(album.photo_count)}</small>
                 </div>
@@ -6796,7 +6806,7 @@ function renderAlbumComposePage() {
         <section class="album-compose-bar" aria-label="앨범 기본 정보">
             <h2>앨범 정보</h2>
             <label class="album-compose-field" for="album-name-input">
-                <span>앨범 이름</span>
+                <span>앨범 이름<span class="album-field-optional">선택</span></span>
                 <input id="album-name-input" type="text" maxlength="120" placeholder="예: 부산 주말 여행" value="${escapeHtml(state.albumComposeDraft?.title ?? editingAlbum?.title ?? '')}">
             </label>
             <label class="album-compose-field" for="album-note-input">
@@ -7217,15 +7227,11 @@ function removeStoryAfterTripPhoto(photoId) {
 async function saveSelectedAlbumTextEdits() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
-    const title = $('#trip-edit-title')?.value.trim();
+    const title = normalizeAlbumTitle($('#trip-edit-title')?.value);
     const note = serializeAlbumNoteWithStory(
-        '',
+        getAlbumVisibleNote(album),
         collectAlbumStoryEntriesFromDOM(album)
     );
-    if (!title) {
-        showToast('앨범 이름을 입력해주세요.');
-        return;
-    }
     const { data, error } = await updateAlbum(album.id, {
         title,
         note,
@@ -7314,7 +7320,7 @@ async function setSelectedAlbumCoverFromFirstPhoto() {
 async function deleteSelectedAlbum() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
-    if (!window.confirm(`'${album.title}' 앨범을 삭제할까요? 원본 사진은 삭제되지 않습니다.`)) return;
+    if (!window.confirm(`'${getAlbumDisplayTitle(album.title)}' 앨범을 삭제할까요? 원본 사진은 삭제되지 않습니다.`)) return;
     const { error } = await deleteAlbum(album.id);
     if (error) {
         showToast('앨범을 삭제하지 못했습니다.');
@@ -7449,9 +7455,9 @@ function renderAlbumDrafts() {
 
     list.innerHTML = state.albumDrafts.map((album) => `
         <article class="album-row" role="button" tabindex="0" data-myphoto-album-draft="true">
-            ${getAlbumCoverStackMarkup([MAIN_BG_4_URL], album.name)}
+            ${getAlbumCoverStackMarkup([MAIN_BG_4_URL], getAlbumDisplayTitle(album.name))}
             <div class="album-row-content">
-                <strong>${escapeHtml(album.name)}</strong>
+                <strong>${escapeHtml(getAlbumDisplayTitle(album.name))}</strong>
                 <p>${escapeHtml(getAlbumVisibleNote(album) || '비공개 앨범 초안입니다.')}</p>
                 <small><span class="album-count-icon" aria-hidden="true"></span>${formatPhotoCount(state.stagedPhotos.length)}</small>
             </div>
@@ -7632,12 +7638,7 @@ async function persistStagedPhotos() {
 async function saveAlbumDraft() {
     const nameInput = $('#album-name-input');
     const noteInput = $('#album-note-input');
-    const name = nameInput?.value.trim();
-    if (!name) {
-        showToast('앨범 이름을 입력해주세요.');
-        nameInput?.focus();
-        return;
-    }
+    const name = normalizeAlbumTitle(nameInput?.value);
     const localDraft = { name, note: noteInput?.value.trim() || '' };
     state.albumDrafts.unshift(localDraft);
 
@@ -7737,12 +7738,7 @@ function enforceVerifiedAccount(action) {
 async function saveAlbumAndOpenDetail() {
     const nameInput = $('#album-name-input');
     const noteInput = $('#album-note-input');
-    const name = nameInput?.value.trim();
-    if (!name) {
-        showToast('앨범 이름을 입력해주세요.');
-        nameInput?.focus();
-        return;
-    }
+    const name = normalizeAlbumTitle(nameInput?.value);
     if (!state.currentUser) {
         setPendingAuthAction(state, 'save-album');
         openModal('#auth-modal');
@@ -7812,9 +7808,7 @@ async function saveAlbumAndOpenDetail() {
 }
 
 function getDraftAlbumInput() {
-    const name = $('#album-name-input')?.value.trim()
-        || state.albumDrafts[0]?.name
-        || '나의 여행 앨범';
+    const name = normalizeAlbumTitle($('#album-name-input')?.value ?? state.albumDrafts[0]?.name);
     const note = $('#album-note-input')?.value.trim()
         || state.albumDrafts[0]?.note
         || '사진을 바탕으로 만든 여행 앨범입니다.';
