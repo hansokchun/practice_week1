@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 
 function renderAlbumState(overrides = {}) {
     const page = { innerHTML: '' };
@@ -55,4 +56,9 @@ test('failed album metadata offers a retry instead of claiming there are no albu
 test('metadata retry resets the visible album detail to a loading state', () => {
     const retry = app.slice(app.indexOf('async function retrySavedLibrary('), app.indexOf('async function loadPublicProfileNames('));
     assert.match(retry, /document\.body\.dataset\.page === 'trip'[\s\S]*renderPublicSurfaces\(\)/);
+});
+
+test('album status screens use compact headings instead of the full album hero typography', () => {
+    assert.match(renderAlbumState(), /trip-review-shell trip-review-state/);
+    assert.match(css, /\.trip-review-state \.trip-review-title-block h1\s*\{[^}]*font-size:\s*28px;/s);
 });

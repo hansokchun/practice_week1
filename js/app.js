@@ -4750,7 +4750,7 @@ function renderTripReviewStatus(status = 'loading') {
             ${isLoading ? '' : '<span>삭제되었거나 현재 계정에서 볼 수 없는 앨범입니다.</span>'}
         </article>`;
     page.innerHTML = `
-        <div class="trip-review-shell" aria-busy="${isLoading}">
+        <div class="trip-review-shell trip-review-state" aria-busy="${isLoading}">
             <header class="trip-review-header">
                 <button class="back-link" data-route="home" type="button">
                     <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>

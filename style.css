@@ -8552,6 +8552,20 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     line-height: 1.02;
 }
 
+.trip-review-state .trip-review-header {
+    min-height: 160px;
+    padding-bottom: 24px;
+}
+
+.trip-review-state .trip-review-title-block {
+    margin-top: 12px;
+}
+
+.trip-review-state .trip-review-title-block h1 {
+    font-size: 28px;
+    line-height: 1.4;
+}
+
 .trip-review-header .trip-actions {
     position: relative;
     grid-column: 3;
