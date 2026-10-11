@@ -4738,6 +4738,31 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
     }
 }
 
+function renderTripReviewStatus(status = 'loading') {
+    const page = $('#page-trip');
+    if (!page) return;
+    const isLoading = status === 'loading';
+    const title = isLoading ? '앨범을 불러오는 중입니다.' : '앨범이 없습니다';
+    const content = status === 'error'
+        ? renderActionableFailure(getLibraryFailureState(state.savedAlbumsLoadError ? 'albums' : 'photos', { online: navigator.onLine }))
+        : `<article class="empty-state" role="status">
+            <strong>${title}</strong>
+            ${isLoading ? '' : '<span>삭제되었거나 현재 계정에서 볼 수 없는 앨범입니다.</span>'}
+        </article>`;
+    page.innerHTML = `
+        <div class="trip-review-shell" aria-busy="${isLoading}">
+            <header class="trip-review-header">
+                <button class="back-link" data-route="home" type="button">
+                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                    <span>홈</span>
+                </button>
+                <div class="trip-review-title-block"><h1 id="trip-title">앨범</h1></div>
+            </header>
+            ${content}
+        </div>
+    `;
+}
+
 function renderTripReviewShell() {
     const page = $('#page-trip');
     if (!page) return;
@@ -5242,6 +5267,16 @@ function renderPublicSurfaces() {
         renderLandingTagPage();
         return;
     }
+    if (document.body.dataset.page === 'trip') {
+        if (state.savedAlbumsLoadError || state.savedPhotosLoadError) {
+            renderTripReviewStatus('error');
+            return;
+        }
+        if (!state.hasLoadedSavedAlbums || !state.hasLoadedSavedPhotos) {
+            renderTripReviewStatus();
+            return;
+        }
+    }
     ensureProfileHeaderShell();
     const albums = getPublicSurfaceAlbums(document.body.dataset.page, getSavedPublicAlbums(), getPublicDemoAlbumEntries());
     renderExplorePhotoScopeControls();
@@ -5262,6 +5297,10 @@ function renderPublicSurfaces() {
         ? getSelectedExploreAlbum(albums)
         : getSelectedPublicAlbum(albums);
     if (!selected) {
+        if (document.body.dataset.page === 'trip') {
+            renderTripReviewStatus('empty');
+            return;
+        }
         if (document.body.dataset.page === APP_SECTIONS.EXPLORE && explorePhotos.length) {
             renderExploreMapMarkers(explorePhotos, null);
             const selectedPhoto = explorePhotos.find((photo) => photo.id === state.selectedPhotoId);
@@ -5740,6 +5779,7 @@ async function retrySavedLibrary() {
     renderLandingSections();
     renderSavedPhotoSurfaces();
     renderLikedPhotoSurfaces();
+    if (document.body.dataset.page === 'trip') renderPublicSurfaces();
     await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
 }
 

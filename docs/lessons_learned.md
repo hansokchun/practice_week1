@@ -1,5 +1,10 @@
 # Lessons Learned
 
+## 2026-10-12: Separate Album Loading From Empty Results
+
+- Do not render the public empty-album shell until both photo and album metadata have finished loading. Album route entry happens before the initial library request completes.
+- Album details need distinct loading, retryable failure, and genuinely empty states using the current layout. Verify a real refresh transitions from loading to the album without exposing the old static public-trip markup.
+
 ## 2026-10-12: Preserve Recoverable Album Thumbnails
 
 - Album covers and album-detail thumbnails must retain their photo ID and use the shared image renderer. A raw signed cover URL cannot be renewed after its 15-minute lifetime.
