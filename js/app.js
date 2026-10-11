@@ -61,6 +61,7 @@ import { buildAccountNotificationItems } from './account-notifications.mjs';
 import { getProfilePhotoMetrics } from './profile-photo-metrics.mjs';
 import { initializeAccountGuidance, loadAccountGuidance, dismissAccountGuidance } from './account-guidance.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
+import { createAlbumComposeMapController } from './album-compose-map.mjs';
 import { getPhotoPage } from './photo-pagination.mjs';
 import { getPhotoDownloadPlan, insertGpsExifIntoJpegDataUrl } from './photo-download.mjs';
 import { isVerifiedAccount } from './account-verification.mjs';
@@ -447,6 +448,12 @@ let landingHeroTimer = null;
 let landingHeroIndex = 0;
 let lastLandingSectionsMarkup = null;
 const LANDING_HERO_SLIDE_LIMIT = 12;
+const albumComposeMapController = createAlbumComposeMapController({
+    loadMaps: loadGoogleMapsApi,
+    getMapId: () => state.googleMapsMapId,
+    getMarkerIcon: (maps) => getExplorePinIcon(maps, { type: 'photo' }),
+    getMarkerTitle: (photo) => getPhotoFallbackLabel(photo)
+});
 const MODAL_FOCUSABLE_SELECTOR = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function renderActionableFailure(copy, action = 'data-retry-saved-library') {
@@ -1080,6 +1087,7 @@ function renderRoute(section) {
     if (previousRoute === 'location-assign' && normalized !== 'location-assign') {
         closeLocationAssignmentStreetView();
     }
+    if (previousRoute === 'album' && normalized !== 'album') albumComposeMapController.dispose();
     if (normalized !== 'trip') state.albumDetailEditMode = false;
     const navSection = [APP_SECTIONS.MYPHOTO, 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'settings', 'admin-landing'].includes(normalized)
         ? APP_SECTIONS.HOME
@@ -6635,6 +6643,7 @@ function renderStagedPhotos() {
 function renderAlbumComposePage() {
     const page = $('#page-album .flow-page');
     if (!page) return;
+    albumComposeMapController.dispose();
     const editingAlbum = state.editingAlbumId
         ? state.savedAlbums.find((album) => album.id === state.editingAlbumId)
         : null;
@@ -6671,26 +6680,50 @@ function renderAlbumComposePage() {
         <div class="album-compose-layout">
             <section class="album-compose-photos">
                 <div class="panel-topline">
-                    <div>
+                    <div class="album-photo-heading">
                         <h2 id="analysis-title">담은 사진</h2>
+                        <span class="album-photo-count"><strong id="analysis-photo-count">0</strong>장</span>
                     </div>
-                    <span><strong id="analysis-photo-count">0</strong>장</span>
+                    <button id="btn-open-album-photo-picker" class="btn-secondary album-add-button" type="button"><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>사진 추가</button>
                 </div>
                 <div class="analysis-stats">
                     <span><strong id="analysis-place-count">0</strong>곳</span>
                     <span><strong id="analysis-day-count">0일</strong> 타임라인</span>
                 </div>
-                <button id="btn-open-album-photo-picker" class="btn-secondary album-add-button" type="button"><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>사진 추가</button>
                 <div id="album-day-photo-list" class="album-day-photo-list"></div>
             </section>
             <details class="album-compose-map" aria-label="앨범 지도">
-                <summary><span class="material-symbols-outlined" aria-hidden="true">map</span>첫 촬영 장소<span class="material-symbols-outlined album-map-chevron" aria-hidden="true">expand_more</span></summary>
-                <iframe id="album-map-frame" class="google-map-frame" title="Google map album photo locations" src="https://www.google.com/maps?q=36.45,127.85&z=7&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <summary><span class="material-symbols-outlined" aria-hidden="true">map</span>사진 위치<span id="album-map-photo-count" class="album-map-photo-count"></span><span class="material-symbols-outlined album-map-chevron" aria-hidden="true">expand_more</span></summary>
+                <div class="album-compose-map-content">
+                    <div id="album-compose-map-canvas" class="album-compose-map-canvas" aria-label="담은 사진의 촬영 위치 지도"></div>
+                    <p id="album-compose-map-status" class="album-compose-map-status" role="status">지도를 준비하고 있습니다.</p>
+                </div>
             </details>
         </div>
         </div>
     `;
+    const mapSection = $('#page-album .album-compose-map');
+    mapSection?.addEventListener('toggle', () => {
+        if (mapSection.open) void renderAlbumComposeMap();
+        else albumComposeMapController.cancel();
+    });
     renderTravelDraftSurfaces();
+}
+
+async function renderAlbumComposeMap() {
+    const section = $('#page-album .album-compose-map');
+    if (!section?.open || section.hidden || document.body.dataset.page !== 'album') return;
+    const canvas = $('#album-compose-map-canvas');
+    const status = $('#album-compose-map-status');
+    if (!canvas || !status) return;
+    status.hidden = false;
+    status.textContent = '지도를 불러오는 중입니다.';
+    const result = await albumComposeMapController.render(canvas, getAlbumCandidatePhotos());
+    if (result === 'stale' || !canvas.isConnected || !section.open) return;
+    status.hidden = result === 'ready';
+    status.textContent = result === 'unavailable'
+        ? '지도를 불러오지 못했습니다. 잠시 후 다시 열어주세요.'
+        : '위치가 기록된 사진이 없습니다.';
 }
 
 function getAlbumPhotoDayGroups(photos = []) {
@@ -6807,14 +6840,15 @@ function renderTravelDraftSurfaces() {
             : '<div class="album-compose-empty"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span><strong>아직 담은 사진이 없어요</strong><button class="btn-secondary" data-add-album-photos type="button">내 사진에서 고르기</button></div>';
     }
 
-    const albumMap = $('#album-map-frame');
     const mapSection = $('#page-album .album-compose-map');
     if (mapSection) mapSection.hidden = !albumLocatedPhotos.length;
-    if (albumMap) {
-        const center = albumLocatedPhotos[0] || { lat: 36.45, lng: 127.85 };
-        const zoom = albumLocatedPhotos.length ? 9 : 7;
-        const src = `https://www.google.com/maps?q=${center.lat},${center.lng}&z=${zoom}&output=embed`;
-        if (albumLocatedPhotos.length && albumMap.src !== src) albumMap.src = src;
+    const mapCount = $('#album-map-photo-count');
+    if (mapCount) mapCount.textContent = `${albumLocatedPhotos.length}장`;
+    if (!albumLocatedPhotos.length && mapSection) {
+        mapSection.open = false;
+        albumComposeMapController.dispose();
+    } else {
+        void renderAlbumComposeMap();
     }
 
 }

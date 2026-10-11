@@ -15,6 +15,12 @@ test('album composer uses Korean section labels and privacy controls expose sele
     assert.doesNotMatch(render, /Album Builder|Album Photos/);
     assert.match(render, /aria-pressed=/);
     assert.match(render, /<details class="album-compose-map"/);
+    const photosHeader = render.slice(render.indexOf('<section class="album-compose-photos">'), render.indexOf('<div class="analysis-stats">'));
+    assert.match(photosHeader, /id="btn-open-album-photo-picker"/);
+    assert.match(photosHeader, /id="analysis-photo-count"/);
+    const css = readFileSync('style.css', 'utf8');
+    assert.match(css, /#page-album \.album-compose-field > span\s*\{[^}]*text-align:\s*left;/);
+    assert.match(css, /#page-album \.album-compose-bar\s*\{[^}]*min-width:\s*0;/);
 });
 test('album save prevents duplicate requests and publishes local state only after linking photos', () => {
     const save = app.slice(app.indexOf('async function saveAlbumAndOpenDetail'), app.indexOf('function getDraftAlbumInput'));

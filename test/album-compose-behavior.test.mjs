@@ -55,6 +55,7 @@ test('all photos from one day are rendered, and a locationless album has no fake
         state: { stagedPhotos: [], albumDrafts: [] }, $: selector => nodes[selector] || null,
         getDraftPhotos: () => photos, getAlbumCandidatePhotos: () => photos, getMySavedPhotos: () => photos,
         getDemoDraftPhotos: () => [], getDraftPhotoCount: () => photos.length, getTravelSummary: () => ({}),
+        albumComposeMapController: { dispose() {} }, renderAlbumComposeMap() {},
         hasPhotoLocation: photo => photo.lat != null && photo.lng != null,
         formatPhotoPlaceMeta: count => `${count}장`, escapeHtml: String, renderPhotoImage: photo => `<img alt="${photo.id}">`
     });
