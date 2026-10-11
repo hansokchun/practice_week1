@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
+import { normalizePersonalPhotoSort, sortPersonalPhotos } from '../js/photo-sorting.mjs';
 import {
     getSelectedPersonalPhotos,
     prunePersonalPhotoSelection,
@@ -112,7 +113,7 @@ test('selection, select all, and clear keep the existing thumbnail nodes and pen
     const controls = new Map([['#personal-photo-grid', grid]]);
     const state = { selectedPersonalPhotoIds: ['a'], currentUser: { id: 'owner' }, personalPhotoPage: 1, lastToggledPersonalPhotoId: 'a' };
     const render = runInNewContext(`${body}; renderPersonalPhotosPage`, {
-        state, prunePersonalPhotoSelection, getSelectedPersonalPhotos,
+        state, prunePersonalPhotoSelection, getSelectedPersonalPhotos, normalizePersonalPhotoSort, sortPersonalPhotos,
         getMySavedPhotos: () => photos,
         getPhotoPage: items => ({ items, currentPage: 1 }),
         $: selector => {

@@ -129,6 +129,13 @@ import {
     removeSelectedPersonalPhotos,
     togglePersonalPhotoSelection
 } from './personal-photo-selection.mjs';
+import {
+    DEFAULT_PERSONAL_PHOTO_SORT,
+    loadPersonalPhotoSort,
+    normalizePersonalPhotoSort,
+    savePersonalPhotoSort,
+    sortPersonalPhotos
+} from './photo-sorting.mjs';
 import { getPublicAlbumEmptyState } from './public-album-empty-state.mjs';
 import { getPublicAlbumCardClass } from './public-album-card-state.mjs';
 import { getAuthorInitials, getPublicAuthorName } from './public-author.mjs';
@@ -308,6 +315,8 @@ const state = {
     selectedPhotoId: null,
     selectedPersonalPhotoIds: [],
     personalPhotoPage: 1,
+    personalPhotoSort: DEFAULT_PERSONAL_PHOTO_SORT,
+    personalPhotoSortOwnerId: null,
     likedPhotoPage: 1,
     lastToggledPersonalPhotoId: null,
     albumBuilderPhotoIds: [],
@@ -3825,6 +3834,12 @@ async function saveAccountProfile(event) {
 
 function updateAccountUI() {
     state.accountSettings = loadAccountSettings(window.localStorage, state.currentUser?.id || '');
+    const photoSortOwnerId = state.currentUser?.id || '';
+    if (state.personalPhotoSortOwnerId !== photoSortOwnerId) {
+        state.personalPhotoSortOwnerId = photoSortOwnerId;
+        state.personalPhotoSort = loadPersonalPhotoSort(window.localStorage, photoSortOwnerId);
+        state.personalPhotoPage = 1;
+    }
     const profile = getCurrentAccountProfile();
     const button = $('#btn-open-auth');
     const profileButton = $('#btn-open-profile');
@@ -3982,6 +3997,9 @@ function resetAccountState() {
     state.hasLoadedMyLikes = false;
     state.lastSavedPhotoIds = [];
     state.accountSettings = { ...DEFAULT_ACCOUNT_SETTINGS };
+    state.personalPhotoSort = DEFAULT_PERSONAL_PHOTO_SORT;
+    state.personalPhotoSortOwnerId = null;
+    state.personalPhotoPage = 1;
 }
 
 function syncAccountDeletionControl(deleting = false) {
@@ -5823,8 +5841,18 @@ function renderPhotoPagination(container, page, pageKey) {
     `;
 }
 
+function changePersonalPhotoSort(value) {
+    if (!state.currentUser) return;
+    state.personalPhotoSort = savePersonalPhotoSort(window.localStorage, state.currentUser.id, value);
+    state.personalPhotoPage = 1;
+    state.lastToggledPersonalPhotoId = null;
+    renderPersonalPhotosPage();
+    void refreshVisiblePhotoPageUrls('personal', state.personalPhotoPage);
+}
+
 async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
-    const sourcePhotos = pageKey === 'liked' ? getLikedPhotos() : getMySavedPhotos();
+    const requestedSort = state.personalPhotoSort;
+    const sourcePhotos = pageKey === 'liked' ? getLikedPhotos() : sortPersonalPhotos(getMySavedPhotos(), requestedSort);
     const page = getPhotoPage(sourcePhotos, requestedPage);
     const expiringPhotos = page.items.filter((photo) => shouldRefreshPhotoSignedUrl(photo));
     if (!expiringPhotos.length) return;
@@ -5848,6 +5876,7 @@ async function refreshVisiblePhotoPageUrls(pageKey, requestedPage) {
 
     const currentPage = pageKey === 'liked' ? state.likedPhotoPage : state.personalPhotoPage;
     if (currentPage !== requestedPage) return;
+    if (pageKey !== 'liked' && state.personalPhotoSort !== requestedSort) return;
     if (pageKey === 'liked') renderLikedPhotoSurfaces();
     else renderPersonalPhotosPage();
 }
@@ -5860,6 +5889,11 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos(), { preserveThumbna
     const privateButton = $('#btn-private-selected-photos');
     const deleteButton = $('#btn-delete-selected-photos');
     const pagination = $('#personal-photo-pagination');
+    const sortMenu = $('#personal-photo-sort');
+    if (sortMenu) {
+        sortMenu.value = normalizePersonalPhotoSort(state.personalPhotoSort);
+        sortMenu.disabled = !state.currentUser || !photos.length || Boolean(state.savedPhotosLoadError);
+    }
     state.selectedPersonalPhotoIds = prunePersonalPhotoSelection(state.selectedPersonalPhotoIds, photos);
     const selectedCount = state.selectedPersonalPhotoIds.length;
     const selectedPhotos = getSelectedPersonalPhotos(photos, state.selectedPersonalPhotoIds);
@@ -5903,7 +5937,7 @@ function renderPersonalPhotosPage(photos = getMySavedPhotos(), { preserveThumbna
         return;
     }
 
-    const personalPage = getPhotoPage(photos, state.personalPhotoPage);
+    const personalPage = getPhotoPage(sortPersonalPhotos(photos, state.personalPhotoSort), state.personalPhotoPage);
     state.personalPhotoPage = personalPage.currentPage;
     const cards = [...grid.querySelectorAll('.personal-photo-card')];
     if (preserveThumbnails && cards.length === personalPage.items.length
@@ -9120,6 +9154,9 @@ function bindEvents() {
     $('#settings-profile-edit')?.addEventListener('click', () => {
         openAccountProfilePage();
         setAccountProfileEditMode(true);
+    });
+    $('#personal-photo-sort')?.addEventListener('change', (event) => {
+        changePersonalPhotoSort(event.currentTarget.value);
     });
     $$('[data-settings-visibility]').forEach((button) => {
         button.addEventListener('click', () => {

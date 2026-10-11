@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { createContext, runInContext } from 'node:vm';
 import test from 'node:test';
+import { sortPersonalPhotos } from '../js/photo-sorting.mjs';
 
 import {
     PHOTO_SIGNED_URL_TTL_SECONDS,
@@ -69,6 +70,7 @@ test('visible-page refresh keeps a signed thumbnail when its original was unavai
         Set,
         state,
         shouldRefreshPhotoSignedUrl,
+        sortPersonalPhotos,
         getMySavedPhotos: () => state.savedPhotos,
         getLikedPhotos: () => [],
         getPhotoPage: (photos) => ({ items: photos, currentPage: 1 }),

@@ -308,6 +308,16 @@
                 </div>
                 <section class="dashboard-panel full-panel" data-my-library-panel="photos">
                     <div class="panel-topline">
+                        <label class="personal-photo-sort" for="personal-photo-sort">
+                            <span class="material-symbols-outlined" aria-hidden="true">sort</span>
+                            <select id="personal-photo-sort" aria-label="사진 정렬" disabled>
+                                <option value="uploaded-newest">등록 최신순</option>
+                                <option value="uploaded-oldest">등록 오래된 순</option>
+                                <option value="taken-newest">촬영 최신순</option>
+                                <option value="taken-oldest">촬영 오래된 순</option>
+                                <option value="most-liked">좋아요 많은 순</option>
+                            </select>
+                        </label>
                         <div class="panel-actions">
                             <button id="btn-select-all-photos" class="btn-secondary selection-all-button" data-toggle-personal-photo="all" type="button" hidden>
                                 <span class="material-symbols-outlined" aria-hidden="true">select_all</span>
