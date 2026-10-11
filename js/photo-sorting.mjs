@@ -1,6 +1,6 @@
 export const DEFAULT_PERSONAL_PHOTO_SORT = 'uploaded-newest';
 const PERSONAL_PHOTO_SORTS = new Set([
-    DEFAULT_PERSONAL_PHOTO_SORT, 'uploaded-oldest', 'taken-newest', 'taken-oldest', 'most-liked'
+    DEFAULT_PERSONAL_PHOTO_SORT, 'taken-newest', 'taken-oldest'
 ]);
 
 export function normalizePersonalPhotoSort(value) {
@@ -25,12 +25,10 @@ export function sortPersonalPhotos(photos = [], value = DEFAULT_PERSONAL_PHOTO_S
     return items.map((photo, index) => ({
         photo, index,
         uploadedAt: parsePhotoTimestamp(photo.created_at),
-        takenAt: parsePhotoTimestamp(photo.date),
-        likes: Number.isFinite(Number(photo.liked)) ? Math.max(0, Number(photo.liked)) : 0
+        takenAt: parsePhotoTimestamp(photo.date)
     })).sort((a, b) => {
-        const primary = order === 'most-liked' ? b.likes - a.likes
-            : order.startsWith('taken-') ? comparePhotoTimestamps(a.takenAt, b.takenAt, order === 'taken-oldest')
-            : comparePhotoTimestamps(a.uploadedAt, b.uploadedAt, order === 'uploaded-oldest');
+        const primary = order.startsWith('taken-') ? comparePhotoTimestamps(a.takenAt, b.takenAt, order === 'taken-oldest')
+            : comparePhotoTimestamps(a.uploadedAt, b.uploadedAt);
         return primary
             || comparePhotoTimestamps(a.uploadedAt, b.uploadedAt)
             || String(a.photo.id || '').localeCompare(String(b.photo.id || ''), 'en', { numeric: true })

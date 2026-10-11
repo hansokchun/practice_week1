@@ -20,23 +20,23 @@ test('changing sort returns to page one while preserving selection and rememberi
         renderPersonalPhotosPage: () => calls.push('render'),
         refreshVisiblePhotoPageUrls: (...args) => calls.push(args)
     });
-    change('most-liked');
-    assert.equal(state.personalPhotoSort, 'most-liked');
+    change('taken-newest');
+    assert.equal(state.personalPhotoSort, 'taken-newest');
     assert.equal(state.personalPhotoPage, 1);
     assert.deepEqual(state.selectedPersonalPhotoIds, ['selected']);
-    assert.equal(values.get('ikkyee:photo-sort:owner'), 'most-liked');
+    assert.equal(values.get('ikkyee:photo-sort:owner'), 'taken-newest');
     assert.deepEqual(calls, ['render', ['personal', 1]]);
     state.currentUser = null;
     change('taken-oldest');
-    assert.equal(state.personalPhotoSort, 'most-liked');
+    assert.equal(state.personalPhotoSort, 'taken-newest');
 });
 
 for (const changedDuringRefresh of [false, true]) {
     test(`signed URL refresh targets the sorted page${changedDuringRefresh ? ' and ignores a stale sort response' : ''}`, async () => {
         const state = {
-            personalPhotoSort: 'most-liked', personalPhotoPage: 1,
+            personalPhotoSort: 'taken-newest', personalPhotoPage: 1,
             savedPhotos: Array.from({ length: 20 }, (_, index) => ({
-                id: String(index), liked: index, storage_path: `owner/${index}.jpg`,
+                id: String(index), date: new Date(Date.UTC(2026, 0, index + 1)).toISOString(), storage_path: `owner/${index}.jpg`,
                 url: '/expired.jpg', signed_url_expires_at: 1
             }))
         };
@@ -61,12 +61,15 @@ for (const changedDuringRefresh of [false, true]) {
     });
 }
 
-test('the personal photo sort control exposes five named orders and is wired to the renderer', () => {
+test('the personal photo sort control exposes only three named orders and is wired to the renderer', () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
     const menu = html.slice(html.indexOf('<select id="personal-photo-sort"'), html.indexOf('</select>', html.indexOf('<select id="personal-photo-sort"')));
-    for (const value of ['uploaded-newest', 'uploaded-oldest', 'taken-newest', 'taken-oldest', 'most-liked']) {
+    for (const value of ['uploaded-newest', 'taken-newest', 'taken-oldest']) {
         assert.ok(menu.includes(`value="${value}"`));
     }
+    assert.equal((menu.match(/<option /g) || []).length, 3);
+    assert.match(menu, /<option value="uploaded-newest">등록 순<\/option>/);
+    assert.doesNotMatch(menu, /uploaded-oldest|most-liked|등록 최신순|좋아요/);
     assert.match(menu, /aria-label="사진 정렬"/);
     assert.match(app, /personal-photo-sort'\)\?\.addEventListener\('change',[\s\S]*changePersonalPhotoSort\(event\.currentTarget\.value\)/);
     assert.match(app, /getPhotoPage\(sortPersonalPhotos\(photos, state\.personalPhotoSort\), state\.personalPhotoPage\)/);
