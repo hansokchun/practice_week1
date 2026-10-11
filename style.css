@@ -9773,6 +9773,10 @@ body.explore-pin-selected #page-explore .explore-discovery-panel {
     aspect-ratio: auto;
 }
 
+.photo-masonry-grid img[data-photo-reveal]:not(.is-photo-ready) {
+    aspect-ratio: 4 / 5;
+}
+
 .landing-tag-gallery-grid .landing-tag-gallery-card {
     aspect-ratio: auto;
 }

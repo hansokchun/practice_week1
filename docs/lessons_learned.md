@@ -1,5 +1,12 @@
 # Lessons Learned
 
+## 2026-10-12: Preserve Recoverable Album Thumbnails
+
+- Album covers and album-detail thumbnails must retain their photo ID and use the shared image renderer. A raw signed cover URL cannot be renewed after its 15-minute lifetime.
+- Listen for later loads even when an image was initially complete. Track listeners per DOM node, not through copied dataset attributes, and keep a nonzero frame while an unsigned masonry image waits.
+- Recheck visible photos on route/tab entry, foreground return, online recovery, and back-forward cache restoration. Share in-flight signing batches and bound transient retries; do not retry permission failures automatically.
+- Ignore signing responses after the account, file paths, ownership, or visibility changes. Verify cached failures and connection recovery in both desktop and mobile browser fixtures without modifying server photos.
+
 ## 2026-10-11: Keep Thumbnail Recovery Listening
 
 - `img.complete` is also true for images without a source and cached failures. It is not a success signal without positive `naturalWidth`.

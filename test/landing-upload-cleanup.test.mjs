@@ -93,6 +93,8 @@ test('metadata-only dock thumbnails recover an address instead of remaining blan
         shouldRefreshPhotoSignedUrl: row => !row.signed_url_expires_at,
         HTMLImageElement: Image, photoImageUrlObserver: null,
         photoImageUrlRecoveryQueue: new Map(), photoImageUrlRecoveryTimer: null,
+        photoImageUrlRecoveryInFlight: new Map(), photoImageRecoveryAttempts: new WeakMap(),
+        photoImageRecoveryRetryTimers: new WeakMap(),
         window: { setTimeout: () => 1 },
         hydratePhotoUrls: async rows => {
             signed++;
@@ -104,6 +106,7 @@ test('metadata-only dock thumbnails recover an address instead of remaining blan
         ['function getPhotoImageSrc', 'const PHOTO_THUMBNAIL_EAGER_COUNT'],
         ['function renderLandingAdminDock()', 'function selectLandingAdminTarget'],
         ['function observePhotoImageUrl', 'function preparePhotoImagesInNode'],
+        ['function canUsePhotoOriginalFallback', 'function getPhotoImageRecoveryFallback'],
         ['function queuePhotoImageUrlRecovery', 'function showToast']
     ].map(([start, end]) => source.slice(source.indexOf(start), source.indexOf(end))).join('\n');
     runInNewContext(blocks, context);

@@ -28,8 +28,9 @@ test('myphoto album cards use a compact stacked travel album layout', () => {
     assert.match(app, /function getAlbumCoverStackMarkup\(sources, altText\)/);
     assert.match(app, /class="album-cover-stack"/);
     assert.match(app, /class="album-row-content"/);
-    assert.match(app, /const myPhotos = getMySavedPhotos\(\);[\s\S]*const albumPhotos = myPhotos\.filter\(\(photo\) => photo\.album_id === album\.id\);/);
-    assert.match(app, /getAlbumCoverStackMarkup\(\[album\.cover_url, \.\.\.albumPhotos\.map\(\(photo\) => photo\.url\)\], album\.title\)/);
+    assert.match(app, /const myPhotos = getMySavedPhotos\(\);[\s\S]*const albumPhotos = getAlbumCoverPhotos\(album, myPhotos\);/);
+    assert.match(app, /getAlbumCoverStackMarkup\(albumPhotos\.length \? albumPhotos : \[album\.cover_url\], album\.title\)/);
+    assert.match(app, /typeof source === 'object' \? renderPhotoImage\(source, '', \{ allowOriginal: true \}\)/);
     assert.match(app, /<span class="album-count-icon" aria-hidden="true"><\/span>\$\{formatPhotoCount\(album\.photo_count\)\}<\/small>/);
     assert.doesNotMatch(app.slice(app.indexOf('function renderSavedAlbumRows'), app.indexOf('function renderSavedPhotoAlbums')), /<span class="material-symbols-outlined">\$\{visibilityIcon\}<\/span>/);
 });

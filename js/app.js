@@ -103,6 +103,7 @@ import {
     getPhotoDetailOwnerMapItems
 } from './photo-detail-map.mjs';
 import { applyPhotoUrlsToAlbumCovers } from './photo-storage.mjs';
+import { getAlbumCoverPhotos } from './album-cover-photos.mjs';
 import { shouldRefreshPhotoSignedUrl, reusePhotoSignedUrls } from './photo-signed-url-freshness.mjs';
 import { getPhotoDeliverySource, getLandingWarmSlideIndexes } from './photo-delivery.mjs';
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
@@ -555,20 +556,38 @@ function renderPhotoImage(photo = {}, fallback = '사진', { fetchPriority = 'au
     const photoId = escapeHtml(photo.id || photo.localId || '');
     const priority = ['high', 'low'].includes(fetchPriority) ? ` fetchpriority="${fetchPriority}"` : '';
     const source = src ? ` src="${src}"` : '';
-    return `<img${source} data-i="${photoId}" data-photo-variant="thumbnail" data-photo-reveal alt="${alt}" loading="lazy" decoding="async"${priority}>`;
+    return `<img${source} data-i="${photoId}" data-photo-variant="thumbnail"${allowOriginal ? ' data-photo-allow-original="true"' : ''} data-photo-reveal alt="${alt}" loading="lazy" decoding="async"${priority}>`;
+}
+
+function renderAlbumCoverImage(album = {}) {
+    const photo = getAlbumCoverPhotos(album, state.savedPhotos)[0];
+    return photo ? renderPhotoImage(photo, '', { allowOriginal: true })
+        : `<img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">`;
 }
 
 const PHOTO_THUMBNAIL_EAGER_COUNT = 4;
 const PHOTO_THUMBNAIL_REVEAL_TIMEOUT_MS = 8000;
 const LANDING_TAG_THUMBNAIL_REVEAL_TIMEOUT_MS = 15000;
 const photoImageUrlRecoveryQueue = new Map();
+const photoImageUrlRecoveryInFlight = new Map();
 const photoImageRecoveryAttempts = new WeakMap();
+const photoImageRecoveryRetryTimers = new WeakMap();
+const photoImageRevealObserved = new WeakSet();
 let photoImageUrlRecoveryTimer = null;
 let photoImageUrlObserver = null;
 
 function resetPhotoImageRecovery(image) {
+    const timer = photoImageRecoveryRetryTimers.get(image);
+    if (timer) window.clearTimeout(timer);
+    photoImageRecoveryRetryTimers.delete(image);
     photoImageRecoveryAttempts.delete(image);
     delete image.dataset.r;
+}
+
+function canUsePhotoOriginalFallback(image) {
+    return image.dataset.photoAllowOriginal === 'true'
+        || Boolean(image.closest('.personal-photo-card'))
+        || Boolean(image.closest('.album-photo-picker-card, .album-day-thumbs, .album-cover-stack'));
 }
 
 function getPhotoImageRecoveryFallback(image, photo, currentSource) {
@@ -577,7 +596,7 @@ function getPhotoImageRecoveryFallback(image, photo, currentSource) {
     photoImageRecoveryAttempts.set(image, attempt);
     const variant = image.dataset.photoVariant || 'detail';
     const candidates = variant === 'thumbnail'
-        ? [photo.thumbnail_url, photo.preview_url, image.closest('.personal-photo-card') ? photo.url : '']
+        ? [photo.thumbnail_url, photo.preview_url, canUsePhotoOriginalFallback(image) ? photo.url : '']
         : variant === 'preview' ? [photo.preview_url, photo.thumbnail_url] : [];
     return candidates.find((source) => source && !attempt.failedSources.has(source)) || '';
 }
@@ -592,6 +611,14 @@ function preparePhotoImageReveal(image) {
     if (!isPhotoImageRevealCandidate(image)) return;
     image.setAttribute('data-photo-reveal', '');
     const source = image.getAttribute('src') || '';
+    if (!photoImageRevealObserved.has(image)) {
+        photoImageRevealObserved.add(image);
+        image.addEventListener('load', () => preparePhotoImageReveal(image));
+        image.addEventListener('error', () => preparePhotoImageReveal(image));
+    }
+    if (source && image.dataset.photoRevealSource === source
+        && image.complete && image.naturalWidth > 0
+        && image.classList.contains('is-photo-ready')) return;
     const loadId = `${Date.now()}-${Math.random()}`;
     image.dataset.photoRevealLoadId = loadId;
     image.classList.remove('is-photo-ready', 'is-photo-error');
@@ -608,6 +635,7 @@ function preparePhotoImageReveal(image) {
         if (image.dataset.photoRevealLoadId !== loadId || image.getAttribute('src') !== source) return;
         const isReady = image.complete && image.naturalWidth > 0;
         if (isReady) {
+            image.dataset.photoRevealSource = source;
             image.classList.remove('is-photo-error');
             image.classList.add('is-photo-ready');
         } else {
@@ -623,20 +651,31 @@ function preparePhotoImageReveal(image) {
     }
     if (image.complete) {
         void settle();
-        return;
     }
-    image.addEventListener('load', () => { void settle(); }, { once: true });
-    image.addEventListener('error', () => { void settle(); }, { once: true });
 }
 
-function observePhotoImageUrl(image) {
-    if (!(image instanceof HTMLImageElement) || !image.dataset.i || image.getAttribute('src')) return;
+function observePhotoImageUrl(image, { retry = false } = {}) {
+    if (!(image instanceof HTMLImageElement) || !image.dataset.i || (!retry && image.getAttribute('src'))) return;
     if (image.hasAttribute('data-photo-deferred') || image.hasAttribute('data-photo-unavailable')) return;
     if (photoImageUrlObserver) {
         photoImageUrlObserver.observe(image);
         return;
     }
     queuePhotoImageUrlRecovery(image);
+}
+
+function refreshVisiblePhotoImages() {
+    document.querySelectorAll('.page.active img, .modal.is-open img').forEach(image => {
+        if (!isPhotoImageRevealCandidate(image)) return;
+        const photo = state.savedPhotos.find(item => String(item.id) === String(image.dataset.i));
+        const failed = image.classList.contains('is-photo-error')
+            || (image.getAttribute('src') && image.complete && image.naturalWidth === 0);
+        if (photo?.storage_path && (failed || shouldRefreshPhotoSignedUrl(photo))) {
+            resetPhotoImageRecovery(image);
+            observePhotoImageUrl(image, { retry: true });
+        }
+        preparePhotoImageReveal(image);
+    });
 }
 
 function preparePhotoImagesInNode(node) {
@@ -779,7 +818,7 @@ async function recoverPhotoImageUrl(image) {
     const photo = state.savedPhotos.find((item) => String(item.id) === String(image.dataset.i));
     const currentSource = image.getAttribute('src') || '';
     if (!photo?.storage_path) return;
-    const fallbackSource = getPhotoImageRecoveryFallback(image, photo, currentSource);
+    const fallbackSource = shouldRefreshPhotoSignedUrl(photo) ? '' : getPhotoImageRecoveryFallback(image, photo, currentSource);
     if (fallbackSource) {
         image.dataset.r = fallbackSource;
         image.onload = () => { resetPhotoImageRecovery(image); };
@@ -802,6 +841,15 @@ function queuePhotoImageUrlRecovery(image) {
     const currentSource = image.getAttribute('src') || '';
     if (!photo?.storage_path || image.dataset.r === currentSource) return;
     image.dataset.r = currentSource;
+    const attempt = photoImageRecoveryAttempts.get(image) || { failedSources: new Set() };
+    attempt.signingRequested = true;
+    photoImageRecoveryAttempts.set(image, attempt);
+
+    const inFlightImages = photoImageUrlRecoveryInFlight.get(photoId);
+    if (inFlightImages) {
+        inFlightImages.add(image);
+        return;
+    }
 
     const queuedImages = photoImageUrlRecoveryQueue.get(photoId) || new Set();
     queuedImages.add(image);
@@ -811,6 +859,23 @@ function queuePhotoImageUrlRecovery(image) {
         photoImageUrlRecoveryTimer = null;
         void flushPhotoImageUrlRecoveryQueue();
     }, 0);
+}
+
+function retryPhotoImageUrlAfterFailure(image, error) {
+    const status = Number(error?.status || error?.statusCode || 0);
+    if (status >= 400 && status < 500 && status !== 429) return;
+    const attempt = photoImageRecoveryAttempts.get(image);
+    if (!attempt || photoImageRecoveryRetryTimers.has(image) || (attempt.networkRetries || 0) >= 2) return;
+    attempt.networkRetries = (attempt.networkRetries || 0) + 1;
+    const photoId = image.dataset.i;
+    const userId = state.currentUser?.id;
+    const timer = window.setTimeout(() => {
+        photoImageRecoveryRetryTimers.delete(image);
+        if (!image.isConnected || image.dataset.i !== photoId || state.currentUser?.id !== userId) return;
+        delete image.dataset.r;
+        queuePhotoImageUrlRecovery(image);
+    }, attempt.networkRetries * 1000);
+    photoImageRecoveryRetryTimers.set(image, timer);
 }
 
 async function flushPhotoImageUrlRecoveryQueue() {
@@ -825,12 +890,33 @@ async function flushPhotoImageUrlRecoveryQueue() {
     ));
     if (!photosToHydrate.length) return;
 
-    const { data: refreshedPhotos, error } = await hydratePhotoUrls(photosToHydrate);
+    const userId = state.currentUser?.id;
+    const requestedPhotos = new Map(photosToHydrate.map(photo => [String(photo.id), { ...photo }]));
+    queuedEntries.forEach(([photoId, images]) => photoImageUrlRecoveryInFlight.set(photoId, images));
+    let result;
+    try {
+        result = await hydratePhotoUrls(photosToHydrate);
+    } catch (error) {
+        result = { error };
+    } finally {
+        queuedEntries.forEach(([photoId]) => photoImageUrlRecoveryInFlight.delete(photoId));
+    }
+    if (state.currentUser?.id !== userId) return;
+    const { data: refreshedPhotos, error } = result;
     if (error) {
-        queuedEntries.forEach(([, images]) => images.forEach((image) => image.classList.add('is-photo-error')));
+        queuedEntries.forEach(([, images]) => images.forEach((image) => {
+            if (!image.isConnected) return;
+            image.classList.add('is-photo-error');
+            retryPhotoImageUrlAfterFailure(image, error);
+        }));
         return;
     }
-    const refreshedById = new Map((refreshedPhotos || []).map((photo) => [String(photo.id), photo]));
+    const refreshedById = new Map((refreshedPhotos || []).filter(photo => {
+        const requested = requestedPhotos.get(String(photo.id));
+        const current = state.savedPhotos.find(item => String(item.id) === String(photo.id));
+        return requested && current && ['storage_path', 'thumbnail_path', 'preview_path', 'owner_id', 'visibility']
+            .every(key => current[key] === requested[key]);
+    }).map(photo => [String(photo.id), photo]));
     state.savedPhotos.forEach((photo) => {
         const refreshed = refreshedById.get(String(photo.id));
         if (!refreshed) return;
@@ -847,7 +933,7 @@ async function flushPhotoImageUrlRecoveryQueue() {
             if (!refreshed) return;
             const variant = image.dataset.photoVariant || 'detail';
             const source = variant === 'thumbnail' && !image.closest('.landing-photo-card')
-                ? getPhotoThumbnailSrc(refreshed, { allowOriginal: Boolean(image.closest('.personal-photo-card')) })
+                ? getPhotoThumbnailSrc(refreshed, { allowOriginal: canUsePhotoOriginalFallback(image) })
                 : getPhotoDeliverySource(refreshed, variant);
             if (!source) {
                 image.classList.add('is-photo-error');
@@ -1129,6 +1215,7 @@ function renderRoute(section) {
         requestAnimationFrame(() => refreshExploreMapAfterRouteEntry());
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    requestAnimationFrame(refreshVisiblePhotoImages);
     document.body.dataset.routeRenderMs = (window.performance.now() - routeRenderStartedAt).toFixed(2);
 }
 
@@ -1503,6 +1590,7 @@ function setMyLibraryTab(tab = 'photos') {
     $$('[data-my-library-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.myLibraryPanel !== state.myLibraryTab;
     });
+    requestAnimationFrame(refreshVisiblePhotoImages);
 }
 
 function syncPhotosAlbumList() {
@@ -2358,7 +2446,12 @@ function updateExploreAlbumPreview(album) {
     const tripButton = preview.querySelector('[data-go-trip]');
     const profileButton = preview.querySelector('[data-go-profile]');
     if (image) {
-        image.src = album.cover_url || MAIN_BG_2_URL;
+        const coverPhoto = getAlbumCoverPhotos(album, state.savedPhotos)[0];
+        if (coverPhoto) setPhotoImageSource(image, coverPhoto, { variant: 'thumbnail' });
+        else {
+            delete image.dataset.i;
+            image.src = album.cover_url || MAIN_BG_2_URL;
+        }
         image.alt = album.title || 'Public album';
     }
     if (story) {
@@ -4636,7 +4729,7 @@ function renderPublicOwnerProfile(ownerId, publicPhotos = getPublicPhotoMapItems
         profileAlbumGrid.innerHTML = ownerAlbums.length
             ? ownerAlbums.slice(0, 12).map((album) => `
                 <article class="${getPublicAlbumCardClass(album.id, state.selectedPublicAlbumId)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                    <img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">
+                    ${renderAlbumCoverImage(album)}
                     <strong>${escapeHtml(album.title)}</strong>
                     <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
                 </article>
@@ -4830,7 +4923,7 @@ function renderTripReviewPhotoCard(photo, albumTitle, cover, isEditing) {
             data-photo-id="${escapeHtml(photoId)}"
         >
             ${isEditing ? `<button class="trip-review-photo-remove" data-remove-trip-photo="${escapeHtml(photoId)}" data-remove-trip-photo-index="${Number(photo._albumReviewIndex ?? -1)}" type="button" aria-label="앨범에서 사진 삭제"><span class="material-symbols-outlined">close</span></button>` : ''}
-            <img src="${escapeHtml(photo.url || cover || MAIN_BG_2_URL)}" alt="${escapeHtml(getPhotoFallbackLabel(photo, albumTitle))}" loading="lazy" decoding="async">
+            ${renderPhotoImage(photo, albumTitle, { allowOriginal: true })}
         </article>
     `;
 }
@@ -5372,7 +5465,7 @@ function renderPublicSurfaces() {
     if (relatedGrid) {
         relatedGrid.innerHTML = getRelatedAlbums(albums, selected).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                <img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">
+                ${renderAlbumCoverImage(album)}
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
@@ -5407,7 +5500,7 @@ function renderPublicSurfaces() {
     if (profileAlbumGrid) {
         profileAlbumGrid.innerHTML = profileAlbums.slice(0, 6).map((album) => `
             <article class="${getPublicAlbumCardClass(album.id, selected.id)}" data-public-album-id="${escapeHtml(album.id)}" data-go-trip>
-                <img src="${escapeHtml(album.cover_url || MAIN_BG_2_URL)}" alt="" loading="lazy" decoding="async">
+                ${renderAlbumCoverImage(album)}
                 <strong>${escapeHtml(album.title)}</strong>
                 <span>${formatPhotoPlaceMeta(album.photo_count || 1, album.places || 1)}</span>
             </article>
@@ -6066,7 +6159,7 @@ function renderMissingLocationTasks(photos) {
 
     list.innerHTML = photos.slice(0, 4).map((photo) => `
         <button class="missing-location-thumb" type="button" data-location-assignment-photo="${escapeHtml(photo.id)}" aria-label="${escapeHtml(getPhotoFallbackLabel(photo, '사진'))} 위치 지정">
-            <img src="${escapeHtml(photo.url)}" alt="" loading="lazy" decoding="async">
+            ${renderPhotoImage(photo, '', { allowOriginal: true })}
         </button>
     `).join('');
 }
@@ -6501,7 +6594,8 @@ function getUniqueAlbumCoverSources(sources, limit = 3) {
 
 function getAlbumCoverLayerMarkup(source, layerClass) {
     const blankClass = source ? '' : ' album-cover-layer--blank';
-    const imageMarkup = source ? `<img src="${escapeHtml(source)}" alt="" loading="lazy" decoding="async">` : '';
+    const imageMarkup = source && typeof source === 'object' ? renderPhotoImage(source, '', { allowOriginal: true })
+        : source ? `<img src="${escapeHtml(source)}" alt="" loading="lazy" decoding="async">` : '';
 
     return `
             <span class="album-cover-layer ${layerClass}${blankClass}" aria-hidden="true">
@@ -6531,8 +6625,8 @@ function renderSavedAlbumRows(albums) {
     if (!list) return;
     const myPhotos = getMySavedPhotos();
     list.innerHTML = albums.map((album) => {
-        const albumPhotos = myPhotos.filter((photo) => photo.album_id === album.id);
-        const coverMarkup = getAlbumCoverStackMarkup([album.cover_url, ...albumPhotos.map((photo) => photo.url)], album.title);
+        const albumPhotos = getAlbumCoverPhotos(album, myPhotos);
+        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.length ? albumPhotos : [album.cover_url], album.title);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-id="${escapeHtml(album.id)}" data-myphoto-album-visibility="${escapeHtml(album.visibility)}">
                 ${coverMarkup}
@@ -6558,7 +6652,7 @@ function renderSavedPhotoAlbums(photos) {
     const albums = Object.entries(grouped);
     list.innerHTML = albums.map(([name, albumPhotos]) => {
         const shared = albumPhotos.some((photo) => photo.shared);
-        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos.map((photo) => photo.url), name);
+        const coverMarkup = getAlbumCoverStackMarkup(albumPhotos, name);
         return `
             <article class="album-row" role="button" tabindex="0" data-myphoto-album-name="${escapeHtml(name)}" data-myphoto-album-visibility="${shared ? 'public' : 'private'}">
                 ${coverMarkup}
@@ -9259,7 +9353,14 @@ function bindEvents() {
     window.addEventListener('resize', () => layoutTripReviewPhotoRows());
     document.addEventListener('visibilitychange', () => {
         setLandingHeroSlideshowActive(document.body.dataset.page === LANDING_ROUTE && !document.hidden);
-        if (!document.hidden) loadReceivedLikes();
+        if (!document.hidden) {
+            refreshVisiblePhotoImages();
+            loadReceivedLikes();
+        }
+    });
+    window.addEventListener('online', refreshVisiblePhotoImages);
+    window.addEventListener('pageshow', event => {
+        if (event.persisted) refreshVisiblePhotoImages();
     });
     window.setInterval(() => { if (!document.hidden && state.currentUser) loadReceivedLikes(); }, 60000);
 }

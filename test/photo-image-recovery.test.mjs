@@ -7,9 +7,174 @@ import { shouldRefreshPhotoSignedUrl } from '../js/photo-signed-url-freshness.mj
 import { getPhotoDeliverySource } from '../js/photo-delivery.mjs';
 
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
+const imageHelpers = app.slice(app.indexOf('function getPhotoImageSrc'), app.indexOf('function renderPhotoImage'));
+const recovery = app.slice(app.indexOf('const photoImageUrlRecoveryQueue'), app.indexOf('function showToast'));
+
+function createRecoveryHarness(hydrate, photoOverrides = {}) {
+    const timers = new Map();
+    let timerId = 0;
+    const state = {
+        currentUser: { id: 'owner' },
+        savedPhotos: [{ id: 'photo', storage_path: 'owner/original.jpg', thumbnail_path: 'owner/thumb.jpg', ...photoOverrides }]
+    };
+    const context = createContext({
+        state, shouldRefreshPhotoSignedUrl, getPhotoDeliverySource, MAIN_BG_2_URL: '/sample.jpg',
+        hydratePhotoUrls: hydrate,
+        window: {
+            setTimeout(callback, delay) { timers.set(++timerId, { callback, delay }); return timerId; },
+            clearTimeout(id) { timers.delete(id); }
+        }
+    });
+    const api = runInContext(`${imageHelpers}; ${recovery}; ({
+        queuePhotoImageUrlRecovery, flushPhotoImageUrlRecoveryQueue, recoverPhotoImageUrl,
+        resetPhotoImageRecovery
+    })`, context);
+    return {
+        ...api, state, timers,
+        async runTimer(delay) {
+            const entry = [...timers].find(([, timer]) => timer.delay === delay);
+            assert.ok(entry, `expected a ${delay}ms timer`);
+            timers.delete(entry[0]);
+            entry[1].callback();
+            await new Promise(resolve => setImmediate(resolve));
+        }
+    };
+}
+
+function recoveryImage() {
+    const classes = new Set();
+    const image = {
+        dataset: { i: 'photo', photoVariant: 'thumbnail' }, isConnected: true, src: '',
+        getAttribute: name => name === 'src' ? image.src : '', closest: () => null,
+        classList: { add: value => classes.add(value), contains: value => classes.has(value) }
+    };
+    return image;
+}
+
+function freshRecoveryResult() {
+    return { data: [{ id: 'photo', storage_path: 'owner/original.jpg', thumbnail_path: 'owner/thumb.jpg',
+        thumbnail_url: '/fresh-thumb', signed_url_expires_at: Date.now() + 900_000 }], error: null };
+}
+
+test('duplicate photo nodes join the pending signing request and both receive the fresh URL', async () => {
+    let complete;
+    let calls = 0;
+    const harness = createRecoveryHarness(() => {
+        calls += 1;
+        return new Promise(resolve => { complete = resolve; });
+    });
+    const first = recoveryImage();
+    const second = recoveryImage();
+    harness.queuePhotoImageUrlRecovery(first);
+    const pending = harness.flushPhotoImageUrlRecoveryQueue();
+    harness.queuePhotoImageUrlRecovery(second);
+    complete(freshRecoveryResult());
+    await pending;
+    assert.equal(calls, 1);
+    assert.equal(first.src, '/fresh-thumb');
+    assert.equal(second.src, '/fresh-thumb');
+});
+
+test('a transient signing outage retries and recovers without page reload', async () => {
+    let calls = 0;
+    const harness = createRecoveryHarness(async () => ++calls === 1
+        ? { error: { status: 503 } } : freshRecoveryResult());
+    const image = recoveryImage();
+    harness.queuePhotoImageUrlRecovery(image);
+    await harness.runTimer(0);
+    assert.equal(image.src, '');
+    await harness.runTimer(1000);
+    await harness.runTimer(0);
+    assert.equal(image.src, '/fresh-thumb');
+    image.onload();
+    assert.equal(harness.timers.size, 0);
+});
+
+test('automatic retries are bounded and do not retry permission failures', async () => {
+    for (const status of [503, 403]) {
+        let calls = 0;
+        const harness = createRecoveryHarness(async () => { calls += 1; return { error: { status } }; });
+        harness.queuePhotoImageUrlRecovery(recoveryImage());
+        await harness.runTimer(0);
+        if (status === 503) {
+            await harness.runTimer(1000);
+            await harness.runTimer(0);
+            await harness.runTimer(2000);
+            await harness.runTimer(0);
+        }
+        assert.equal(calls, status === 503 ? 3 : 1);
+        assert.equal(harness.timers.size, 0);
+    }
+});
+
+test('pending retries do not follow detached images or a changed session', async () => {
+    for (const change of ['detach', 'session']) {
+        let calls = 0;
+        const harness = createRecoveryHarness(async () => { calls += 1; return { error: { status: 503 } }; });
+        const image = recoveryImage();
+        harness.queuePhotoImageUrlRecovery(image);
+        await harness.runTimer(0);
+        if (change === 'detach') image.isConnected = false;
+        else harness.state.currentUser = { id: 'other' };
+        await harness.runTimer(1000);
+        assert.equal(calls, 1);
+        assert.equal(harness.timers.size, 0);
+    }
+});
+
+test('an in-flight signed response cannot overwrite a different session or replaced photo file', async () => {
+    for (const change of ['session', 'file']) {
+        let complete;
+        const harness = createRecoveryHarness(() => new Promise(resolve => { complete = resolve; }));
+        const image = recoveryImage();
+        harness.queuePhotoImageUrlRecovery(image);
+        const pending = harness.flushPhotoImageUrlRecoveryQueue();
+        if (change === 'session') harness.state.currentUser = { id: 'other' };
+        else harness.state.savedPhotos[0].thumbnail_path = 'owner/replaced-thumb.jpg';
+        complete(freshRecoveryResult());
+        await pending;
+        assert.equal(image.src, '');
+        assert.equal(harness.state.savedPhotos[0].thumbnail_url, undefined);
+    }
+});
+
+test('expired variants are renewed instead of cycling through expired alternatives', async () => {
+    const harness = createRecoveryHarness(async () => freshRecoveryResult(), {
+        thumbnail_url: '/expired-thumb', preview_url: '/expired-preview', signed_url_expires_at: 1000
+    });
+    const image = recoveryImage();
+    image.src = '/expired-thumb';
+    await harness.recoverPhotoImageUrl(image);
+    assert.equal(image.src, '/expired-thumb');
+    await harness.runTimer(0);
+    assert.equal(image.src, '/fresh-thumb');
+});
+
+test('album-cover recovery permits the original-only response without enabling it on recommendation cards', async () => {
+    const harness = createRecoveryHarness(async () => ({ data: [{
+        ...freshRecoveryResult().data[0], thumbnail_url: null, url: '/fresh-original'
+    }], error: null }));
+    const cover = recoveryImage();
+    cover.dataset.photoAllowOriginal = 'true';
+    const recommendation = recoveryImage();
+    recommendation.closest = selector => selector === '.landing-photo-card' ? {} : null;
+    harness.queuePhotoImageUrlRecovery(cover);
+    harness.queuePhotoImageUrlRecovery(recommendation);
+    await harness.runTimer(0);
+    assert.equal(cover.src, '/fresh-original');
+    assert.equal(recommendation.src, '');
+});
 
 test('stored photos never masquerade as a bundled sample while their signed URL is unavailable', () => {
     assert.match(app, /return photo\.url \|\| photo\.albumCoverUrl \|\| \(!photo\.storage_path && MAIN_BG_2_URL\) \|\| ''/);
+});
+
+test('album detail and missing-location thumbnails retain photo identity for common recovery', () => {
+    const albumCard = app.slice(app.indexOf('function renderTripReviewPhotoCard('), app.indexOf('function renderTripReviewPhotoFlow('));
+    assert.match(albumCard, /renderPhotoImage\(photo, albumTitle, \{ allowOriginal: true \}\)/);
+    assert.doesNotMatch(albumCard, /photo\.url \|\| cover/);
+    const missing = app.slice(app.indexOf('function renderMissingLocationTasks('), app.indexOf('function formatLocationAssignmentDate('));
+    assert.match(missing, /renderPhotoImage\(photo, '', \{ allowOriginal: true \}\)/);
 });
 
 test('database mutations cannot replace a live signed URL with the stale stored value', () => {
