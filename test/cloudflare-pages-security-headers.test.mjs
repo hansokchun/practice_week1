@@ -27,9 +27,13 @@ test('analytics CSP allows the tag and collection without adding advertising hos
     assert.doesNotMatch(headers, /doubleclick\.net|googleadservices\.com|googlesyndication\.com/);
 });
 
-test('Cloudflare Pages caches only fingerprinted build assets long term', () => {
+test('critical build files are revalidated instead of caching an HTML fallback long term', () => {
     assert.match(headers, /^\/assets\/\*$/m);
-    assert.match(headers, /Cache-Control: public, max-age=31536000, immutable/);
+    const assetRule = headers.slice(headers.indexOf('/assets/*'), headers.indexOf('/social-preview.jpg'));
+    assert.match(assetRule, /Cache-Control: public, max-age=0, must-revalidate/);
+    assert.doesNotMatch(assetRule, /immutable/);
     const rootRule = headers.slice(headers.indexOf('/*'), headers.indexOf('/assets/*'));
     assert.doesNotMatch(rootRule, /Cache-Control:/);
+    assert.match(headers, /^\/\n  Cache-Control: no-cache, must-revalidate/m);
+    assert.match(headers, /^\/stylesheet-recovery\.js\n  Cache-Control: no-cache, must-revalidate/m);
 });

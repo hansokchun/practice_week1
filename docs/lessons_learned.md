@@ -1,5 +1,21 @@
 # Lessons Learned
 
+## 2026-10-13: Do Not Cache An HTML Fallback As CSS
+
+- Production Chrome can retain a `text/html` SPA fallback under a hashed CSS URL;
+  MIME checking then leaves every hidden route visible and the layout unstyled.
+  Inspect the real browser console, not only a later successful server GET.
+- Hash-based navigation does not need arbitrary missing file paths to return the
+  app shell. Ship a top-level static `404.html` so missing assets return 404.
+- Revalidate build files and the root document. A new stylesheet content hash
+  repairs browsers already holding a poisoned immutable response without deleting
+  their login session, photos, or preferences.
+- Install the tiny stylesheet error guard before the deferred application bundle;
+  retry the same-origin app CSS once with a fresh cache key. Do not retry provider
+  scripts/fonts, bypass security warnings or reload unsaved user work.
+- Avoid racing a manual main deployment against the Git-integrated build. Verify
+  the active custom-domain HTML and each referenced CSS/JS response after promotion.
+
 ## 2026-10-13: Keep Album Sharing On The Selected Cover
 
 - A cover control must let the owner choose a member photo, not silently save the first item. Preserve the chosen photo when adding or removing unrelated album photos.
