@@ -2,10 +2,28 @@
 
 ## Current Status
 
-The web integration is prepared, but collection is OFF until a real measurement
-ID is configured. No property or account was created or terms accepted by Codex.
-The Google account open on 2026-10-13 showed the initial Analytics welcome page.
+Activated for consenting production web visitors on 2026-10-13. The owner
+registered the property and supplied measurement ID `G-Y86DQ6ZVHR`; Codex did not
+create the account, accept terms or create a Measurement Protocol API secret.
 The native mobile app is not instrumented by this web-only integration.
+
+- Account: `benet9827` / administrator Google account.
+- GA4 property: `558510861`; web stream: `16114088574`, named `이끼`, URL
+  `https://ikkyee.com`.
+- Production binding `GOOGLE_ANALYTICS_MEASUREMENT_ID` was stored with
+  `wrangler pages secret put` and activated by redeploying main. The ID is public;
+  encrypted server storage avoids changing unrelated dashboard bindings.
+- Enhanced Measurement OFF; Google Signals and user-provided data OFF.
+- Detailed location/device collection OFF; advertising personalization blocked
+  in all 307 regions. No advertising product was connected.
+- Event and user retention set to 2 months; activity-based user retention reset
+  OFF. Google states retention-setting changes take up to 24 hours to apply;
+  ordinary aggregate reports are not governed by that retention window.
+- A real consenting browser visit appeared in Realtime: one active user,
+  `메인` once and `지도` once, two `page_view` events without duplicates.
+- Consent was checked in the live UI: no analytics script before opt-in, the
+  expected measurement tag after opt-in, and no analytics script after withdrawal
+  and the automatic document refresh. The Main route remained usable.
 
 ## Initial Setup
 
@@ -28,6 +46,8 @@ The native mobile app is not instrumented by this web-only integration.
    `GOOGLE_ANALYTICS_MEASUREMENT_ID` with that value, then redeploy main.
    Codex can complete this step after the owner supplies the measurement ID.
    Do not add a token, password or private Google key to frontend code.
+   This project's active ID is already configured as a Production encrypted
+   binding; do not create a second tag or another duplicate web stream.
 
 ## Implemented Behavior
 

@@ -88,10 +88,14 @@ Workers AI integration:
 
 ### Google Analytics
 
-- Web-only GA4 integration prepared on 2026-10-13; **inactive** without a real ID.
+- Web-only GA4 integration activated on 2026-10-13 for consenting production visitors.
+- Measurement ID: `G-Y86DQ6ZVHR`; property `558510861`, web stream `16114088574`.
 - Production runtime variable: `GOOGLE_ANALYTICS_MEASUREMENT_ID` (public `G-` ID).
 - Explicit browser consent, manual sanitized pageviews, no ad tracking.
-- Owner registration and Enhanced Measurement OFF are required before activation.
+- Owner registration completed. Enhanced Measurement, Google Signals, detailed
+  location/device collection and ad personalization are OFF; 2-month user/event
+  retention is configured without activity-based extension.
+- Live Realtime validation received `메인` and `지도` once each for one QA visitor.
 - Setup and verification: [google-analytics.md](google-analytics.md).
 
 - `auth.js` initializes the Supabase client and wraps Auth, Database, and
