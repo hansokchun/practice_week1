@@ -24,7 +24,10 @@ test('photo detail modal shows visibility only for the current user photo', () =
     assert.equal(html.includes('class="map-expand-button"'), false);
     assert.match(html, /id="photo-detail-visibility"/);
     assert.match(html, /data-show-photo-on-map/);
-    assert.match(html, /data-show-photo-on-map[^>]*>[\s\S]*?location_on[\s\S]*?지도에서 찾기/);
+    const mapButton = html.match(/<button[^>]*data-show-photo-on-map[^>]*>[\s\S]*?<\/button>/)?.[0] ?? '';
+    assert.match(mapButton, /location_on/);
+    assert.match(mapButton, /<span>지도에서 보기<\/span>/);
+    assert.doesNotMatch(mapButton, /지도에서 찾기/);
     assert.doesNotMatch(html, /data-show-photo-on-map[^>]*class="[^"]*nav-create/);
 
     const source = readFileSync('js/app.js', 'utf8');
