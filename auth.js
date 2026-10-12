@@ -498,19 +498,57 @@ export async function submitProductFeedback(payload) {
     }
 }
 
-export async function fetchProductFeedback(limit = 100) {
+export async function fetchProductFeedback(limit = 100, { page = 1, status = '', category = '' } = {}) {
     try {
         const sb = getSupabase();
-        const { data, error } = await sb
+        const pageSize = Math.min(Math.max(Number(limit) || 100, 1), 100);
+        let query = sb
             .from('product_feedback')
-            .select(PRODUCT_FEEDBACK_SELECT_COLUMNS)
-            .order('created_at', { ascending: false })
-            .limit(Math.min(Math.max(Number(limit) || 100, 1), 100));
+            .select(PRODUCT_FEEDBACK_SELECT_COLUMNS, { count: 'exact' })
+            .order('created_at', { ascending: false });
+        if (status) query = query.eq('status', status);
+        if (category) query = query.eq('category', category);
+        const offset = (Math.max(1, Number(page) || 1) - 1) * pageSize;
+        const { data, error, count } = await query.range(offset, offset + pageSize - 1);
         if (error) throw error;
-        return { data: data || [], error: null };
+        return { data: data || [], count: count || 0, error: null };
     } catch (error) {
         return { data: [], error };
     }
+}
+
+async function callAdminAccounts(body) {
+    const messages = { unauthorized: '다시 로그인해주세요.', forbidden: '관리자 계정에서만 사용할 수 있습니다.', protected_account: '관리자 계정은 경고하거나 차단할 수 없습니다.', moderation_busy: '처리 중이거나 확인이 필요한 이력이 있습니다. 새로고침 후 확인해주세요.', invalid_request: '입력한 내용을 확인해주세요.' };
+    try {
+        const { data, error } = await getSupabase().functions.invoke('admin-accounts', { body });
+        if (error) {
+            let code;
+            try { code = (await error.context?.json())?.error; } catch { /* Only use safe server error codes. */ }
+            throw new Error(messages[code] || '관리자 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        }
+        return { data, error: null };
+    } catch (error) { return { data: null, error }; }
+}
+export const fetchAdminAccounts = options => callAdminAccounts({ ...options, action: 'list' });
+export const fetchAdminAccountDetail = userId => callAdminAccounts({ action: 'detail', userId });
+export const moderateAdminAccount = operation => callAdminAccounts({ ...operation, action: 'moderate' });
+
+export async function fetchMyAccountModeration(userId) {
+    try {
+        const { data, error } = await getSupabase().from('account_moderation_events')
+            .select('id,action,reason,banned_until,created_at,acknowledged_at')
+            .eq('target_user_id', userId).eq('state', 'completed').order('created_at', { ascending: false }).limit(30);
+        if (error) throw error;
+        const latestRestriction = (data || []).find(item => ['ban', 'unban'].includes(item.action));
+        return { data: { warnings: (data || []).filter(item => item.action === 'warning' && !item.acknowledged_at),
+            bannedUntil: latestRestriction?.action === 'ban' ? latestRestriction.banned_until : null }, error: null };
+    } catch (error) { return { data: null, error }; }
+}
+export async function acknowledgeAccountWarning(id) {
+    try {
+        const { error } = await getSupabase().from('account_moderation_events').update({ acknowledged_at: new Date().toISOString() }).eq('id', id).select('id').single();
+        return { error };
+    } catch (error) { return { error }; }
 }
 
 export async function updateProductFeedbackStatus(feedbackId, status) {

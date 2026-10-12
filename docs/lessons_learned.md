@@ -38,6 +38,14 @@
 - Kakao's desktop share SDK posts a form to `sharer.kakao.com`. Loading the SDK is not enough: CSP must permit that exact form destination and its account-login redirect. Keep other form destinations blocked and verify the deployed popup, not just the click handler.
 - Prepare sharing SDKs before enabling their buttons. Call the share API directly from the user click and remove failed script elements before retrying; otherwise a completed error event can leave later attempts waiting forever.
 
+## 2026-10-12: Administrator Accounts
+
+- Admin routes must be added to both the app route set and the shared hash parser. Otherwise a direct URL or refresh silently falls back to Home even though menu navigation works.
+- Never trust `user_metadata` for administration. Recheck the actor's current Auth `app_metadata` on the server and keep the account directory service-only.
+- Auth bans alone do not protect against already-issued JWTs. Restrictive RLS covers reads/storage and write triggers also cover existing SECURITY DEFINER RPCs. Validate with synthetic users in a rollback transaction, never moderate real users for QA.
+- Keep administrative previews limited to owned thumbnail/preview paths with short-lived signed URLs. Do not send original paths, raw Auth objects, or credentials to the browser.
+- Invalidate pending admin responses on navigation, account switching, and role loss; never render data from an earlier actor.
+
 ## 2026-05-15
 
 - Some Korean text appears broken in PowerShell output even when JSON parses correctly. Verify with Node or UTF-8-aware tools before assuming file corruption.

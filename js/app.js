@@ -7,6 +7,11 @@ import {
     fetchAlbums,
     fetchLandingCuration,
     fetchProductFeedback,
+    fetchAdminAccounts,
+    fetchAdminAccountDetail,
+    moderateAdminAccount,
+    fetchMyAccountModeration,
+    acknowledgeAccountWarning,
     fetchMyLikes,
     fetchReceivedLikes,
     markReceivedLikesRead,
@@ -46,6 +51,7 @@ import {
     upsertPhoto
 } from '../auth.js';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
+import { createAdminAccountsController } from './admin-accounts-controller.mjs';
 import {
     DEFAULT_ACCOUNT_SETTINGS,
     getUploadVisibilityPlan,
@@ -421,6 +427,12 @@ const state = {
     landingTagRegion: '',
     landingTagPhotos: [],
     productFeedback: [],
+    productFeedbackPage: 1,
+    productFeedbackCount: 0,
+    productFeedbackLoadId: 0,
+    productFeedbackError: '',
+    accountWarnings: [],
+    selectedAccountWarningId: null,
     isProductFeedbackLoading: false,
     hasLoadedProductFeedback: false,
     accountSettings: { ...DEFAULT_ACCOUNT_SETTINGS },
@@ -437,7 +449,7 @@ const EXPLORE_PHOTO_SCOPE_META = {
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
 
 const LANDING_ROUTE = 'landing';
-const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing']);
+const ROUTES = new Set([LANDING_ROUTE, 'home', 'myphoto', 'explore', 'upload', 'upload-complete', 'location-assign', 'photos', 'liked', 'album', 'album-photos', 'trip', 'tag', 'profile', 'settings', 'admin-landing', 'admin-accounts', 'admin-feedback']);
 const ALBUM_STORY_MARKER = '[[IKKYEE_ALBUM_STORY:';
 const ALBUM_STORY_MARKER_PATTERN = /\n?\n?\[\[IKKYEE_ALBUM_STORY:([^\]]*)\]\]/;
 const $ = (selector) => document.querySelector(selector);
@@ -450,6 +462,8 @@ let lastModalTrigger = null;
 let landingHeroTimer = null;
 let landingHeroIndex = 0;
 let lastLandingSectionsMarkup = null;
+const adminAccountsController = createAdminAccountsController({ getUser: () => state.currentUser, fetchAccounts: fetchAdminAccounts,
+    inspectAccount: fetchAdminAccountDetail, moderateAccount: moderateAdminAccount, openModal, closeModals, showToast });
 const LANDING_HERO_SLIDE_LIMIT = 12;
 const albumComposeMapController = createAlbumComposeMapController({
     loadMaps: loadGoogleMapsApi,
@@ -1097,8 +1111,8 @@ function getRenderedRoute(route) {
 function routeTo(section, { replace = false } = {}) {
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const renderedRoute = getRenderedRoute(normalized);
-    if (normalized === 'admin-landing' && !isLandingAdmin(state.currentUser)) {
-        showToast('관리자 계정에서만 메인 구성을 편집할 수 있습니다.');
+    if (normalized.startsWith('admin-') && !isLandingAdmin(state.currentUser)) {
+        showToast('관리자 계정에서만 사용할 수 있습니다.');
         return;
     }
     const authRequiredRoute = getAuthRequiredRoute(normalized, state.currentUser);
@@ -1153,8 +1167,13 @@ function clearUploadQueue() {
 function renderRoute(section) {
     const routeRenderStartedAt = window.performance.now();
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
+    if (normalized.startsWith('admin-') && !isLandingAdmin(state.currentUser)) {
+        routeTo(APP_SECTIONS.HOME, { replace: true });
+        return;
+    }
     const renderedRoute = getRenderedRoute(normalized);
     const previousRoute = document.body.dataset.page || null;
+    if (previousRoute === 'admin-accounts' && normalized !== 'admin-accounts') adminAccountsController.clear();
     const routeSharedState = getSharedRouteState(window.location.hash);
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
@@ -1188,7 +1207,7 @@ function renderRoute(section) {
     $(`#page-${renderedRoute}`)?.classList.add('active');
     if (normalized === LANDING_ROUTE) renderLandingHeroSlides();
     setLandingHeroSlideshowActive(normalized === LANDING_ROUTE);
-    $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === navSection));
+    $$('[data-route]').forEach((link) => link.classList.toggle('active', link.dataset.route === (link.closest('.admin-page-nav') ? normalized : navSection)));
     if (normalized === 'album') renderAlbumComposePage();
     if (normalized === 'album-photos') renderAlbumPhotoPickerPage();
     if (normalized === 'liked') renderLikedPhotoSurfaces();
@@ -1208,6 +1227,9 @@ function renderRoute(section) {
     if (normalized === 'photos') setMyLibraryTab(state.myLibraryTab);
     if (normalized === 'admin-landing') {
         renderLandingAdminForm();
+    }
+    if (normalized === 'admin-accounts') void adminAccountsController.load();
+    if (normalized === 'admin-feedback') {
         renderLandingAdminFeedback();
         void loadLandingAdminFeedback();
     }
@@ -1943,19 +1965,24 @@ function renderLandingAdminFeedback() {
     const list = $('#landing-admin-feedback-list');
     const summary = $('#landing-admin-feedback-summary');
     if (!list || !summary) return;
+    if (!isLandingAdmin(state.currentUser)) { list.textContent = ''; summary.textContent = ''; return; }
+    $('#admin-feedback-page').textContent = `${state.productFeedbackPage} / ${Math.max(1, Math.ceil(state.productFeedbackCount / 25))}`;
+    $('#admin-feedback-previous').disabled = state.isProductFeedbackLoading || state.productFeedbackPage <= 1;
+    $('#admin-feedback-next').disabled = state.isProductFeedbackLoading || state.productFeedbackPage * 25 >= state.productFeedbackCount;
+    if (state.productFeedbackError) { list.textContent = state.productFeedbackError; summary.textContent = ''; return; }
     if (state.isProductFeedbackLoading && !state.hasLoadedProductFeedback) {
         list.innerHTML = '<p class="admin-feedback-empty">피드백을 불러오는 중입니다.</p>';
         summary.textContent = '';
         return;
     }
     if (!state.productFeedback.length) {
-        list.innerHTML = '<p class="admin-feedback-empty">아직 접수된 피드백이 없습니다.</p>';
+        list.innerHTML = '<p class="admin-feedback-empty">조건에 맞는 피드백이 없습니다.</p>';
         summary.textContent = '전체 0개';
         return;
     }
 
     const openCount = state.productFeedback.filter((item) => !['completed', 'closed'].includes(item.status)).length;
-    summary.innerHTML = `<strong>전체 ${state.productFeedback.length}개</strong><span>확인 필요 ${openCount}개</span>`;
+    summary.innerHTML = `<strong>전체 ${state.productFeedbackCount}개</strong><span>현재 페이지 확인 필요 ${openCount}개</span>`;
     list.innerHTML = state.productFeedback.map((feedback) => {
         const categoryLabel = FEEDBACK_CATEGORIES[feedback.category] || FEEDBACK_CATEGORIES.other;
         const statusOptions = Object.entries(FEEDBACK_STATUSES).map(([value, label]) => (
@@ -1987,21 +2014,25 @@ function renderLandingAdminFeedback() {
 }
 
 async function loadLandingAdminFeedback({ force = false } = {}) {
-    if (!isLandingAdmin(state.currentUser) || state.isProductFeedbackLoading) return;
+    if (!isLandingAdmin(state.currentUser) || (state.isProductFeedbackLoading && !force)) return;
     if (state.hasLoadedProductFeedback && !force) return;
     state.isProductFeedbackLoading = true;
+    state.productFeedbackError = '';
+    const actorId = state.currentUser.id, loadId = ++state.productFeedbackLoadId;
     renderLandingAdminFeedback();
     const message = $('#landing-admin-feedback-message');
     if (message) message.textContent = '';
-    const { data, error } = await fetchProductFeedback(100);
+    const { data, error, count } = await fetchProductFeedback(25, { page: state.productFeedbackPage, status: $('#admin-feedback-status').value, category: $('#admin-feedback-category').value });
+    if (loadId !== state.productFeedbackLoadId || state.currentUser?.id !== actorId || !isLandingAdmin(state.currentUser)) return;
     state.isProductFeedbackLoading = false;
     if (error) {
-        if (message) message.textContent = '피드백을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
+        state.productFeedbackError = '피드백을 불러오지 못했습니다. 새로고침으로 다시 시도해주세요.';
         renderLandingAdminFeedback();
         return;
     }
     const feedbackUserIds = [...new Set(data.map((item) => item.user_id).filter(Boolean))];
     const { data: feedbackProfiles } = await fetchProfilesByIds(feedbackUserIds);
+    if (loadId !== state.productFeedbackLoadId || state.currentUser?.id !== actorId || !isLandingAdmin(state.currentUser)) return;
     state.profileNames = feedbackProfiles.reduce((names, profile) => {
         const userId = getProfileUserId(profile);
         const displayName = getProfileDisplayName(profile);
@@ -2014,6 +2045,7 @@ async function loadLandingAdminFeedback({ force = false } = {}) {
         return profiles;
     }, { ...state.publicProfiles });
     state.productFeedback = data;
+    state.productFeedbackCount = count;
     state.hasLoadedProductFeedback = true;
     renderLandingAdminFeedback();
 }
@@ -2080,6 +2112,9 @@ async function handleProductFeedbackSubmit(event) {
 }
 
 async function handleAdminFeedbackStatusChange(select) {
+    if (!isLandingAdmin(state.currentUser)) return;
+    const actorId = state.currentUser.id;
+    const loadId = state.productFeedbackLoadId;
     const item = select.closest('[data-admin-feedback-id]');
     const feedbackId = item?.dataset.adminFeedbackId;
     const nextStatus = select.value;
@@ -2089,13 +2124,13 @@ async function handleAdminFeedbackStatusChange(select) {
     if (message) message.textContent = '';
     const { data, error } = await updateProductFeedbackStatus(feedbackId, nextStatus);
     select.disabled = false;
+    if (actorId !== state.currentUser?.id || !isLandingAdmin(state.currentUser) || loadId !== state.productFeedbackLoadId) return;
     if (error) {
         if (message) message.textContent = '피드백 상태를 변경하지 못했습니다.';
         renderLandingAdminFeedback();
         return;
     }
-    state.productFeedback = state.productFeedback.map((feedback) => feedback.id === feedbackId ? data : feedback);
-    renderLandingAdminFeedback();
+    await loadLandingAdminFeedback({ force: true });
 }
 
 function getDefaultDetailPhoto() {
@@ -3955,6 +3990,13 @@ async function saveAccountProfile(event) {
 }
 
 function updateAccountUI() {
+    if (!isLandingAdmin(state.currentUser)) {
+        adminAccountsController.clear();
+        state.productFeedbackLoadId++;
+        state.productFeedback = []; state.hasLoadedProductFeedback = false; state.isProductFeedbackLoading = false;
+        $('#landing-admin-feedback-list')?.replaceChildren(); $('#landing-admin-feedback-summary')?.replaceChildren();
+        if (document.body.dataset.page?.startsWith('admin-')) routeTo(APP_SECTIONS.HOME, { replace: true });
+    }
     state.accountSettings = loadAccountSettings(window.localStorage, state.currentUser?.id || '');
     const photoSortOwnerId = state.currentUser?.id || '';
     if (state.personalPhotoSortOwnerId !== photoSortOwnerId) {
@@ -4015,6 +4057,7 @@ function getAccountNotificationItems() {
         currentUserId: state.currentUser?.id || '',
         savedPhotos: state.savedPhotos,
         receivedLikes: state.receivedLikes,
+        moderationWarnings: state.accountWarnings,
         missingLocationNotifications: state.accountSettings.missingLocationNotifications,
         librarySummaryNotifications: state.accountSettings.librarySummaryNotifications,
         welcomeNotices: loadAccountGuidance(window.localStorage, state.currentUser?.id).welcomeNotices
@@ -4039,10 +4082,34 @@ function toggleAccountNotifications(event) {
 async function loadReceivedLikes() {
     const userId = state.currentUser?.id;
     if (!userId) { state.receivedLikes = null; return; }
+    void loadAccountModerationNotices();
     const { data, error } = await fetchReceivedLikes(userId);
     if (state.currentUser?.id !== userId || error) return;
     state.receivedLikes = data;
     renderAccountNotifications();
+}
+
+async function loadAccountModerationNotices() {
+    const userId = state.currentUser?.id;
+    if (!userId) return;
+    const { data, error } = await fetchMyAccountModeration(userId);
+    if (state.currentUser?.id !== userId || error) return;
+    if (new Date(data.bannedUntil || 0).getTime() > Date.now()) {
+        await handleLogout(); showToast('계정 이용이 제한되었습니다. 고객지원으로 문의해주세요.'); return;
+    }
+    state.accountWarnings = data.warnings; renderAccountNotifications();
+}
+
+async function acknowledgeSelectedAccountWarning() {
+    const id = state.selectedAccountWarningId, userId = state.currentUser?.id;
+    if (!id || !userId) return;
+    $('#account-warning-acknowledge').disabled = true;
+    const { error } = await acknowledgeAccountWarning(id);
+    $('#account-warning-acknowledge').disabled = false;
+    if (state.currentUser?.id !== userId) return;
+    if (error) { $('#account-warning-error').textContent = '확인 상태를 저장하지 못했습니다. 다시 시도해주세요.'; return; }
+    state.accountWarnings = state.accountWarnings.filter(item => item.id !== id);
+    closeModals(); renderAccountNotifications();
 }
 
 function renderAccountNotifications() {
@@ -4052,7 +4119,7 @@ function renderAccountNotifications() {
     const list = $('#account-notification-list');
     const isLoggedIn = Boolean(state.currentUser);
     const items = getAccountNotificationItems();
-    const actionableCount = items.filter((item) => item.route || item.id).length;
+    const actionableCount = items.filter((item) => item.route || item.id || item.moderationId).length;
     const uploadNotice = $('#upload-location-notice');
     if (uploadNotice) uploadNotice.hidden = loadAccountGuidance(window.localStorage, state.currentUser?.id).uploadNoticeDismissed;
 
@@ -4076,6 +4143,7 @@ function renderAccountNotifications() {
                 <strong title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong>
             </span>
         `;
+        if (item.moderationId) return `<button class="account-notification-item" data-open-account-warning="${escapeHtml(item.moderationId)}" type="button">${content}</button>`;
         if (item.id) {
             const action = item.route
                 ? `<button class="account-notification-item" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`
@@ -4107,6 +4175,8 @@ async function handleLogout() {
 }
 
 function resetAccountState() {
+    adminAccountsController.clear();
+    state.accountWarnings = []; state.selectedAccountWarningId = null;
     state.receivedLikes = null;
     state.contentShare = null;
     state.albumComposeDraft = null;
@@ -8387,6 +8457,7 @@ async function runPendingAuthAction() {
 }
 
 function bindEvents() {
+    adminAccountsController.bind();
     document.addEventListener('error', (event) => {
         const image = event.target;
         if (image?.dataset?.i) void recoverPhotoImageUrl(image);
@@ -8489,6 +8560,12 @@ function bindEvents() {
         if (!event.target.closest('.account-menu-shell')) setAccountMenuOpen(false);
     }, true);
     document.addEventListener('click', async (event) => {
+        const warning = event.target.closest('[data-open-account-warning]');
+        if (warning) {
+            const notice = state.accountWarnings.find(item => item.id === warning.dataset.openAccountWarning);
+            if (notice) { state.selectedAccountWarningId = notice.id; $('#account-warning-reason').textContent = notice.reason; $('#account-warning-error').textContent = ''; openModal('#account-warning-modal'); }
+            return;
+        }
         if (!(event.target instanceof Element)) return;
         const readLike = event.target.closest('[data-read-received-likes]');
         if (readLike) {
@@ -9362,6 +9439,12 @@ function bindEvents() {
     $('#feedback-message')?.addEventListener('input', syncFeedbackMessageCount);
     $('#feedback-form')?.addEventListener('submit', handleProductFeedbackSubmit);
     $('#btn-refresh-admin-feedback')?.addEventListener('click', () => loadLandingAdminFeedback({ force: true }));
+    $('#account-warning-acknowledge')?.addEventListener('click', acknowledgeSelectedAccountWarning);
+    for (const id of ['admin-feedback-status', 'admin-feedback-category']) {
+        $(`#${id}`)?.addEventListener('change', () => { state.productFeedbackPage = 1; void loadLandingAdminFeedback({ force: true }); });
+    }
+    $('#admin-feedback-previous')?.addEventListener('click', () => { state.productFeedbackPage = Math.max(1, state.productFeedbackPage - 1); void loadLandingAdminFeedback({ force: true }); });
+    $('#admin-feedback-next')?.addEventListener('click', () => { state.productFeedbackPage++; void loadLandingAdminFeedback({ force: true }); });
     $('#landing-admin-feedback-list')?.addEventListener('change', (event) => {
         const select = event.target.closest?.('[data-admin-feedback-status]');
         if (select) void handleAdminFeedbackStatusChange(select);

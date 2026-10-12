@@ -116,7 +116,7 @@
                 <div class="landing-section-toolbar page-container">
                     <p id="landing-search-result-copy" class="sr-only" aria-live="polite">공개 사진을 주제별로 둘러보세요.</p>
                     <button id="btn-edit-landing" class="btn-secondary" data-route="admin-landing" type="button" hidden>
-                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>메인 구성 편집
+                        <span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>관리자페이지
                     </button>
                 </div>
                 <div id="landing-sections" class="landing-sections page-container">
@@ -366,9 +366,9 @@
                 <button class="back-link" data-route="home" type="button"><span class="material-symbols-outlined">arrow_back</span>메인으로 돌아가기</button>
                 <div class="page-intro">
                     <p class="eyebrow">관리자 전용</p>
-                    <h1 id="admin-landing-title">메인 사진 구성</h1>
-                    <p>섹션을 선택한 뒤 하단 사진칸에서 사진을 눌러 추가하세요.</p>
+                    <h1 id="admin-landing-title">관리자페이지</h1>
                 </div>
+                <nav class="admin-page-nav" aria-label="관리자 메뉴"><button data-route="admin-landing" type="button"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>메인 구성</button><button data-route="admin-accounts" type="button"><span class="material-symbols-outlined" aria-hidden="true">group</span>계정 관리</button><button data-route="admin-feedback" type="button"><span class="material-symbols-outlined" aria-hidden="true">forum</span>피드백</button></nav>
                 <form id="landing-admin-form" class="admin-landing-form">
                     <section id="landing-admin-hero" class="admin-landing-hero" aria-labelledby="landing-admin-hero-title">
                         <div>
@@ -391,24 +391,6 @@
                     </div>
                     <p id="landing-admin-message" aria-live="polite"></p>
                 </form>
-                <section id="landing-admin-feedback" class="admin-feedback-panel" aria-labelledby="landing-admin-feedback-title">
-                    <div class="admin-feedback-heading">
-                        <div>
-                            <p class="eyebrow">사용자 의견</p>
-                            <h2 id="landing-admin-feedback-title">피드백 확인</h2>
-                            <p>오류, 불편함, 기능 제안을 확인하고 처리 상태를 정리합니다.</p>
-                        </div>
-                        <button id="btn-refresh-admin-feedback" class="btn-secondary" type="button">
-                            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
-                            새로고침
-                        </button>
-                    </div>
-                    <div id="landing-admin-feedback-summary" class="admin-feedback-summary" aria-live="polite"></div>
-                    <div id="landing-admin-feedback-list" class="admin-feedback-list" aria-live="polite">
-                        <p class="admin-feedback-empty">피드백을 불러오는 중입니다.</p>
-                    </div>
-                    <p id="landing-admin-feedback-message" class="auth-message" aria-live="polite"></p>
-                </section>
             </div>
 
             <aside id="landing-admin-dock" class="admin-photo-dock" aria-label="메인 구성 사진 선택">
@@ -421,6 +403,40 @@
                 <div id="landing-admin-dock-photos" class="admin-dock-photos"></div>
                 <p class="admin-dock-help">설정칸을 선택하고 사진을 눌러 추가하세요. 변경을 마치면 ‘메인 구성 저장’을 눌러주세요.</p>
             </aside>
+        </section>
+
+        <section id="page-admin-accounts" class="page page-admin-accounts" aria-labelledby="admin-accounts-title">
+            <div class="page-container admin-workspace">
+                <button class="back-link" data-route="home" type="button"><span class="material-symbols-outlined">arrow_back</span>메인으로 돌아가기</button>
+                <div class="page-intro"><p class="eyebrow">관리자 전용</p><h1 id="admin-accounts-title">계정 관리</h1></div>
+                <nav class="admin-page-nav" aria-label="관리자 메뉴"><button data-route="admin-landing" type="button"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>메인 구성</button><button data-route="admin-accounts" type="button"><span class="material-symbols-outlined" aria-hidden="true">group</span>계정 관리</button><button data-route="admin-feedback" type="button"><span class="material-symbols-outlined" aria-hidden="true">forum</span>피드백</button></nav>
+                <div class="admin-account-toolbar">
+                    <form id="admin-account-search-form" role="search"><label class="sr-only" for="admin-account-search">계정 검색</label><input id="admin-account-search" type="search" maxlength="100" placeholder="닉네임·이메일 검색"><button type="submit" aria-label="계정 검색"><span class="material-symbols-outlined">search</span></button></form>
+                    <label class="sr-only" for="admin-account-status">계정 상태</label><select id="admin-account-status"><option value="all">모든 계정</option><option value="active">정상</option><option value="banned">차단</option></select>
+                    <button id="admin-account-refresh" class="btn-secondary" type="button" aria-label="계정 새로고침"><span class="material-symbols-outlined">refresh</span></button>
+                </div>
+                <p id="admin-account-summary" class="admin-account-summary" aria-live="polite"></p>
+                <p id="admin-account-message" class="auth-message" role="alert"></p>
+                <div class="admin-account-layout">
+                    <section class="admin-account-directory" aria-label="계정 목록"><div class="admin-account-columns" aria-hidden="true"><span>계정</span><span>로그인 방식</span><span>최근 로그인</span><span>사진</span><span>상태</span></div><div id="admin-account-list"></div><nav class="admin-pagination" aria-label="계정 페이지"><button id="admin-account-previous" type="button" aria-label="이전 계정 페이지"><span class="material-symbols-outlined">chevron_left</span></button><span id="admin-account-page">1 / 1</span><button id="admin-account-next" type="button" aria-label="다음 계정 페이지"><span class="material-symbols-outlined">chevron_right</span></button></nav></section>
+                    <aside id="admin-account-detail" class="admin-account-detail" aria-label="선택한 계정 상세" aria-live="polite" hidden></aside>
+                </div>
+            </div>
+        </section>
+        <section id="page-admin-feedback" class="page page-admin-feedback" aria-labelledby="admin-feedback-title">
+            <div class="page-container admin-workspace">
+                <button class="back-link" data-route="home" type="button"><span class="material-symbols-outlined">arrow_back</span>메인으로 돌아가기</button>
+                <div class="page-intro"><p class="eyebrow">관리자 전용</p><h1 id="admin-feedback-title">피드백</h1></div>
+                <nav class="admin-page-nav" aria-label="관리자 메뉴"><button data-route="admin-landing" type="button"><span class="material-symbols-outlined" aria-hidden="true">photo_library</span>메인 구성</button><button data-route="admin-accounts" type="button"><span class="material-symbols-outlined" aria-hidden="true">group</span>계정 관리</button><button data-route="admin-feedback" type="button"><span class="material-symbols-outlined" aria-hidden="true">forum</span>피드백</button></nav>
+                <section id="landing-admin-feedback" class="admin-feedback-panel" aria-labelledby="landing-admin-feedback-title">
+                    <div class="admin-feedback-heading"><h2 id="landing-admin-feedback-title">사용자 의견</h2><button id="btn-refresh-admin-feedback" class="btn-secondary" type="button" aria-label="피드백 새로고침"><span class="material-symbols-outlined">refresh</span></button></div>
+                    <div class="admin-feedback-filters"><label class="sr-only" for="admin-feedback-status">처리 상태 필터</label><select id="admin-feedback-status"><option value="">모든 상태</option><option value="received">접수됨</option><option value="reviewing">검토 중</option><option value="planned">예정</option><option value="completed">완료</option><option value="closed">종료</option></select><label class="sr-only" for="admin-feedback-category">피드백 유형</label><select id="admin-feedback-category"><option value="">모든 유형</option><option value="bug">오류</option><option value="usability">불편함</option><option value="feature_request">기능 제안</option><option value="other">기타</option></select></div>
+                    <div id="landing-admin-feedback-summary" class="admin-feedback-summary" aria-live="polite"></div>
+                    <p id="landing-admin-feedback-message" class="auth-message" role="alert"></p>
+                    <div id="landing-admin-feedback-list" class="admin-feedback-list" aria-live="polite"></div>
+                    <nav class="admin-pagination" aria-label="피드백 페이지"><button id="admin-feedback-previous" type="button" aria-label="이전 피드백 페이지"><span class="material-symbols-outlined">chevron_left</span></button><span id="admin-feedback-page">1 / 1</span><button id="admin-feedback-next" type="button" aria-label="다음 피드백 페이지"><span class="material-symbols-outlined">chevron_right</span></button></nav>
+                </section>
+            </div>
         </section>
 
         <section id="page-liked" class="page page-liked" aria-labelledby="liked-photos-title">
@@ -1190,6 +1206,21 @@
             </section>
         </div>
     </div>
+
+    <div id="admin-moderation-modal" class="modal" aria-hidden="true">
+        <div class="admin-moderation-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-moderation-title">
+            <button class="modal-close" data-close-modal type="button" aria-label="제재 확인 닫기"><span class="material-symbols-outlined">close</span></button>
+            <h2 id="admin-moderation-title">계정 관리</h2>
+            <p id="admin-moderation-description"></p>
+            <form id="admin-moderation-form">
+                <label id="admin-moderation-duration-label" for="admin-moderation-duration">차단 기간<select id="admin-moderation-duration" aria-label="차단 기간"><option value="24">1일</option><option value="168" selected>7일</option><option value="720">30일</option><option value="876000">장기</option></select></label>
+                <label for="admin-moderation-reason">처리 사유<textarea id="admin-moderation-reason" rows="4" minlength="5" maxlength="500" required></textarea></label>
+                <p id="admin-moderation-error" class="auth-message" role="alert"></p>
+                <div class="admin-dialog-actions"><button class="btn-secondary" data-close-modal type="button">취소</button><button id="admin-moderation-confirm" class="btn-primary" type="submit">확인</button></div>
+            </form>
+        </div>
+    </div>
+    <div id="account-warning-modal" class="modal" aria-hidden="true"><div class="admin-moderation-dialog" role="dialog" aria-modal="true" aria-labelledby="account-warning-title"><button class="modal-close" data-close-modal type="button" aria-label="경고 알림 닫기"><span class="material-symbols-outlined">close</span></button><h2 id="account-warning-title">관리자 경고</h2><p id="account-warning-reason"></p><p id="account-warning-error" class="auth-message" role="alert"></p><button id="account-warning-acknowledge" class="btn-primary" type="button">확인했습니다</button></div></div>
 
     <div id="photo-fullscreen-modal" class="modal photo-fullscreen-modal" aria-hidden="true">
         <div class="photo-fullscreen-card" role="dialog" aria-modal="true" aria-label="사진 크게보기">

@@ -6,7 +6,8 @@ export function buildAccountNotificationItems({
     receivedLikes = null,
     missingLocationNotifications = true,
     librarySummaryNotifications = true,
-    welcomeNotices = []
+    welcomeNotices = [],
+    moderationWarnings = []
 } = {}) {
     const viewerId = String(currentUserId || '');
     if (!viewerId) return [];
@@ -14,7 +15,7 @@ export function buildAccountNotificationItems({
     const myPhotos = savedPhotos.filter((photo) => String(photo.owner_id || '') === viewerId);
     const missingLocationCount = getMissingLocationAssignmentPhotos(myPhotos).length;
     const receivedLikeCount = Math.max(0, Number(receivedLikes?.received_count || 0) - Number(receivedLikes?.read_count || 0));
-    const items = [...welcomeNotices];
+    const items = [...moderationWarnings.map(item => ({ icon: 'warning', title: '관리자 경고를 확인해주세요.', moderationId: item.id })), ...welcomeNotices];
 
     if (missingLocationNotifications && missingLocationCount) {
         items.push({

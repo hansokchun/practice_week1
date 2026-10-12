@@ -1973,6 +1973,93 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     padding-bottom: 96px;
 }
 
+.admin-workspace { padding-top: 40px; padding-bottom: 64px; }
+.admin-workspace .page-intro, .page-admin-landing .page-intro { margin-bottom: 24px; }
+.admin-workspace .page-intro h1, .page-admin-landing .page-intro h1 { font-size: 28px; }
+.admin-page-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
+.admin-page-nav button { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); font: inherit; font-weight: 700; padding: 8px 12px; }
+.admin-page-nav button.active { border-bottom-color: var(--teal); color: var(--teal); }
+.admin-page-nav button:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
+.admin-page-nav .material-symbols-outlined { font-size: 20px; }
+.admin-account-toolbar, .admin-feedback-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.admin-account-toolbar form { display: flex; flex: 1 1 240px; max-width: 440px; min-width: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.admin-account-toolbar input { min-width: 0; width: 100%; border: 0; background: transparent; font: inherit; padding: 10px 12px; }
+.admin-account-toolbar form button { display: grid; place-items: center; flex: 0 0 44px; border: 0; background: transparent; color: var(--teal); }
+.admin-account-toolbar select, .admin-feedback-filters select { min-height: 44px; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; font-size: 14px; padding: 8px 12px; }
+.admin-account-summary { margin: 20px 0 12px; color: var(--muted); font-size: 14px; }
+.admin-account-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
+.admin-account-layout:has(.admin-account-detail:not([hidden])) { grid-template-columns: minmax(0, 1fr) 360px; }
+.admin-account-directory { min-width: 0; }
+.admin-account-columns, .admin-account-row { display: grid; grid-template-columns: minmax(140px, 1.6fr) minmax(64px, .8fr) minmax(110px, 1fr) 40px 56px; align-items: center; gap: 12px; width: 100%; }
+.admin-account-columns { color: var(--muted); font-size: 12px; padding: 12px; border-bottom: 1px solid var(--line); }
+.admin-account-row { min-height: 76px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-size: 13px; padding: 12px; text-align: left; }
+.admin-account-row:hover, .admin-account-row.is-selected { background: rgba(26, 77, 78, .06); }
+.admin-account-row:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
+.admin-account-identity { display: grid; gap: 5px; min-width: 0; }
+.admin-account-identity strong { font-size: 14px; overflow-wrap: anywhere; }
+.admin-account-identity > span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-account-row time { font-size: 12px; overflow-wrap: anywhere; }
+.admin-account-photo-count { text-align: center; }
+.admin-status { font-size: 12px; font-weight: 700; color: var(--teal); }
+.admin-status.is-banned { color: #a83e32; }
+.admin-account-detail { min-width: 0; border-left: 1px solid var(--line); padding-left: 24px; }
+.admin-account-detail[hidden] { display: none; }
+.admin-detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.admin-detail-heading > div { min-width: 0; }
+.admin-detail-heading h2 { font-size: 20px; margin: 0; overflow-wrap: anywhere; }
+.admin-detail-heading p { color: var(--muted); font-size: 13px; margin: 8px 0 0; overflow-wrap: anywhere; }
+.admin-detail-heading > button { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border: 0; border-radius: 4px; background: var(--surface-muted); color: var(--text); }
+.admin-account-facts { display: grid; gap: 12px; margin: 24px 0; font-size: 13px; }
+.admin-account-facts > div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
+.admin-account-facts dt { color: var(--muted); }
+.admin-account-facts dd { margin: 0; overflow-wrap: anywhere; }
+.admin-account-id { font-size: 11px; }
+.admin-account-bio { font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-account-stats { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.admin-account-stats strong { color: var(--teal); margin-left: 4px; }
+.admin-account-photos h3, .admin-moderation-history h3 { font-size: 15px; margin: 24px 0 12px; }
+.admin-tiny-photos { display: grid; grid-template-columns: repeat(auto-fill, 48px); gap: 8px; }
+.admin-tiny-photos figure { display: grid; place-items: center; width: 48px; height: 48px; margin: 0; border-radius: 4px; overflow: hidden; background: var(--surface-muted); color: var(--muted); }
+.admin-tiny-photos img { display: block; width: 48px; height: 48px; object-fit: cover; }
+.admin-moderation-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.admin-moderation-actions button { min-height: 44px; font-size: 13px; padding: 8px 12px; }
+.admin-moderation-actions .is-destructive { color: #a83e32; border-color: rgba(168, 62, 50, .3); }
+.admin-moderation-history article { padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.admin-moderation-history article > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.admin-moderation-history time, .admin-moderation-history article > div > span { color: var(--muted); }
+.admin-moderation-history p { margin: 8px 0 0; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-empty { color: var(--muted); font-size: 14px; padding: 20px 0; grid-column: 1 / -1; }
+.admin-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 24px; font-size: 13px; }
+.admin-pagination button { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--teal); }
+.admin-pagination button:disabled { opacity: .35; cursor: default; }
+.page-admin-feedback .admin-feedback-panel { border: 0; border-radius: 0; background: transparent; padding: 0; box-shadow: none; }
+.admin-moderation-dialog { position: relative; width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow-y: auto; border-radius: 8px; background: var(--surface); padding: 32px; box-shadow: var(--shadow); }
+.admin-moderation-dialog h2 { margin: 12px 32px 16px 0; font-size: 22px; overflow-wrap: anywhere; }
+.admin-moderation-dialog p { line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-moderation-dialog label { display: grid; gap: 8px; font-size: 14px; font-weight: 700; margin-top: 16px; }
+.admin-moderation-dialog textarea, .admin-moderation-dialog select { max-width: 100%; width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; padding: 10px; }
+.admin-moderation-dialog label[hidden] { display: none; }
+.admin-dialog-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+@media (max-width: 1000px) {
+    .admin-account-layout:has(.admin-account-detail:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+    .admin-account-detail { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; padding-top: 24px; }
+}
+@media (max-width: 600px) {
+    .admin-workspace { padding-top: 24px; }
+    .admin-page-nav { gap: 4px; }
+    .admin-page-nav button { font-size: 13px; gap: 6px; padding-inline: 8px; }
+    .admin-account-toolbar { gap: 8px; }
+    .admin-account-toolbar form { flex-basis: 100%; max-width: none; }
+    .admin-account-columns { display: none; }
+    .admin-account-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+    .admin-account-identity { grid-column: 1; grid-row: 1 / 3; }
+    .admin-account-row > span:nth-child(2), .admin-account-row time { display: none; }
+    .admin-account-photo-count { text-align: right; }
+    .admin-account-photo-count::after { content: '장'; }
+    .admin-status { text-align: right; }
+    .admin-moderation-dialog { padding: 24px; }
+}
+
 .admin-landing-form,
 .admin-landing-form > div:first-child {
     display: grid;
