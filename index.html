@@ -1378,6 +1378,15 @@
         </div>
     </div>
 
+    <div id="album-cover-picker-modal" class="modal" aria-hidden="true">
+        <section class="album-cover-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="album-cover-picker-title">
+            <header><h2 id="album-cover-picker-title">대표사진 선택</h2><button class="modal-close" data-close-modal type="button" aria-label="대표사진 선택 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></header>
+            <div id="album-cover-picker-grid" class="album-cover-picker-grid" role="radiogroup" aria-label="앨범 대표사진"></div>
+            <p id="album-cover-picker-error" class="auth-message" role="alert"></p>
+            <footer class="album-cover-picker-actions"><button class="btn-secondary" data-close-modal type="button">취소</button><button id="btn-save-album-cover" class="btn-primary" type="button">대표사진 저장</button></footer>
+        </section>
+    </div>
+
     <div id="content-share-modal" class="modal content-share-modal" aria-hidden="true">
         <section class="content-share-card" role="dialog" aria-modal="true" aria-labelledby="content-share-title">
             <header>

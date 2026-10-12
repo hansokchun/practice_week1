@@ -1,3 +1,6 @@
+import { getPhotoStoragePath } from '../../js/photo-storage.mjs';
+import { buildContentShare } from '../../js/content-sharing.mjs';
+
 const SUPABASE_URL = 'https://pqczcponriukilrtpbdl.supabase.co';
 const PUBLISHABLE_KEY = 'sb_publishable_m158oMsJtKHn2sUD3m7x-w_Rs6swjl8';
 const escape = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -19,18 +22,28 @@ export async function createShareResponse(request, segments = [], fetcher = fetc
         // Always use anonymous RLS and explicit public filters; never forward a viewer's session.
         const rows = await getRows(type === 'photo' ? 'photos' : 'albums', {
             id: `eq.${id}`, visibility: 'eq.public', limit: '1',
-            select: type === 'photo' ? 'id,title,description,visibility,preview_path,thumbnail_path,storage_path' : 'id,title,visibility'
+            select: type === 'photo' ? 'id,title,description,visibility,owner_id,preview_path,thumbnail_path,storage_path' : 'id,title,visibility,cover_url'
         });
         const item = rows[0];
         if (!item || item.visibility !== 'public') return new Response('공개되지 않았거나 삭제된 항목입니다.', { status: 404, headers });
         const url = new URL(request.url);
-        const canonical = `${url.origin}/share/${type}/${encodeURIComponent(id)}`;
+        const share = buildContentShare(url.origin, type, item);
+        const canonical = share.url;
         if (url.searchParams.get('image') === '1') {
-            const photo = type === 'photo' ? item : (await getRows('album_photos', {
-                album_id: `eq.${id}`, 'photos.visibility': 'eq.public', order: 'sort_order.asc', limit: '1',
-                select: 'photos!inner(id,visibility,preview_path,thumbnail_path,storage_path)'
-            }))[0]?.photos;
-            const path = photo?.preview_path || photo?.thumbnail_path;
+            const memberQuery = {
+                album_id: `eq.${id}`, 'photos.visibility': 'eq.public', order: 'sort_order.asc,photo_id.asc', limit: '1',
+                select: 'photos!inner(id,visibility,owner_id,preview_path,thumbnail_path,storage_path)'
+            };
+            let photo = type === 'photo' ? item : null;
+            const coverPath = type === 'album' ? getPhotoStoragePath({ url: item.cover_url }) : null;
+            if (coverPath) {
+                const value = `"${coverPath.replace(/["\\]/g, '\\$&')}"`;
+                const filters = ['storage_path', 'preview_path', 'thumbnail_path'].map(column => `${column}.eq.${value}`).join(',');
+                photo = (await getRows('album_photos', { ...memberQuery, 'photos.or': `(${filters})` }))[0]?.photos;
+            }
+            if (type === 'album' && !photo) photo = (await getRows('album_photos', memberQuery))[0]?.photos;
+            const path = [photo?.preview_path, photo?.thumbnail_path].find(path => typeof path === 'string'
+                && photo?.owner_id && path.startsWith(`${photo.owner_id}/`) && !path.includes('..') && !path.includes('\\'));
             if (!path || photo.visibility !== 'public') return new Response('공개 미리보기 사진이 없습니다.', { status: 404, headers });
             const image = await fetcher(`${SUPABASE_URL}/storage/v1/object/authenticated/photos/${path.split('/').map(encodeURIComponent).join('/')}`, {
                 headers: { apikey: PUBLISHABLE_KEY }, signal: AbortSignal.timeout(8000)
@@ -41,9 +54,9 @@ export async function createShareResponse(request, segments = [], fetcher = fetc
         }
         const target = type === 'photo' ? `/#/?photo=${encodeURIComponent(id)}` : `/#/trip?album=${encodeURIComponent(id)}`;
         const title = String(item.title || item.description || (type === 'photo' ? '이끼의 한 장면' : '이끼 여행 앨범')).slice(0, 100);
-        const description = type === 'photo' ? '사진 속 장소를 이끼에서 만나보세요.' : '여행의 사진과 장소를 함께 둘러보세요.';
+        const description = share.description;
         const nonce = crypto.randomUUID();
-        const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)} · 이끼</title><meta property="og:type" content="website"><meta property="og:site_name" content="Ikkyee 이끼"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${description}"><meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${escape(canonical)}?image=1"><meta name="twitter:card" content="summary_large_image"><meta name="robots" content="noindex"><link rel="canonical" href="${escape(canonical)}"></head><body><h1>${escape(title)}</h1><p>${description}</p><a href="${escape(target)}">${type === 'photo' ? '사진' : '앨범'} 보기</a><script nonce="${nonce}">location.replace(${JSON.stringify(target).replace(/</g, '\\u003c')})</script></body></html>`;
+        const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)} · 이끼</title><meta property="og:type" content="website"><meta property="og:site_name" content="Ikkyee 이끼"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${description}"><meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${escape(share.imageUrl)}"><meta name="twitter:card" content="summary_large_image"><meta name="robots" content="noindex"><link rel="canonical" href="${escape(canonical)}"></head><body><h1>${escape(title)}</h1><p>${description}</p><a href="${escape(target)}">${type === 'photo' ? '사진' : '앨범'} 보기</a><script nonce="${nonce}">location.replace(${JSON.stringify(target).replace(/</g, '\\u003c')})</script></body></html>`;
         return new Response(html, { headers: { ...headers, 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; base-uri 'none'; frame-ancestors 'none'` } });
     } catch {
         return new Response('잠시 후 다시 시도해주세요.', { status: 503, headers });

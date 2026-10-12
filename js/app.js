@@ -37,6 +37,7 @@ import {
     uploadPhotoThumbnail,
     uploadProfileCover,
     updateAlbum,
+    updateAlbumCover,
     updateAlbumVisibility,
     deletePhoto,
     replaceAlbumPhotos,
@@ -52,6 +53,7 @@ import {
 } from '../auth.js';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
 import { createAdminAccountsController } from './admin-accounts-controller.mjs';
+import { getAlbumCoverCandidates, getAlbumCoverSelection } from './album-cover-picker.mjs';
 import {
     DEFAULT_ACCOUNT_SETTINGS,
     getUploadVisibilityPlan,
@@ -333,6 +335,7 @@ const state = {
     albumComposeDraft: null,
     receivedLikes: null,
     contentShare: null,
+    albumCoverPicker: null,
     albumPhotoPickerIds: [],
     albumPhotoPickerReturnRoute: null,
     editingAlbumId: null,
@@ -4179,6 +4182,7 @@ function resetAccountState() {
     state.accountWarnings = []; state.selectedAccountWarningId = null;
     state.receivedLikes = null;
     state.contentShare = null;
+    state.albumCoverPicker = null;
     state.albumComposeDraft = null;
     state.currentUser = null;
     state.hasNewAccountGuidance = false;
@@ -5530,8 +5534,8 @@ function renderPublicSurfaces() {
                             <span class="material-symbols-outlined">${state.albumDetailEditMode ? 'done' : 'edit'}</span>
                             ${state.albumDetailEditMode ? '수정 완료' : '수정하기'}
                         </button>
-                        <button data-album-action="cover" type="button">
-                            <span class="material-symbols-outlined">image</span>
+                        <button data-album-action="cover" type="button" aria-label="대표사진 설정">
+                            <span class="material-symbols-outlined" aria-hidden="true">image</span>
                             대표사진 설정
                         </button>
                         <button data-album-action="delete" class="danger" type="button">
@@ -7372,38 +7376,68 @@ async function toggleSelectedAlbumVisibility() {
         return;
     }
     updateSavedAlbumLocally(album.id, normalizeSavedAlbum(data || { ...album, visibility: nextVisibility }));
-    state.savedPhotos = state.savedPhotos.map((photo) => (
-        photo.album_id === album.id
-            ? { ...photo, visibility: nextVisibility, shared: nextVisibility === 'public' }
-            : photo
-    ));
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
     showToast(nextVisibility === 'public' ? '앨범을 공개로 전환했습니다.' : '앨범을 비공개로 전환했습니다.');
 }
 
-async function setSelectedAlbumCoverFromFirstPhoto() {
+function openAlbumCoverPicker() {
     const album = getSelectedPublicAlbum();
     if (!album || album.owner_id !== state.currentUser?.id) return;
-    const coverPhoto = state.albumDetailPhotos[0] || album.photos?.[0];
-    if (!coverPhoto?.url) {
+    const photos = getAlbumCoverCandidates(album, album.photos || [], state.currentUser.id);
+    if (!photos.length) {
         showToast('대표사진으로 설정할 사진이 없습니다.');
         return;
     }
-    const { data, error } = await updateAlbum(album.id, {
-        title: album.title,
-        note: album.note,
-        visibility: album.visibility,
-        cover_url: coverPhoto.url,
-        photo_count: state.albumDetailPhotos.length || album.photo_count || 0
-    });
+    const currentCover = getAlbumCoverPhotos(album, photos)[0];
+    const selectedId = currentCover?.coverSelectable ? String(currentCover.id) : '';
+    state.albumCoverPicker = { albumId: album.id, userId: state.currentUser.id, selectedId, saving: false };
+    const grid = $('#album-cover-picker-grid');
+    grid.inert = false;
+    grid.innerHTML = photos.map((photo, index) => `<label class="album-cover-choice" title="${photo.coverSelectable ? escapeHtml(getPhotoFallbackLabel(photo)) : '비공개 사진'}">
+        <input class="sr-only" type="radio" name="album-cover-photo" value="${escapeHtml(photo.id)}" ${String(photo.id) === selectedId ? 'checked' : ''} ${photo.coverSelectable ? '' : 'disabled'}>
+        <span class="album-cover-choice-image">${renderPhotoImage(photo, '앨범 사진')}</span>
+        <span class="album-cover-choice-marker" aria-hidden="true"><span class="material-symbols-outlined">${photo.coverSelectable ? 'check' : 'lock'}</span></span>
+        <span class="sr-only">${index + 1}번째 사진 · ${escapeHtml(getPhotoFallbackLabel(photo))}${photo.coverSelectable ? '' : ' · 비공개 사진'}</span>
+    </label>`).join('');
+    $('#album-cover-picker-error').textContent = photos.some(photo => photo.coverSelectable) ? '' : '대표사진으로 사용할 공개 사진이 없습니다.';
+    $('#btn-save-album-cover').disabled = !selectedId;
+    $('#btn-save-album-cover').removeAttribute('aria-busy');
+    $('summary[aria-label="앨범 메뉴"]')?.focus();
+    openModal('#album-cover-picker-modal');
+    revealPhotoThumbnailGridWhenReady(grid);
+}
+
+async function saveAlbumCoverSelection() {
+    const draft = state.albumCoverPicker, album = getSelectedPublicAlbum();
+    if (!draft || draft.saving || album?.id !== draft.albumId || state.currentUser?.id !== draft.userId) return;
+    const photo = getAlbumCoverSelection(album, album.photos || [], draft.userId, draft.selectedId);
+    if (!photo) { $('#album-cover-picker-error').textContent = '선택한 사진을 다시 확인해주세요.'; return; }
+    draft.saving = true;
+    const grid = $('#album-cover-picker-grid');
+    grid.inert = true;
+    const button = $('#btn-save-album-cover');
+    button.disabled = true; button.setAttribute('aria-busy', 'true');
+    $('#album-cover-picker-error').textContent = '';
+    const { data: hydrated, error: imageError } = await hydratePhotoUrls([photo]);
+    if (state.currentUser?.id !== draft.userId || state.albumCoverPicker !== draft) return;
+    const ready = hydrated?.[0];
+    const coverUrl = ready?.preview_url || ready?.thumbnail_url || ready?.url;
+    const result = imageError || !coverUrl ? { error: imageError || new Error('missing_cover') } : await updateAlbumCover(album.id, coverUrl);
+    if (state.currentUser?.id !== draft.userId || state.albumCoverPicker !== draft) return;
+    draft.saving = false; grid.inert = false; button.disabled = false; button.removeAttribute('aria-busy');
+    const { data, error } = result;
     if (error) {
-        showToast('대표사진을 설정하지 못했습니다.');
+        $('#album-cover-picker-error').textContent = '대표사진을 저장하지 못했습니다. 다시 시도해주세요.';
         return;
     }
-    updateSavedAlbumLocally(album.id, normalizeSavedAlbum(data || { ...album, cover_url: coverPhoto.url }));
+    updateSavedAlbumLocally(album.id, normalizeSavedAlbum(data || { ...album, cover_url: coverUrl }));
+    const restoreFocus = $('#album-cover-picker-modal').classList.contains('is-open');
+    if (restoreFocus) closeModals();
+    state.albumCoverPicker = null;
     renderSavedPhotoSurfaces();
     renderPublicSurfaces();
+    if (restoreFocus && getCurrentRoute() === 'trip') $('summary[aria-label="앨범 메뉴"]')?.focus();
     showToast('대표사진을 설정했습니다.');
 }
 
@@ -7443,7 +7477,7 @@ async function addSelectedPhotosToTripAlbum() {
         showToast('사진을 앨범에 추가하지 못했습니다.');
         return;
     }
-    const cover = selectedPhotos[0]?.url || album.cover_url || null;
+    const cover = getAlbumCoverPhotos(album, selectedPhotos)[0]?.url || selectedPhotos[0]?.url || album.cover_url || null;
     const { data: updatedAlbum } = await updateAlbum(album.id, {
         title: album.title,
         note: album.note,
@@ -7488,7 +7522,8 @@ async function removePhotoFromSelectedAlbum(photoId, photoIndex = null) {
         showToast('삭제할 사진을 찾지 못했습니다.');
         return;
     }
-    const cover = albumPhotos.find((photo) => String(photo.id || photo.localId) !== String(targetPhotoId))?.url || null;
+    const remainingPhotos = albumPhotos.filter(photo => String(photo.id || photo.localId) !== String(targetPhotoId));
+    const cover = getAlbumCoverPhotos(album, remainingPhotos)[0]?.url || remainingPhotos[0]?.url || null;
     const { error } = await replaceAlbumPhotos(album.id, nextPhotoIds);
     if (error) {
         showToast('사진을 앨범에서 삭제하지 못했습니다.');
@@ -8458,6 +8493,13 @@ async function runPendingAuthAction() {
 
 function bindEvents() {
     adminAccountsController.bind();
+    $('#album-cover-picker-grid').addEventListener('change', event => {
+        const draft = state.albumCoverPicker;
+        if (!draft || draft.saving || event.target.name !== 'album-cover-photo') return;
+        draft.selectedId = event.target.value;
+        $('#btn-save-album-cover').disabled = false;
+    });
+    $('#btn-save-album-cover').addEventListener('click', saveAlbumCoverSelection);
     document.addEventListener('error', (event) => {
         const image = event.target;
         if (image?.dataset?.i) void recoverPhotoImageUrl(image);
@@ -8967,7 +9009,7 @@ function bindEvents() {
             const action = albumMenuAction.dataset.albumAction;
             albumMenuAction.closest('.album-more-menu')?.removeAttribute('open');
             if (action === 'edit') startEditSelectedAlbum();
-            if (action === 'cover') setSelectedAlbumCoverFromFirstPhoto();
+            if (action === 'cover') openAlbumCoverPicker();
             if (action === 'delete') deleteSelectedAlbum();
             return;
         }
@@ -9002,7 +9044,7 @@ function bindEvents() {
 
         const setAlbumCoverButton = event.target.closest('#btn-set-album-cover');
         if (setAlbumCoverButton) {
-            setSelectedAlbumCoverFromFirstPhoto();
+            openAlbumCoverPicker();
             return;
         }
 

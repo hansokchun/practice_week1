@@ -7,12 +7,23 @@ import { readFileSync } from 'node:fs';
 test('public photos and albums have crawlable URLs and their own thumbnail endpoint', () => {
     for (const type of ['photo', 'album']) {
         const content = buildContentShare('https://example.com', type, { id: 'abc', visibility: 'public', title: '부산 여행' });
-        assert.equal(content.url, `https://example.com/share/${type}/abc`);
-        assert.equal(content.imageUrl, `${content.url}?image=1`);
+        assert.equal(content.url, `https://example.com/share/${type}/abc?v=2`);
+        assert.equal(content.imageUrl, `${content.url}&image=1`);
+        assert.equal(content.description, '장소 아카이브');
         const payload = getKakaoSharePayload(content.url, content);
         assert.equal(payload.content.imageUrl, content.imageUrl);
         assert.equal(payload.content.title, '부산 여행');
     }
+});
+test('album cover changes version the shared link and image without depending on signed tokens', () => {
+    const cover = path => `https://project.supabase.co/storage/v1/object/sign/photos/${path}?token=old`;
+    const first = buildContentShare('https://example.com', 'album', { id: 'a', visibility: 'public', cover_url: cover('owner/one.jpg') });
+    const renewed = buildContentShare('https://example.com', 'album', { id: 'a', visibility: 'public', cover_url: cover('owner/one.jpg').replace('old','new') });
+    const second = buildContentShare('https://example.com', 'album', { id: 'a', visibility: 'public', cover_url: cover('owner/two.jpg') });
+    assert.equal(first.url, renewed.url);
+    assert.notEqual(first.url, second.url);
+    assert.notEqual(first.imageUrl, second.imageUrl);
+    assert.equal(new URL(second.imageUrl).searchParams.get('image'), '1');
 });
 test('private items, unsaved photos and unsupported types cannot be shared', () => {
     for (const item of [{ id: 'a', visibility: 'private' }, { visibility: 'public' }]) {

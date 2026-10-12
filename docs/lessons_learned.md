@@ -1,5 +1,14 @@
 # Lessons Learned
 
+## 2026-10-13: Keep Album Sharing On The Selected Cover
+
+- A cover control must let the owner choose a member photo, not silently save the first item. Preserve the chosen photo when adding or removing unrelated album photos.
+- Save only `cover_url` for a cover change; do not overwrite album text, visibility, or counts from an older modal snapshot.
+- Sharing must resolve a saved cover path to a public album member under anonymous RLS. Never fetch an arbitrary cover URL or use a private photo as a public preview; fall back to a public member after a cover is removed or privatized.
+- Version new share links and image URLs by the stable storage path, not by a short-lived signing token. Updating the site's metadata cannot rewrite a message already sent in a messenger.
+- Persist canonical cover references without signing grants. Return a usable signed URL only to the current viewer and renew it on later reads; changing an album's visibility must not falsely mark individual photos public in local state.
+- Reuse the normal photo renderer in the cover picker so lazy loading, decoding, and signed URL recovery remain available.
+
 ## 2026-10-12: Transparent Artwork And Visible Carousel Initialization
 
 - Browser-forced dark themes can recolor CSS while keeping raster backgrounds light. Use real alpha for decorative artwork, not a baked-in canvas or multiply-only blending. Preserve artwork dimensions and edge masks; leave photo pixels untouched.

@@ -25,3 +25,8 @@ test('unhydrated album photos can produce covers without downloading the origina
 test('a removed cover falls back only to photos in the same album', () => {
     assert.deepEqual(getAlbumCoverPhotos({ id: 'album', cover_url: url('owner/deleted.jpg') }, photos), photos.slice(0, 2));
 });
+test('adding or removing unrelated members preserves the selected cover identity', () => {
+    const album = {id:'album',cover_url:url('owner/two-thumb.jpg')};
+    assert.equal(getAlbumCoverPhotos(album,[...photos,{id:'new',album_id:'album'}])[0].id,'two');
+    assert.equal(getAlbumCoverPhotos(album,photos.filter(p=>p.id!=='one'))[0].id,'two');
+});

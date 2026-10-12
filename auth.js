@@ -89,6 +89,12 @@ async function hydrateSignedPhotoUrls(sb, photos = []) {
     ));
 }
 
+function getCanonicalAlbumCoverUrl(sb, coverUrl) {
+    const path = getPhotoStoragePath({ url: coverUrl });
+    // Persist a reference without a signing grant; hydrate it for each viewer.
+    return path ? sb.storage.from('photos').getPublicUrl(path).data.publicUrl : coverUrl || null;
+}
+
 async function hydrateSignedAlbumCoverUrls(sb, albums = []) {
     const paths = [...new Set(
         albums
@@ -849,7 +855,7 @@ export async function createAlbum(album) {
                 title: album.title,
                 note: album.note || '',
                 visibility: album.visibility || 'private',
-                cover_url: album.cover_url || null,
+                cover_url: getCanonicalAlbumCoverUrl(sb, album.cover_url),
                 date_start: album.date_start || null,
                 date_end: album.date_end || null,
                 photo_count: Number(album.photo_count || 0)
@@ -857,7 +863,7 @@ export async function createAlbum(album) {
             .select(ALBUM_SELECT_COLUMNS)
             .single();
         if (error) throw error;
-        return { data, error: null };
+        return { data: { ...data, cover_url: album.cover_url || data.cover_url }, error: null };
     } catch (error) {
         return { data: null, error };
     }
@@ -872,14 +878,14 @@ export async function updateAlbum(albumId, album) {
                 title: album.title,
                 note: album.note || '',
                 visibility: album.visibility || 'private',
-                cover_url: album.cover_url || null,
+                cover_url: getCanonicalAlbumCoverUrl(sb, album.cover_url),
                 photo_count: Number(album.photo_count || 0)
             })
             .eq('id', albumId)
             .select(ALBUM_SELECT_COLUMNS)
             .single();
         if (error) throw error;
-        return { data, error: null };
+        return { data: { ...data, cover_url: album.cover_url || data.cover_url }, error: null };
     } catch (error) {
         return { data: null, error };
     }
@@ -905,6 +911,17 @@ export async function deleteAlbum(albumId) {
     } catch (error) {
         return { error };
     }
+}
+
+export async function updateAlbumCover(albumId, coverUrl) {
+    try {
+        if (!albumId || !getPhotoStoragePath({ url: coverUrl })) throw new Error('invalid_album_cover');
+        const sb = getSupabase();
+        const { data, error } = await sb.from('albums')
+            .update({ cover_url: getCanonicalAlbumCoverUrl(sb, coverUrl) }).eq('id', albumId).select(ALBUM_SELECT_COLUMNS).single();
+        if (error) throw error;
+        return { data: { ...data, cover_url: coverUrl }, error: null };
+    } catch (error) { return { data: null, error }; }
 }
 
 export async function attachPhotosToAlbum(albumId, photoIds) {

@@ -12,7 +12,7 @@ export function getKakaoSharePayload(url, content = {}) {
         objectType: 'feed',
         content: {
             title: content.title || 'Ikkyee 여행 앨범',
-            description: content.description || '여행 사진과 장소를 지도에서 함께 둘러보세요.',
+            description: content.description || '장소 아카이브',
             imageUrl: content.imageUrl || 'https://practice-week1-cws.pages.dev/social-preview.jpg',
             link: {
                 mobileWebUrl: shareUrl,
