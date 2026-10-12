@@ -45,6 +45,7 @@ test('Cloudflare config exposes API key and Map ID without caching', async () =>
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
     assert.deepEqual(await response.json(), {
         googleMapsApiKey: 'browser-key',
-        googleMapsMapId: 'map-id'
+        googleMapsMapId: 'map-id',
+        googleAnalyticsMeasurementId: ''
     });
 });

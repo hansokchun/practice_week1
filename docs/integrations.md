@@ -86,6 +86,14 @@ Workers AI integration:
 
 ## Local repo integration points
 
+### Google Analytics
+
+- Web-only GA4 integration prepared on 2026-10-13; **inactive** without a real ID.
+- Production runtime variable: `GOOGLE_ANALYTICS_MEASUREMENT_ID` (public `G-` ID).
+- Explicit browser consent, manual sanitized pageviews, no ad tracking.
+- Owner registration and Enhanced Measurement OFF are required before activation.
+- Setup and verification: [google-analytics.md](google-analytics.md).
+
 - `auth.js` initializes the Supabase client and wraps Auth, Database, and
   Storage calls.
 - `index.html` loads the Supabase browser SDK from CDN.
