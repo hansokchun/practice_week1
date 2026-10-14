@@ -1,0 +1,277 @@
+{
+  "brandVersion": "1.0",
+  "kitVersion": "1.0",
+  "master": "brand/ikkyee-symbol-v1.png",
+  "masterSha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8",
+  "colors": {
+    "teal": "#245457",
+    "dark": "#1A4D4E",
+    "light": "#F9F7F2",
+    "white": "#FFFFFF"
+  },
+  "fonts": [
+    {
+      "family": "Cormorant Garamond",
+      "path": "brand/fonts/CormorantGaramond-Variable.ttf",
+      "license": "brand/fonts/CormorantGaramond-OFL.txt",
+      "sha256": "b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0"
+    },
+    {
+      "family": "NanumGothic",
+      "path": "brand/fonts/NanumGothic-Bold.ttf",
+      "license": "brand/fonts/NanumGothic-OFL.txt",
+      "sha256": "f96298f9fb18e364d2370f4c3ce948ac67a2b61af992d7234bc15c42b033c674"
+    }
+  ],
+  "assets": [
+    {
+      "path": "assets/logos/symbol-teal-1254.png",
+      "category": "logos",
+      "usage": "기본 심볼 · 밝은 배경",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8"
+    },
+    {
+      "path": "assets/logos/symbol-white-1254.png",
+      "category": "logos",
+      "usage": "흰색 심볼 · 사진 및 어두운 배경",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "55ace09cb562b68a19c643c9b11d54e54190d25c988822deb8b22a1a9c718cd2"
+    },
+    {
+      "path": "assets/logos/lockup-horizontal-teal.png",
+      "category": "logos",
+      "usage": "가로형 로고 · 웹 헤더·제휴·영상",
+      "width": 1800,
+      "height": 600,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "0bc8604e5b8430fe5a83c101c89fd37650db2cc4ed9b35a0d4262d7149b8216a"
+    },
+    {
+      "path": "assets/logos/wordmark-teal.png",
+      "category": "logos",
+      "usage": "글자형 로고 · 좁은 가로 공간",
+      "width": 1400,
+      "height": 360,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "6915fb7d8c636a4b1abd2da016ff1c0a99b92aaea2f965cc0f307fbc06ede10e"
+    },
+    {
+      "path": "assets/logos/lockup-horizontal-white.png",
+      "category": "logos",
+      "usage": "가로형 로고 · 웹 헤더·제휴·영상",
+      "width": 1800,
+      "height": 600,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "c48ac73868027b4624476f71df1ad4d555eadf0912896acd65155abf16df545c"
+    },
+    {
+      "path": "assets/logos/wordmark-white.png",
+      "category": "logos",
+      "usage": "글자형 로고 · 좁은 가로 공간",
+      "width": 1400,
+      "height": 360,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "96a2e863a8a6514ac17a9a8372ac73ab3b48839fdd0afa6e0bf2c26628e82e4d"
+    },
+    {
+      "path": "assets/logos/lockup-stacked-light.png",
+      "category": "logos",
+      "usage": "세로형 로고 · 표지·소개 화면",
+      "width": 1080,
+      "height": 1080,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "a277859fba3e02cdbb70fb07c546f4cb37473e1f3df0ae8a4de1a71e94ee82ef"
+    },
+    {
+      "path": "assets/logos/lockup-stacked-dark.png",
+      "category": "logos",
+      "usage": "세로형 로고 · 표지·소개 화면",
+      "width": 1080,
+      "height": 1080,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "ce04a079060db6f20796ad59e153251413076ace3d6e7a2046ab6ff0b832f3bf"
+    },
+    {
+      "path": "assets/app/app-store-1024.png",
+      "category": "app",
+      "usage": "App Store · 1024px 불투명 아이콘",
+      "width": 1024,
+      "height": 1024,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "622498fdcd652814a0368158a3ee8fdcf6fd4994f6db6adca094ee69bca395ec"
+    },
+    {
+      "path": "assets/app/google-play-512.png",
+      "category": "app",
+      "usage": "Google Play · 512px 전체 불투명 32-bit PNG",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "transparent": false,
+      "sha256": "53b60e18d293bccfc960d90ef6770ea27c181d7c370ebe5a54259eb79a60ed40"
+    },
+    {
+      "path": "assets/app/android-adaptive-foreground-1024.png",
+      "category": "app",
+      "usage": "Android 적응형 아이콘 전경 · 배경은 별도",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "667f7ed022d68936af2c41fbe232259abd96e809e071182c1bd8096d6b106dc5"
+    },
+    {
+      "path": "assets/app/android-monochrome-1024.png",
+      "category": "app",
+      "usage": "Android 테마 아이콘 · 알파 마스크",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "8ab221e36c9fe3991f4276e05e9f492d15e0f0f91aacd801b2eaccf5f38bd701"
+    },
+    {
+      "path": "assets/web/favicon-32.png",
+      "category": "web",
+      "usage": "브라우저 탭·작은 웹 아이콘",
+      "width": 32,
+      "height": 32,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "6ddb19ecc886dc6f5cdb3d40a5ee0671530a0f137e5b2045b3d9d4b6c9d95d02"
+    },
+    {
+      "path": "assets/web/favicon-48.png",
+      "category": "web",
+      "usage": "브라우저 탭·작은 웹 아이콘",
+      "width": 48,
+      "height": 48,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "96be115945f064d703c1d9b496dac33f885e0961677734331a98a90fd308cbf5"
+    },
+    {
+      "path": "assets/web/favicon-96.png",
+      "category": "web",
+      "usage": "브라우저 탭·작은 웹 아이콘",
+      "width": 96,
+      "height": 96,
+      "alpha": true,
+      "transparent": true,
+      "sha256": "763d19a22b8f3191ccdfcf6d9fb357a9054d4b46bd32cb0765e77980f4bf698c"
+    },
+    {
+      "path": "assets/web/apple-touch-180.png",
+      "category": "web",
+      "usage": "웹사이트 홈 화면 바로가기",
+      "width": 180,
+      "height": 180,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "e67c7020d90df6a671dec04681e2df10b510a91b18e7faf1fc65ec04fb96ddf0"
+    },
+    {
+      "path": "assets/social/profile-light-1080.png",
+      "category": "social",
+      "usage": "SNS·카카오 채널 프로필 · 원형 크롭 여백 유지",
+      "width": 1080,
+      "height": 1080,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "4200a6a1e0377a0c0408da374395e99e283ad3e69dc41bb8942ddf61aa5367bc"
+    },
+    {
+      "path": "assets/social/profile-dark-1080.png",
+      "category": "social",
+      "usage": "SNS·카카오 채널 프로필 · 원형 크롭 여백 유지",
+      "width": 1080,
+      "height": 1080,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "d820fc5b12e53c8a7a52618f191ba56e8cd01ebc9558586851f5958938220cde"
+    },
+    {
+      "path": "assets/marketing/link-preview-light.png",
+      "category": "marketing",
+      "usage": "기본 소개·링크 썸네일 · 1200×630",
+      "width": 1200,
+      "height": 630,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "fc84a8aa055cb4e4b235ae8efb538e24f3a255983b41d5e0d49b8e292f80a546"
+    },
+    {
+      "path": "assets/marketing/feed-light.png",
+      "category": "marketing",
+      "usage": "SNS 정사각 게시물 · 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "8e2f8bba471827943b9bb94507c5b6897e5d4103bdfa4759c54995174332c9a1"
+    },
+    {
+      "path": "assets/marketing/link-preview-dark.png",
+      "category": "marketing",
+      "usage": "기본 소개·링크 썸네일 · 1200×630",
+      "width": 1200,
+      "height": 630,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "12bf8fb6c192b72e300652e71e0e7af179b58330f9e71a54545143da23706a3a"
+    },
+    {
+      "path": "assets/marketing/feed-dark.png",
+      "category": "marketing",
+      "usage": "SNS 정사각 게시물 · 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "9c464f3b9c3bebb5cb1c680dcceb9fd1978727f96c3fa3f99fa4e9882963ab1e"
+    },
+    {
+      "path": "assets/marketing/story-dark.png",
+      "category": "marketing",
+      "usage": "SNS 스토리·영상 끝 화면 · 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "b672ffcf7cd3eea21b33c723b453c27eaeb6442938e5240ea51ac9e9d9f2448e"
+    },
+    {
+      "path": "assets/marketing/google-play-feature.png",
+      "category": "marketing",
+      "usage": "Google Play 피처 그래픽 · 1024×500",
+      "width": 1024,
+      "height": 500,
+      "alpha": false,
+      "transparent": false,
+      "sha256": "f6910dea5f98c9638339d4e897e416d37495f5f0291031082761641f2854d6bc"
+    }
+  ],
+  "preview": {
+    "path": "preview.png",
+    "sha256": "1344854f46632f8a6314365cffcdefbb1bc235e7b31accbd5f7709e4de5dcf37"
+  },
+  "archive": {
+    "path": "ikkyee-brand-kit-v1.zip",
+    "bytes": 2623330,
+    "sha256": "0e4dcd4647ec22eca5204ecbe6608c59257ad327ba65ee012fbd16c9fbe6fe47"
+  }
+}

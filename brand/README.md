@@ -13,6 +13,8 @@ user request is required for a new brand version.
   shadow, circular clipping, or added background rectangle.
 - Wordmark: existing `Ikkyee` Cormorant Garamond and Korean `이끼` remain unchanged.
 - White silhouette is allowed on the photographic landing header for contrast.
+- The separately requested delivery kit also uses that white alpha silhouette
+  on dark marketing backgrounds; it does not change the master or runtime assets.
 - Default profile avatars and map markers are separate assets, not this logo.
 
 ## Delivery Files
@@ -29,6 +31,12 @@ Paths above are relative to the repository root. Android foreground has 112px
 additional padding per edge to keep artwork within adaptive icon masks.
 Native icon/splash changes require a new native build; deploying the website
 does not update an already installed app binary.
+
+## App and Marketing Kit
+
+The 2026-10-14 request adds a separate [delivery kit](KIT.md): transparent symbol
+and wordmark exports, store icons, SNS profiles, marketing canvases and a ZIP.
+Preview and download at `/brand/`. Existing files listed above remain unchanged.
 
 ## Reproduction and Checks
 
