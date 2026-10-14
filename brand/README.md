@@ -49,6 +49,10 @@ The [Korean phrase wordmark](KOREAN-WORDMARK.md) pairs the approved symbol with
 `장소아카이브 이끼` on one line at `/brand/#korean-wordmark`; it is another
 separate delivery and does not replace the earlier logos.
 
+The [Shorts source kit](SHORTS.md) adds 9:16 intros, outros, alpha overlays and
+static editing sources for `장소아카이브 이끼` at `/brand/#shorts-kit`. These are
+standalone downloads and do not replace runtime logos or earlier animations.
+
 ## Reproduction and Checks
 
 `scripts/export-brand-assets.mjs` makes delivery files only from this master.

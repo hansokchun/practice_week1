@@ -42,6 +42,8 @@
         .sample.poster { aspect-ratio: 1; background: #f0f2f1; padding: 12px; }
         .sample.poster img { width: auto; max-height: 100%; object-fit: contain; }
         video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #f9f7f2; }
+        .shorts-video { aspect-ratio: 9 / 16; max-width: 240px; margin: 0 auto; }
+        .shorts-sheet { max-width: 680px; margin: 24px auto 0; }
         figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 13px; }
         .files { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
         .file { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid #e2e7e5; min-width: 0; }
@@ -102,6 +104,22 @@
                 <figure><div class="sample korean"><img src="korean-wordmark-layouts/close-right-teal.png" width="1800" height="440" alt="문구 오른쪽에 심볼을 배치한 장소아카이브 이끼"></div><figcaption><span>오른쪽 심볼</span><a href="korean-wordmark-layouts/close-right-teal.png" download>청록색 PNG</a><a href="korean-wordmark-layouts/close-right-white.png" download>흰색 PNG</a></figcaption></figure>
             </div>
             <div class="actions"><a class="download" href="korean-wordmark-layouts/ikkyee-wordmark-layouts.zip" download>두 버전 전체 다운로드</a><a href="korean-wordmark-layouts/guide.txt" download>사용 안내</a></div>
+        </div></section>
+        <section id="shorts-kit"><div class="container">
+            <h2>장소아카이브 이끼 · 쇼츠 소스</h2>
+            <div class="grid">
+                <figure><video class="shorts-video" controls playsinline preload="none" poster="shorts/intro-light.png" aria-label="3초 세로형 장소아카이브 이끼 인트로"><source src="shorts/intro-light.mp4" type="video/mp4"></video><figcaption><span>인트로 · 3초 · 1080×1920</span><a href="shorts/intro-light.mp4" download>밝은 MP4</a><a href="shorts/intro-dark.mp4" download>어두운 MP4</a></figcaption></figure>
+                <figure><video class="shorts-video" controls playsinline preload="none" poster="shorts/outro-dark.png" aria-label="4초 세로형 장소아카이브 이끼 마무리 화면"><source src="shorts/outro-dark.mp4" type="video/mp4"></video><figcaption><span>마무리 · 4초 · 1080×1920</span><a href="shorts/outro-light.mp4" download>밝은 MP4</a><a href="shorts/outro-dark.mp4" download>어두운 MP4</a></figcaption></figure>
+            </div>
+            <div class="actions"><a class="download" href="shorts/ikkyee-shorts-kit.zip" download>MP4·PNG 전체 다운로드</a><a href="shorts/ikkyee-shorts-alpha-teal.zip" download>투명 청록색 MOV</a><a href="shorts/ikkyee-shorts-alpha-white.zip" download>투명 흰색 MOV</a><a href="shorts/guide.txt" download>사용 안내</a></div>
+            <p class="muted">투명 MOV는 ProRes 4444를 지원하는 편집기에서 사용하세요. 지원하지 않으면 투명 PNG에 편집기의 페이드 효과를 적용할 수 있습니다.</p>
+            <a href="shorts/preview.png" download><img class="shorts-sheet" src="shorts/preview.png" width="970" height="1110" loading="lazy" alt="인트로, 마무리, 하단 로고, 오른쪽 심볼과 세로 조합 쇼츠 소스 6가지 미리보기"></a>
+            <div class="files">
+                <div class="file"><span>하단 로고<small>1080×1920 · 투명 PNG</small></span><a href="shorts/overlay-left-teal.png" download>청록색</a><a href="shorts/overlay-left-white.png" download>흰색</a></div>
+                <div class="file"><span>오른쪽 심볼<small>1080×1920 · 투명 PNG</small></span><a href="shorts/overlay-right-teal.png" download>청록색</a><a href="shorts/overlay-right-white.png" download>흰색</a></div>
+                <div class="file"><span>워터마크<small>720×176 · 투명 PNG</small></span><a href="shorts/watermark-left-teal.png" download>청록색</a><a href="shorts/watermark-left-white.png" download>흰색</a></div>
+                <div class="file"><span>세로 조합<small>1080×1920 · 투명 PNG</small></span><a href="shorts/stacked-teal.png" download>청록색</a><a href="shorts/stacked-white.png" download>흰색</a></div>
+            </div>
         </div></section>
         <section id="logo-animation"><div class="container">
             <h2>영상용 로고 애니메이션</h2>

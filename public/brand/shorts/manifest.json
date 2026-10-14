@@ -1,0 +1,385 @@
+{
+  "version": "1.0",
+  "text": "장소아카이브 이끼",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "runtimeReplacement": false,
+  "sources": [
+    {
+      "path": "brand/ikkyee-symbol-v1.png",
+      "sha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8"
+    },
+    {
+      "path": "public/brand/korean-wordmark-layouts/close-left-teal.png",
+      "sha256": "b5a00306c499b04cd235d88fafc281dbf47701a6a12ed7b6f60ccc0fddee47f4"
+    },
+    {
+      "path": "public/brand/korean-wordmark-layouts/close-right-teal.png",
+      "sha256": "8153220cd9a0877b0ee460a155f1915507f8b9bef99d3899e99e98d7d293844e"
+    },
+    {
+      "path": "brand/fonts/NanumGothic-Bold.ttf",
+      "sha256": "f96298f9fb18e364d2370f4c3ce948ac67a2b61af992d7234bc15c42b033c674"
+    }
+  ],
+  "layouts": {
+    "intro": {
+      "left": 120,
+      "top": 740,
+      "width": 840,
+      "height": 205
+    },
+    "outro": {
+      "left": 120,
+      "top": 660,
+      "width": 840,
+      "height": 205
+    },
+    "overlay": {
+      "left": 120,
+      "top": 1280,
+      "width": 840,
+      "height": 205
+    }
+  },
+  "assets": [
+    {
+      "path": "intro-light.mp4",
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": 3,
+      "alpha": false,
+      "audio": false,
+      "usage": "쇼츠 시작 화면",
+      "codec": "H.264",
+      "bytes": 32264,
+      "sha256": "99c4b01e4a5e4e8759efc7c113d1d6d3f9a05cbfa4b8f1cd7471d4d544d1867c",
+      "verification": {
+        "frames": 90,
+        "pixelFormat": "yuv420p"
+      }
+    },
+    {
+      "path": "intro-light.png",
+      "type": "image",
+      "alpha": false,
+      "usage": "정지 시작 화면",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 35966,
+      "sha256": "0ebe18e4ff5ea06c5d791d93d72a16446e9d6df7300e6786e0223d5c316208fd"
+    },
+    {
+      "path": "intro-dark.mp4",
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": 3,
+      "alpha": false,
+      "audio": false,
+      "usage": "쇼츠 시작 화면",
+      "codec": "H.264",
+      "bytes": 31306,
+      "sha256": "020f07ed1c54978592efbbecf9ca634559fd71d62b585869ef47a689c1474b94",
+      "verification": {
+        "frames": 90,
+        "pixelFormat": "yuv420p"
+      }
+    },
+    {
+      "path": "intro-dark.png",
+      "type": "image",
+      "alpha": false,
+      "usage": "정지 시작 화면",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 27821,
+      "sha256": "74d843ac9c1319215d5e96f71887fc91c1e05fb21828658d12701d9452fd81e1"
+    },
+    {
+      "path": "intro-preview.gif",
+      "type": "preview",
+      "width": 270,
+      "height": 480,
+      "bytes": 20927,
+      "sha256": "256041cead087981a6f1b2c0dd9156b2e7021e544ad21875bb4c647148aed317"
+    },
+    {
+      "path": "outro-light.mp4",
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": 4,
+      "alpha": false,
+      "audio": false,
+      "usage": "쇼츠 마무리 화면",
+      "codec": "H.264",
+      "bytes": 70991,
+      "sha256": "b0fef03fee6c77b87603a16cc89543874d3ee7d4fe87dd32da94635bc9a0bcc5",
+      "verification": {
+        "frames": 120,
+        "pixelFormat": "yuv420p"
+      }
+    },
+    {
+      "path": "outro-light.png",
+      "type": "image",
+      "alpha": false,
+      "usage": "정지 마무리 화면",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 49315,
+      "sha256": "39ac2e4df45fd841427db191ba1f43c3880aab25a7121180ecb1629ad85d5028"
+    },
+    {
+      "path": "outro-dark.mp4",
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": 4,
+      "alpha": false,
+      "audio": false,
+      "usage": "쇼츠 마무리 화면",
+      "codec": "H.264",
+      "bytes": 71482,
+      "sha256": "0f07fa36dce270f2aad6e99b856ed5b1a93dd24b9b11396f3f196ae3946a3c7f",
+      "verification": {
+        "frames": 120,
+        "pixelFormat": "yuv420p"
+      }
+    },
+    {
+      "path": "outro-dark.png",
+      "type": "image",
+      "alpha": false,
+      "usage": "정지 마무리 화면",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 41531,
+      "sha256": "34526bd84c7d3afa72ec1de5816f02ece3f28cade5051795fdb448f1674b9d23"
+    },
+    {
+      "path": "outro-preview.gif",
+      "type": "preview",
+      "width": 270,
+      "height": 480,
+      "bytes": 42083,
+      "sha256": "f022a2ff4524bdac98cb1bfa0f92dd0dd3e61f84d00390009668d379795a05c3"
+    },
+    {
+      "path": "overlay-teal.mov",
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": 3,
+      "alpha": true,
+      "audio": false,
+      "usage": "영상 위에 겹치는 하단 로고",
+      "codec": "ProRes 4444",
+      "bytes": 11468957,
+      "sha256": "20f3b319308d0db649e83b0fb1baaf8da75c89686011c058cd1ebfb728d177cd",
+      "verification": {
+        "frames": 90,
+        "pixelFormat": "yuva444p12le",
+        "alphaAtStart": {
+          "visiblePixels": 0,
+          "transparentPixels": 2073600
+        },
+        "alphaAtHold": {
+          "visiblePixels": 21407,
+          "transparentPixels": 2052193
+        },
+        "alphaAtEnd": {
+          "visiblePixels": 0,
+          "transparentPixels": 2073600
+        }
+      }
+    },
+    {
+      "path": "overlay-white.mov",
+      "type": "video",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "duration": 3,
+      "alpha": true,
+      "audio": false,
+      "usage": "영상 위에 겹치는 하단 로고",
+      "codec": "ProRes 4444",
+      "bytes": 6375240,
+      "sha256": "7c9ea4206008f4d9531347801acfbd654f74b72a2309b5c9b779475251c0d190",
+      "verification": {
+        "frames": 90,
+        "pixelFormat": "yuva444p12le",
+        "alphaAtStart": {
+          "visiblePixels": 0,
+          "transparentPixels": 2073600
+        },
+        "alphaAtHold": {
+          "visiblePixels": 21407,
+          "transparentPixels": 2052193
+        },
+        "alphaAtEnd": {
+          "visiblePixels": 0,
+          "transparentPixels": 2073600
+        }
+      }
+    },
+    {
+      "path": "overlay-preview.gif",
+      "type": "preview",
+      "width": 270,
+      "height": 480,
+      "bytes": 28488,
+      "sha256": "e77c6c46dde343288ff0272d07da1c966ccd2fa742a01853d934d11e0f60f818"
+    },
+    {
+      "path": "overlay-left-teal.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "전체화면 투명 하단 로고",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 38505,
+      "sha256": "0de268d68b6ad21975fd0e1f2150ae340657f83d8c6fb3185ac18fa60725de7d"
+    },
+    {
+      "path": "watermark-left-teal.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "위치와 크기를 자유롭게 조절하는 워터마크",
+      "width": 720,
+      "height": 176,
+      "bytes": 23761,
+      "sha256": "5f222a92239e3a2027cb26da9ee85a5a8c26a44330a244ea484b50f91dba1b10"
+    },
+    {
+      "path": "overlay-left-white.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "전체화면 투명 하단 로고",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 27041,
+      "sha256": "cd6ba944523f3dbceb1cbd1bb5f9814c225b4fee4973e58affbb48fca0b80a33"
+    },
+    {
+      "path": "watermark-left-white.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "위치와 크기를 자유롭게 조절하는 워터마크",
+      "width": 720,
+      "height": 176,
+      "bytes": 15396,
+      "sha256": "4fc74a7057b18e08d5b94486bb81e78607ea801d92e2f481c34391f77bf0eb71"
+    },
+    {
+      "path": "overlay-right-teal.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "전체화면 투명 하단 로고",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 38762,
+      "sha256": "69e72b80d8abb378c2aeaca75bb59b40104b203c158de70295a53caecd06d0c9"
+    },
+    {
+      "path": "watermark-right-teal.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "위치와 크기를 자유롭게 조절하는 워터마크",
+      "width": 720,
+      "height": 176,
+      "bytes": 23684,
+      "sha256": "2f15311d040bcdeac121d3db45cb7527635449f741d4d01694a01eaecbb903ce"
+    },
+    {
+      "path": "overlay-right-white.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "전체화면 투명 하단 로고",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 27094,
+      "sha256": "4b0f7dc17d00ad436def6475ea9b35677f2cb6dc6e5b6710588c1814c7ab7471"
+    },
+    {
+      "path": "watermark-right-white.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "위치와 크기를 자유롭게 조절하는 워터마크",
+      "width": 720,
+      "height": 176,
+      "bytes": 15306,
+      "sha256": "19900fa6846d7e2e58615dbbd31d41df7ca6300e7ecf01540a8b5c1cc30fb2d2"
+    },
+    {
+      "path": "stacked-teal.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "세로 조합 로고",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 52782,
+      "sha256": "d8048b5612777111ddc55df032e383c36f7a681f3b62fdb807f6388df0824e3d"
+    },
+    {
+      "path": "stacked-light.png",
+      "type": "image",
+      "alpha": false,
+      "usage": "세로 조합 표지",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 49160,
+      "sha256": "1442cbf9bb93ae076ac86185220c92595f285387198f0e60efb2a9951201efa3"
+    },
+    {
+      "path": "stacked-white.png",
+      "type": "image",
+      "alpha": true,
+      "usage": "세로 조합 로고",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 68376,
+      "sha256": "5015c734fc9a445eecaf9d0275d046402ea135a20a4b44440e4747cb374a0e94"
+    },
+    {
+      "path": "stacked-dark.png",
+      "type": "image",
+      "alpha": false,
+      "usage": "세로 조합 표지",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 36252,
+      "sha256": "c9c6a93134744f8d2476c9fd400b9de1e311f6347a64028cec9cb20a34392065"
+    }
+  ],
+  "preview": {
+    "path": "preview.png",
+    "sha256": "80303255e1c4c913e8f6fd25b7db041f9ef0355cb778670ba78c1a8063cb667f"
+  },
+  "archives": [
+    {
+      "path": "ikkyee-shorts-kit.zip",
+      "bytes": 774775,
+      "sha256": "107b0a3fcdb52e560b45ea8afb77d45619a5e6dae93298cedf38d8ae5a02ad67"
+    },
+    {
+      "path": "ikkyee-shorts-alpha-teal.zip",
+      "bytes": 7525288,
+      "sha256": "8aaf402d08e3e1f64f175b652bf1b38119fc7fe88e478c9db08c898b45801ae0"
+    },
+    {
+      "path": "ikkyee-shorts-alpha-white.zip",
+      "bytes": 2174195,
+      "sha256": "5d6e4c5cc233b863fd794c3e3e0cbccbbf1470a0ccb4dc68762fc7289d274659"
+    }
+  ]
+}

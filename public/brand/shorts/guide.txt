@@ -1,0 +1,32 @@
+장소아카이브 이끼 - 쇼츠 제작 소스
+
+영상: 1080 × 1920, 세로 9:16, 30fps, 소리 없음
+intro-light.mp4 / intro-dark.mp4: 3초 인트로
+outro-light.mp4 / outro-dark.mp4: 4초 마무리, 문구와 ikkyee.com 포함
+overlay-teal.mov / overlay-white.mov: 3초 투명 하단 로고, 처음과 끝은 완전히 투명
+
+MP4에는 배경색이 있습니다. MP4는 투명 영상이 아닙니다.
+MOV는 실제 알파 채널이 있는 ProRes 4444입니다.
+ProRes 4444를 지원하는 편집기에서 원본 영상 위의 레이어에 배치하세요.
+지원하지 않는 편집기에서는 overlay-*.png 또는 watermark-*.png를 쓰고
+편집기의 페이드 효과를 적용하면 됩니다. GIF는 미리보기용입니다.
+
+이미지 16종
+intro-*.png / outro-*.png: 영상의 시작 또는 마지막 정지 화면
+overlay-left-*.png / overlay-right-*.png: 1080 × 1920에 하단 위치가 잡힌 투명 로고
+watermark-left-*.png / watermark-right-*.png: 720 × 176, 위치와 크기를 자유롭게 조절하는 투명 로고
+stacked-teal.png / stacked-white.png: 두 줄 문구와 심볼을 세로로 배치한 투명 로고
+stacked-light.png / stacked-dark.png: 세로 조합 표지
+
+이름에 teal이 있으면 청록색, white가 있으면 흰색입니다.
+밝은 영상에는 청록색, 어두운 영상에는 흰색을 권장합니다.
+로고의 비율을 유지하고 실제 심볼과 점선을 잘라내지 마세요.
+하단 로고 위치는 자막과 앱 버튼을 피하도록 여백을 둔 기본값입니다.
+플랫폼·기기·자막에 따라 UI가 다르므로 업로드 전 미리보기에서 확인하세요.
+전체 화면 크기의 투명 PNG/MOV는 1080 × 1920 프로젝트에서 원래 크기로 배치하세요.
+
+ikkyee-shorts-kit.zip: MP4 4종, PNG 16종, GIF 3종, 사용 안내
+ikkyee-shorts-alpha-teal.zip / ikkyee-shorts-alpha-white.zip: 색상별 투명 MOV
+
+기존 로고·애니메이션·웹사이트·앱 아이콘은 교체하지 않았습니다.
+PNG는 벡터나 CMYK 인쇄 원본이 아닙니다. 글꼴 라이선스가 함께 포함되어 있습니다.
