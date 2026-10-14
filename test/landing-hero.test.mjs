@@ -32,8 +32,8 @@ test('landing waits for curated photos instead of flashing sample slides', () =>
     const landing = html.slice(landingStart, landingEnd);
     assert.match(landing, /class="landing-hero-slides"[^>]*aria-busy="true"[^>]*><\/div>/);
     assert.doesNotMatch(landing, /class="landing-hero-slide(?:\s|")/);
-    assert.match(html, /<h1[^>]*>이건 어디서 찍은거지\?<\/h1>/);
-    assert.match(html, /<p>이끼에서 매력적인 장소와 자세한 위치를 찾아보세요<\/p>/);
+    assert.match(landing, /<h1[^>]*>여긴 어디지\?<\/h1>/);
+    assert.match(landing, /<p>이끼에서 당신만의 장소를 찾아보거나 공유하세요<\/p>/);
     assert.match(css, /\.page-landing\s*\{[^}]*min-height:\s*100svh;/s);
     assert.match(css, /\.landing-hero-slide img\s*\{[^}]*object-fit:\s*cover;/s);
     assert.match(css, /\.landing-hero-content\s*\{[^}]*top:\s*46%;/s);
