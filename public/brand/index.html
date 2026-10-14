@@ -39,6 +39,7 @@
         .sample.square img { width: 76%; }
         .sample.poster { aspect-ratio: 1; background: #f0f2f1; padding: 12px; }
         .sample.poster img { width: auto; max-height: 100%; object-fit: contain; }
+        video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #f9f7f2; }
         figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 13px; }
         .files { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
         .file { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid #e2e7e5; min-width: 0; }
@@ -75,6 +76,15 @@
                 <figure><div class="sample"><img src="assets/logos/lockup-horizontal-teal.png" width="1800" height="600" alt="밝은 배경의 청록색 가로형 이끼 로고"></div><figcaption><span>밝은 배경용 · 투명 PNG</span><a href="assets/logos/lockup-horizontal-teal.png" download>다운로드</a></figcaption></figure>
                 <figure><div class="sample dark"><img src="assets/logos/lockup-horizontal-white.png" width="1800" height="600" alt="어두운 배경의 흰색 가로형 이끼 로고"></div><figcaption><span>어두운 배경용 · 투명 PNG</span><a href="assets/logos/lockup-horizontal-white.png" download>다운로드</a></figcaption></figure>
             </div>
+        </div></section>
+        <section id="logo-animation"><div class="container">
+            <h2>영상용 로고 애니메이션</h2>
+            <div class="grid">
+                <figure><video controls playsinline preload="none" poster="animation/poster-light.png" aria-label="밝은 배경의 3초 이끼 로고 애니메이션"><source src="animation/ikkyee-logo-light.mp4" type="video/mp4"></video><figcaption><span>밝은 배경 · 3초 · Full HD</span><a href="animation/ikkyee-logo-light.mp4" download>MP4 다운로드</a></figcaption></figure>
+                <figure><video controls playsinline preload="none" poster="animation/poster-dark.png" aria-label="어두운 배경의 3초 이끼 로고 애니메이션"><source src="animation/ikkyee-logo-dark.mp4" type="video/mp4"></video><figcaption><span>어두운 배경 · 3초 · Full HD</span><a href="animation/ikkyee-logo-dark.mp4" download>MP4 다운로드</a></figcaption></figure>
+            </div>
+            <div class="actions"><a class="download" href="animation/ikkyee-logo-animation.zip" download>애니메이션 전체 다운로드</a><a href="animation/ikkyee-logo-transparent-teal.mov" download>투명 청록색 MOV</a><a href="animation/ikkyee-logo-transparent-white.mov" download>투명 흰색 MOV</a><a href="animation/preview.gif" download>GIF 미리보기</a></div>
+            <p class="muted">영상 위에 겹쳐 쓸 때에는 ProRes 4444를 지원하는 편집기에서 투명 MOV를 사용하세요. MP4에는 배경색이 포함됩니다.</p>
         </div></section>
         <section><div class="container">
             <h2>앱과 프로필</h2>
