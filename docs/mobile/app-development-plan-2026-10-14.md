@@ -207,7 +207,7 @@ Capacitor는 기존 JavaScript 프로젝트에 앱 컨테이너를 추가하고 
 | 런타임 패키지 보안 검사 | `npm audit --omit=dev`: 알려진 취약점 0 |
 | 로컬 브라우저 확인 | 공개 랜딩·서버 공개 사진 목록·사진 상세·공유 메뉴, 390px 화면·웹에서 앱 전용 버튼 숨김 확인. 계정/사진 쓰기 없음 |
 | 웹 성능 예산 | 기존 원본부터 실패: JS Brotli 80.07KB/70.5KB, CSS 31.85KB/30KB. 앱 SDK 분리 후 현재 JS 81.10KB, CSS 31.91KB. 예산은 완화하지 않음 |
-| Android 설치 파일 | 미생성. 후속 Android 지정 작업에서 Java·Gradle을 준비했으며 SDK 설치·약관 확인은 11절 참고 |
+| Android 설치 파일 | 이후 시험 APK 생성·서명·웹 번들 검증 완료. 최신 결과는 12절 참고 |
 | iOS 컴파일·서명 | 미완료: 설치 Xcode 16.4, Capacitor 8 요구 Xcode 26.0 이상. 시뮬레이터도 검증 전 |
 | 실제 기기 OAuth·이메일·지도·사진 선택·공유·저장 | 미검증 |
 
@@ -226,7 +226,7 @@ Capacitor 8의 개발 환경 요구는 [공식 환경 안내](https://capacitorj
 
 ## 11. Android 시험 기기 확정 후 빌드 준비 — 2026-10-14
 
-사용자가 시험 기기를 **Android**로 답했다. APK 생성을 위한 무료 로컬 빌드 준비를 진행했다. SDK 약관 동의 응답은 아직 확인되지 않았으므로 SDK 다운로드·설치·실행과 약관 수락은 보류했다.
+이 절은 SDK 설치 승인 전의 준비 이력이다. 이후 승인과 실제 APK 결과는 12절을 우선한다. 사용자가 시험 기기를 **Android**로 답했다. 당시 SDK 약관 동의 응답은 아직 확인되지 않아 SDK 다운로드·설치·실행과 약관 수락을 보류했다.
 
 ### 완료한 준비
 
@@ -258,10 +258,55 @@ npm run app:apk:android
 | SDK 약관 동의 응답·설치 패키지 동의 기록 | 미확인; 자동 수락하지 않음 |
 | APK 생성·서명·실제 휴대전화 설치 | 미실행 |
 
-### 지금 필요한 사용자 확인
+### 당시 필요했던 사용자 확인 — 이후 승인됨
 
 [Google Android SDK 이용약관](https://developer.android.com/studio#terms-and-conditions)을 확인하고 SDK 설치 진행에 동의하거나, 사용자가 직접 SDK를 설치한 뒤 알려준다. 동의 확인 뒤 공식 SDK 명령줄 도구와 API 36·Build Tools·platform-tools를 준비하고 실제 Gradle 컴파일 오류를 해결한다. 준비한 프로젝트 내부 Java와 Gradle은 다른 시스템 도구를 대체하지 않는다.
 
 기존 앱과 같은 식별자·versionCode 1을 사용하므로 실제 설치 전에는 이전 앱의 서명·버전 및 미업로드 작업을 대조한다. APK를 만들었다는 사실을 로그인·지도·공유·업데이트 성공으로 대신하지 않는다. Android USB 연결·휴대전화 개발자 옵션/USB 디버깅 허용 등 실제 기기 단계가 필요하면 별도로 안내한다.
 
 근거: [Adoptium 배포 API](https://api.adoptium.net/), [Gradle 배포 검증](https://docs.gradle.org/current/userguide/gradle_wrapper.html#sec:verification), [Google SDK 도구](https://developer.android.com/tools/sdkmanager). 파일 검사·다운로드·도구 실행 외에 서버 정책 변경, 기존 앱 데이터 제거, 유료 결제는 수행하지 않았다.
+
+## 12. Android 시험 APK 생성·검증 완료 — 2026-10-14
+
+SDK 설치·약관 확인 요청에 사용자가 “진행해줘. 계속 너가 판단대로 진행해”라고 답했다. 해당 요청 범위의 승인으로 진행했으며 별도의 유료 서비스나 운영 배포 승인을 뜻하지 않는다.
+
+### 완료한 작업
+
+- Google 공식 macOS ARM 명령줄 도구를 다운로드하고 공식 SHA-256과 실제 파일 지문을 대조한 뒤 프로젝트 내부 SDK에 설치했다. 명령줄 도구 실행 버전은 22.0이다.
+- API 36, Build Tools 35.0.0·36.0.0, platform-tools만 설치했다. SDK 관리 도구에 표시된 해당 `android-sdk-license` 수락 절차를 진행했고 설치 패키지 약관 본문과 동의 기록을 읽기 전용으로 다시 검증했다. 에뮬레이터나 시스템 전역 SDK·Java 설정은 추가하지 않았다.
+- 실제 Gradle `testDebugUnitTest`, `lintDebug`, `assembleDebug`가 성공했다. 기본 JVM 템플릿 테스트의 통과를 앱 기능이나 실기기 검증으로 간주하지 않는다. lint는 Error/Fatal 0개, Warning 31개다.
+- APK 검증 도구를 추가하고 시험 빌드 절차에 연결했다. 실제 `aapt2`로 앱 식별자·버전·지원 OS·debug 설정을 확인하고 `apksigner`로 서명을 검증한다. APK의 웹 파일 전체 목록·내용 SHA-256을 현재 앱 번들과 비교한다. Capacitor가 생성하는 정확히 빈 Cordova 호환 파일 두 개만 별도 기록하고 그 외 추가 코드·누락·변경 파일은 거부한다.
+- 사전 검사·키 생성·Gradle·APK 검증 실패 시 새 산출물로 복사하지 않는다. 검증 결과와 빌드 입력 지문을 대조하고 복사한 APK의 지문까지 같을 때만 검증 증빙을 생성한다. 기기 설치·기존 앱 업데이트 검증은 계속 `false`다.
+- 병합 manifest에서 시작 화면과 `ikkyee://auth/callback`을 확인했다. INTERNET, 비공개 FileProvider와 캐시 공유 설정이 포함된다. 전체 사진/저장소/위치 runtime 권한을 추가하지 않았고 백업 제외 설정을 유지했다.
+
+### 최신 검증 결과
+
+| 항목 | 결과 |
+| --- | --- |
+| 공통 전체 테스트 | 1,124/1,124 통과 |
+| 웹 빌드·앱 번들·양 플랫폼 동기화 | 통과; iOS 컴파일은 아님 |
+| 네이티브 브랜드 자산 | 고정 master 기반 30종 지문 검증 통과 |
+| 런타임 패키지 보안 조회 | `npm audit --omit=dev`: 알려진 취약점 0 |
+| SDK 준비·설치 약관 기록 | 실제 검사 통과 |
+| Android JVM 단위 테스트·lint·APK 컴파일 | 통과 |
+| 실제 APK manifest·서명 | `com.ikkyee.mobile`, versionCode 1, 최소 API 24·대상 API 36, debug, 서명 1개 검증 통과 |
+| APK에 포함된 웹 번들 | 현재 파일 41개, 총 3,276,652 bytes 일치; 빈 Cordova 호환 파일 2개 별도 확인 |
+| APK 산출물 | `app-shell/artifacts/android/ikkyee-android-debug.apk`, 7,428,585 bytes |
+| APK SHA-256 | `3907ce7ac204e34526918833b625de2ef8a8c49e617157ee9deab9c118c01ddc` |
+| 실제 Android 연결 상태 | 조회 성공, 연결된 기기 0개; 기기 식별자 출력 안 함 |
+| 실기기 실행·인증·지도·업로드·공유·재실행 | 미검증 |
+| 기존 앱 업데이트·로컬 미업로드 작업 보존 | 미검증; 앱 제거·데이터 초기화하지 않음 |
+
+```bash
+npm run app:doctor:android
+npm run app:apk:android
+npm run app:verify:android
+```
+
+APK와 서명 키·SDK·캐시는 ignored 로컬 경로에 보관하고 Git에 올리지 않는다. `.apk.json`에는 빌드 시각, 입력 문서 지문, 검증된 서명/웹 번들 증빙 및 아직 미검증인 기기·업데이트 상태가 담긴다. 공개 인증서 지문은 검증 결과이며 이전 앱과 서명이 같다는 증명은 아니다.
+
+### 다음 단계와 사용자 참여
+
+Android 휴대전화가 연결되면 기존 Ikkyee 설치 여부·버전·서명을 먼저 대조한다. 기존 앱이 있으면 미완료 로컬 사진 작업을 보존하며, 서명이 다르다는 이유로 제거하거나 데이터를 지우지 않는다. 실제 시험 설치에 필요한 휴대전화 연결·USB 디버깅 허용은 사용자가 기기에서 해야 한다. 설치 후 같은 테스트 계정의 서버 사진·앨범 왕복, OAuth와 이메일 복귀, 지도·거리뷰, 사진 선택/거부, 업로드, 공유/취소, 종료 후 세션 복원을 확인한다.
+
+현재 외부 인증 허용 목록과 Maps/Turnstile의 네이티브 origin 허용 여부는 실기기 확인 전이다. 공개 HTTPS 링크의 자동 앱 수신, iOS 설치, 출시 서명·스토어 등록도 완료로 표시하지 않는다. 이번 작업에서 유료 결제·운영 배포·서버 정책 변경·기존 사용자 데이터 삭제는 수행하지 않았다.

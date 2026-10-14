@@ -3,6 +3,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { isAbsolute, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { verifyAndroidApk } from './verify-android-apk.mjs';
 
 const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
 
@@ -46,6 +47,7 @@ function run(command, args, options) {
 export function buildAndroidDebug({
     runCommand = run, exists = existsSync, readBytes = readFileSync,
     makeDirectory = mkdirSync, copyFile = copyFileSync, writeFile = writeFileSync,
+    verifyArtifact = verifyAndroidApk,
     now = () => new Date(), log = console.log, ...options
 } = {}) {
     const plan = getAndroidDebugBuildPlan(options);
@@ -68,16 +70,28 @@ export function buildAndroidDebug({
     if (!exists(plan.sourceApk)) throw new Error('빌드는 종료됐지만 APK 파일을 확인하지 못했습니다.');
     const apk = readBytes(plan.sourceApk);
     const sha256 = createHash('sha256').update(apk).digest('hex');
+    const evidence = verifyArtifact({ apkPath: plan.sourceApk,
+        sdkPath: plan.environment.ANDROID_HOME, bundleDirectory: join(plan.root, 'app-shell/www'),
+        env: plan.environment });
+    if (evidence?.verified !== true || evidence.apkSignatureVerified !== true
+        || evidence.packagedBundleVerified !== true || evidence.sha256 !== sha256
+        || evidence.bytes !== apk.byteLength || evidence.webBundle?.indexSha256 !== inputBundleIndexSha256) {
+        throw new Error('APK 검증 결과가 현재 빌드와 다르므로 설치 파일을 전달하지 않았습니다.');
+    }
     makeDirectory(join(plan.root, 'app-shell/artifacts/android'), { recursive: true });
     copyFile(plan.sourceApk, plan.artifact);
+    if (createHash('sha256').update(readBytes(plan.artifact)).digest('hex') !== sha256) {
+        throw new Error('APK 복사 결과가 검증된 파일과 달라 검증 기록을 생성하지 않았습니다.');
+    }
     writeFile(`${plan.artifact}.json`, `${JSON.stringify({
         artifact: 'ikkyee-android-debug.apk', applicationId: 'com.ikkyee.mobile',
         buildType: 'debug', sha256, bytes: apk.byteLength, createdAt: now().toISOString(), inputBundleIndexSha256,
-        verification: ['testDebugUnitTest', 'lintDebug', 'assembleDebug'],
-        apkSignatureVerified: false, packagedBundleVerified: false,
+        verification: ['testDebugUnitTest', 'lintDebug', 'assembleDebug', 'verifyAndroidApk'],
+        apkSignatureVerified: true, packagedBundleVerified: true,
+        verifiedAt: evidence.verifiedAt, signing: evidence.signing, webBundle: evidence.webBundle,
         installedDeviceVerified: false, upgradeVerified: false
     }, null, 2)}\n`);
-    log('Android 시험 APK를 생성했습니다. APK 패키지·서명과 실기기 설치·로그인·지도·업데이트는 별도 검증해야 합니다.');
+    log('Android 시험 APK를 생성하고 패키지·서명·웹 파일을 검증했습니다. 실기기 설치·로그인·지도·업데이트는 별도 검증해야 합니다.');
     log(plan.artifact);
     return 0;
 }

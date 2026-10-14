@@ -11,6 +11,7 @@
     "app:sync": "npm run app:build && cap sync",
     "app:doctor:android": "node scripts/build-android-debug.mjs --check",
     "app:apk:android": "npm run app:sync && node scripts/build-android-debug.mjs",
+    "app:verify:android": "node scripts/verify-android-apk.mjs",
     "app:add:android": "cap add android",
     "app:add:ios": "cap add ios",
     "app:open:android": "cap open android",

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { buildAndroidDebug, getAndroidDebugBuildPlan } from '../scripts/build-android-debug.mjs';
@@ -34,6 +35,20 @@ function fakeBuild(failure) {
         },
         exists: path => !path.endsWith('debug.keystore'),
         readBytes: path => Buffer.from(path.endsWith('index.html') ? 'fixture bundle' : 'fixture apk'),
+        verifyArtifact: input => {
+            calls.push('verify');
+            assert.equal(input.apkPath, '/tmp/build-fixture/app-shell/android/app/build/outputs/apk/debug/app-debug.apk');
+            assert.equal(input.sdkPath, '/tmp/build-fixture/app-shell/.toolchain/android-sdk');
+            assert.equal(input.bundleDirectory, '/tmp/build-fixture/app-shell/www');
+            if (failure === 'verify') throw new Error('APK verification failed');
+            return {
+                verified: true, apkSignatureVerified: true, packagedBundleVerified: true,
+                sha256: createHash('sha256').update('fixture apk').digest('hex'), bytes: 11,
+                signing: { verified: true, signerCount: 1, certificateSha256: ['a'.repeat(64)] },
+                webBundle: { indexSha256: createHash('sha256').update('fixture bundle').digest('hex') },
+                verifiedAt: '2026-10-14T12:00:00.000Z'
+            };
+        },
         makeDirectory: () => {},
         copyFile: (...args) => copies.push(args),
         writeFile: (...args) => writes.push(args),
@@ -57,14 +72,50 @@ test('successful artifact records build time and input fingerprint, not unverifi
     const fixture = fakeBuild();
     assert.equal(buildAndroidDebug(fixture.options), 0);
     assert.equal(fixture.copies.length, 1);
-    assert.deepEqual(fixture.calls, ['preflight', 'keytool', 'gradle']);
+    assert.deepEqual(fixture.calls, ['preflight', 'keytool', 'gradle', 'verify']);
     const evidence = JSON.parse(fixture.writes[0][1]);
     assert.equal(evidence.createdAt, '2026-10-14T12:00:00.000Z');
     assert.match(evidence.inputBundleIndexSha256, /^[a-f0-9]{64}$/);
-    assert.equal(evidence.apkSignatureVerified, false);
-    assert.equal(evidence.packagedBundleVerified, false);
+    assert.equal(evidence.apkSignatureVerified, true);
+    assert.equal(evidence.packagedBundleVerified, true);
+    assert.equal(evidence.signing.verified, true);
+    assert.equal(evidence.webBundle.indexSha256, evidence.inputBundleIndexSha256);
     assert.equal(evidence.installedDeviceVerified, false);
     assert.equal(evidence.upgradeVerified, false);
+});
+
+test('APK verification failures cannot copy or label an artifact as verified', () => {
+    const fixture = fakeBuild('verify');
+    assert.throws(() => buildAndroidDebug(fixture.options), /APK verification failed/);
+    assert.equal(fixture.copies.length, 0);
+    assert.equal(fixture.writes.length, 0);
+});
+
+test('incomplete, stale or changed verification evidence cannot publish a trial artifact', () => {
+    for (const change of [
+        evidence => ({ ...evidence, verified: false }),
+        evidence => ({ ...evidence, apkSignatureVerified: false }),
+        evidence => ({ ...evidence, packagedBundleVerified: false }),
+        evidence => ({ ...evidence, sha256: 'f'.repeat(64) }),
+        evidence => ({ ...evidence, bytes: 12 }),
+        evidence => ({ ...evidence, webBundle: { indexSha256: 'f'.repeat(64) } })
+    ]) {
+        const fixture = fakeBuild();
+        const verify = fixture.options.verifyArtifact;
+        fixture.options.verifyArtifact = input => change(verify(input));
+        assert.throws(() => buildAndroidDebug(fixture.options), /APK/);
+        assert.equal(fixture.copies.length, 0);
+        assert.equal(fixture.writes.length, 0);
+    }
+});
+
+test('an artifact changed during copying receives no verified metadata', () => {
+    const fixture = fakeBuild();
+    const read = fixture.options.readBytes;
+    fixture.options.readBytes = path => path.endsWith('ikkyee-android-debug.apk') ? Buffer.from('changed artifact') : read(path);
+    assert.throws(() => buildAndroidDebug(fixture.options), /APK/);
+    assert.equal(fixture.copies.length, 1);
+    assert.equal(fixture.writes.length, 0);
 });
 
 test('custom toolchain paths are explicit and preserved, while artifacts never overwrite the source APK', () => {
@@ -89,4 +140,5 @@ test('debug keystore and downloaded tooling stay out of Git, separate from relea
     assert.match(wrapper, /distributionSha256Sum=[a-f0-9]{64}/);
     const scripts = JSON.parse(readFileSync('package.json', 'utf8')).scripts;
     assert.equal(scripts['app:doctor:android'], 'node scripts/build-android-debug.mjs --check');
+    assert.equal(scripts['app:verify:android'], 'node scripts/verify-android-apk.mjs');
 });
