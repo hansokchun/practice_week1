@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="color-scheme" content="only light">
     <script src="/stylesheet-recovery.js"></script>
     <title>Ikkyee | Personal Travel Map Archive</title>
@@ -1344,6 +1344,7 @@
                 <button id="btn-reset-password" class="auth-link-button" type="button">&#48708;&#48128;&#48264;&#54840; &#51116;&#49444;&#51221;</button>
             </form>
             <p id="auth-message" class="auth-message"></p>
+            <button id="btn-native-auth-cancel" class="auth-link-button" type="button" hidden>진행 중 로그인 취소</button>
         </div>
     </div>
 
@@ -1403,6 +1404,7 @@
                 <button class="modal-close" data-close-modal type="button" aria-label="공유 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
             </header>
             <div class="content-share-actions">
+                <button id="btn-share-native" type="button" hidden><span class="material-symbols-outlined" aria-hidden="true">share</span><span>휴대전화로 공유</span></button>
                 <button id="btn-share-kakao" type="button" disabled><span class="material-symbols-outlined" aria-hidden="true">chat_bubble</span><span id="content-share-kakao-label">카카오톡 준비 중</span></button>
             </div>
             <label for="content-share-url">공유 링크</label>

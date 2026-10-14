@@ -19,6 +19,9 @@ import {
     fetchProfilesByIds,
     hydratePhotoUrls,
     getCurrentUser,
+    initializeNativeAuth,
+    hasPendingNativeAuth,
+    cancelNativeAuth,
     deleteCurrentAccount,
     resetPasswordForEmail,
     signInWithEmail,
@@ -51,6 +54,10 @@ import {
     updateProductFeedbackStatus,
     upsertPhoto
 } from '../auth.js';
+import { bindNativeAppRuntime, isNativeApp, getNativeApiOrigin } from './native-app-runtime.mjs';
+import { saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
+import { bindNativeExternalLinks } from './native-external-links.mjs';
+import { fetchApi } from './native-api-fetch.mjs';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
 import { createAdminAccountsController } from './admin-accounts-controller.mjs';
 import { getAlbumCoverCandidates, getAlbumCoverSelection } from './album-cover-picker.mjs';
@@ -2675,7 +2682,7 @@ async function getGoogleMapsRuntimeConfig() {
         return localConfig;
     }
 
-    state.googleMapsConfigPromise = fetch('/api/config', { cache: 'no-store' })
+    state.googleMapsConfigPromise = fetchApi('/api/config', { cache: 'no-store' })
         .then((response) => (response.ok ? response.json() : null))
         .then((config) => {
             const normalizedConfig = normalizeGoogleMapsRuntimeConfig(config);
@@ -3514,7 +3521,9 @@ async function addGpsExifToJpeg(blob, gps) {
     return dataUrlToBlob(insertGpsExifIntoJpegDataUrl(sourceDataUrl, gps, piexif));
 }
 
-function triggerPhotoDownload(blob, fileName) {
+async function triggerPhotoDownload(blob, fileName) {
+    const result = await saveNativePhoto(blob, fileName);
+    if (result.handled) return result;
     const objectUrl = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = objectUrl;
@@ -3524,6 +3533,7 @@ function triggerPhotoDownload(blob, fileName) {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    return result;
 }
 
 async function downloadSelectedPhoto(eventOrPhotoId) {
@@ -3553,7 +3563,15 @@ async function downloadSelectedPhoto(eventOrPhotoId) {
         const plan = getPhotoDownloadPlan({ ...photo, url: hydratedPhoto.url || photo.url }, sourceMimeType);
         if (plan.shouldConvertToJpeg) downloadBlob = await convertDownloadBlobToJpeg(downloadBlob);
         if (plan.gps) downloadBlob = await addGpsExifToJpeg(downloadBlob, plan.gps);
-        triggerPhotoDownload(downloadBlob, plan.fileName);
+        const result = await triggerPhotoDownload(downloadBlob, plan.fileName);
+        if (result.error) throw result.error;
+        if (result.handled) {
+            if (result.data?.status === 'cancelled') return;
+            showToast(plan.gps
+                ? '위치정보를 포함한 사진 저장·공유창을 열었습니다.'
+                : '사진 저장·공유창을 열었습니다.');
+            return;
+        }
         showToast(plan.gps
             ? '저장된 위치정보를 포함해 다운로드했습니다.'
             : '사진을 다운로드했습니다.');
@@ -4577,7 +4595,11 @@ function routeToProfileFromAuthor(albumId, ownerId) {
 }
 
 function getCurrentShareUrl() {
-    return buildContentShare(window.location.origin, 'album', getSelectedPublicAlbum())?.url || '';
+    return buildContentShare(getContentShareOrigin(), 'album', getSelectedPublicAlbum())?.url || '';
+}
+
+function getContentShareOrigin() {
+    return isNativeApp() ? getNativeApiOrigin() : window.location.origin;
 }
 
 async function copyCurrentShareLink() {
@@ -4597,15 +4619,41 @@ async function copyCurrentShareLink() {
 }
 
 function openContentShare(type, item) {
-    const content = buildContentShare(window.location.origin, type, item);
+    const content = buildContentShare(getContentShareOrigin(), type, item);
     if (!content) { showToast(type === 'photo' ? '공개 사진만 공유할 수 있어요. 사진 수정에서 공개로 변경해주세요.' : '공개 앨범만 공유할 수 있어요. 앨범 메뉴에서 공개로 변경해주세요.'); return; }
     state.contentShare = content;
     $('#content-share-title').textContent = type === 'photo' ? '사진 공유' : '앨범 공유';
     $('#content-share-url').value = content.url;
     $('#content-share-status').textContent = '';
     $('#content-share-status').removeAttribute('data-error');
+    const native = isNativeApp();
+    const nativeButton = $('#btn-share-native');
+    const kakaoButton = $('#btn-share-kakao');
+    if (nativeButton) nativeButton.hidden = !native;
+    if (kakaoButton) kakaoButton.hidden = native;
     openModal('#content-share-modal');
-    prepareContentShareKakao(content);
+    if (!native) prepareContentShareKakao(content);
+}
+
+async function shareContentToNative() {
+    const content = state.contentShare;
+    const button = $('#btn-share-native');
+    if (!content || button?.disabled) return;
+    if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); }
+    try {
+        const result = await shareNativeContent(content);
+        if (state.contentShare !== content) return;
+        const status = $('#content-share-status');
+        status.removeAttribute('data-error');
+        if (result.error) {
+            status.textContent = result.error.message;
+            status.dataset.error = 'true';
+        } else {
+            status.textContent = result.data?.status === 'shared' ? '휴대전화 공유창을 열었습니다.' : '';
+        }
+    } finally {
+        if (button) { button.disabled = false; button.removeAttribute('aria-busy'); }
+    }
 }
 
 async function prepareContentShareKakao(content) {
@@ -8445,7 +8493,7 @@ async function handlePasswordRecoverySubmit(event) {
 
 async function handleSocialLogin(provider) {
     const message = $('#auth-message');
-    if (isLikelyEmbeddedOAuthBrowser(window.navigator?.userAgent)) {
+    if (!isNativeApp() && isLikelyEmbeddedOAuthBrowser(window.navigator?.userAgent)) {
         const browserMessage = getEmbeddedOAuthBrowserMessage(provider);
         if (message) message.textContent = browserMessage;
         showToast(browserMessage);
@@ -8465,6 +8513,30 @@ async function handleSocialLogin(provider) {
     if (error) {
         takePendingOAuthProvider(window.localStorage);
         if (message) message.textContent = error.message || '소셜 로그인으로 이동하지 못했습니다.';
+    }
+    renderNativePendingLoginButton();
+}
+
+function renderNativePendingLoginButton() {
+    const button = $('#btn-native-auth-cancel');
+    if (button) button.hidden = !hasPendingNativeAuth();
+}
+
+async function cancelPendingNativeLogin() {
+    const button = $('#btn-native-auth-cancel');
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    try {
+        await cancelNativeAuth();
+        takePendingOAuthProvider(window.localStorage);
+        const message = $('#auth-message');
+        if (message) message.textContent = '진행 중인 로그인을 취소했습니다. 다시 로그인할 수 있어요.';
+    } catch {
+        const message = $('#auth-message');
+        if (message) message.textContent = '로그인을 취소하지 못했어요. 앱을 다시 열어주세요.';
+    } finally {
+        if (button) button.disabled = false;
+        renderNativePendingLoginButton();
     }
 }
 
@@ -9442,6 +9514,7 @@ function bindEvents() {
     });
     $('#btn-open-notifications')?.addEventListener('click', toggleAccountNotifications);
     $('#btn-share-kakao')?.addEventListener('click', shareContentToKakao);
+    $('#btn-share-native')?.addEventListener('click', shareContentToNative);
     $('#btn-share-copy')?.addEventListener('click', copyContentShareLink);
     $('#btn-open-auth')?.addEventListener('click', () => {
         openModal('#auth-modal');
@@ -9502,6 +9575,7 @@ function bindEvents() {
     $('#password-recovery-form')?.addEventListener('submit', handlePasswordRecoverySubmit);
     $('#btn-google-login')?.addEventListener('click', () => handleSocialLogin('google'));
     $('#btn-kakao-login')?.addEventListener('click', () => handleSocialLogin('kakao'));
+    $('#btn-native-auth-cancel')?.addEventListener('click', cancelPendingNativeLogin);
     $('#btn-apply-kakao-profile')?.addEventListener('click', applyPendingKakaoProfile);
     $$('[data-kakao-profile-dismiss]').forEach((button) => {
         button.addEventListener('click', dismissPendingKakaoProfileImport);
@@ -9547,9 +9621,69 @@ function bindEvents() {
     window.setInterval(() => { if (!document.hidden && state.currentUser) loadReceivedLikes(); }, 60000);
 }
 
+async function finishNativeLogin(data) {
+    renderNativePendingLoginButton();
+    state.currentUser = data.user || await getCurrentUser();
+    await ensureCurrentUserPublicProfile();
+    updateAccountUI();
+    dismissModal($('#auth-modal'));
+    await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
+    await loadPublicProfileNames();
+    renderSavedPhotoSurfaces();
+    if (data.returnRoute) applyRouteHash(data.returnRoute, { replace: true });
+    showPendingKakaoProfileImport();
+    await runPendingAuthAction();
+    showNewAccountGuidance();
+    if (data.recovery) openModal('#password-recovery-modal');
+}
+
+function closeNativeTopModal() {
+    const dialog = document.querySelector('dialog[open]');
+    if (dialog) { dialog.close(); return true; }
+    if ($('#photo-fullscreen-modal.is-open')) { closePhotoFullscreenModal(); return true; }
+    const modal = $$('.modal.is-open').at(-1);
+    if (!modal) return false;
+    if (modal.id === 'auth-modal' || modal.id === 'content-share-modal') dismissModal(modal);
+    else {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        syncModalScrollLock();
+    }
+    return true;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     initializePhotoImageReveal();
+    let nativeLoginReady = false;
+    let initialNativeLogin = null;
     try {
+        await bindNativeAppRuntime({
+            closeTopModal: closeNativeTopModal,
+            requestExit: () => window.confirm('이끼 앱을 종료할까요?'),
+            onError: () => showToast('앱 화면 이동을 준비하지 못했어요. 앱을 다시 열어주세요.')
+        });
+        bindNativeExternalLinks({
+            onError: () => showToast('외부 페이지를 열지 못했어요. 잠시 후 다시 시도해 주세요.')
+        });
+        if (isNativeApp()) {
+            try {
+                await initializeNativeAuth({
+                    onComplete: data => {
+                        if (!nativeLoginReady) { initialNativeLogin = data; return; }
+                        return finishNativeLogin(data).catch(() => showToast('로그인 화면을 갱신하지 못했어요. 다시 시도해 주세요.'));
+                    },
+                    onError: error => { renderNativePendingLoginButton(); showToast(error.message); },
+                    onCancel: () => {
+                        renderNativePendingLoginButton();
+                        const message = $('#auth-message');
+                        if (message) message.textContent = '로그인이 취소됐습니다.';
+                    }
+                });
+                renderNativePendingLoginButton();
+            } catch {
+                showToast('앱 로그인 연결을 준비하지 못했어요. 앱을 다시 열어주세요.');
+            }
+        }
         const restoredAuthContext = restorePendingAuthContext(window.localStorage, state);
         if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
         if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
@@ -9581,6 +9715,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             openModal('#password-recovery-modal');
             $('#new-password-input')?.focus();
         }
+        nativeLoginReady = true;
+        if (initialNativeLogin) await finishNativeLogin(initialNativeLogin);
     } finally {
         setAppBooting(false);
     }

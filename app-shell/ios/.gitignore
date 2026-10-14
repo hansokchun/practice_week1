@@ -1,0 +1,22 @@
+App/build
+App/Pods
+App/output
+App/App/public
+DerivedData
+xcuserdata
+
+# Signing credentials and distributable build products
+*.p12
+*.pfx
+*.mobileprovision
+*.provisionprofile
+*.ipa
+*.xcarchive
+signing.xcconfig
+
+# Cordova plugins for Capacitor
+capacitor-cordova-ios-plugins
+
+# Generated Config files
+App/App/capacitor.config.json
+App/App/config.xml

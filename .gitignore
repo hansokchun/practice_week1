@@ -25,6 +25,7 @@ firebase-debug.log
 # Node (향후 사용 시)
 node_modules/
 dist/
+app-shell/www/
 
 # Local QA and generated scratch files
 tmp/

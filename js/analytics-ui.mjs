@@ -1,4 +1,5 @@
 import { ANALYTICS_CONSENT_KEY, createAnalyticsController, loadAnalyticsConsent } from './analytics.mjs';
+import { fetchApi } from './native-api-fetch.mjs';
 
 function initializeAnalytics() {
     let storage;
@@ -45,7 +46,7 @@ function initializeAnalytics() {
     });
     sync();
     // Runtime config is optional and must never delay photo loading or authentication.
-    void fetch('/api/config', { cache: 'no-store', signal: AbortSignal.timeout(5000) })
+    void fetchApi('/api/config', { cache: 'no-store', signal: AbortSignal.timeout(5000) })
         .then(response => response.ok ? response.json() : null)
         .then(config => analytics.configure(config?.googleAnalyticsMeasurementId))
         .catch(() => {})

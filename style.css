@@ -28,6 +28,17 @@
     --brand: 'Pretendard Variable', Pretendard, system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 
+.native-app body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.native-app .site-header {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+.native-app .modal {
+    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+}
+
 .analytics-footer-link { border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: left; }
 .analytics-consent-banner { position: fixed; inset: auto 16px max(16px, env(safe-area-inset-bottom)); z-index: 1100; display: flex; align-items: center; gap: 24px; padding: 20px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 24px #0002; letter-spacing: 0; }
 .analytics-consent-banner[hidden] { display: none; }
@@ -13888,6 +13899,10 @@ body.modal-open {
 .content-share-card .modal-close .material-symbols-outlined { display: block; width: 24px; height: 24px; font-size: 24px; line-height: 1; }
 .content-share-card .modal-close:hover { background: #e6edeb; }
 .content-share-actions { margin: 24px 0; }
+.content-share-actions button[hidden] { display: none !important; }
+.content-share-actions #btn-share-native { display: flex; width: 100%; justify-content: center; align-items: center; gap: 10px; min-height: 52px; border: 0; border-radius: 6px; padding: 12px 16px; background: var(--teal); color: white; font: 700 15px/1.5 var(--body); }
+.content-share-actions #btn-share-native:disabled { opacity: .6; cursor: wait; }
+#btn-native-auth-cancel[hidden] { display: none; }
 #btn-share-kakao { display: flex; width: 100%; justify-content: center; align-items: center; gap: 10px; min-height: 52px; padding: 12px 16px; border: 0; border-radius: 6px; background: #fee500; color: #191919; font: 700 15px/1.5 var(--body); box-shadow: none; transition: background .15s ease; }
 #btn-share-kakao:hover:not(:disabled) { background: #f6db00; }
 #btn-share-kakao:disabled { opacity: .6; cursor: wait; }

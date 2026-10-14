@@ -3,5 +3,7 @@ import test from 'node:test';
 import config from '../vite.config.mjs';
 
 test('native app builds do not trigger web reloads and repeated backend reads', () => {
-    assert.ok(config.server.watch.ignored.includes('**/mobile/**'));
+    const resolved = typeof config === 'function' ? config({ mode: 'development' }) : config;
+    assert.ok(resolved.server.watch.ignored.includes('**/mobile/**'));
+    assert.ok(resolved.server.watch.ignored.includes('**/app-shell/**'));
 });

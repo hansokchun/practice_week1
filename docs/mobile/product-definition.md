@@ -1,5 +1,13 @@
 # Ikkyee Mobile Product Definition
 
+## Current development direction as of 2026-10-14
+
+The current plan is [웹 기반 앱 개발 개편 계획](app-development-plan-2026-10-14.md). The user has confirmed that the app must provide the same server photo library, pages, and functionality as the current web service. `내 사진` means the signed-in owner's cloud photos, including uploads from the web and other devices. Device access is used only when selecting files for upload; automatic library indexing and a device-library home are excluded from the new product flow.
+
+The new scope includes the web's complete album creation, editing, cover selection, visibility, deletion, and sharing flows. The user approved implementation after replanning. A Capacitor 8 trial container now reuses the root web source with native auth, HTTPS API, secure storage, sharing, and file-export bridges under `app-shell/`. Source tests, bundle builds, and platform sync pass; installed-device authentication, maps, file selection, signing, and upgrade safety remain proof-of-concept gates. The existing Expo source and local user work are preserved.
+
+The sections below preserve the earlier native beta definition and are historical. Their device-photo, read-only-album, entry-screen, and navigation restrictions do not override the new plan.
+
 ## Status
 
 - Prototype version: `v0.1.0`

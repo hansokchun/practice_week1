@@ -12,11 +12,11 @@ test('email auth calls pass Supabase CAPTCHA tokens when available', () => {
     assert.match(authSource, /export async function signInWithEmail\(email, password, options = \{\}\)/);
     assert.match(authSource, /sb\.auth\.signInWithPassword\(\{\s*email,\s*password,\s*options:\s*getAuthOptions\(options\)/s);
     assert.match(authSource, /export async function resetPasswordForEmail\(email, options = \{\}\)/);
-    assert.match(authSource, /sb\.auth\.resetPasswordForEmail\(email,\s*getAuthOptions\(options\)\)/s);
+    assert.match(authSource, /sb\.auth\.resetPasswordForEmail\(email,\s*getEmailAuthOptions\(options\)\)/s);
 });
 
 test('email verification maps the normalized redirect to Supabase emailRedirectTo', () => {
-    assert.match(authSource, /authOptions\.emailRedirectTo\s*=\s*options\.redirectTo/);
+    assert.match(authSource, /authOptions\.emailRedirectTo\s*=\s*redirectTo/);
     assert.match(authSource, /delete authOptions\.redirectTo/);
 });
 

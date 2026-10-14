@@ -1,0 +1,26 @@
+{
+  "appId": "com.ikkyee.mobile",
+  "appName": "Ikkyee",
+  "webDir": "app-shell/www",
+  "loggingBehavior": "none",
+  "android": {
+    "path": "app-shell/android",
+    "allowMixedContent": false
+  },
+  "ios": {
+    "path": "app-shell/ios",
+    "contentInset": "automatic",
+    "preferredContentMode": "mobile"
+  },
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https",
+    "iosScheme": "capacitor",
+    "errorPath": "native-offline.html"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": false
+    }
+  }
+}

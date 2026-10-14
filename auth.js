@@ -11,6 +11,10 @@ import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
 import { cleanupLandingUploads } from './js/landing-upload-cleanup.mjs';
 import { fetchPhotoMetadataPages } from './js/photo-metadata-pages.mjs';
 import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
+import { isNativeApp } from './js/native-app-runtime.mjs';
+import { createNativeAuthStorage } from './js/native-auth-storage.mjs';
+import { NATIVE_AUTH_CALLBACK_URL, authorizeNativeOAuth, cancelNativeOAuth, registerNativeAuthCallbacks } from './js/native-auth-bridge.mjs';
+import { fetchApi } from './js/native-api-fetch.mjs';
 import {
     applySignedAlbumCoverUrls,
     applySignedPhotoUrls,
@@ -41,8 +45,59 @@ function getSupabase() {
     if (typeof supabase === 'undefined' || !supabase.createClient) {
         throw new Error('Supabase SDK 로드 실패. <script> 태그 확인 필요.');
     }
-    _supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const nativeOptions = isNativeApp() ? {
+        auth: {
+            flowType: 'pkce',
+            detectSessionInUrl: false,
+            persistSession: true,
+            autoRefreshToken: true,
+            storage: createNativeAuthStorage()
+        }
+    } : undefined;
+    _supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, nativeOptions);
     return _supabaseClient;
+}
+
+const NATIVE_PENDING_AUTH_KEY = 'ikkyee.native-auth.pending';
+
+function nativeAuthAdapter(extra = {}) {
+    return {
+        supabaseUrl: SUPABASE_URL,
+        returnRoute: globalThis.window?.location?.hash || '#/',
+        setPending: pending => {
+            globalThis.localStorage?.setItem(NATIVE_PENDING_AUTH_KEY, JSON.stringify({ ...pending, startedAt: Date.now() }));
+        },
+        getPending: () => {
+            try {
+                const pending = JSON.parse(globalThis.localStorage?.getItem(NATIVE_PENDING_AUTH_KEY) || 'null');
+                if (pending && Date.now() - pending.startedAt < 10 * 60 * 1000 && pending.startedAt <= Date.now()) return pending;
+                globalThis.localStorage?.removeItem(NATIVE_PENDING_AUTH_KEY);
+            } catch {
+                globalThis.localStorage?.removeItem(NATIVE_PENDING_AUTH_KEY);
+            }
+            return null;
+        },
+        clearPending: () => globalThis.localStorage?.removeItem(NATIVE_PENDING_AUTH_KEY),
+        ...extra
+    };
+}
+
+export async function initializeNativeAuth(callbacks = {}) {
+    if (!isNativeApp()) return () => {};
+    return registerNativeAuthCallbacks(getSupabase().auth, nativeAuthAdapter(callbacks));
+}
+
+export function hasPendingNativeAuth() {
+    if (!isNativeApp()) return false;
+    try { return Boolean(nativeAuthAdapter().getPending()); }
+    catch { return false; }
+}
+
+export async function cancelNativeAuth() {
+    if (!isNativeApp()) return;
+    const result = await cancelNativeOAuth(nativeAuthAdapter());
+    if (result.error) throw result.error;
+    return result.data;
 }
 
 function getAuthOptions(options = {}) {
@@ -52,10 +107,15 @@ function getAuthOptions(options = {}) {
     return authOptions;
 }
 
+function getEmailAuthOptions(options = {}) {
+    return getAuthOptions(isNativeApp() ? { ...options, redirectTo: NATIVE_AUTH_CALLBACK_URL } : options);
+}
+
 function getSignUpAuthOptions(options = {}) {
-    const authOptions = getAuthOptions(options);
+    const authOptions = getEmailAuthOptions(options);
+    const redirectTo = authOptions.redirectTo;
     delete authOptions.redirectTo;
-    if (options.redirectTo) authOptions.emailRedirectTo = options.redirectTo;
+    if (redirectTo) authOptions.emailRedirectTo = redirectTo;
     return authOptions;
 }
 
@@ -162,7 +222,7 @@ export async function signInWithEmail(email, password, options = {}) {
 export async function resetPasswordForEmail(email, options = {}) {
     try {
         const sb = getSupabase();
-        const { data, error } = await sb.auth.resetPasswordForEmail(email, getAuthOptions(options));
+        const { data, error } = await sb.auth.resetPasswordForEmail(email, getEmailAuthOptions(options));
         if (error) throw error;
         return { data, error: null };
     } catch (error) {
@@ -184,6 +244,7 @@ export async function updatePassword(password) {
 export async function signInWithOAuthProvider(provider) {
     try {
         const sb = getSupabase();
+        if (isNativeApp()) return authorizeNativeOAuth(sb.auth, provider, nativeAuthAdapter());
         const { data, error } = await sb.auth.signInWithOAuth({
             provider,
             options: getOAuthProviderOptions(
@@ -617,7 +678,7 @@ export async function requestPhotoAiAnalysis(photoId) {
         const accessToken = sessionData?.session?.access_token;
         if (!accessToken) throw new Error('로그인이 필요합니다.');
 
-        const response = await fetch('/api/analyze-photo', {
+        const response = await fetchApi('/api/analyze-photo', {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${accessToken}`,
