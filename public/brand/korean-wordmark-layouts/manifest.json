@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "text": "장소아카이브 이끼",
+  "runtimeReplacement": false,
+  "layouts": [
+    {
+      "id": "close-left",
+      "side": "left",
+      "gap": 24
+    },
+    {
+      "id": "close-right",
+      "side": "right",
+      "gap": 24
+    }
+  ],
+  "sources": [
+    {
+      "path": "public/brand/korean-wordmark/lockup-teal.png",
+      "tone": "teal",
+      "sha256": "b0acc0aedf4a9fce217ccfe5becbe3864af0360c3e44ae38cdc9ff586c497658",
+      "contentHashes": {
+        "symbol": "d014e4f04b22ed147a0e5f58855a91e3ea50d8c112c854b1447c38e5a6b3dd8f",
+        "lettering": "fd3f3f3929cefa73d99da6d87501ff092834e119d454c11755a58b46563e420f"
+      }
+    },
+    {
+      "path": "public/brand/korean-wordmark/lockup-white.png",
+      "tone": "white",
+      "sha256": "d1d9168d2b77182ade9488440b55125fe45b81b0a5dff23ccb4346b28acb1381",
+      "contentHashes": {
+        "symbol": "83e6a391c134042acbe5e465f4f10d57f79312a8e5c77b7c4230d8b1b78464d8",
+        "lettering": "acb8fc65ee7796342120375319c2c9cce256d6667e42be211ff81f4d07076042"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "close-left-teal.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "teal",
+      "layout": "close-left",
+      "transparent": true,
+      "sha256": "b5a00306c499b04cd235d88fafc281dbf47701a6a12ed7b6f60ccc0fddee47f4",
+      "contentHashes": {
+        "symbol": "d014e4f04b22ed147a0e5f58855a91e3ea50d8c112c854b1447c38e5a6b3dd8f",
+        "lettering": "fd3f3f3929cefa73d99da6d87501ff092834e119d454c11755a58b46563e420f"
+      }
+    },
+    {
+      "path": "close-left-preview-light.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "teal",
+      "layout": "close-left",
+      "transparent": false,
+      "sha256": "a007001287e8ec67d3c44b951ab5414a151050d4cda436cad942c20adb234677"
+    },
+    {
+      "path": "close-right-teal.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "teal",
+      "layout": "close-right",
+      "transparent": true,
+      "sha256": "8153220cd9a0877b0ee460a155f1915507f8b9bef99d3899e99e98d7d293844e",
+      "contentHashes": {
+        "symbol": "d014e4f04b22ed147a0e5f58855a91e3ea50d8c112c854b1447c38e5a6b3dd8f",
+        "lettering": "fd3f3f3929cefa73d99da6d87501ff092834e119d454c11755a58b46563e420f"
+      }
+    },
+    {
+      "path": "close-right-preview-light.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "teal",
+      "layout": "close-right",
+      "transparent": false,
+      "sha256": "6054b81ae8fe31a0de3eb21da7d06fe46c0a8ea24cb926a189817654e3ade1c3"
+    },
+    {
+      "path": "close-left-white.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "white",
+      "layout": "close-left",
+      "transparent": true,
+      "sha256": "3cc52e236ada2e21a082eb46944ae806a09f5b773fe8f71265e9512b46d314e1",
+      "contentHashes": {
+        "symbol": "83e6a391c134042acbe5e465f4f10d57f79312a8e5c77b7c4230d8b1b78464d8",
+        "lettering": "acb8fc65ee7796342120375319c2c9cce256d6667e42be211ff81f4d07076042"
+      }
+    },
+    {
+      "path": "close-left-preview-dark.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "white",
+      "layout": "close-left",
+      "transparent": false,
+      "sha256": "e61bd6ef4964b2962279bca60688bc164c32d6f4bebc272b3531a436ec7eda14"
+    },
+    {
+      "path": "close-right-white.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "white",
+      "layout": "close-right",
+      "transparent": true,
+      "sha256": "492736dfde989404899d7224ed7b67ad9862266bec149ecfd99369a60191d772",
+      "contentHashes": {
+        "symbol": "83e6a391c134042acbe5e465f4f10d57f79312a8e5c77b7c4230d8b1b78464d8",
+        "lettering": "acb8fc65ee7796342120375319c2c9cce256d6667e42be211ff81f4d07076042"
+      }
+    },
+    {
+      "path": "close-right-preview-dark.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "white",
+      "layout": "close-right",
+      "transparent": false,
+      "sha256": "236226b19875537fe286ddcb0f4115a4a73439dfa5082d94cbd04e48ae452a5e"
+    }
+  ],
+  "archive": {
+    "path": "ikkyee-wordmark-layouts.zip",
+    "bytes": 340820,
+    "sha256": "992c8f0d9e549e9fa13ea92053f9573c6c5f8d13a645b53aea590298a402cd18"
+  }
+}
