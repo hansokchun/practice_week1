@@ -1,0 +1,68 @@
+{
+  "brandVersion": "1.0",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 3,
+  "frames": 90,
+  "audio": false,
+  "sources": [
+    {
+      "path": "brand/ikkyee-symbol-v1.png",
+      "width": 1254,
+      "height": 1254,
+      "alpha": true,
+      "sha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8"
+    },
+    {
+      "path": "public/brand/assets/logos/wordmark-teal.png",
+      "sha256": "6915fb7d8c636a4b1abd2da016ff1c0a99b92aaea2f965cc0f307fbc06ede10e"
+    },
+    {
+      "path": "public/brand/assets/logos/lockup-horizontal-teal.png",
+      "sha256": "0bc8604e5b8430fe5a83c101c89fd37650db2cc4ed9b35a0d4262d7149b8216a"
+    }
+  ],
+  "assets": [
+    {
+      "path": "ikkyee-logo-light.mp4",
+      "codec": "H.264",
+      "alpha": false,
+      "bytes": 55246,
+      "sha256": "d3964dff18ff21828763a56ad2bfe26f696047c24dcf33c7ade321e4430801d6"
+    },
+    {
+      "path": "ikkyee-logo-dark.mp4",
+      "codec": "H.264",
+      "alpha": false,
+      "bytes": 53058,
+      "sha256": "94c0049bba0ab5615bc49058dbfe43184a603b9ae9931dd6797ef8ec3e7ff7eb"
+    },
+    {
+      "path": "ikkyee-logo-transparent-teal.mov",
+      "codec": "ProRes 4444",
+      "alpha": true,
+      "bytes": 13752813,
+      "sha256": "e69930c5c753f12d527d7c7e4f88233c797d72248307043b12eff4d32893fa4c"
+    },
+    {
+      "path": "ikkyee-logo-transparent-white.mov",
+      "codec": "ProRes 4444",
+      "alpha": true,
+      "bytes": 7164230,
+      "sha256": "aa0333a335c1096c69dc61cc5f494356fc00648b741d05a27ce67885fd0e89a3"
+    },
+    {
+      "path": "preview.gif",
+      "codec": "GIF",
+      "alpha": false,
+      "bytes": 57960,
+      "sha256": "0b0887a2302c3912aaff3a7b73c9166ebbe1888d6f77ef1fe63802f12a7615b4"
+    }
+  ],
+  "archive": {
+    "path": "ikkyee-logo-animation.zip",
+    "bytes": 13009903,
+    "sha256": "62065f481634dc7968aa3987cac33e2928cc4e3cab6c21267bf74e0b4392fe67"
+  }
+}

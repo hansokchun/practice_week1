@@ -38,6 +38,9 @@ The 2026-10-14 request adds a separate [delivery kit](KIT.md): transparent symbo
 and wordmark exports, store icons, SNS profiles, marketing canvases and a ZIP.
 Preview and download at `/brand/`. Existing files listed above remain unchanged.
 
+The 2026-10-15 [logo animation](ANIMATION.md) adds a separate three-second MP4,
+alpha MOV and GIF package at `/brand/#logo-animation`; the 24-PNG kit is unchanged.
+
 ## Reproduction and Checks
 
 `scripts/export-brand-assets.mjs` makes delivery files only from this master.
