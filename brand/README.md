@@ -45,6 +45,10 @@ The separate [archive-caption variant](ARCHIVE-LOGO.md) changes only the Korean
 caption to `장소아카이브` at `/brand/#archive-logo`. It does not replace the
 approved master, runtime logos or original animation.
 
+The [Korean phrase wordmark](KOREAN-WORDMARK.md) pairs the approved symbol with
+`장소아카이브 이끼` on one line at `/brand/#korean-wordmark`; it is another
+separate delivery and does not replace the earlier logos.
+
 ## Reproduction and Checks
 
 `scripts/export-brand-assets.mjs` makes delivery files only from this master.

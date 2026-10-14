@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "text": "장소아카이브 이끼",
+  "runtimeReplacement": false,
+  "source": {
+    "path": "brand/ikkyee-symbol-v1.png",
+    "sha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8"
+  },
+  "font": {
+    "family": "NanumGothic",
+    "path": "brand/fonts/NanumGothic-Bold.ttf",
+    "license": "brand/fonts/NanumGothic-OFL.txt",
+    "sha256": "f96298f9fb18e364d2370f4c3ce948ac67a2b61af992d7234bc15c42b033c674"
+  },
+  "assets": [
+    {
+      "path": "lockup-teal.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "teal",
+      "transparent": true,
+      "sha256": "b0acc0aedf4a9fce217ccfe5becbe3864af0360c3e44ae38cdc9ff586c497658"
+    },
+    {
+      "path": "preview-light.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "teal",
+      "transparent": false,
+      "sha256": "207a7646edb8d3ed50408dccc16cdce2be8d2f67193bd351422a3f6ca7231008"
+    },
+    {
+      "path": "lockup-white.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "white",
+      "transparent": true,
+      "sha256": "d1d9168d2b77182ade9488440b55125fe45b81b0a5dff23ccb4346b28acb1381"
+    },
+    {
+      "path": "preview-dark.png",
+      "width": 1800,
+      "height": 440,
+      "tone": "white",
+      "transparent": false,
+      "sha256": "b12e5377f7f8faef0454605e954991218310f9540eaf7559ac5296112a80786b"
+    }
+  ],
+  "archive": {
+    "path": "ikkyee-korean-wordmark.zip",
+    "bytes": 171901,
+    "sha256": "8e68d9deb675fe4b68dc5e6eb3d471838a32e8c7ec019e0570a4f649fa6f64d2"
+  }
+}

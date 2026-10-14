@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { renderBrandLettering } from './brand-lettering.mjs';
 
 const require = createRequire(import.meta.url);
 const sharp = require(process.env.SHARP_MODULE_PATH || 'sharp');
@@ -23,26 +24,7 @@ const assets = [];
 await mkdir(output, { recursive: true });
 
 async function lettering(color) {
-    const run = font.layout(caption);
-    const scale = (100 * 1220 / 1400) / font.unitsPerEm;
-    const bounds = { left: Infinity, right: -Infinity, top: -Infinity, bottom: Infinity };
-    let pen = 0;
-    const paths = run.glyphs.map((glyph, index) => {
-        if (!glyph.id) throw new Error(`Missing Korean glyph: ${caption}`);
-        const position = run.positions[index];
-        const x = pen + position.xOffset;
-        const y = position.yOffset;
-        pen += position.xAdvance;
-        bounds.left = Math.min(bounds.left, x + glyph.bbox.minX);
-        bounds.right = Math.max(bounds.right, x + glyph.bbox.maxX);
-        bounds.top = Math.max(bounds.top, y + glyph.bbox.maxY);
-        bounds.bottom = Math.min(bounds.bottom, y + glyph.bbox.minY);
-        return `<path transform="translate(${x} ${y})" d="${glyph.path.toSVG()}"/>`;
-    }).join('');
-    const textWidth = Math.ceil((bounds.right - bounds.left) * scale) + 4;
-    const textHeight = Math.ceil((bounds.top - bounds.bottom) * scale) + 4;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${textWidth}" height="${textHeight}"><g fill="${color}" transform="translate(${2 - bounds.left * scale} ${2 + bounds.top * scale}) scale(${scale} ${-scale})">${paths}</g></svg>`;
-    return { bytes: await sharp(Buffer.from(svg)).png().toBuffer(), width: textWidth, height: textHeight };
+    return renderBrandLettering(font, caption, 100 * 1220 / 1400, color, sharp);
 }
 
 async function deliver(path, bytes, tone, transparent, preservedPixelsSha256) {
