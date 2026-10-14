@@ -2,12 +2,13 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { compactPiexifPlugin } from './scripts/compact-piexif.mjs';
 import { createNativeContentSecurityPlugin } from './scripts/native-content-security.mjs';
+import { createNativeBrandDownloadsPlugin } from './scripts/native-brand-downloads.mjs';
 
 export default defineConfig(({ mode }) => {
     const native = mode === 'native';
     return {
         base: native ? './' : '/',
-        plugins: [compactPiexifPlugin(), ...(native ? [createNativeContentSecurityPlugin()] : [])],
+        plugins: [compactPiexifPlugin(), ...(native ? [createNativeContentSecurityPlugin(), createNativeBrandDownloadsPlugin()] : [])],
         resolve: {
             alias: native ? [] : ['native-app-runtime', 'native-auth-bridge', 'native-auth-storage',
                 'native-api-fetch', 'native-content-actions', 'native-external-links'].map(name => ({
