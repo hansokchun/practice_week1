@@ -41,6 +41,10 @@ Preview and download at `/brand/`. Existing files listed above remain unchanged.
 The 2026-10-15 [logo animation](ANIMATION.md) adds a separate three-second MP4,
 alpha MOV and GIF package at `/brand/#logo-animation`; the 24-PNG kit is unchanged.
 
+The separate [archive-caption variant](ARCHIVE-LOGO.md) changes only the Korean
+caption to `장소아카이브` at `/brand/#archive-logo`. It does not replace the
+approved master, runtime logos or original animation.
+
 ## Reproduction and Checks
 
 `scripts/export-brand-assets.mjs` makes delivery files only from this master.

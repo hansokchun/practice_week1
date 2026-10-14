@@ -1,0 +1,72 @@
+{
+  "version": "1.0",
+  "caption": "장소아카이브",
+  "runtimeReplacement": false,
+  "font": {
+    "family": "NanumGothic",
+    "path": "brand/fonts/NanumGothic-Bold.ttf",
+    "license": "brand/fonts/NanumGothic-OFL.txt",
+    "sha256": "f96298f9fb18e364d2370f4c3ce948ac67a2b61af992d7234bc15c42b033c674"
+  },
+  "sources": [
+    {
+      "path": "public/brand/assets/logos/lockup-horizontal-teal.png",
+      "tone": "teal",
+      "sha256": "0bc8604e5b8430fe5a83c101c89fd37650db2cc4ed9b35a0d4262d7149b8216a",
+      "preservedPixelsSha256": "47e94d0e6866ab6cfab63c26b51dfc4b46f290747830289c3145a1f251b685cc"
+    },
+    {
+      "path": "public/brand/assets/logos/lockup-horizontal-white.png",
+      "tone": "white",
+      "sha256": "c48ac73868027b4624476f71df1ad4d555eadf0912896acd65155abf16df545c",
+      "preservedPixelsSha256": "8b356b45bb8f2c4b930d84528c8da554f5a3e00fc6412a2816756f1c2f24977b"
+    }
+  ],
+  "preservedRegion": {
+    "left": 0,
+    "top": 0,
+    "width": 1390,
+    "height": 600
+  },
+  "assets": [
+    {
+      "path": "lockup-teal.png",
+      "width": 2100,
+      "height": 600,
+      "tone": "teal",
+      "transparent": true,
+      "sha256": "8ca08bed90f0934c064fd6c39d9bccc614daf13c9f5cb6d8b04b92f2dffa7b39",
+      "preservedPixelsSha256": "47e94d0e6866ab6cfab63c26b51dfc4b46f290747830289c3145a1f251b685cc"
+    },
+    {
+      "path": "preview-light.png",
+      "width": 2100,
+      "height": 600,
+      "tone": "teal",
+      "transparent": false,
+      "sha256": "de4479c72138b23eccfb75e16e2a3ab5c5c3c164dcf2c7a85160ac9f52e9afc1"
+    },
+    {
+      "path": "lockup-white.png",
+      "width": 2100,
+      "height": 600,
+      "tone": "white",
+      "transparent": true,
+      "sha256": "f15a83ff46569ae661e0b165e4ec34c012c040fc14c5325b4582bd1db9bc9db6",
+      "preservedPixelsSha256": "8b356b45bb8f2c4b930d84528c8da554f5a3e00fc6412a2816756f1c2f24977b"
+    },
+    {
+      "path": "preview-dark.png",
+      "width": 2100,
+      "height": 600,
+      "tone": "white",
+      "transparent": false,
+      "sha256": "c1557ce6313a665cfc7bef4f86ebf4d4a43095cd2b1c523b80d6b843ff003179"
+    }
+  ],
+  "archive": {
+    "path": "ikkyee-archive-logo.zip",
+    "bytes": 271828,
+    "sha256": "0f47c1d5581767f56cc862edeb64b7e87bbbefa2e4dada98add206787f46cd37"
+  }
+}
