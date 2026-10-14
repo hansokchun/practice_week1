@@ -26,6 +26,8 @@ firebase-debug.log
 node_modules/
 dist/
 app-shell/www/
+app-shell/.toolchain/
+app-shell/artifacts/
 
 # Local QA and generated scratch files
 tmp/

@@ -207,7 +207,7 @@ Capacitor는 기존 JavaScript 프로젝트에 앱 컨테이너를 추가하고 
 | 런타임 패키지 보안 검사 | `npm audit --omit=dev`: 알려진 취약점 0 |
 | 로컬 브라우저 확인 | 공개 랜딩·서버 공개 사진 목록·사진 상세·공유 메뉴, 390px 화면·웹에서 앱 전용 버튼 숨김 확인. 계정/사진 쓰기 없음 |
 | 웹 성능 예산 | 기존 원본부터 실패: JS Brotli 80.07KB/70.5KB, CSS 31.85KB/30KB. 앱 SDK 분리 후 현재 JS 81.10KB, CSS 31.91KB. 예산은 완화하지 않음 |
-| Android 설치 파일 | 미생성: Java Runtime·Android SDK/빌드 도구 준비 필요 |
+| Android 설치 파일 | 미생성. 후속 Android 지정 작업에서 Java·Gradle을 준비했으며 SDK 설치·약관 확인은 11절 참고 |
 | iOS 컴파일·서명 | 미완료: 설치 Xcode 16.4, Capacitor 8 요구 Xcode 26.0 이상. 시뮬레이터도 검증 전 |
 | 실제 기기 OAuth·이메일·지도·사진 선택·공유·저장 | 미검증 |
 
@@ -215,7 +215,7 @@ Capacitor 8의 개발 환경 요구는 [공식 환경 안내](https://capacitorj
 
 ### 다음 작업과 사용자 참여 지점
 
-1. 시험 휴대전화가 Android인지 iPhone인지 확인한다. Android를 우선 준비할 수 있지만 사용자 기기 종류가 확정됐다고 기록하지 않는다.
+1. 시험 휴대전화는 이후 사용자 응답으로 Android로 확정됐다. Android APK를 먼저 준비하며 iOS 실제 설치는 이번 시험 경로에 포함하지 않는다.
 2. 해당 플랫폼의 무료 로컬 빌드 도구를 준비한다. Android는 Android Studio/SDK/JDK 및 SDK 약관 확인, iOS는 지원 Xcode와 실제 설치용 서명 준비가 필요하다. 시스템 설치·약관 동의나 계정 자격 증명이 필요하면 사용자에게 요청한다.
 3. Supabase 허용 redirect에 앱 콜백이 실제 등록됐는지 확인한다. Google Maps/Places/거리뷰 키 제한과 Turnstile이 Android `https://localhost`, iOS `capacitor://localhost` 환경에서 동작하는지 검사한다. 허용 설정을 넓히거나 보안 확인을 끄지 않는다.
 4. 새 앱을 실제 설치하고 같은 테스트 계정으로 웹↔앱 서버 사진·앨범 왕복, 선택한 사진만 업로드, 권한 거부, 프로세스 종료/복귀, OS 공유 취소·저장을 확인한다. 현재 Supabase UMD·폰트·지도 SDK는 CDN 의존성이 남아 있어 최초 오프라인 실행도 별도 검증한다.
@@ -223,3 +223,45 @@ Capacitor 8의 개발 환경 요구는 [공식 환경 안내](https://capacitorj
 6. 기존 APK와 같은 식별자이므로 서명·versionCode·미완료 업로드 유지 조건을 대조하기 전에는 업데이트 설치 완료로 표시하지 않는다. 기존 앱 제거·데이터 초기화는 진행하지 않는다.
 
 이번 작업에서 유료 결제, 서버 정책 변경, 운영 `main` 배포, 실제 사용자 데이터 삭제·공개 변경은 수행하지 않았다.
+
+## 11. Android 시험 기기 확정 후 빌드 준비 — 2026-10-14
+
+사용자가 시험 기기를 **Android**로 답했다. APK 생성을 위한 무료 로컬 빌드 준비를 진행했다. SDK 약관 동의 응답은 아직 확인되지 않았으므로 SDK 다운로드·설치·실행과 약관 수락은 보류했다.
+
+### 완료한 준비
+
+- Eclipse Adoptium 공식 배포 정보를 확인하고 Temurin Java 21.0.12.1+1 macOS ARM 배포본을 SHA-256 검증 후 `app-shell/.toolchain/java/`에 압축 해제했다. 실제 `java`·`javac` 버전 실행을 확인했다. 시스템 Java/PATH나 다른 프로젝트 설정을 바꾸지 않았다.
+- Gradle 8.14.3의 공식 binary 배포 SHA-256을 wrapper에 고정했다. 프로젝트 전용 Gradle 캐시에서 실제 Gradle 버전 실행까지 통과했다. 크기가 더 큰 `all` 배포 대신 동일 버전의 `bin` 배포를 사용한다.
+- 앱 Build Tools를 36.0.0으로 고정했다. Capacitor 라이브러리의 AGP 기본값에 따라 첫 빌드에서 35.0.0이 추가로 필요할 수 있으며 실제 Gradle 결과로 확인한다.
+- 시험용 debug 서명 키의 위치를 ignored 프로젝트 도구 폴더로 분리했다. 출시 서명 키가 아니며 이번 준비 점검에서는 키 생성·휴대전화 설치를 실행하지 않았다.
+- 읽기 전용 준비 검사와 Android 시험 APK 빌드 명령을 추가했다. 설치된 SDK 패키지의 약관 본문과 기존 동의 기록을 비교할 뿐, 약관 기록을 만들어 검사에 통과시키지 않는다.
+
+```bash
+npm run app:doctor:android
+npm run app:apk:android
+```
+
+첫 명령은 Node/Java/SDK/API 36/Build Tools/adb/SDK 약관/프로젝트 동기화와 앱 식별자 일치를 읽기 전용으로 점검한다. 두 번째는 웹 원본의 앱 번들·동기화 후 준비 검사 → debug 단위 테스트 → lint → APK 빌드를 실행한다. **준비 검사 실패 시 컴파일·서명 파일 생성으로 넘어가지 않는다.** 준비·키 생성·Gradle 실패 시 이전 APK를 새 산출물로 복사하지 않는 제어 흐름을 주입 테스트로 검증했다. 성공한 뒤에만 `app-shell/artifacts/android/ikkyee-android-debug.apk`와 파일 지문·생성 시각·입력 시작 문서 지문 원장을 생성한다. 기기 설치, 업데이트, 외부 배포, SDK 자동 동의는 명령에 없다.
+
+현재 Android JVM 테스트는 생성 템플릿의 기본 검사이며 앱의 로그인·지도·사진 기능 검증이 아니다. APK 자체 서명·실제 manifest·포함된 웹 자산 검증도 SDK 준비 후 수행한다. 증빙에는 이 검증 및 실제 기기·업데이트 상태를 `false`로 표시하여 Gradle 종료와 구분한다.
+
+### 현재 검증 결과
+
+| 항목 | 결과 |
+| --- | --- |
+| 공통 전체 테스트 | 1,107/1,107 통과 |
+| 웹 빌드·앱 번들·양 플랫폼 동기화 | 통과 |
+| Android 새 준비 검사·빌드 계획/실패 제어 흐름 테스트 | 19/19 통과 |
+| 실제 Node·Java 런타임/컴파일러·프로젝트 검사 | 통과 |
+| 실제 Gradle 8.14.3 실행 | 통과; **앱 컴파일이 아님** |
+| SDK·Build Tools·adb | 미설치/미준비 |
+| SDK 약관 동의 응답·설치 패키지 동의 기록 | 미확인; 자동 수락하지 않음 |
+| APK 생성·서명·실제 휴대전화 설치 | 미실행 |
+
+### 지금 필요한 사용자 확인
+
+[Google Android SDK 이용약관](https://developer.android.com/studio#terms-and-conditions)을 확인하고 SDK 설치 진행에 동의하거나, 사용자가 직접 SDK를 설치한 뒤 알려준다. 동의 확인 뒤 공식 SDK 명령줄 도구와 API 36·Build Tools·platform-tools를 준비하고 실제 Gradle 컴파일 오류를 해결한다. 준비한 프로젝트 내부 Java와 Gradle은 다른 시스템 도구를 대체하지 않는다.
+
+기존 앱과 같은 식별자·versionCode 1을 사용하므로 실제 설치 전에는 이전 앱의 서명·버전 및 미업로드 작업을 대조한다. APK를 만들었다는 사실을 로그인·지도·공유·업데이트 성공으로 대신하지 않는다. Android USB 연결·휴대전화 개발자 옵션/USB 디버깅 허용 등 실제 기기 단계가 필요하면 별도로 안내한다.
+
+근거: [Adoptium 배포 API](https://api.adoptium.net/), [Gradle 배포 검증](https://docs.gradle.org/current/userguide/gradle_wrapper.html#sec:verification), [Google SDK 도구](https://developer.android.com/tools/sdkmanager). 파일 검사·다운로드·도구 실행 외에 서버 정책 변경, 기존 앱 데이터 제거, 유료 결제는 수행하지 않았다.

@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.ikkyee.mobile"
     compileSdk = rootProject.ext.compileSdkVersion
+    buildToolsVersion '36.0.0'
     defaultConfig {
         applicationId "com.ikkyee.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -16,7 +17,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        debug {
+            // Keep trial signing material in this ignored project toolchain.
+            // Never reuse these standard debug credentials for a release.
+            storeFile rootProject.file('../.toolchain/android-user/debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
