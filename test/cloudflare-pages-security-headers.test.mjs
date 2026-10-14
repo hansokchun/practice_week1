@@ -11,7 +11,7 @@ test('Cloudflare Pages static responses use baseline security headers', () => {
     assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
     assert.match(headers, /Permissions-Policy: camera=\(\), microphone=\(\), geolocation=\(\), payment=\(\), usb=\(\)/);
     assert.match(headers, /Content-Security-Policy: default-src 'self';/);
-    assert.match(headers, /script-src 'self' 'unsafe-inline' 'unsafe-eval' https:\/\/cdn\.jsdelivr\.net https:\/\/t1\.kakaocdn\.net https:\/\/challenges\.cloudflare\.com https:\/\/\*\.googleapis\.com https:\/\/\*\.gstatic\.com \*\.google\.com https:\/\/www\.googletagmanager\.com blob:;/);
+    assert.match(headers, /script-src 'self' 'unsafe-inline' 'unsafe-eval' https:\/\/cdn\.jsdelivr\.net https:\/\/t1\.kakaocdn\.net https:\/\/challenges\.cloudflare\.com https:\/\/\*\.googleapis\.com https:\/\/\*\.gstatic\.com \*\.google\.com https:\/\/static\.cloudflareinsights\.com blob:;/);
     assert.match(headers, /connect-src 'self' https:\/\/\*\.supabase\.co wss:\/\/\*\.supabase\.co https:\/\/\*\.kakao\.com https:\/\/\*\.kakaocdn\.net https:\/\/challenges\.cloudflare\.com/);
     assert.match(headers, /frame-src https:\/\/challenges\.cloudflare\.com \*\.google\.com;/);
     assert.match(headers, /object-src 'none';/);
@@ -20,10 +20,10 @@ test('Cloudflare Pages static responses use baseline security headers', () => {
     assert.match(headers, /frame-ancestors 'none'/);
 });
 
-test('analytics CSP allows the tag and collection without adding advertising hosts', () => {
+test('analytics CSP blocks Google tracking and advertising hosts', () => {
     const connect = headers.match(/connect-src ([^;]+);/)[1];
-    assert.match(connect, /https:\/\/\*\.google-analytics\.com/);
-    assert.match(connect, /https:\/\/www\.googletagmanager\.com/);
+    assert.match(connect, /https:\/\/cloudflareinsights\.com/);
+    assert.doesNotMatch(headers, /googletagmanager\.com|google-analytics\.com/);
     assert.doesNotMatch(headers, /doubleclick\.net|googleadservices\.com|googlesyndication\.com/);
 });
 

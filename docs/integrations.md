@@ -86,17 +86,16 @@ Workers AI integration:
 
 ## Local repo integration points
 
-### Google Analytics
+### Cookie-Free Web Analytics
 
-- Web-only GA4 integration activated on 2026-10-13 for consenting production visitors.
-- Measurement ID: `G-Y86DQ6ZVHR`; property `558510861`, web stream `16114088574`.
-- Production runtime variable: `GOOGLE_ANALYTICS_MEASUREMENT_ID` (public `G-` ID).
-- Explicit browser consent, manual sanitized pageviews, no ad tracking.
-- Owner registration completed. Enhanced Measurement, Google Signals, detailed
-  location/device collection and ad personalization are OFF; 2-month user/event
-  retention is configured without activity-based extension.
-- Live Realtime validation received `메인` and `지도` once each for one QA visitor.
-- Setup and verification: [google-analytics.md](google-analytics.md).
+- GA4 collection retired on 2026-10-15. No consent banner, Google tag or analytics
+  toggle remains; legacy GA cookies/consent are removed without clearing auth.
+- Cloudflare Web Analytics uses its official beacon in manual mode, with one
+  public document entry rather than every SPA navigation; no visitor cookies.
+- Production HTTPS only, with server-side EEA/EU/UK/CH/unknown-country exclusion.
+- See [cloudflare-web-analytics.md](cloudflare-web-analytics.md) for scope,
+  verification and limitations. The GA property remains historical only:
+  [google-analytics.md](google-analytics.md).
 
 - `auth.js` initializes the Supabase client and wraps Auth, Database, and
   Storage calls.

@@ -1,6 +1,17 @@
 # Google Analytics (GA4)
 
-## Current Status
+## Retired On 2026-10-15
+
+GA4 collection has been replaced with cookie-free Cloudflare Web Analytics.
+The Google tag, consent controls and runtime measurement ID response are removed.
+Existing GA cookies and the old local consent key are cleaned on the next visit;
+authentication storage is untouched. The property is retained for historical
+reports, not current traffic. Do not re-enable the binding or follow the old setup
+below without a new explicit decision and privacy review.
+
+Current setup: [cloudflare-web-analytics.md](cloudflare-web-analytics.md).
+
+## Historical Status
 
 Activated for consenting production web visitors on 2026-10-13. The owner
 registered the property and supplied measurement ID `G-Y86DQ6ZVHR`; Codex did not
