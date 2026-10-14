@@ -943,13 +943,9 @@
                         <span>개인정보 처리방침</span>
                         <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
                     </a>
-                    <label class="settings-row settings-toggle-row" for="settings-analytics-consent">
-                        <div class="settings-row-copy"><strong>방문 통계 허용</strong><span id="settings-analytics-status">방문 통계는 아직 사용하지 않습니다.</span></div>
-                        <span class="settings-toggle"><input id="settings-analytics-consent" type="checkbox" disabled><span aria-hidden="true"></span></span>
-                    </label>
-                    <button class="settings-link-row" data-analytics-open type="button">
-                        <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span><span>방문 통계 상세 설정</span><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-                    </button>
+                    <a class="settings-link-row" href="/privacy/#analytics">
+                        <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span><span>방문 통계 안내</span><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </a>
                     <a class="settings-link-row" href="/support/">
                         <span class="material-symbols-outlined" aria-hidden="true">help</span>
                         <span>도움말 및 지원</span>
@@ -1043,7 +1039,7 @@
                 <a href="/privacy/">개인정보 처리방침</a>
                 <a href="/support/">고객지원</a>
                 <a href="/account-deletion/">계정 삭제 안내</a>
-                <button class="analytics-footer-link" data-analytics-open type="button">방문 통계 설정</button>
+                    <a href="/privacy/#analytics">방문 통계 안내</a>
             </nav>
             <div class="site-footer__notes" aria-label="Ikkyee 이용 원칙">
                 <span>내 사진은 기본 비공개로 안전하게 보관됩니다.</span>
@@ -1416,19 +1412,6 @@
         </section>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-    <section id="analytics-consent-banner" class="analytics-consent-banner" aria-label="방문 통계 선택" hidden>
-        <div><strong>방문 통계를 허용할까요?</strong><p>Google Analytics로 페이지 이용과 유입 경로를 집계합니다. 계정 정보, 사진·좌표와 검색어는 보내지 않습니다. <button data-analytics-open type="button">자세히</button></p></div>
-        <div class="analytics-choice-actions"><button data-analytics-choice="denied" type="button">허용 안 함</button><button data-analytics-choice="granted" type="button">허용</button></div>
-    </section>
-    <dialog id="analytics-preferences" class="analytics-preferences" aria-labelledby="analytics-preferences-title" aria-describedby="analytics-preferences-copy">
-        <header><h2 id="analytics-preferences-title">방문 통계 설정</h2><button data-analytics-close type="button" aria-label="방문 통계 설정 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></header>
-        <p id="analytics-preferences-copy">Google Analytics로 페이지 이용, 유입 경로와 기기 유형을 집계합니다. 계정 정보, 사진·좌표와 검색어는 보내지 않으며 광고 추적은 사용하지 않습니다.</p>
-        <p>선택은 이 브라우저에 저장됩니다. 거절해도 모든 기능을 사용할 수 있으며 언제든 변경할 수 있습니다. 허용 시 통계 쿠키는 최대 28일 유지됩니다.</p>
-        <a href="/privacy/#analytics">개인정보 처리방침</a>
-        <p id="analytics-preferences-status" role="status"></p>
-        <div class="analytics-choice-actions"><button data-analytics-choice="denied" type="button">허용 안 함</button><button data-analytics-choice="granted" type="button" disabled>허용</button></div>
-    </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2/dist/umd/supabase.min.js" defer></script>
     <script type="module" src="/js/app.js"></script>
