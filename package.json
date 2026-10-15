@@ -54,6 +54,9 @@
     "@capacitor/filesystem": "8.1.4",
     "@capacitor/ios": "8.5.3",
     "@capacitor/share": "8.0.3",
-    "piexifjs": "1.0.6"
+    "d3-geo": "3.1.1",
+    "piexifjs": "1.0.6",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
   }
 }

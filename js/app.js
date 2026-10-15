@@ -1342,6 +1342,16 @@ function syncModalScrollLock() {
 }
 
 function closeModals() {
+    if (albumDownloadJob) {
+        albumDownloadJob.abort();
+        albumDownloadJob = null;
+        $('#btn-download-album')?.removeAttribute('disabled');
+    }
+    if (albumDownloadUrl) {
+        const oldUrl = albumDownloadUrl;
+        albumDownloadUrl = null;
+        window.setTimeout(() => URL.revokeObjectURL(oldUrl), 60000);
+    }
     $$('.modal').forEach((modal) => {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
@@ -3582,6 +3592,113 @@ async function downloadSelectedPhoto(eventOrPhotoId) {
     }
 }
 
+let albumDownloadJob = null;
+let albumDownloadUrl = null;
+
+async function downloadSelectedAlbum(button) {
+    if (albumDownloadJob) return;
+    const selected = getSelectedPublicAlbum(getSavedPublicAlbums());
+    if (!selected || document.body.dataset.page !== 'trip') return;
+    const controller = new AbortController();
+    albumDownloadJob = controller;
+    const userId = state.currentUser?.id || null;
+    const albumId = selected.id;
+    const selectionId = state.selectedPublicAlbumId;
+    const assertActive = () => {
+        if (controller.signal.aborted || (state.currentUser?.id || null) !== userId
+            || document.body.dataset.page !== 'trip' || state.selectedPublicAlbumId !== selectionId) {
+            throw new DOMException('앨범 저장이 취소되었습니다.', 'AbortError');
+        }
+    };
+    const status = $('#album-download-status');
+    const progress = $('#album-download-progress');
+    const saveLink = $('#album-download-save');
+    saveLink.hidden = true;
+    saveLink.removeAttribute('href');
+    $('#album-download-dismiss').textContent = '취소';
+    status.textContent = '사진을 확인하고 있습니다.';
+    progress.value = 0;
+    progress.max = 1;
+    button.disabled = true;
+    openModal('#album-download-modal');
+    try {
+        // Fresh RLS-filtered metadata prevents exporting old private/deleted records.
+        const readWithDeadline = async task => {
+            let timeout;
+            try {
+                return await Promise.race([task, new Promise((_, reject) => {
+                    timeout = window.setTimeout(() => reject(Error('서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.')), 20000);
+                })]);
+            } finally { window.clearTimeout(timeout); }
+        };
+        const albums = await readWithDeadline(fetchAlbums());
+        assertActive();
+        status.textContent = '앨범에 담긴 사진을 확인하고 있습니다.';
+        const metadata = await readWithDeadline(fetchPhotos({ hydrateUrls: false }));
+        assertActive();
+        if (albums.error || metadata.error) throw Error('앨범과 사진을 다시 확인하지 못했습니다.');
+        const album = albums.data.find(item => item.id === albumId);
+        if (!album) throw Error('이 앨범에 접근할 수 없습니다.');
+        status.textContent = '오프라인 지도를 준비하고 있습니다.';
+        const { createOfflineAlbum, createAlbumDownloadPlan } = await import('./album-download.mjs');
+        const plan = createAlbumDownloadPlan(album, metadata.data.filter(photo => !isAlbumPhotoRemoved(album.id, photo)), userId);
+        const hydrated = await readWithDeadline(hydratePhotoUrls(plan.photos));
+        assertActive();
+        if (hydrated.error) throw Error('사진 접근 권한을 확인하지 못했습니다.');
+        const result = await createOfflineAlbum({
+            album: { ...album, note: getAlbumVisibleNote(album) },
+            photos: hydrated.data,
+            viewerId: userId, storyMap: getAlbumStoryMap(album), assertActive,
+            onProgress: ({ completed, total }) => {
+                progress.max = total;
+                progress.value = completed;
+                status.textContent = `사진 ${completed} / ${total}장 준비 중`;
+            },
+            loadPhoto: async photo => {
+                assertActive();
+                const source = photo.preview_url || photo.url;
+                if (!source) throw Error('사진 파일을 찾지 못했습니다.');
+                const response = await fetch(source, { credentials: 'omit', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]) });
+                if (!response.ok) throw Error('사진을 불러오지 못했습니다. 다시 시도해주세요.');
+                const blob = await response.blob();
+                if (!blob.type.startsWith('image/') || blob.size > 20 * 1024 * 1024) throw Error('앨범에 담을 사진의 형식이나 용량을 확인해주세요.');
+                assertActive();
+                const image = await loadBlobImage(blob);
+                const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+                canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+                const context = canvas.getContext('2d');
+                if (!context) throw Error('사진을 준비하지 못했습니다.');
+                context.fillStyle = '#ffffff';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                const data = await readBlobAsDataUrl(await canvasToDownloadBlob(canvas, 'image/jpeg', 0.88));
+                canvas.width = canvas.height = 0;
+                return data;
+            }
+        });
+        assertActive();
+        const blob = new Blob([result.html], { type: 'text/html;charset=utf-8' });
+        albumDownloadUrl = URL.createObjectURL(blob);
+        saveLink.href = albumDownloadUrl;
+        saveLink.download = result.fileName;
+        saveLink.hidden = false;
+        $('#album-download-dismiss').textContent = '닫기';
+        status.textContent = `사진 ${result.count}장과 위치 지도 준비 완료`;
+        saveLink.focus();
+    } catch (error) {
+        if (!controller.signal.aborted && error?.name !== 'AbortError') {
+            status.textContent = error?.message || '앨범을 다운로드하지 못했습니다.';
+        }
+    } finally {
+        if (albumDownloadJob === controller) {
+            albumDownloadJob = null;
+            button.disabled = false;
+        }
+    }
+}
+
 function openPhotoFullscreenFromDetail() {
     const detailModal = $('#photo-detail-modal');
     const sourceImage = detailModal?.querySelector('[data-photo-detail-image]');
@@ -5557,6 +5674,7 @@ function renderPublicSurfaces() {
                 </button>
             ` : ''}
             ${!state.albumDetailEditMode ? `
+                ${!document.documentElement.classList.contains('native-app') ? `<button id="btn-download-album" class="album-icon-button" type="button" aria-label="앨범 다운로드" data-tooltip="오프라인 앨범 다운로드"><span class="material-symbols-outlined" aria-hidden="true">download</span></button>` : ''}
                 <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="앨범 공유" data-tooltip="앨범 공유">
                     <span class="material-symbols-outlined">ios_share</span>
                 </button>
@@ -9073,6 +9191,12 @@ function bindEvents() {
         const editAlbumButton = event.target.closest('#btn-edit-album');
         if (editAlbumButton) {
             startEditSelectedAlbum();
+            return;
+        }
+
+        const downloadAlbumButton = event.target.closest('#btn-download-album');
+        if (downloadAlbumButton) {
+            void downloadSelectedAlbum(downloadAlbumButton);
             return;
         }
 
