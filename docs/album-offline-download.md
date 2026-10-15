@@ -53,6 +53,9 @@ Do not mutate live user photos or privacy settings during QA.
 - Static file inspection found no scripts, remote media, signing grants, account
   identifiers or storage paths. All marker coordinates were inside the map frame.
 - Cancelling preparation closed the dialog and re-enabled the download action.
+- Live photo-menu QA exposed a stale, undefined photo lookup in the existing
+  individual download action. It now uses the current library/album collections;
+  an execution regression test covers both paths and failed-request cleanup.
 - The browser automation security policy prevented opening the saved local HTML;
   file structure was inspected instead. Offline rendering/printing and physical
   iOS/Android file-opening behavior remain manual device checks.

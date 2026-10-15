@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { runInNewContext } from 'node:vm';
 import piexif from 'piexifjs';
 
 import {
@@ -71,6 +72,29 @@ test('photo detail menu exposes and handles the download action', () => {
     assert.match(source, /insertGpsExifIntoJpegDataUrl/);
     assert.match(helperSource, /GPSIFD\.GPSLatitude/);
     assert.match(helperSource, /GPSIFD\.GPSLongitude/);
+});
+
+test('photo detail download resolves real library and album photos before fetching', async () => {
+    const source = readFileSync('js/app.js', 'utf8');
+    const start = source.indexOf('async function downloadSelectedPhoto(');
+    const end = source.indexOf('\nlet albumDownloadJob', start);
+    for (const albumOnly of [false, true]) {
+        const photo = { id: 'public-photo', url: 'https://example.com/photo.jpg' };
+        const requests = [];
+        const messages = [];
+        const button = { dataset: { photoId: photo.id } };
+        const download = runInNewContext(`(${source.slice(start, end)})`, {
+            state: { selectedPhotoId: null, albumDetailPhotos: albumOnly ? [photo] : [] },
+            getAllDisplayPhotos: () => albumOnly ? [] : [photo],
+            setPhotoDetailMoreMenuOpen: () => {},
+            showToast: message => messages.push(message),
+            fetch: async url => { requests.push(url); return { ok: false }; }
+        });
+        await download({ currentTarget: button });
+        assert.deepEqual(requests, [photo.url]);
+        assert.match(messages.at(-1), /사진 파일을 불러오지 못했습니다/);
+        assert.equal(button.disabled, false);
+    }
 });
 
 test('photo download writes GPS tags into a real JPEG payload', () => {
