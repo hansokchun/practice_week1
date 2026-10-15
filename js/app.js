@@ -3550,7 +3550,8 @@ async function downloadSelectedPhoto(eventOrPhotoId) {
     const photoId = typeof eventOrPhotoId === 'string'
         ? eventOrPhotoId
         : eventOrPhotoId?.currentTarget?.dataset?.photoId || state.selectedPhotoId;
-    const photo = getPhotoDetailMapCandidates().find((candidate) => String(candidate.id || candidate.localId) === String(photoId));
+    const photo = [...getAllDisplayPhotos(), ...state.albumDetailPhotos]
+        .find((candidate) => String(candidate.id || candidate.localId) === String(photoId));
     const button = eventOrPhotoId?.currentTarget || $('[data-download-photo]');
     if (!photo?.url) {
         showToast('다운로드할 사진을 찾지 못했습니다.');
