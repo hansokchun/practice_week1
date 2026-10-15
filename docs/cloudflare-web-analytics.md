@@ -40,12 +40,27 @@ has identical legal requirements. Keep the operating privacy notice current.
 
 ## Operator View
 
-[Ikkyee Web Analytics dashboard](https://dash.cloudflare.com/3cfafb9cc160b2c0b0c5eaa13c62c07d/web-analytics/overview?siteTag~in=c33f9959d44a482382a9dea6aa9affb6&excludeBots=Yes)
+[Ikkyee visits and referrals](https://dash.cloudflare.com/3cfafb9cc160b2c0b0c5eaa13c62c07d/web-analytics/overview/visits?siteTag~in=c33f9959d44a482382a9dea6aa9affb6&excludeBots=Yes)
 
 Use Visits, Page views and Referer hosts. Visits are sessions/entries as defined
 by Cloudflare, not exact unique humans. Internal route labels are not counted.
 No UTM attribution, user journeys, custom events or cross-device identification
 are implemented. Mobile web is included; the native app is not.
+
+## Live Verification On 2026-10-15
+
+- Deployed to dev `3bcf5b1` and production `fbcd33c`; production deployment
+  `ea75ef9b-f603-4e3c-89db-ccc0c84e6a92` became active.
+- The obsolete production `GOOGLE_ANALYTICS_MEASUREMENT_ID` binding was removed.
+  Maps API key/Map ID remained configured.
+- The production browser loaded exactly one official Cloudflare script with
+  `spa: false`, no Google analytics tag, and no consent banner or toggle.
+- Desktop and 390 x 844 mobile screens remained styled; footer privacy link
+  opened the updated analytics notice. Native build also passed.
+- At 2026-10-15 12:17 KST, the Last 24 hours / exclude bots report showed
+  **2 visits, 2 pageviews**, including QA traffic. This validates ingestion,
+  not two external people. No claim of exact unique users is made.
+- Full tests: dev 1,143; production 993. Both web builds passed.
 
 ## Verification
 
