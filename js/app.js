@@ -1976,7 +1976,6 @@ async function submitLandingSearch(event) {
     const query = normalizeLandingLocationQuery($('#landing-search-input')?.value);
     if (query && query === state.landingSearchQuery && ['loading', 'ready'].includes(state.landingSearch.status)) return;
     syncLandingSearchQuery();
-    if (state.landingSearchQuery.trim()) $('#landing-sections')?.scrollIntoView({ behavior: 'smooth' });
     if (!query || isLandingConceptSearch(query)) {
         renderLandingSections();
         return;

@@ -205,6 +205,7 @@ test('submit resolves a location once, ignores a duplicate pending submit, and r
     assert.equal(pending[0].query, '서울');
     assert.equal(pending[0].options.loadMaps, mapsLoader);
     assert.equal(state.landingSearch.status, 'loading');
+    assert.equal(dom.sections.didScrollIntoView, undefined, 'submitting a location search must preserve the current viewport');
 
     const duplicate = submitLandingSearch({ preventDefault() {} });
     assert.equal(pending.length, 1, 'the same pending query must share its request');
@@ -225,6 +226,7 @@ test('submit resolves a location once, ignores a duplicate pending submit, and r
     assert.equal(state.landingSearch.status, 'ready');
     assert.equal(state.landingSearch.location.label, 'Busan, Republic of Korea');
     assert.ok(renderCalls >= 3, 'state transitions must render the landing sections');
+    assert.equal(dom.sections.didScrollIntoView, undefined, 'resolved results must preserve the current viewport');
 });
 
 test('blank and local-topic submits reset to text results without a geocoder request', async () => {
@@ -259,6 +261,7 @@ test('blank and local-topic submits reset to text results without a geocoder req
     assert.equal(state.landingSearchQuery, '바다');
     assert.equal(state.landingSearch.status, 'text');
     assert.equal(state.landingSearch.location, null);
+    assert.equal(dom.sections.didScrollIntoView, undefined, 'submitting a local topic must preserve the current viewport');
 });
 
 test('a resolver failure preserves the normalized text query and exposes an allowlisted diagnostic code', async () => {
