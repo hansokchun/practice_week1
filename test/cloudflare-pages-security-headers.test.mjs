@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-const headers = readFileSync('public/_headers', 'utf8');
+const headers = readFileSync('public/_headers', 'utf8').replace(/\r\n/g, '\n');
 
 test('Cloudflare Pages static responses use baseline security headers', () => {
     assert.match(headers, /^\/\*$/m);
