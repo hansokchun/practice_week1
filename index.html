@@ -116,9 +116,9 @@
                 <div class="landing-search-hero">
                     <form id="landing-search" class="landing-search" role="search">
                         <span class="material-symbols-outlined" aria-hidden="true">search</span>
-                        <label class="sr-only" for="landing-search-input">여행 사진 검색</label>
-                        <input id="landing-search-input" type="search" autocomplete="off" placeholder="도시, 장소, 분위기를 검색하세요">
-                        <button type="submit">검색</button>
+                        <label class="sr-only" for="landing-search-input">나라, 지역, 도시 또는 사진 검색</label>
+                        <input id="landing-search-input" type="search" autocomplete="off" maxlength="100" aria-describedby="landing-search-result-copy" placeholder="나라, 지역, 도시를 검색하세요">
+                        <button id="landing-search-submit" type="submit">검색</button>
                     </form>
                     <div class="landing-search-suggestions" aria-label="추천 검색어">
                         <button type="button" data-landing-query="도로">도로</button>

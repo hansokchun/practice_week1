@@ -278,8 +278,16 @@ import {
     getLandingScrollControlState,
     getLandingVisiblePhotos,
     isLandingAdmin,
+    isLandingConceptSearch,
     normalizeLandingSections
 } from './landing-sections.mjs';
+import {
+    getLandingLocationPhotos,
+    getLandingSearchPage,
+    isPublicLandingSearchPhoto,
+    normalizeLandingLocationQuery,
+    resolveLandingLocation
+} from './landing-location-search.mjs';
 import {
     LANDING_SLIDE_INTERVAL_MS,
     getNextLandingSlideIndex
@@ -432,6 +440,7 @@ const state = {
     landingCurationLoadError: null,
     landingVisibleCounts: {},
     landingSearchQuery: '',
+    landingSearch: { status: 'idle', location: null, page: 1, requestId: 0 },
     selectedLandingSectionId: null,
     landingTagPage: 1,
     landingTagRegion: '',
@@ -1521,7 +1530,9 @@ function renderLandingPhotoCard(photo) {
 function renderLandingSections() {
     const container = $('#landing-sections');
     if (!container) return;
-    if (state.savedPhotosLoadError || state.landingCurationLoadError) {
+    syncLandingSearchControls();
+    const query = state.landingSearchQuery.trim();
+    if (state.savedPhotosLoadError || (!query && state.landingCurationLoadError)) {
         lastLandingSectionsMarkup = null;
         container.removeAttribute('aria-busy');
         container.innerHTML = renderActionableFailure(getLibraryFailureState('photos', {
@@ -1530,33 +1541,27 @@ function renderLandingSections() {
         }));
         return;
     }
-    if (!state.hasLoadedSavedPhotos || !state.hasLoadedLandingCuration) {
+    if (!state.hasLoadedSavedPhotos || (!query && !state.hasLoadedLandingCuration)) {
         lastLandingSectionsMarkup = null;
         container.setAttribute('aria-busy', 'true');
         container.innerHTML = `<div class="landing-loading-state" role="status"><span class="sr-only">사진을 불러오는 중입니다.</span>${Array.from({ length: 5 }, () => '<div aria-hidden="true"></div>').join('')}</div>`;
         return;
     }
     container.removeAttribute('aria-busy');
+    if (query) {
+        renderLandingSearchResults(container);
+        return;
+    }
     const allPhotos = getLandingPublicPhotos();
-    const query = state.landingSearchQuery.trim();
-    const searchResults = getLandingSearchResults(allPhotos, query);
-    const sections = query
-        ? [{ id: 'search-results', title: `“${query}” 검색 결과`, description: `${searchResults.length}장의 공개 사진을 찾았습니다.`, photo_ids: searchResults.map((photo) => photo.id) }]
-        : state.landingSections;
+    const sections = state.landingSections;
     const resultCopy = $('#landing-search-result-copy');
-    if (resultCopy) resultCopy.textContent = query
-        ? `${query} 검색 결과 ${searchResults.length}장`
-        : '공개 사진을 주제별로 둘러보세요.';
+    if (resultCopy) resultCopy.textContent = '공개 사진을 주제별로 둘러보세요.';
 
     const sectionsMarkup = sections.map((section, sectionIndex) => {
-        const sectionPhotos = query
-            ? searchResults
-            : getLandingSectionPhotos(section, allPhotos, sectionIndex);
-        const visiblePhotos = query ? sectionPhotos : getLandingVisiblePhotos(sectionPhotos);
-        if (!query && !visiblePhotos.length) return '';
-        const cards = visiblePhotos.length
-            ? visiblePhotos.map(renderLandingPhotoCard).join('')
-            : '<div class="landing-empty-state"><strong>검색 결과가 없습니다.</strong><p>다른 검색어로 찾아보세요.</p></div>';
+        const sectionPhotos = getLandingSectionPhotos(section, allPhotos, sectionIndex);
+        const visiblePhotos = getLandingVisiblePhotos(sectionPhotos);
+        if (!visiblePhotos.length) return '';
+        const cards = visiblePhotos.map(renderLandingPhotoCard).join('');
         return `
             <section class="landing-photo-section" data-landing-section="${escapeHtml(section.id)}" aria-labelledby="landing-section-${escapeHtml(section.id)}">
                 <div class="landing-section-heading">
@@ -1890,16 +1895,117 @@ function updateLandingScrollButtons(row) {
     if (next) next.disabled = !controls.canNext;
 }
 
-function submitLandingSearch(event) {
+function syncLandingSearchControls() {
+    const busy = state.landingSearch.status === 'loading';
+    const form = $('#landing-search');
+    if (busy) form?.setAttribute('aria-busy', 'true');
+    else form?.removeAttribute('aria-busy');
+    const submit = $('#landing-search-submit');
+    if (submit) submit.disabled = busy;
+}
+
+function getActiveLandingSearchPhotos() {
+    const photos = state.savedPhotos.filter((photo) => photo.owner_id !== 'demo' && isPublicLandingSearchPhoto(photo));
+    return state.landingSearch.status === 'ready' && state.landingSearch.location
+        ? getLandingLocationPhotos(photos, state.landingSearch.location.bounds)
+        : getLandingSearchResults(photos, state.landingSearchQuery);
+}
+
+function renderLandingSearchResults(container) {
+    const resultCopy = $('#landing-search-result-copy');
+    const query = state.landingSearchQuery;
+    if (state.landingSearch.status === 'loading') {
+        const message = `${query} 지역을 찾는 중입니다.`;
+        if (resultCopy) resultCopy.textContent = message;
+        container.setAttribute('aria-busy', 'true');
+        lastLandingSectionsMarkup = null;
+        container.innerHTML = `<div class="landing-empty-state" role="status">${escapeHtml(message)}</div>`;
+        return;
+    }
+    container.removeAttribute('aria-busy');
+    const page = getLandingSearchPage(getActiveLandingSearchPhotos(), state.landingSearch.page);
+    state.landingSearch.page = page.page;
+    const location = state.landingSearch.status === 'ready' ? state.landingSearch.location : null;
+    const title = location?.label || `“${query}” 검색 결과`;
+    const fallback = state.landingSearch.status === 'error'
+        ? '지역 검색을 불러오지 못했어요. 사진 글에서 찾은 결과를 보여드려요.'
+        : state.landingSearch.status === 'not-found'
+            ? '지역을 찾지 못했어요. 사진 글에서 찾은 결과를 보여드려요.'
+            : '';
+    const description = location
+        ? `지도 범위 안의 공개 사진 ${page.total}장 · 경계 근처의 장소도 포함될 수 있어요.`
+        : `공개 사진 ${page.total}장`;
+    if (resultCopy) resultCopy.textContent = `${fallback} ${title}. ${description} ${page.page}/${page.pageCount}페이지`.trim();
+    const markup = `
+        <section class="landing-photo-section landing-search-results" aria-labelledby="landing-search-results-title">
+            <div class="landing-section-heading"><h2 id="landing-search-results-title">${escapeHtml(title)}</h2></div>
+            <div class="landing-search-summary">
+                ${location ? '<span class="landing-search-provider" translate="no">Google Maps</span>' : ''}
+                <p>${escapeHtml(description)}</p>
+                ${fallback ? `<p role="status">${escapeHtml(fallback)}</p>` : ''}
+            </div>
+            <div class="landing-search-results-grid">
+                ${page.items.length ? page.items.map(renderLandingPhotoCard).join('') : `<div class="landing-empty-state" role="status"><strong>${location ? '이 지역에 공개된 사진이 아직 없어요.' : '검색 결과가 없습니다.'}</strong><p>다른 지역이나 검색어로 찾아보세요.</p></div>`}
+            </div>
+            ${page.pageCount > 1 ? `<nav class="landing-tag-pagination landing-search-pagination" aria-label="검색 결과 페이지">
+                <button type="button" data-landing-search-page="previous" aria-label="이전 검색 결과" ${page.hasPrevious ? '' : 'disabled'}><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></button>
+                <span>${page.page} / ${page.pageCount}</span>
+                <button type="button" data-landing-search-page="next" aria-label="다음 검색 결과" ${page.hasNext ? '' : 'disabled'}><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>
+            </nav>` : ''}
+        </section>`;
+    if (lastLandingSectionsMarkup === markup) return;
+    lastLandingSectionsMarkup = markup;
+    container.innerHTML = markup;
+}
+
+function changeLandingSearchPage(direction) {
+    const next = state.landingSearch.page + (direction === 'previous' ? -1 : 1);
+    state.landingSearch.page = getLandingSearchPage(getActiveLandingSearchPhotos(), next).page;
+    renderLandingSections();
+}
+
+function setLandingSearchSuggestion(query) {
+    const input = $('#landing-search-input');
+    if (input) input.value = normalizeLandingLocationQuery(query);
+    syncLandingSearchQuery();
+    renderLandingSections();
+}
+
+async function submitLandingSearch(event) {
     event.preventDefault();
+    const query = normalizeLandingLocationQuery($('#landing-search-input')?.value);
+    if (query && query === state.landingSearchQuery && ['loading', 'ready'].includes(state.landingSearch.status)) return;
     syncLandingSearchQuery();
     if (state.landingSearchQuery.trim()) $('#landing-sections')?.scrollIntoView({ behavior: 'smooth' });
+    if (!query || isLandingConceptSearch(query)) {
+        renderLandingSections();
+        return;
+    }
+    const requestId = state.landingSearch.requestId;
+    state.landingSearch.status = 'loading';
+    renderLandingSections();
+    try {
+        const location = await resolveLandingLocation(query, { loadMaps: loadGoogleMapsApi });
+        if (requestId !== state.landingSearch.requestId) return;
+        state.landingSearch.location = location;
+        state.landingSearch.status = location ? 'ready' : 'not-found';
+    } catch {
+        if (requestId !== state.landingSearch.requestId) return;
+        state.landingSearch.location = null;
+        state.landingSearch.status = 'error';
+    }
+    renderLandingSections();
 }
 
 function syncLandingSearchQuery() {
-    state.landingSearchQuery = $('#landing-search-input')?.value || '';
+    state.landingSearchQuery = normalizeLandingLocationQuery($('#landing-search-input')?.value);
+    Object.assign(state.landingSearch, {
+        status: state.landingSearchQuery ? 'text' : 'idle',
+        location: null,
+        page: 1,
+        requestId: state.landingSearch.requestId + 1
+    });
     state.landingVisibleCounts = {};
-    renderLandingSections();
 }
 
 async function saveLandingAdminForm(event) {
@@ -8727,12 +8833,14 @@ function bindEvents() {
     $('#btn-open-album-inline')?.addEventListener('click', startNewAlbum);
     $$('[data-my-library-tab]').forEach((button) => button.addEventListener('click', () => setMyLibraryTab(button.dataset.myLibraryTab)));
     $('#landing-search')?.addEventListener('submit', submitLandingSearch);
+    $('#landing-search-input')?.addEventListener('search', () => {
+        if (!$('#landing-search-input')?.value) {
+            syncLandingSearchQuery();
+            renderLandingSections();
+        }
+    });
     $$('[data-landing-query]').forEach((button) => button.addEventListener('click', () => {
-        const input = $('#landing-search-input');
-        if (input) input.value = button.dataset.landingQuery || '';
-        state.landingSearchQuery = button.dataset.landingQuery || '';
-        state.landingVisibleCounts = {};
-        renderLandingSections();
+        setLandingSearchSuggestion(button.dataset.landingQuery || '');
     }));
     $('#landing-admin-form')?.addEventListener('submit', saveLandingAdminForm);
     $('#landing-hero-file-input')?.addEventListener('change', event => {
@@ -8976,6 +9084,13 @@ function bindEvents() {
             state.landingTagPage += landingTagPageButton.dataset.landingTagPage === 'previous' ? -1 : 1;
             renderLandingTagPage();
             window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            return;
+        }
+
+        const landingSearchPageButton = event.target.closest('button[data-landing-search-page]');
+        if (landingSearchPageButton && !landingSearchPageButton.disabled) {
+            changeLandingSearchPage(landingSearchPageButton.dataset.landingSearchPage);
+            $('#landing-sections')?.scrollIntoView({ behavior: 'smooth' });
             return;
         }
 

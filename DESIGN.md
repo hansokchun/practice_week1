@@ -98,6 +98,14 @@ All spacing derives from a base of 4px.
 
 ## 5. Components
 
+### Landing Region Search
+
+- **Structure**: Keep the existing main search form. Submitting a city, region or country resolves its geographic bounds once, then filters already loaded public photo metadata. Typing and changing result pages make no geocoding requests. Existing topic suggestions remain local text searches.
+- **Results**: Reuse landing photo cards in the existing gallery grid, with 24 thumbnails per page and previous/next controls. Search results exclude private and link-only photos; photos without coordinates stay available to text search but cannot match a geographic area.
+- **States**: Empty input restores curated sections. Loading announces the search and prevents duplicate submissions; stale responses cannot replace a newer search. Show a concise resolved-region label, an honest map-area scope note, and distinct no-result or service-failure guidance. Preserve text matches if location lookup is unavailable.
+- **Cost and privacy**: Reuse the existing Google Maps SDK without creating a new map. Geocoding runs only on explicit submission, with one request and a bounded timeout. Region responses remain in the active search memory only. Sign and load thumbnail variants only for the displayed page.
+- **Style and accessibility**: Keep existing surface, typography, spacing, buttons and gallery tokens. Results use aria-busy and a polite live status. Compact provider attribution stays adjacent to the resolved place label; Google Maps text uses normal 14px sans-serif, 400 weight, normal tracking, nowrap and translate=no, with --text for contrast. No new motion.
+
 ### Account Welcome Guidance and Upload Location Note
 
 - **Structure**: Two dismissible welcome entries in the existing account notifications: a friendly location reminder and an upload invitation that routes directly to `upload`. Auth and profile dialogs carry no warning block.

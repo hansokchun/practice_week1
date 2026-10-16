@@ -13904,6 +13904,17 @@ body.modal-open {
 #content-share-status { min-height: 20px; margin: 12px 0 0; font-size: 12px; line-height: 1.6; color: var(--teal); overflow-wrap: anywhere; }
 #content-share-status[data-error="true"] { color: #a13429; }
 .photo-detail-title-row > [data-open-photo-share] { margin-left: auto; flex-shrink: 0; }
+.landing-search-summary { margin: 0 0 24px; padding-inline: 16px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.landing-search-summary p { margin: 8px 0 0; }
+.landing-search-provider { color: var(--text); font: 400 14px/1.5 Arial, sans-serif; letter-spacing: normal; white-space: nowrap; }
+.landing-search-results-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.landing-search-results-grid .landing-photo-card { width: 100%; min-width: 0; }
+.landing-search-pagination { margin-top: 24px; }
+.landing-search-pagination button { min-width: 44px; min-height: 44px; }
+.landing-search-results :is(button):focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+@media (max-width: 760px) {
+    .landing-search-results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
 .album-cover-picker-dialog { position: relative; display: flex; flex-direction: column; width: min(920px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); padding: 28px; border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
 .album-cover-picker-dialog header { flex-shrink: 0; padding-right: 44px; margin-bottom: 20px; }
 .album-cover-picker-dialog h2 { margin: 0; font: 700 22px/1.4 var(--body); letter-spacing: 0; }

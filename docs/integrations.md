@@ -106,6 +106,30 @@ Workers AI integration:
   - `[ai] binding = "AI"`
 - `functions/api/config.js` exposes the browser-visible Google Maps API key and optional Map ID. Cloudflare Preview and Production may use `GOOGLE_MAPS_MAP_ID` (or the Vite-prefixed equivalent); no private Google credential belongs in the repository.
 
+## Main-page regional photo search (2026-10-17)
+
+- The existing Google Maps JavaScript key must allow the **Geocoding API** in
+  the same Google Cloud project, for both the dev and production website
+  referrers. No new server secret or Supabase migration is required.
+- Explicit search submission makes one geocoding request. Known photo topics,
+  typing, and result pagination do not call the geocoder. The timeout is 10 seconds;
+  a failed lookup falls back to the existing photo-text search.
+- Search uses the returned rectangular bounds (or viewport), not an exact
+  administrative polygon. Nearby places inside that rectangle can appear.
+  Only loaded public, non-demo photos with valid coordinates match a region.
+- Result pages contain at most 24 existing thumbnail cards. No per-photo
+  reverse geocoding or original-image downloads are added.
+- Google labels and bounds remain in active page memory only. They are not
+  persisted in Storage, the database, or browser storage. Google Maps attribution
+  appears next to the resolved place label.
+- Geocoding usage shares the Google billing account's monthly allowance;
+  existing map loads and other Maps services have their own billing categories.
+  Check current pricing before estimating production traffic:
+  https://developers.google.com/maps/billing-and-pricing/pricing
+- Automated tests inject the Maps SDK and do not make billed geocoding calls.
+  Browser QA was explicitly declined by the user; live provider activation
+  must not be inferred from passing mocked tests.
+
 ## Operational notes
 
 - Prefer the Supabase plugin for schema inspection, SQL checks, advisors, and

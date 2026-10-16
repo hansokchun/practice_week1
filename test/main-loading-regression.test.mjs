@@ -33,8 +33,9 @@ test('main failures and loading resolve before an empty gallery is presented', (
     const body = source.slice(source.indexOf('function renderLandingSections()'), source.indexOf('function centerLandingRowsOnMobile'));
     assert.ok(body.indexOf('state.savedPhotosLoadError') < body.indexOf('getLandingPublicPhotos()'));
     assert.match(body, /renderActionableFailure/);
-    assert.match(body, /!state.hasLoadedSavedPhotos \|\| !state.hasLoadedLandingCuration/);
-    assert.match(body, /if \(!query && !visiblePhotos.length\) return ''/);
+    assert.match(body, /!state.hasLoadedSavedPhotos \|\| \(!query && !state.hasLoadedLandingCuration\)/);
+    assert.ok(body.indexOf('!state.hasLoadedSavedPhotos') < body.indexOf('renderLandingSearchResults(container)'));
+    assert.match(body, /if \(!visiblePhotos.length\) return ''/);
     const hero = source.slice(source.indexOf('function renderLandingHeroSlides()'), source.indexOf('function getLandingPhotoLabel'));
     assert.match(hero, /if \(document.body.dataset.page !== LANDING_ROUTE\) return/);
 });

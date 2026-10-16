@@ -103,6 +103,13 @@ export function isLandingAdmin(user) {
     return user?.app_metadata?.role === 'admin';
 }
 
+export function isLandingConceptSearch(query) {
+    const tokens = getSearchTokens(query);
+    return tokens.length > 0 && tokens.every((token) => token === '사람'
+        || token === 'people'
+        || SEARCH_CONCEPT_GROUPS.some((terms) => terms.includes(token)));
+}
+
 export function getDefaultLandingSections() {
     return DEFAULT_LANDING_SECTIONS.map((section) => ({ ...section, is_visible: true, photo_ids: [] }));
 }

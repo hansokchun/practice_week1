@@ -22,7 +22,9 @@ test('랜딩은 큰 검색창, 추천 검색어, 가로 사진 섹션을 제공�
     assert.match(html, /class="landing-search-globe" src="images\/landing-globe-sprout-transparent\.webp"[^>]*width="1536"[^>]*height="1024"/);
     assert.match(html, /id="landing-sections"/);
     assert.match(html, /data-landing-scroll/);
-    assert.match(html, /placeholder="도시, 장소, 분위기를 검색하세요"/);
+    assert.match(html, /placeholder="나라, 지역, 도시를 검색하세요"/);
+    assert.match(html, /id="landing-search-submit" type="submit"/);
+    assert.match(html, /id="landing-search-input"[^>]*maxlength="100"[^>]*aria-describedby="landing-search-result-copy"/);
     assert.match(html, /data-landing-query="도로"/);
     assert.match(html, /data-landing-query="바다"/);
     assert.match(html, /data-landing-query="사람"/);
