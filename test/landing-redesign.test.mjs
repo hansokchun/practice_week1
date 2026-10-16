@@ -134,16 +134,16 @@ test('검색 영역의 중복 지도 링크는 하단 고정 버튼으로 통합
     assert.equal((html.match(/id="landing-map-footer"/g) || []).length, 1);
 });
 
-test('메인 검색은 제출할 때 결과를 렌더링하고 결과 목록으로 이동한다', async () => {
+test('메인 검색은 제출할 때 결과를 렌더링하고 현재 화면 위치를 유지한다', async () => {
     const source = await readFile(new URL('js/app.js', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
     const submitStart = source.indexOf('function submitLandingSearch');
-    const submitEnd = source.indexOf('function syncLandingSearchQuery', submitStart);
-    const submit = source.slice(submitStart, submitEnd);
+    const submitEnd = source.indexOf('\n}', submitStart);
+    const submit = source.slice(submitStart, submitEnd + 2);
 
     assert.match(submit, /syncLandingSearchQuery\(\)/);
-    assert.match(submit, /#landing-sections/);
-    assert.match(submit, /scrollIntoView\(\{ behavior: 'smooth' \}\)/);
+    assert.match(submit, /renderLandingSections\(\)/);
+    assert.doesNotMatch(submit, /scrollIntoView|scrollTo|scrollBy/);
     assert.doesNotMatch(source, /landing-search-input'\)\?\.addEventListener\('input'/);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto;/s);
     assert.doesNotMatch(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search button\s*\{[^}]*display:\s*none;/s);
