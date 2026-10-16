@@ -127,8 +127,8 @@ Workers AI integration:
   Check current pricing before estimating production traffic:
   https://developers.google.com/maps/billing-and-pricing/pricing
 - Automated tests inject the Maps SDK and do not make billed geocoding calls.
-  Browser QA was explicitly declined by the user; live provider activation
-  must not be inferred from passing mocked tests.
+  Verify live provider activation and website restrictions separately; passing
+  mocked tests alone does not verify the Google Cloud configuration.
 
 ## Operational notes
 
