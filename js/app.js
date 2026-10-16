@@ -1989,8 +1989,17 @@ async function submitLandingSearch(event) {
         if (requestId !== state.landingSearch.requestId) return;
         state.landingSearch.location = location;
         state.landingSearch.status = location ? 'ready' : 'not-found';
-    } catch {
+    } catch (error) {
         if (requestId !== state.landingSearch.requestId) return;
+        const diagnosticCode = [
+            'MAPS_LOAD_FAILED',
+            'GEOCODE_REQUEST_DENIED',
+            'GEOCODE_OVER_QUERY_LIMIT',
+            'GEOCODE_FAILED',
+            'GEOCODE_INVALID_GEOMETRY',
+            'LOCATION_SEARCH_TIMEOUT'
+        ].includes(error?.code) ? error.code : 'LOCATION_SEARCH_FAILED';
+        console.warn('Landing location search failed', { code: diagnosticCode });
         state.landingSearch.location = null;
         state.landingSearch.status = 'error';
     }

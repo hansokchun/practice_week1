@@ -261,9 +261,10 @@ test('blank and local-topic submits reset to text results without a geocoder req
     assert.equal(state.landingSearch.location, null);
 });
 
-test('a resolver failure preserves the normalized text query and exposes an error state', async () => {
+test('a resolver failure preserves the normalized text query and exposes an allowlisted diagnostic code', async () => {
     const dom = createDom('  제주도  ');
     const state = createLandingState();
+    const warnings = [];
     const { submitLandingSearch } = loadAppFunctions(
         ['syncLandingSearchControls', 'syncLandingSearchQuery', 'submitLandingSearch'],
         {
@@ -271,10 +272,16 @@ test('a resolver failure preserves the normalized text query and exposes an erro
             $: dom.$,
             normalizeLandingLocationQuery,
             renderLandingSections() {},
-            resolveLandingLocation: async () => { throw new Error('offline'); },
+            resolveLandingLocation: async () => {
+                const error = new Error('provider details: private-provider-detail');
+                error.code = 'untrusted-provider-token';
+                error.request = { query: '제주도', key: 'redacted-provider-key' };
+                throw error;
+            },
             loadGoogleMapsApi: async () => ({}),
             getLandingSearchResults: localSearch,
-            isLandingConceptSearch: () => false
+            isLandingConceptSearch: () => false,
+            console: { warn(...args) { warnings.push(args); } }
         }
     );
 
@@ -282,6 +289,45 @@ test('a resolver failure preserves the normalized text query and exposes an erro
     assert.equal(state.landingSearchQuery, '제주도');
     assert.equal(state.landingSearch.status, 'error');
     assert.equal(state.landingSearch.location, null);
+    assert.equal(JSON.stringify(warnings), JSON.stringify([['Landing location search failed', { code: 'LOCATION_SEARCH_FAILED' }]]));
+});
+
+test('known resolver failures log only their stable diagnostic code', async () => {
+    const diagnosticCodes = [
+        'MAPS_LOAD_FAILED',
+        'GEOCODE_REQUEST_DENIED',
+        'GEOCODE_OVER_QUERY_LIMIT',
+        'GEOCODE_FAILED',
+        'GEOCODE_INVALID_GEOMETRY',
+        'LOCATION_SEARCH_TIMEOUT'
+    ];
+
+    for (const code of diagnosticCodes) {
+        const dom = createDom('서울');
+        const state = createLandingState();
+        const warnings = [];
+        const { submitLandingSearch } = loadAppFunctions(
+            ['syncLandingSearchControls', 'syncLandingSearchQuery', 'submitLandingSearch'],
+            {
+                state,
+                $: dom.$,
+                normalizeLandingLocationQuery,
+                renderLandingSections() {},
+                resolveLandingLocation: async () => {
+                    const error = new Error(`provider detail: ${code}`);
+                    error.code = code;
+                    throw error;
+                },
+                loadGoogleMapsApi: async () => ({}),
+                getLandingSearchResults: localSearch,
+                isLandingConceptSearch: () => false,
+                console: { warn(...args) { warnings.push(args); } }
+            }
+        );
+
+        await submitLandingSearch({ preventDefault() {} });
+        assert.equal(JSON.stringify(warnings), JSON.stringify([['Landing location search failed', { code }]]), code);
+    }
 });
 
 test('zero geocode results preserve text search and use the not-found state', async () => {
