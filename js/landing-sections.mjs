@@ -20,8 +20,15 @@ const SEARCH_CONCEPT_GROUPS = [
     ['호수', '연못', '물가', '저수지', 'lake'],
     ['눈', '설경', '설원', '겨울', 'snow'],
     ['평온', '평화', '고요', '차분', '조용', '한적', '한적한', '여유'],
-    ['농촌', '시골', '마을', '전원', 'village']
+    ['농촌', '시골', '마을', '전원', 'village'],
+    ['사람', '인물', '사람들', 'people', 'person', 'portrait']
 ];
+
+const AMBIGUOUS_LOCATION_TOPIC_TOKENS = new Set([
+    'beach', 'city', 'forest', 'lake', 'mountain', 'park', 'road', 'village',
+    '공원', '골목', '길', '거리', '도로', '도시', '마을', '산', '산림', '산맥',
+    '숲', '역', '연못', '저수지', '정원', '항구', '해변', '해안', '호수'
+]);
 
 const SCENE_SEARCH_LABELS = {
     beach: '해변 beach',
@@ -40,12 +47,27 @@ const SCENE_SEARCH_LABELS = {
     village: '마을 village'
 };
 
+function normalizeSearchInput(value) {
+    return String(value ?? '').normalize('NFKC').trim().replace(/\s+/gu, ' ');
+}
+
 function normalizeText(value) {
-    return String(value ?? '').trim().toLocaleLowerCase('ko-KR');
+    return normalizeSearchInput(value).toLocaleLowerCase('ko-KR');
+}
+
+function getSearchQueryTokenParts(query) {
+    return Array.from(normalizeSearchInput(query).matchAll(/(#?)([^\s,/#]+)/gu), ([, marker, value]) => ({
+        value,
+        topicOverride: marker === '#'
+    }));
+}
+
+function getRawSearchTokens(query) {
+    return getSearchQueryTokenParts(query).map(({ value }) => value);
 }
 
 function getSearchTokens(query) {
-    return normalizeText(query).split(/[\s,/#]+/u).filter(Boolean);
+    return getRawSearchTokens(query).map(normalizeText);
 }
 
 function getExpandedSearchTerms(token) {
@@ -59,6 +81,16 @@ function appendSearchFields(fields, value, weight) {
         const text = normalizeText(item);
         if (text) fields.push({ text, weight });
     });
+}
+
+function hasHangul(value) {
+    return /[\uac00-\ud7a3]/u.test(value);
+}
+
+function matchesSearchText(text, term) {
+    if (text.includes(term)) return true;
+    return hasHangul(text) && hasHangul(term)
+        && text.replace(/\s+/gu, '').includes(term.replace(/\s+/gu, ''));
 }
 
 function getPhotoSearchFields(photo = {}) {
@@ -86,17 +118,47 @@ function getPhotoSearchScore(photo, query) {
         const expandedTerms = getExpandedSearchTerms(token);
         let tokenScore = 0;
         fields.forEach(({ text, weight }) => {
-            if (text.includes(token)) tokenScore = Math.max(tokenScore, weight * 3);
+            if (matchesSearchText(text, token)) tokenScore = Math.max(tokenScore, weight * 3);
             expandedTerms.forEach((term) => {
-                if (term !== token && text.includes(term)) tokenScore = Math.max(tokenScore, weight * 2);
+                if (term !== token && matchesSearchText(text, term)) tokenScore = Math.max(tokenScore, weight * 2);
             });
         });
         if (!tokenScore) return 0;
         score += tokenScore;
     }
 
-    if (fields.some(({ text }) => text.includes(normalizedQuery))) score += 20;
+    if (fields.some(({ text }) => matchesSearchText(text, normalizedQuery))) score += 20;
     return score;
+}
+
+function isSearchTopicToken(token) {
+    return !AMBIGUOUS_LOCATION_TOPIC_TOKENS.has(token)
+        && SEARCH_CONCEPT_GROUPS.some((terms) => terms.includes(token));
+}
+
+/**
+ * Splits only recognized trailing local topics (space, comma, slash, and hashtag delimiters)
+ * from a possible place query. Ambiguous place-type words stay with the location.
+ */
+export function getLandingSearchQueryParts(query = '') {
+    const queryTokenParts = getSearchQueryTokenParts(query);
+    const rawTokens = queryTokenParts.map(({ value }) => value);
+    const tokens = rawTokens.map(normalizeText);
+    if (isLandingConceptSearch(query)) {
+        return { locationQuery: '', textQuery: tokens.join(' ') };
+    }
+    let splitAt = tokens.length;
+    while (splitAt > 0 && (queryTokenParts[splitAt - 1].topicOverride || isSearchTopicToken(tokens[splitAt - 1]))) splitAt -= 1;
+    return {
+        locationQuery: rawTokens.slice(0, splitAt).join(' '),
+        textQuery: tokens.slice(splitAt).join(' ')
+    };
+}
+
+function isPublicLandingSearchPhoto(photo) {
+    if (!photo || typeof photo !== 'object') return false;
+    if (photo.visibility === 'public') return true;
+    return !Object.hasOwn(photo, 'visibility') && photo.shared === true;
 }
 
 export function isLandingAdmin(user) {
@@ -105,9 +167,7 @@ export function isLandingAdmin(user) {
 
 export function isLandingConceptSearch(query) {
     const tokens = getSearchTokens(query);
-    return tokens.length > 0 && tokens.every((token) => token === '사람'
-        || token === 'people'
-        || SEARCH_CONCEPT_GROUPS.some((terms) => terms.includes(token)));
+    return tokens.length > 0 && tokens.every((token) => SEARCH_CONCEPT_GROUPS.some((terms) => terms.includes(token)));
 }
 
 export function getDefaultLandingSections() {
@@ -139,7 +199,7 @@ export function normalizeLandingSections(sections = [], assignments = [], { incl
 
 export function getLandingSearchResults(photos = [], query = '') {
     const normalizedQuery = normalizeText(query);
-    const publicPhotos = photos.filter((photo) => photo?.shared || photo?.visibility === 'public');
+    const publicPhotos = photos.filter(isPublicLandingSearchPhoto);
     if (!normalizedQuery) return publicPhotos;
     return publicPhotos
         .map((photo, index) => ({ photo, index, score: getPhotoSearchScore(photo, normalizedQuery) }))

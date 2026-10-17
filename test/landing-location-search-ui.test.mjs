@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
+import * as landingSearch from '../js/landing-sections.mjs';
 
 import {
     getLandingLocationPhotos,
@@ -22,7 +23,7 @@ function getAppFunctionSource(name) {
 
 function loadAppFunctions(names, bindings = {}) {
     const source = names.map(getAppFunctionSource).join('\n\n');
-    const context = { console, ...bindings };
+    const context = { console, getLandingSearchQueryParts: landingSearch.getLandingSearchQueryParts, ...bindings };
     const exposed = runInNewContext(`${source}\n; ({ ${names.join(', ')} })`, context);
     return { ...exposed, context };
 }
@@ -253,7 +254,7 @@ test('blank and local-topic submits reset to text results without a geocoder req
 
     await submitLandingSearch({ preventDefault() {} });
     assert.equal(state.landingSearchQuery, '');
-    assert.deepEqual(state.landingSearch, { status: 'idle', location: null, page: 1, requestId: 5 });
+    assert.deepEqual(state.landingSearch, { status: 'idle', location: null, page: 1, requestId: 5, pendingLocation: null });
 
     dom.input.value = '바다';
     await submitLandingSearch({ preventDefault() {} });
@@ -503,4 +504,126 @@ test('search controls expose busy state and renderer caps cards while escaping l
     state.savedPhotos = [];
     renderLandingSearchResults(dom.sections);
     assert.match(dom.sections.innerHTML, /role="status"|role="alert"/);
+});
+
+test('combined search resolves only the region and filters its photos by the requested topic', async () => {
+    const dom = createDom('제주 바다');
+    const state = createLandingState({
+        savedPhotos: [
+            publicPhoto('jeju-beach', { title: '바다', lat: 33.4, lng: 126.5 }),
+            publicPhoto('jeju-forest', { title: '숲', lat: 33.4, lng: 126.5 }),
+            publicPhoto('busan-beach', { title: '바다', lat: 35.2, lng: 129.1 }),
+            publicPhoto('private-beach', { title: '바다', lat: 33.4, lng: 126.5, visibility: 'private', shared: true })
+        ]
+    });
+    const requests = [];
+    const parts = () => ({ locationQuery: '제주', textQuery: '바다' });
+    const { submitLandingSearch, getActiveLandingSearchPhotos } = loadAppFunctions(
+        ['syncLandingSearchQuery', 'submitLandingSearch', 'getActiveLandingSearchPhotos'],
+        {
+            state, $: dom.$, normalizeLandingLocationQuery,
+            getLandingSearchQueryParts: parts,
+            renderLandingSections() {},
+            isLandingConceptSearch: () => false,
+            loadGoogleMapsApi: async () => ({}),
+            resolveLandingLocation: async (query) => {
+                requests.push(query);
+                return { label: '제주특별자치도', bounds: { north: 34, south: 33, east: 127, west: 126 } };
+            },
+            isPublicLandingSearchPhoto, getLandingLocationPhotos,
+            getLandingSearchResults: localSearch
+        }
+    );
+
+    await submitLandingSearch({ preventDefault() {} });
+    assert.deepEqual(requests, ['제주']);
+    assert.deepEqual(getActiveLandingSearchPhotos().map((photo) => photo.id), ['jeju-beach']);
+    assert.equal(dom.sections.didScrollIntoView, undefined);
+});
+
+test('changing only the topic reuses the active region without another paid lookup', async () => {
+    const dom = createDom('서울 야경');
+    const location = { label: '서울특별시', bounds: { north: 38, south: 37, east: 128, west: 126 } };
+    const state = createLandingState({
+        landingSearchQuery: '서울',
+        landingSearch: { status: 'ready', location, page: 2, requestId: 5 }
+    });
+    let requests = 0;
+    const { submitLandingSearch } = loadAppFunctions(
+        ['syncLandingSearchQuery', 'submitLandingSearch'],
+        {
+            state, $: dom.$, normalizeLandingLocationQuery,
+            getLandingSearchQueryParts: (query) => ({ locationQuery: query.split(' ')[0], textQuery: query.includes(' ') ? '야경' : '' }),
+            renderLandingSections() {},
+            isLandingConceptSearch: () => false,
+            loadGoogleMapsApi: async () => ({}),
+            resolveLandingLocation: async () => { requests += 1; return location; }
+        }
+    );
+
+    await submitLandingSearch({ preventDefault() {} });
+    assert.equal(requests, 0);
+    assert.equal(state.landingSearch.location, location);
+    assert.equal(state.landingSearch.status, 'ready');
+    assert.equal(state.landingSearch.page, 1);
+    assert.equal(state.landingSearch.requestId, 6);
+    assert.equal(dom.sections.didScrollIntoView, undefined);
+});
+
+test('a changed region cannot reuse the old scope and a failed lookup retains full text matching', async () => {
+    const dom = createDom('제주 바다');
+    const state = createLandingState({
+        savedPhotos: [publicPhoto('text-match', { title: '제주 바다' })],
+        landingSearchQuery: '서울 야경',
+        landingSearch: { status: 'ready', location: { label: '서울', bounds: {} }, page: 1, requestId: 2 }
+    });
+    const requests = [];
+    const { submitLandingSearch, getActiveLandingSearchPhotos } = loadAppFunctions(
+        ['syncLandingSearchQuery', 'submitLandingSearch', 'getActiveLandingSearchPhotos'],
+        {
+            state, $: dom.$, normalizeLandingLocationQuery,
+            getLandingSearchQueryParts: (query) => ({ locationQuery: query.split(' ')[0], textQuery: query.split(' ')[1] || '' }),
+            renderLandingSections() {}, isLandingConceptSearch: () => false,
+            loadGoogleMapsApi: async () => ({}),
+            resolveLandingLocation: async (query) => { requests.push(query); return null; },
+            isPublicLandingSearchPhoto, getLandingLocationPhotos, getLandingSearchResults: localSearch
+        }
+    );
+
+    await submitLandingSearch({ preventDefault() {} });
+    assert.deepEqual(requests, ['제주']);
+    assert.equal(state.landingSearch.location, null);
+    assert.equal(state.landingSearch.status, 'not-found');
+    assert.deepEqual(getActiveLandingSearchPhotos().map((photo) => photo.id), ['text-match']);
+});
+
+test('topic changes while the same region is loading share one lookup and retain the latest topic', async () => {
+    const dom = createDom('제주 바다');
+    const state = createLandingState();
+    let finishLookup;
+    const requests = [];
+    const { submitLandingSearch } = loadAppFunctions(
+        ['syncLandingSearchQuery', 'submitLandingSearch'],
+        {
+            state, $: dom.$, normalizeLandingLocationQuery,
+            renderLandingSections() {},
+            loadGoogleMapsApi: async () => ({}),
+            resolveLandingLocation: (query) => {
+                requests.push(query);
+                return new Promise((resolve) => { finishLookup = resolve; });
+            }
+        }
+    );
+
+    const first = submitLandingSearch({ preventDefault() {} });
+    dom.input.value = '제주 야경';
+    const second = submitLandingSearch({ preventDefault() {} });
+    assert.deepEqual(requests, ['제주']);
+    const location = { label: '제주', bounds: { north: 34, south: 33, east: 127, west: 126 } };
+    finishLookup(location);
+    await Promise.all([first, second]);
+    assert.equal(state.landingSearchQuery, '제주 야경');
+    assert.equal(state.landingSearch.location, location);
+    assert.equal(state.landingSearch.status, 'ready');
+    assert.equal(state.landingSearch.pendingLocation, null);
 });

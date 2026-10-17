@@ -278,7 +278,7 @@ import {
     getLandingScrollControlState,
     getLandingVisiblePhotos,
     isLandingAdmin,
-    isLandingConceptSearch,
+    getLandingSearchQueryParts,
     normalizeLandingSections
 } from './landing-sections.mjs';
 import {
@@ -440,7 +440,7 @@ const state = {
     landingCurationLoadError: null,
     landingVisibleCounts: {},
     landingSearchQuery: '',
-    landingSearch: { status: 'idle', location: null, page: 1, requestId: 0 },
+    landingSearch: { status: 'idle', location: null, page: 1, requestId: 0, pendingLocation: null },
     selectedLandingSectionId: null,
     landingTagPage: 1,
     landingTagRegion: '',
@@ -1906,9 +1906,12 @@ function syncLandingSearchControls() {
 
 function getActiveLandingSearchPhotos() {
     const photos = state.savedPhotos.filter((photo) => photo.owner_id !== 'demo' && isPublicLandingSearchPhoto(photo));
-    return state.landingSearch.status === 'ready' && state.landingSearch.location
-        ? getLandingLocationPhotos(photos, state.landingSearch.location.bounds)
-        : getLandingSearchResults(photos, state.landingSearchQuery);
+    if (state.landingSearch.status === 'ready' && state.landingSearch.location) {
+        const locatedPhotos = getLandingLocationPhotos(photos, state.landingSearch.location.bounds);
+        const { textQuery } = getLandingSearchQueryParts(state.landingSearchQuery);
+        return textQuery ? getLandingSearchResults(locatedPhotos, textQuery) : locatedPhotos;
+    }
+    return getLandingSearchResults(photos, state.landingSearchQuery);
 }
 
 function renderLandingSearchResults(container) {
@@ -1926,7 +1929,8 @@ function renderLandingSearchResults(container) {
     const page = getLandingSearchPage(getActiveLandingSearchPhotos(), state.landingSearch.page);
     state.landingSearch.page = page.page;
     const location = state.landingSearch.status === 'ready' ? state.landingSearch.location : null;
-    const title = location?.label || `“${query}” 검색 결과`;
+    const { textQuery } = getLandingSearchQueryParts(query);
+    const title = location ? `${location.label}${textQuery ? ` · ${textQuery}` : ''}` : `“${query}” 검색 결과`;
     const fallback = state.landingSearch.status === 'error'
         ? '지역 검색을 불러오지 못했어요. 사진 글에서 찾은 결과를 보여드려요.'
         : state.landingSearch.status === 'not-found'
@@ -1945,7 +1949,7 @@ function renderLandingSearchResults(container) {
                 ${fallback ? `<p role="status">${escapeHtml(fallback)}</p>` : ''}
             </div>
             <div class="landing-search-results-grid">
-                ${page.items.length ? page.items.map(renderLandingPhotoCard).join('') : `<div class="landing-empty-state" role="status"><strong>${location ? '이 지역에 공개된 사진이 아직 없어요.' : '검색 결과가 없습니다.'}</strong><p>다른 지역이나 검색어로 찾아보세요.</p></div>`}
+                ${page.items.length ? page.items.map(renderLandingPhotoCard).join('') : `<div class="landing-empty-state" role="status"><strong>${location ? (textQuery ? '이 지역에서 해당 주제의 공개 사진을 찾지 못했어요.' : '이 지역에 공개된 사진이 아직 없어요.') : '검색 결과가 없습니다.'}</strong><p>다른 지역이나 검색어로 찾아보세요.</p></div>`}
             </div>
             ${page.pageCount > 1 ? `<nav class="landing-tag-pagination landing-search-pagination" aria-label="검색 결과 페이지">
                 <button type="button" data-landing-search-page="previous" aria-label="이전 검색 결과" ${page.hasPrevious ? '' : 'disabled'}><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></button>
@@ -1975,8 +1979,20 @@ async function submitLandingSearch(event) {
     event.preventDefault();
     const query = normalizeLandingLocationQuery($('#landing-search-input')?.value);
     if (query && query === state.landingSearchQuery && ['loading', 'ready'].includes(state.landingSearch.status)) return;
+    const { locationQuery } = getLandingSearchQueryParts(query);
+    const previousLocationQuery = getLandingSearchQueryParts(state.landingSearchQuery).locationQuery;
+    const previousLocation = state.landingSearch.status === 'ready'
+        && previousLocationQuery.toLocaleLowerCase('ko-KR') === locationQuery.toLocaleLowerCase('ko-KR')
+        ? state.landingSearch.location : null;
+    const pendingLocation = state.landingSearch.pendingLocation;
     syncLandingSearchQuery();
-    if (!query || isLandingConceptSearch(query)) {
+    if (!locationQuery) {
+        renderLandingSections();
+        return;
+    }
+    if (previousLocation) {
+        state.landingSearch.location = previousLocation;
+        state.landingSearch.status = 'ready';
         renderLandingSections();
         return;
     }
@@ -1984,7 +2000,11 @@ async function submitLandingSearch(event) {
     state.landingSearch.status = 'loading';
     renderLandingSections();
     try {
-        const location = await resolveLandingLocation(query, { loadMaps: loadGoogleMapsApi });
+        const promise = pendingLocation?.query.toLocaleLowerCase('ko-KR') === locationQuery.toLocaleLowerCase('ko-KR')
+            ? pendingLocation.promise
+            : resolveLandingLocation(locationQuery, { loadMaps: loadGoogleMapsApi });
+        state.landingSearch.pendingLocation = { query: locationQuery, promise };
+        const location = await promise;
         if (requestId !== state.landingSearch.requestId) return;
         state.landingSearch.location = location;
         state.landingSearch.status = location ? 'ready' : 'not-found';
@@ -2001,6 +2021,8 @@ async function submitLandingSearch(event) {
         console.warn('Landing location search failed', { code: diagnosticCode });
         state.landingSearch.location = null;
         state.landingSearch.status = 'error';
+    } finally {
+        if (requestId === state.landingSearch.requestId) state.landingSearch.pendingLocation = null;
     }
     renderLandingSections();
 }
@@ -2010,6 +2032,7 @@ function syncLandingSearchQuery() {
     Object.assign(state.landingSearch, {
         status: state.landingSearchQuery ? 'text' : 'idle',
         location: null,
+        pendingLocation: null,
         page: 1,
         requestId: state.landingSearch.requestId + 1
     });
