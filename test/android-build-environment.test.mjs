@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { join, resolve } from 'node:path';
+import { basename, isAbsolute, join, relative, resolve } from 'node:path';
 import { test } from 'node:test';
 
 import {
@@ -56,10 +56,10 @@ function fixture() {
         exists: path => files.has(path),
         readText: path => { reads.push(path); return files.get(path) ?? null; },
         runCommand: (command, args) => {
-            commands.push({ command, args });
-            if (command.endsWith('/javac')) return { status: 0, stdout: 'javac 21.0.8\n', stderr: '' };
-            if (command.endsWith('/java')) return { status: 0, stdout: '', stderr: 'openjdk version "21.0.8" 2025-07-15\n' };
-            if (command.endsWith('/adb')) return { status: 0,
+            commands.push({ command: command.replaceAll('\\', '/'), args });
+            if (basename(command) === 'javac') return { status: 0, stdout: 'javac 21.0.8\n', stderr: '' };
+            if (basename(command) === 'java') return { status: 0, stdout: '', stderr: 'openjdk version "21.0.8" 2025-07-15\n' };
+            if (basename(command) === 'adb') return { status: 0,
                 stdout: 'Android Debug Bridge version 1.0.41\nInstalled as /synthetic-private/sdk/platform-tools/adb\n', stderr: '' };
             throw new Error('unexpected command');
         }
@@ -102,9 +102,9 @@ test('a complete host and synchronized project pass without inspecting or instal
 test('Node, Java runtime and Java compiler failures are distinct from SDK readiness', () => {
     const fake = fixture();
     fake.options.nodeVersion = '20.0.0';
-    fake.options.runCommand = command => command.endsWith('/java')
+    fake.options.runCommand = command => basename(command) === 'java'
         ? { status: 0, stderr: 'openjdk version "17.0.9"' }
-        : command.endsWith('/javac') ? { status: 1, stderr: 'private error' }
+        : basename(command) === 'javac' ? { status: 1, stderr: 'private error' }
             : { status: 0, stdout: 'Android Debug Bridge version 1.0.41' };
     const report = checkAndroidBuildEnvironment(fake.options);
     assert.equal(report.ready, false);
@@ -121,7 +121,7 @@ test('missing SDK, incomplete build tools or failed adb version never report rea
     }
     const fake = fixture();
     const run = fake.options.runCommand;
-    fake.options.runCommand = (command, args) => command.endsWith('/adb')
+    fake.options.runCommand = (command, args) => basename(command) === 'adb'
         ? { status: 1, stderr: 'device-serial-private-detail' } : run(command, args);
     assert.equal(getCheck(checkAndroidBuildEnvironment(fake.options), 'adb').status, 'blocked');
 });
@@ -168,12 +168,15 @@ test('the repository-scoped toolchain is detected without printing its paths', (
     const localSdk = join(tools, 'android-sdk');
     fake.files.set(join(localJava, 'bin/java'), '');
     for (const [path, value] of [...fake.files]) {
-        if (path.startsWith(fake.sdk + '/')) fake.files.set(localSdk + path.slice(fake.sdk.length), value);
+        const sdkRelativePath = relative(fake.sdk, path);
+        if (sdkRelativePath && !isAbsolute(sdkRelativePath) && !sdkRelativePath.startsWith('..')) {
+            fake.files.set(join(localSdk, sdkRelativePath), value);
+        }
     }
     fake.options.env = {};
     const report = checkAndroidBuildEnvironment(fake.options);
     assert.equal(report.ready, true);
-    assert.equal(fake.commands[0].command, join(localJava, 'bin/java'));
+    assert.equal(fake.commands[0].command, join(localJava, 'bin/java').replaceAll('\\', '/'));
     assert.equal(JSON.stringify(report).includes(localJava), false);
     assert.equal(JSON.stringify(report).includes(localSdk), false);
 });
@@ -183,7 +186,7 @@ test('project-specific toolchain overrides work without inheriting unrelated SDK
     fake.options.env = { IKKYEE_JAVA_HOME: fake.jdk, IKKYEE_ANDROID_SDK: fake.sdk,
         JAVA_HOME: '/unrelated-private/jdk', ANDROID_HOME: '/unrelated-private/sdk' };
     assert.equal(checkAndroidBuildEnvironment(fake.options).ready, true);
-    assert.equal(fake.commands[0].command, join(fake.jdk, 'bin/java'));
+    assert.equal(fake.commands[0].command, join(fake.jdk, 'bin/java').replaceAll('\\', '/'));
 });
 
 test('project SDK, wrapper or build-tools drift cannot be hidden by an installed toolchain', () => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { join, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 import { test } from 'node:test';
 
@@ -86,13 +86,13 @@ function fixture() {
         readFile: path => {
             reads.push(path);
             if (path === apkPath) return apkBytes;
-            const relative = path.slice(bundleDirectory.length + 1);
-            if (!sources.has(relative)) throw new Error('private filesystem detail');
-            return sources.get(relative);
+            const archiveRelativePath = relative(bundleDirectory, path).replaceAll('\\', '/');
+            if (!sources.has(archiveRelativePath)) throw new Error('private filesystem detail');
+            return sources.get(archiveRelativePath);
         },
         runCommand: (command, args) => {
             commands.push({ command, args });
-            return { status: 0, stdout: command.endsWith('/aapt2') ? outputs.badging : outputs.signature };
+            return { status: 0, stdout: basename(command) === 'aapt2' ? outputs.badging : outputs.signature };
         },
         now: () => new Date('2026-10-14T00:00:00Z')
     };
@@ -166,7 +166,7 @@ test('failed signature command or incomplete success output cannot verify an APK
     }
     const fake = fixture();
     const run = fake.options.runCommand;
-    fake.options.runCommand = (command, args) => command.endsWith('/apksigner')
+    fake.options.runCommand = (command, args) => basename(command) === 'apksigner'
         ? { status: 1, stderr: 'private filesystem detail' } : run(command, args);
     assert.throws(() => verifyAndroidApk(fake.options), safeError);
 });
@@ -210,7 +210,7 @@ test('an APK changed during SDK verification cannot inherit mixed signature and 
     const run = fake.options.runCommand;
     fake.options.runCommand = (command, args) => {
         const result = run(command, args);
-        if (command.endsWith('/apksigner')) fake.setArchive([...fake.archiveEntries, { path: 'changed', value: 'different APK' }]);
+        if (basename(command) === 'apksigner') fake.setArchive([...fake.archiveEntries, { path: 'changed', value: 'different APK' }]);
         return result;
     };
     assert.throws(() => verifyAndroidApk(fake.options), safeError);

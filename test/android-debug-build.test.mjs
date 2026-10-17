@@ -1,18 +1,19 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { basename, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { buildAndroidDebug, getAndroidDebugBuildPlan } from '../scripts/build-android-debug.mjs';
 
 test('Android trial builds use project-scoped tools and caches without deployment or installation', () => {
-    const root = '/tmp/project with spaces';
+    const root = resolve('/tmp/project with spaces');
     const plan = getAndroidDebugBuildPlan({ root, environment: {} });
-    assert.equal(plan.cwd, `${root}/app-shell/android`);
-    assert.equal(plan.command, `${root}/app-shell/android/gradlew`);
-    assert.equal(plan.environment.JAVA_HOME, `${root}/app-shell/.toolchain/java/jdk-21.0.12.1+1/Contents/Home`);
-    assert.equal(plan.environment.ANDROID_HOME, `${root}/app-shell/.toolchain/android-sdk`);
-    assert.equal(plan.environment.GRADLE_USER_HOME, `${root}/app-shell/.toolchain/gradle`);
-    assert.equal(plan.environment.ANDROID_USER_HOME, `${root}/app-shell/.toolchain/android-user`);
+    assert.equal(plan.cwd, join(root, 'app-shell/android'));
+    assert.equal(plan.command, join(root, 'app-shell/android/gradlew'));
+    assert.equal(plan.environment.JAVA_HOME, join(root, 'app-shell/.toolchain/java/jdk-21.0.12.1+1/Contents/Home'));
+    assert.equal(plan.environment.ANDROID_HOME, join(root, 'app-shell/.toolchain/android-sdk'));
+    assert.equal(plan.environment.GRADLE_USER_HOME, join(root, 'app-shell/.toolchain/gradle'));
+    assert.equal(plan.environment.ANDROID_USER_HOME, join(root, 'app-shell/.toolchain/android-user'));
     assert.equal('HOME' in plan.environment, false);
     assert.ok(plan.args.includes('--no-daemon'));
     assert.ok(plan.args.includes('--max-workers=2'));
@@ -23,13 +24,14 @@ test('Android trial builds use project-scoped tools and caches without deploymen
 });
 
 function fakeBuild(failure) {
+    const root = resolve('/tmp/build-fixture');
     const calls = [];
     const copies = [];
     const writes = [];
     const options = {
-        root: '/tmp/build-fixture', environment: {},
+        root, environment: {},
         runCommand: (command, args) => {
-            const step = command === process.execPath ? 'preflight' : command.endsWith('/keytool') ? 'keytool' : 'gradle';
+            const step = command === process.execPath ? 'preflight' : basename(command) === 'keytool' ? 'keytool' : 'gradle';
             calls.push(step);
             return failure === step ? 7 : 0;
         },
@@ -37,9 +39,9 @@ function fakeBuild(failure) {
         readBytes: path => Buffer.from(path.endsWith('index.html') ? 'fixture bundle' : 'fixture apk'),
         verifyArtifact: input => {
             calls.push('verify');
-            assert.equal(input.apkPath, '/tmp/build-fixture/app-shell/android/app/build/outputs/apk/debug/app-debug.apk');
-            assert.equal(input.sdkPath, '/tmp/build-fixture/app-shell/.toolchain/android-sdk');
-            assert.equal(input.bundleDirectory, '/tmp/build-fixture/app-shell/www');
+            assert.equal(input.apkPath, join(root, 'app-shell/android/app/build/outputs/apk/debug/app-debug.apk'));
+            assert.equal(input.sdkPath, join(root, 'app-shell/.toolchain/android-sdk'));
+            assert.equal(input.bundleDirectory, join(root, 'app-shell/www'));
             if (failure === 'verify') throw new Error('APK verification failed');
             return {
                 verified: true, apkSignatureVerified: true, packagedBundleVerified: true,
@@ -119,13 +121,14 @@ test('an artifact changed during copying receives no verified metadata', () => {
 });
 
 test('custom toolchain paths are explicit and preserved, while artifacts never overwrite the source APK', () => {
-    const plan = getAndroidDebugBuildPlan({ root: '/tmp/project', environment: {
+    const root = resolve('/tmp/project');
+    const plan = getAndroidDebugBuildPlan({ root, environment: {
         IKKYEE_JAVA_HOME: '/tmp/jdk', IKKYEE_ANDROID_SDK: '/tmp/sdk', IKKYEE_GRADLE_HOME: '/tmp/gradle'
     } });
     assert.equal(plan.environment.JAVA_HOME, '/tmp/jdk');
     assert.equal(plan.environment.ANDROID_HOME, '/tmp/sdk');
     assert.equal(plan.environment.GRADLE_USER_HOME, '/tmp/gradle');
-    assert.equal(plan.artifact, '/tmp/project/app-shell/artifacts/android/ikkyee-android-debug.apk');
+    assert.equal(plan.artifact, join(root, 'app-shell/artifacts/android/ikkyee-android-debug.apk'));
     assert.notEqual(plan.sourceApk, plan.artifact);
 });
 
