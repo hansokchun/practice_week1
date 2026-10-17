@@ -1341,17 +1341,18 @@
                 <button id="btn-switch-login" class="auth-link-button" type="button" hidden>&#47196;&#44536;&#51064;&#51004;&#47196; &#46028;&#50500;&#44032;&#44592;</button>
             </div>
             <form id="auth-form" class="auth-form" hidden>
-                <label for="email-input">Email</label>
+                <label for="email-input">이메일</label>
                 <input id="email-input" type="email" autocomplete="email" required>
-                <label for="password-input">Password</label>
+                <label for="password-input">비밀번호</label>
                 <input id="password-input" type="password" autocomplete="current-password" minlength="6" required>
                 <div id="turnstile-container" class="turnstile-container" hidden></div>
                 <div class="auth-actions">
-                    <button id="btn-email-submit" class="btn-primary" type="submit">Login</button>
+                    <button id="btn-email-submit" class="btn-primary" type="submit">로그인</button>
                 </div>
                 <button id="btn-reset-password" class="auth-link-button" type="button">&#48708;&#48128;&#48264;&#54840; &#51116;&#49444;&#51221;</button>
             </form>
-            <p id="auth-message" class="auth-message"></p>
+            <button id="btn-auth-methods" class="auth-link-button" type="button" hidden>다른 로그인 방법</button>
+            <p id="auth-message" class="auth-message" role="status"></p>
             <button id="btn-native-auth-cancel" class="auth-link-button" type="button" hidden>진행 중 로그인 취소</button>
         </div>
     </div>
@@ -1412,7 +1413,7 @@
             <p id="album-download-privacy">저장 파일에는 사진과 위치가 포함됩니다. 파일을 전달하면 비공개 사진과 위치도 함께 전달됩니다.</p>
             <progress id="album-download-progress" max="1" value="0" aria-label="앨범 저장 진행률"></progress>
             <p id="album-download-status" role="status" aria-live="polite">사진을 확인하고 있습니다.</p>
-            <div class="album-download-actions"><a id="album-download-save" class="btn-primary" hidden download><span class="material-symbols-outlined" aria-hidden="true">download</span>파일 저장</a><button id="album-download-dismiss" class="btn-secondary" data-close-modal type="button">취소</button></div>
+            <div class="album-download-actions"><a id="album-download-save" class="btn-primary" hidden download><span class="material-symbols-outlined" aria-hidden="true">download</span>파일 저장</a><button id="album-download-native-save" class="btn-primary" type="button" hidden>파일 저장·공유</button><button id="album-download-dismiss" class="btn-secondary" data-close-modal type="button">취소</button></div>
         </section>
     </div>
 

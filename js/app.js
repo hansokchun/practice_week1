@@ -55,7 +55,7 @@ import {
     upsertPhoto
 } from '../auth.js';
 import { bindNativeAppRuntime, isNativeApp, getNativeApiOrigin } from './native-app-runtime.mjs';
-import { saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
+import { saveNativeAlbum, saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
 import { bindNativeExternalLinks } from './native-external-links.mjs';
 import { fetchApi } from './native-api-fetch.mjs';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
@@ -84,7 +84,6 @@ import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
 import { getExplorePreviewExpansionAction } from './explore-preview-expansion.mjs';
-import { shouldOpenExplorePreview } from './explore-selection.mjs';
 import {
     getLocationEditorCoordinateUpdate,
     hasCompleteLocation,
@@ -1067,6 +1066,17 @@ function resetAuthModal() {
     if (message) message.textContent = '';
 }
 
+function showAuthMethodChoices() {
+    const form = $('#auth-form');
+    if (form) form.hidden = true;
+    const choices = $('.social-login');
+    if (choices) choices.hidden = false;
+    const modeSwitch = $('.auth-mode-switch');
+    if (modeSwitch) modeSwitch.hidden = false;
+    const back = $('#btn-auth-methods');
+    if (back) back.hidden = true;
+}
+
 function setAuthMode(mode) {
     state.authMode = mode === 'signup' ? 'signup' : 'login';
     const isSignup = state.authMode === 'signup';
@@ -1097,17 +1107,27 @@ function setAuthMode(mode) {
             ? ' \uC774\uBA54\uC77C\uB85C \uD68C\uC6D0\uAC00\uC785'
             : ' \uC774\uBA54\uC77C\uB85C \uB85C\uADF8\uC778';
     }
-    if (emailSubmit) emailSubmit.textContent = isSignup ? '\uD68C\uC6D0\uAC00\uC785' : 'Login';
+    if (emailSubmit) emailSubmit.textContent = isSignup ? '\uD68C\uC6D0\uAC00\uC785' : '로그인';
     if (resetButton) resetButton.hidden = isSignup;
     if (form) form.hidden = true;
     if (emailInput) emailInput.autocomplete = isSignup ? 'email' : 'email';
     if (passwordInput) passwordInput.autocomplete = isSignup ? 'new-password' : 'current-password';
     if (message) message.textContent = '';
+    showAuthMethodChoices();
 }
 
 function showEmailAuthForm() {
     const form = $('#auth-form');
     if (form) form.hidden = false;
+    const choices = $('.social-login');
+    if (choices) choices.hidden = true;
+    const modeSwitch = $('.auth-mode-switch');
+    if (modeSwitch) modeSwitch.hidden = true;
+    const back = $('#btn-auth-methods');
+    if (back) {
+        back.hidden = false;
+        back.textContent = state.authMode === 'signup' ? '다른 가입 방법' : '다른 로그인 방법';
+    }
     $('#email-input')?.focus();
     void initTurnstile();
 }
@@ -1351,6 +1371,7 @@ function syncModalScrollLock() {
 }
 
 function closeModals() {
+    albumDownloadReady = null;
     if (albumDownloadJob) {
         albumDownloadJob.abort();
         albumDownloadJob = null;
@@ -2227,6 +2248,26 @@ function syncFeedbackMessageCount() {
     const textarea = $('#feedback-message');
     const count = $('#feedback-message-count');
     if (count) count.textContent = String(textarea?.value.length || 0);
+}
+
+function openPhotoReport(photoId) {
+    if (!photoId) return;
+    closeModals();
+    openProductFeedbackDialog();
+    if (!state.currentUser) {
+        showToast('로그인 후 사진의 신고 버튼을 다시 눌러주세요.');
+        return;
+    }
+    const category = $('#feedback-form [value="other"]');
+    if (category) category.checked = true;
+    const message = $('#feedback-message');
+    if (message) {
+        message.value = `사진 신고 (ID: ${photoId})\n신고 사유: `;
+        message.focus();
+    }
+    syncFeedbackMessageCount();
+    const status = $('#feedback-message-status');
+    if (status) status.textContent = '신고 사유를 작성하고 보내기를 눌러주세요. 아직 접수되지 않았습니다.';
 }
 
 async function handleProductFeedbackSubmit(event) {
@@ -3732,6 +3773,30 @@ async function downloadSelectedPhoto(eventOrPhotoId) {
 
 let albumDownloadJob = null;
 let albumDownloadUrl = null;
+let albumDownloadReady = null;
+
+async function savePreparedNativeAlbum() {
+    const ready = albumDownloadReady;
+    if (!ready || ready.saving || !ready.isActive()) return;
+    const button = $('#album-download-native-save');
+    const status = $('#album-download-status');
+    ready.saving = true;
+    button.disabled = true;
+    status.textContent = '앨범 저장창을 준비하고 있습니다.';
+    try {
+        const result = await saveNativeAlbum(ready.blob, ready.fileName, { isActive: ready.isActive });
+        if (!ready.isActive()) return;
+        status.textContent = result.error?.message || (!result.handled
+            ? '앱에서 다시 시도해주세요.'
+            : result.data?.status === 'cancelled' ? '저장을 취소했습니다. 다시 저장할 수 있습니다.'
+                : '공유창에서 선택한 앱을 확인해주세요. 저장 여부는 선택한 앱에서 확인할 수 있습니다.');
+    } catch {
+        if (ready.isActive()) status.textContent = '앨범 저장창을 열지 못했습니다. 다시 시도해주세요.';
+    } finally {
+        ready.saving = false;
+        if (albumDownloadReady === ready) button.disabled = false;
+    }
+}
 
 async function downloadSelectedAlbum(button) {
     if (albumDownloadJob) return;
@@ -3751,6 +3816,10 @@ async function downloadSelectedAlbum(button) {
     const status = $('#album-download-status');
     const progress = $('#album-download-progress');
     const saveLink = $('#album-download-save');
+    const nativeSave = $('#album-download-native-save');
+    albumDownloadReady = null;
+    nativeSave.hidden = true;
+    nativeSave.disabled = false;
     saveLink.hidden = true;
     saveLink.removeAttribute('href');
     $('#album-download-dismiss').textContent = '취소';
@@ -3818,13 +3887,25 @@ async function downloadSelectedAlbum(button) {
         });
         assertActive();
         const blob = new Blob([result.html], { type: 'text/html;charset=utf-8' });
-        albumDownloadUrl = URL.createObjectURL(blob);
-        saveLink.href = albumDownloadUrl;
-        saveLink.download = result.fileName;
-        saveLink.hidden = false;
+        if (document.documentElement.classList.contains('native-app')) {
+            const ready = { blob, fileName: result.fileName, saving: false, isActive: () => {
+                try {
+                    assertActive();
+                    return albumDownloadReady === ready && $('#album-download-modal').classList.contains('is-open');
+                } catch { return false; }
+            } };
+            albumDownloadReady = ready;
+            nativeSave.hidden = false;
+        } else {
+            if (albumDownloadUrl) URL.revokeObjectURL(albumDownloadUrl);
+            albumDownloadUrl = URL.createObjectURL(blob);
+            saveLink.href = albumDownloadUrl;
+            saveLink.download = result.fileName;
+            saveLink.hidden = false;
+        }
         $('#album-download-dismiss').textContent = '닫기';
         status.textContent = `사진 ${result.count}장과 위치 지도 준비 완료`;
-        saveLink.focus();
+        (nativeSave.hidden ? saveLink : nativeSave).focus();
     } catch (error) {
         if (!controller.signal.aborted && error?.name !== 'AbortError') {
             status.textContent = error?.message || '앨범을 다운로드하지 못했습니다.';
@@ -4831,11 +4912,6 @@ function getSelectedAuthorName(album = getSelectedPublicAlbum()) {
     });
 }
 
-function setSelectedPublicAlbum(albumId) {
-    state.selectedPublicAlbumId = albumId;
-    renderPublicSurfaces();
-}
-
 function routeToProfileFromAuthor(albumId, ownerId) {
     const ownerAlbum = albumId
         ? getPublicAlbums().find((album) => album.id === albumId)
@@ -5812,7 +5888,7 @@ function renderPublicSurfaces() {
                 </button>
             ` : ''}
             ${!state.albumDetailEditMode ? `
-                ${!document.documentElement.classList.contains('native-app') ? `<button id="btn-download-album" class="album-icon-button" type="button" aria-label="앨범 다운로드" data-tooltip="오프라인 앨범 다운로드"><span class="material-symbols-outlined" aria-hidden="true">download</span></button>` : ''}
+                <button id="btn-download-album" class="album-icon-button" type="button" aria-label="앨범 다운로드" data-tooltip="오프라인 앨범 다운로드"><span class="material-symbols-outlined" aria-hidden="true">download</span></button>
                 <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="앨범 공유" data-tooltip="앨범 공유">
                     <span class="material-symbols-outlined">ios_share</span>
                 </button>
@@ -5960,20 +6036,9 @@ function renderPublicSurfaces() {
             MAIN_BG_4_URL
         ), `${authorName} public profile cover`);
 
-    $$('[data-public-album-id]').forEach((item) => {
-        item.addEventListener('click', () => {
-            setSelectedPublicAlbum(item.dataset.publicAlbumId);
-            if (item.hasAttribute('data-go-trip')) routeToTrip(item.dataset.publicAlbumId);
-            if (shouldOpenExplorePreview({
-                isTripLink: item.hasAttribute('data-go-trip'),
-                isExploreListItem: item.classList.contains('explore-item')
-            })) {
-                setExplorePreviewExpanded(false);
-                document.body.classList.add('explore-pin-selected');
-                $('#explore-pin-preview')?.removeAttribute('hidden');
-            }
-        });
-    });
+    // Album navigation is delegated to [data-go-trip]. Metadata attributes also
+    // appear on author buttons; binding them here changes the photo before its
+    // author handler runs and accumulates listeners across background renders.
     $$('#public-trip-photo-grid [data-open-photo-detail], .profile-photo-grid [data-open-photo-detail], .profile-album-grid [data-open-photo-detail]').forEach((item) => {
         item.addEventListener('click', (event) => {
             if (!shouldOpenAlbumDetailPhotoClick(event.target, { isEditing: state.albumDetailEditMode })) return;
@@ -9267,7 +9332,7 @@ function bindEvents() {
         if (reportPhotoButton) {
             event.preventDefault();
             setPhotoDetailMoreMenuOpen(false);
-            showToast('신고가 접수되었습니다. 검토 후 조치하겠습니다.');
+            openPhotoReport(reportPhotoButton.dataset.photoId);
             return;
         }
 
@@ -9840,6 +9905,11 @@ function bindEvents() {
     $('#account-deletion-form')?.addEventListener('submit', handleAccountDeletionSubmit);
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
+    $('#btn-auth-methods')?.addEventListener('click', () => {
+        showAuthMethodChoices();
+        $('#btn-email-start')?.focus();
+    });
+    $('#album-download-native-save')?.addEventListener('click', savePreparedNativeAlbum);
     $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));
     $('#btn-switch-login')?.addEventListener('click', () => setAuthMode('login'));
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
