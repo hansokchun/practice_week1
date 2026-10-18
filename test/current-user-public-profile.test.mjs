@@ -18,6 +18,7 @@ test('current user profile is loaded once and reused across login providers', ()
 });
 
 test('app startup and email auth load the stored profile before account UI', () => {
-    assert.match(app, /state\.currentUser = await getCurrentUser\(\);\s+await ensureCurrentUserPublicProfile\(\);\s+updateAccountUI\(\);/);
+    const withoutDiagnostics = app.replace(/markNativeBoot\('(?:SESSION_READY|PROFILE_READY)'\);/g, '');
+    assert.match(withoutDiagnostics, /state\.currentUser = await getCurrentUser\(\);\s+await ensureCurrentUserPublicProfile\(\);\s+updateAccountUI\(\);/);
     assert.match(app, /state\.currentUser = user;\s+await ensureCurrentUserPublicProfile\(\);\s+updateAccountUI\(\);/);
 });

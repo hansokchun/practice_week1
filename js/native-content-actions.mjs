@@ -60,7 +60,8 @@ function getPublicShareUrl(value) {
 
 async function loadDefaultShare() {
     const { Share } = await import('@capacitor/share');
-    return Share;
+    // A plain method adapter avoids Promise assimilation of Share.then().
+    return { share: options => Share.share(options) };
 }
 
 async function loadDefaultFilesystem() {

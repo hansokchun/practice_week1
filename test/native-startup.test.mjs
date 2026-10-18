@@ -107,3 +107,28 @@ test('startup asset respects reduced motion and exposes recovery when boot never
     observer();
     assert.equal(overlay.hidden, true);
 });
+
+test('startup disappears when navigation is ready, including before its observer attaches', () => {
+    const script = readFileSync('app-shell/runtime/native-startup.js', 'utf8');
+    for (const readyInitially of [true, false]) {
+        const overlay = { hidden: false, dataset: {} };
+        const body = { dataset: { nativeUiReady: readyInitially ? 'true' : 'false' },
+            classList: { contains: () => true } };
+        let observe, cleared = 0;
+        vm.runInNewContext(script, {
+            document: { body, getElementById: id => id === 'native-startup' ? overlay : {} },
+            window: { addEventListener() {}, location: {} },
+            MutationObserver: class { constructor(fn) { observe = fn; } observe() {} disconnect() {} },
+            setTimeout: () => 1, clearTimeout: () => cleared++
+        });
+        assert.equal(overlay.hidden, readyInitially);
+        if (!readyInitially) { body.dataset.nativeUiReady = 'true'; observe(); }
+        assert.equal(overlay.hidden, true);
+        assert.equal(cleared, 1);
+    }
+    const app = readFileSync('js/app.js', 'utf8');
+    const bootstrap = app.slice(app.indexOf('onDocumentReady(document,'));
+    const ready = bootstrap.indexOf("document.body.dataset.nativeUiReady = 'true'");
+    assert.ok(ready > bootstrap.indexOf('state.currentUser = await getCurrentUser()'));
+    assert.ok(ready < bootstrap.indexOf('await Promise.all([loadSavedLibrary()'));
+});

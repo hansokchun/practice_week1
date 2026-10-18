@@ -7,7 +7,8 @@ const OPEN_ERROR = '외부 페이지를 열지 못했어요. 다시 시도해 �
 
 async function loadDefaultBrowser() {
     const { Browser } = await import('@capacitor/browser');
-    return Browser;
+    // Do not return the raw proxy: its synthetic .then prevents resolution.
+    return { open: options => Browser.open(options) };
 }
 
 function validMapCoordinates(value) {

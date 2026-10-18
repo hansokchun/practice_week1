@@ -44,14 +44,15 @@ async function clearPending(adapter) {
 }
 
 async function getBrowser(adapter) {
-    if (adapter.browser) return adapter.browser;
+    if (adapter.browser) return { browser: adapter.browser };
     const { Browser } = await import('@capacitor/browser');
-    return Browser;
+    // Keep the plugin proxy inside a plain object across Promise boundaries.
+    return { browser: Browser };
 }
 
 async function closeBrowser(adapter) {
     try {
-        const browser = await getBrowser(adapter);
+        const { browser } = await getBrowser(adapter);
         await browser.close?.();
     } catch {
         // Closing is unavailable on some native browser implementations.
@@ -107,7 +108,7 @@ export async function authorizeNativeOAuth(auth, provider, adapter = {}) {
         });
         if (error) throw authError(error.code === 'NATIVE_AUTH_STORAGE_UNAVAILABLE' ? error.code : 'NATIVE_AUTH_START');
         const url = requireAuthorizationUrl(data?.url, adapter.supabaseUrl, provider);
-        const browser = await getBrowser(adapter);
+        const { browser } = await getBrowser(adapter);
         if (adapter.getPending && !(await adapter.getPending())) {
             return { data: { provider, status: 'cancelled' }, error: null };
         }
@@ -228,7 +229,7 @@ export async function registerNativeAuthCallbacks(auth, adapter = {}) {
     };
     try {
         const app = adapter.app || (await import('@capacitor/app')).App;
-        const browser = await getBrowser(adapter);
+        const { browser } = await getBrowser(adapter);
         handles.push(await app.addListener('appUrlOpen', handleUrl));
         if (browser.addListener) {
             handles.push(await browser.addListener('browserFinished', async () => {

@@ -57,6 +57,7 @@ import {
 import { bindNativeAppRuntime, isNativeApp, getNativeApiOrigin } from './native-app-runtime.mjs';
 import { normalizeNativeRoute } from './native-startup-route.mjs';
 import { onDocumentReady } from './document-ready.mjs';
+import { markNativeBoot } from './native-boot-diagnostics.mjs';
 import { saveNativeAlbum, saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
 import { bindNativeExternalLinks } from './native-external-links.mjs';
 import { fetchApi } from './native-api-fetch.mjs';
@@ -10008,7 +10009,9 @@ function closeNativeTopModal() {
     return true;
 }
 
+markNativeBoot('MODULE_READY');
 onDocumentReady(document, async () => {
+    markNativeBoot('BOOT_START');
     initializePhotoImageReveal();
     let nativeLoginReady = false;
     let initialNativeLogin = null;
@@ -10016,6 +10019,7 @@ onDocumentReady(document, async () => {
         // Bind local controls before any plugin/network wait, including login.
         ensureProfileHeaderShell();
         bindEvents();
+        markNativeBoot('EVENTS_READY');
         await bindNativeAppRuntime({
             closeTopModal: closeNativeTopModal,
             requestExit: () => window.confirm('이끼 앱을 종료할까요?'),
@@ -10024,6 +10028,7 @@ onDocumentReady(document, async () => {
         bindNativeExternalLinks({
             onError: () => showToast('외부 페이지를 열지 못했어요. 잠시 후 다시 시도해 주세요.')
         });
+        markNativeBoot('RUNTIME_READY');
         if (isNativeApp()) {
             try {
                 await initializeNativeAuth({
@@ -10043,6 +10048,7 @@ onDocumentReady(document, async () => {
                 showToast('앱 로그인 연결을 준비하지 못했어요. 앱을 다시 열어주세요.');
             }
         }
+        markNativeBoot('AUTH_READY');
         const restoredAuthContext = restorePendingAuthContext(window.localStorage, state);
         if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
         if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
@@ -10053,12 +10059,18 @@ onDocumentReady(document, async () => {
             applyRouteHash(window.location.hash);
         }
         state.currentUser = await getCurrentUser();
+        markNativeBoot('SESSION_READY');
         await ensureCurrentUserPublicProfile();
+        markNativeBoot('PROFILE_READY');
         updateAccountUI();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
+        // Session-aware routing is ready; image/network work must not hold the
+        // native startup overlay over otherwise usable navigation controls.
+        if (isNativeApp()) document.body.dataset.nativeUiReady = 'true';
         await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
         await loadPublicProfileNames();
+        markNativeBoot('DATA_READY');
         showPendingKakaoProfileImport();
         renderStagedPhotos();
         renderSavedPhotoSurfaces();
@@ -10075,8 +10087,10 @@ onDocumentReady(document, async () => {
         nativeLoginReady = true;
         if (initialNativeLogin) await finishNativeLogin(initialNativeLogin);
     } catch {
+        markNativeBoot('BOOT_ERROR');
         showToast('앱 준비를 마치지 못했어요. 인터넷 연결을 확인한 뒤 앱을 다시 열어주세요. [APP-START]');
     } finally {
         setAppBooting(false);
+        markNativeBoot('BOOT_COMPLETE');
     }
 });
