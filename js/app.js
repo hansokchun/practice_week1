@@ -114,6 +114,7 @@ import {
     withGoogleMapsMapId
 } from './google-maps-runtime-config.mjs';
 import { createGoogleMapsMarker } from './google-maps-marker.mjs';
+import { createGoogleMapsLoader } from './google-maps-loader.mjs';
 import { mountGoogleMapsPlaceAutocomplete } from './google-maps-place-autocomplete.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import {
@@ -379,7 +380,6 @@ const state = {
     exploreMarkerPhotos: [],
     exploreSelectedAlbumId: null,
     exploreAutocomplete: null,
-    exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
     exploreRenderedZoom: null,
@@ -2864,7 +2864,7 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
 }
 
 async function getGoogleMapsRuntimeConfig() {
-    if (state.googleMapsApiKey !== null && state.googleMapsMapId !== null) {
+    if (state.googleMapsApiKey && state.googleMapsMapId !== null) {
         return { apiKey: state.googleMapsApiKey, mapId: state.googleMapsMapId };
     }
     if (state.googleMapsConfigPromise) return state.googleMapsConfigPromise;
@@ -2899,31 +2899,21 @@ async function getGoogleMapsRuntimeConfig() {
     return state.googleMapsConfigPromise;
 }
 
+const loadGoogleMapsSdk = createGoogleMapsLoader({
+    loadConfig: getGoogleMapsRuntimeConfig,
+    onStatus: code => {
+        markNativeBoot(code);
+        if (code === 'MAP_AUTH_ERROR') {
+            showToast('지도 사용 설정을 확인해야 합니다. 사진 목록은 계속 이용할 수 있어요. [MAP-AUTH]');
+        }
+    }
+});
+
 function loadGoogleMapsApi() {
-    if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
-    if (state.exploreMapLoadPromise) return state.exploreMapLoadPromise;
-
-    state.exploreMapLoadPromise = getGoogleMapsRuntimeConfig().then(({ apiKey }) => {
-        if (!apiKey) return null;
-
-        return new Promise((resolve, reject) => {
-            const callbackName = `initIkkyeeGoogleMap${Date.now()}`;
-            window[callbackName] = () => {
-                resolve(window.google.maps);
-                delete window[callbackName];
-            };
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places,marker&loading=async&callback=${callbackName}`;
-            script.async = true;
-            script.defer = true;
-            script.onerror = () => reject(new Error('Google Maps API failed to load'));
-            document.head.appendChild(script);
-        });
-    }).catch((error) => {
-        showToast('Google 지도 로드에 실패했습니다.');
+    return loadGoogleMapsSdk().catch(error => {
+        if (error.code !== 'MAP_AUTH_ERROR') showToast('지도를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해주세요.');
         return null;
     });
-    return state.exploreMapLoadPromise;
 }
 
 async function ensureExploreMap() {
