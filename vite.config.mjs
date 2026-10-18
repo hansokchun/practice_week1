@@ -3,12 +3,13 @@ import { fileURLToPath } from 'node:url';
 import { compactPiexifPlugin } from './scripts/compact-piexif.mjs';
 import { createNativeContentSecurityPlugin } from './scripts/native-content-security.mjs';
 import { createNativeBrandDownloadsPlugin } from './scripts/native-brand-downloads.mjs';
+import { createNativeStartupPlugin } from './scripts/native-startup.mjs';
 
 export default defineConfig(({ mode }) => {
     const native = mode === 'native';
     return {
         base: native ? './' : '/',
-        plugins: [compactPiexifPlugin(), ...(native ? [createNativeContentSecurityPlugin(), createNativeBrandDownloadsPlugin()] : [])],
+        plugins: [compactPiexifPlugin(), ...(native ? [createNativeContentSecurityPlugin(), createNativeBrandDownloadsPlugin(), createNativeStartupPlugin()] : [])],
         resolve: {
             alias: native ? [] : ['native-app-runtime', 'native-auth-bridge', 'native-auth-storage',
                 'native-api-fetch', 'native-content-actions', 'native-external-links'].map(name => ({

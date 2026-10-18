@@ -55,6 +55,8 @@ import {
     upsertPhoto
 } from '../auth.js';
 import { bindNativeAppRuntime, isNativeApp, getNativeApiOrigin } from './native-app-runtime.mjs';
+import { normalizeNativeRoute } from './native-startup-route.mjs';
+import { onDocumentReady } from './document-ready.mjs';
 import { saveNativeAlbum, saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
 import { bindNativeExternalLinks } from './native-external-links.mjs';
 import { fetchApi } from './native-api-fetch.mjs';
@@ -1133,12 +1135,12 @@ function showEmailAuthForm() {
 }
 
 function parseRouteHash(hash) {
-    if (!hash) return LANDING_ROUTE;
+    if (!hash) return normalizeNativeRoute(LANDING_ROUTE, isNativeApp());
     if (!hash.startsWith('#/')) return APP_SECTIONS.HOME;
     const path = hash.slice(2).split('?')[0].replace(/^\/+|\/+$/g, '');
     if (!path) return APP_SECTIONS.HOME;
     if (path === APP_SECTIONS.MYPHOTO) return APP_SECTIONS.HOME;
-    if (ROUTES.has(path)) return path;
+    if (ROUTES.has(path)) return normalizeNativeRoute(path, isNativeApp());
     return parseSectionHash(hash) || APP_SECTIONS.HOME;
 }
 
@@ -1148,6 +1150,7 @@ function getRenderedRoute(route) {
 }
 
 function routeTo(section, { replace = false } = {}) {
+    section = normalizeNativeRoute(section, isNativeApp());
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const renderedRoute = getRenderedRoute(normalized);
     if (normalized.startsWith('admin-') && !isLandingAdmin(state.currentUser)) {
@@ -1204,6 +1207,7 @@ function clearUploadQueue() {
 }
 
 function renderRoute(section) {
+    section = normalizeNativeRoute(section, isNativeApp());
     const routeRenderStartedAt = window.performance.now();
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     if (normalized.startsWith('admin-') && !isLandingAdmin(state.currentUser)) {
@@ -1299,6 +1303,10 @@ async function refreshExploreMapAfterRouteEntry() {
 }
 
 function applyRouteHash(hash, options = {}) {
+    if (isNativeApp() && (!hash || /^#\/landing\/?(?:\?|$)/.test(hash))) {
+        hash = '#/';
+        options = { ...options, replace: true };
+    }
     const sharedRoute = getSharedRouteState(hash);
     if (sharedRoute.albumId) state.selectedPublicAlbumId = sharedRoute.albumId;
     if (sharedRoute.ownerId) {
@@ -9855,6 +9863,13 @@ function bindEvents() {
     $('#btn-open-auth')?.addEventListener('click', () => {
         openModal('#auth-modal');
     });
+    $('#btn-native-guest')?.addEventListener('click', () => {
+        state.pendingAuthRoute = null;
+        state.pendingAuthAction = null;
+        state.pendingAuthReturnRoute = null;
+        dismissModal($('#auth-modal'));
+        routeTo(APP_SECTIONS.HOME, { replace: true });
+    });
     $('#account-profile-edit')?.addEventListener('click', () => setAccountProfileEditMode(true));
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
@@ -9993,11 +10008,14 @@ function closeNativeTopModal() {
     return true;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+onDocumentReady(document, async () => {
     initializePhotoImageReveal();
     let nativeLoginReady = false;
     let initialNativeLogin = null;
     try {
+        // Bind local controls before any plugin/network wait, including login.
+        ensureProfileHeaderShell();
+        bindEvents();
         await bindNativeAppRuntime({
             closeTopModal: closeNativeTopModal,
             requestExit: () => window.confirm('이끼 앱을 종료할까요?'),
@@ -10037,8 +10055,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         state.currentUser = await getCurrentUser();
         await ensureCurrentUserPublicProfile();
         updateAccountUI();
-        ensureProfileHeaderShell();
-        bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
         await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
@@ -10058,6 +10074,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         nativeLoginReady = true;
         if (initialNativeLogin) await finishNativeLogin(initialNativeLogin);
+    } catch {
+        showToast('앱 준비를 마치지 못했어요. 인터넷 연결을 확인한 뒤 앱을 다시 열어주세요. [APP-START]');
     } finally {
         setAppBooting(false);
     }

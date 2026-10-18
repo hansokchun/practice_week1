@@ -58,6 +58,19 @@ test('native Kakao OAuth retains the mobile login prompt', async () => {
     assert.deepEqual(credentials.options.queryParams, { prompt: 'login' });
 });
 
+test('native login distinguishes encrypted-storage failures from browser launch failures without leaking details', async () => {
+    const storageFailure = new Error('secret storage detail');
+    storageFailure.code = 'NATIVE_AUTH_STORAGE_UNAVAILABLE';
+    const result = await authorizeNativeOAuth({ signInWithOAuth: async () => { throw storageFailure; } }, 'google', createAdapter());
+    assert.equal(result.error.code, 'NATIVE_AUTH_STORAGE_UNAVAILABLE');
+    assert.doesNotMatch(result.error.message, /secret/);
+    const adapter = createAdapter({ browser: { open: async () => { throw new Error('private URL'); } } });
+    const browserResult = await authorizeNativeOAuth({ signInWithOAuth: async () => ({ data: { url: authorizationUrl() } }) }, 'google', adapter);
+    assert.equal(browserResult.error.code, 'NATIVE_AUTH_BROWSER');
+    assert.equal(await adapter.getPending(), null);
+    assert.doesNotMatch(browserResult.error.message, /private URL/);
+});
+
 test('native OAuth denies unsupported providers before making an auth request', async () => {
     let called = false;
     const result = await authorizeNativeOAuth({ signInWithOAuth: async () => { called = true; } }, 'unknown', createAdapter());

@@ -50,7 +50,7 @@ test('home stays visually gated until auth and saved library boot are finished',
     assert.match(markup, /<body[^>]*class="is-logged-out is-app-booting"/);
     assert.match(styles, /body\.is-app-booting\s+\.home-workspace,[\s\S]*body\.is-app-booting\s+\.white-band\s*\{[^}]*display:\s*none;/s);
     assert.match(app, /function setAppBooting\(isBooting\)\s*\{[\s\S]*document\.body\.classList\.toggle\('is-app-booting', Boolean\(isBooting\)\);[\s\S]*\}/);
-    assert.match(app, /document\.addEventListener\('DOMContentLoaded', async \(\) => \{[\s\S]*try \{[\s\S]*await Promise\.all\(\[loadSavedLibrary\(\), loadLandingCuration\(\)\]\);[\s\S]*\} finally \{[\s\S]*setAppBooting\(false\);[\s\S]*\}/);
+    assert.match(app, /onDocumentReady\(document, async \(\) => \{[\s\S]*try \{[\s\S]*await Promise\.all\(\[loadSavedLibrary\(\), loadLandingCuration\(\)\]\);[\s\S]*\} finally \{[\s\S]*setAppBooting\(false\);[\s\S]*\}/);
 });
 
 test('home no longer renders temporary preview bands or removed intro candidates', () => {

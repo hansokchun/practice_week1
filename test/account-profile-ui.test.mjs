@@ -197,7 +197,7 @@ test('header profile trigger opens the account menu and profile menu item routes
     assert.match(app, /\$\('#account-profile-form'\)\?\.addEventListener\('submit', saveAccountProfile\)/);
     assert.match(app, /\$\('#profile-avatar-input'\)\?\.addEventListener\('change', handleAccountProfileAvatarChange\)/);
     assert.match(app, /\$\('#profile-cover-input'\)\?\.addEventListener\('change', handleAccountProfileCoverChange\)/);
-    const readyHandler = app.slice(app.indexOf("document.addEventListener('DOMContentLoaded'"));
+    const readyHandler = app.slice(app.indexOf('onDocumentReady(document,'));
     assert.ok(
         readyHandler.indexOf('ensureProfileHeaderShell();') < readyHandler.indexOf('bindEvents();'),
         'dynamic profile controls must exist before their event listeners are bound'

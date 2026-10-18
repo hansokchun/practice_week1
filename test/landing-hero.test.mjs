@@ -22,7 +22,7 @@ test('the first route renders a dedicated full-screen landing before the existin
     assert.match(html, /id="page-home" class="page page-home"/);
     assert.doesNotMatch(html, /class="site-primary-nav"/);
     assert.match(html, /data-landing-enter[^>]*data-route="home"/);
-    assert.match(app, /if \(!hash\) return LANDING_ROUTE;/);
+    assert.match(app, /if \(!hash\) return normalizeNativeRoute\(LANDING_ROUTE, isNativeApp\(\)\);/);
     assert.match(app, /const hash = normalized === LANDING_ROUTE \? '#\/landing' : normalized === APP_SECTIONS\.HOME \? '#\/'/);
 });
 

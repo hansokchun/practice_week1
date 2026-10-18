@@ -86,7 +86,7 @@ export async function bindNativeAppRuntime({
     navigateBack,
     navigateRoot,
     requestExit,
-    rootHash = '#/landing',
+    rootHash = '#/',
     rootHashes = ['', '#/', '#/landing'],
     onError
 } = {}) {
