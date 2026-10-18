@@ -58,6 +58,7 @@ import { bindNativeAppRuntime, isNativeApp, getNativeApiOrigin } from './native-
 import { normalizeNativeRoute } from './native-startup-route.mjs';
 import { onDocumentReady } from './document-ready.mjs';
 import { markNativeBoot } from './native-boot-diagnostics.mjs';
+import { installNativeMapConsoleDiagnostics } from './native-map-console-diagnostics.mjs';
 import { saveNativeAlbum, saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
 import { bindNativeExternalLinks } from './native-external-links.mjs';
 import { fetchApi } from './native-api-fetch.mjs';
@@ -9999,6 +10000,7 @@ function closeNativeTopModal() {
     return true;
 }
 
+installNativeMapConsoleDiagnostics();
 markNativeBoot('MODULE_READY');
 onDocumentReady(document, async () => {
     markNativeBoot('BOOT_START');
