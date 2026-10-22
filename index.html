@@ -40,6 +40,7 @@
     <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
     <link rel="dns-prefetch" href="https://maps.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+    <link data-landing-only href="https://fonts.googleapis.com/css2?family=Gowun+Batang&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="icon" href="images/logo.png" type="image/png">
@@ -95,11 +96,17 @@
             <div class="landing-hero-slides" aria-hidden="true" aria-busy="true"></div>
             <div class="landing-hero-scrim" aria-hidden="true"></div>
             <div class="landing-hero-content">
-                <h1 id="landing-hero-title">여긴 어디지?</h1>
-                <p>이끼에서 당신만의 장소를 찾아보거나 공유하세요</p>
+                <svg class="landing-hero-sketch" viewBox="0 0 112 76" fill="none" aria-hidden="true" focusable="false">
+                    <path class="landing-hero-sketch-trail" d="M8 67c9-12 26-15 39-12 7 2 11 6 5 9-6 3-13 0-9-4l14-13" />
+                    <path d="M58 54c-3-8-17-21-15-33C45 7 62 3 73 10c14 9 7 25-2 34l-13 10Z" />
+                    <path d="M57 35c-8-12-3-20 12-20 1 11-2 18-12 20Zm0 5c0-8 4-15 10-21" />
+                </svg>
+                <h1 id="landing-hero-title"><span>이 사진은</span> <span>어디서 찍은 거지?</span></h1>
                 <button class="landing-hero-enter" type="button" data-landing-enter data-route="home">
                     <span>사진 둘러보기</span>
-                    <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                    <svg class="landing-hero-enter-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 13c6-1 11-1 17-1m-6-6 6 6-6 6" />
+                    </svg>
                 </button>
             </div>
             <div class="landing-hero-footer">
@@ -1358,17 +1365,18 @@
                 <button id="btn-switch-login" class="auth-link-button" type="button" hidden>&#47196;&#44536;&#51064;&#51004;&#47196; &#46028;&#50500;&#44032;&#44592;</button>
             </div>
             <form id="auth-form" class="auth-form" hidden>
-                <label for="email-input">Email</label>
+                <label for="email-input">이메일</label>
                 <input id="email-input" type="email" autocomplete="email" required>
-                <label for="password-input">Password</label>
+                <label for="password-input">비밀번호</label>
                 <input id="password-input" type="password" autocomplete="current-password" minlength="6" required>
                 <div id="turnstile-container" class="turnstile-container" hidden></div>
                 <div class="auth-actions">
-                    <button id="btn-email-submit" class="btn-primary" type="submit">Login</button>
+                    <button id="btn-email-submit" class="btn-primary" type="submit">로그인</button>
                 </div>
                 <button id="btn-reset-password" class="auth-link-button" type="button">&#48708;&#48128;&#48264;&#54840; &#51116;&#49444;&#51221;</button>
             </form>
-            <p id="auth-message" class="auth-message"></p>
+            <button id="btn-auth-methods" class="auth-link-button" type="button" hidden>다른 로그인 방법</button>
+            <p id="auth-message" class="auth-message" role="status"></p>
             <button id="btn-native-auth-cancel" class="auth-link-button" type="button" hidden>진행 중 로그인 취소</button>
         </div>
     </div>
@@ -1429,7 +1437,7 @@
             <p id="album-download-privacy">저장 파일에는 사진과 위치가 포함됩니다. 파일을 전달하면 비공개 사진과 위치도 함께 전달됩니다.</p>
             <progress id="album-download-progress" max="1" value="0" aria-label="앨범 저장 진행률"></progress>
             <p id="album-download-status" role="status" aria-live="polite">사진을 확인하고 있습니다.</p>
-            <div class="album-download-actions"><a id="album-download-save" class="btn-primary" hidden download><span class="material-symbols-outlined" aria-hidden="true">download</span>파일 저장</a><button id="album-download-dismiss" class="btn-secondary" data-close-modal type="button">취소</button></div>
+            <div class="album-download-actions"><a id="album-download-save" class="btn-primary" hidden download><span class="material-symbols-outlined" aria-hidden="true">download</span>파일 저장</a><button id="album-download-native-save" class="btn-primary" type="button" hidden>파일 저장·공유</button><button id="album-download-dismiss" class="btn-secondary" data-close-modal type="button">취소</button></div>
         </section>
     </div>
 

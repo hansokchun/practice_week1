@@ -12,3 +12,4 @@ export const registerNativeAuthCallbacks = async () => async () => {};
 const unhandled = () => ({ handled: false, data: null, error: null });
 export const shareNativeContent = async () => unhandled();
 export const saveNativePhoto = async () => unhandled();
+export const saveNativeAlbum = async () => unhandled();

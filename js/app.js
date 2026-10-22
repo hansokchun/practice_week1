@@ -55,7 +55,11 @@ import {
     upsertPhoto
 } from '../auth.js';
 import { bindNativeAppRuntime, isNativeApp, getNativeApiOrigin } from './native-app-runtime.mjs';
-import { saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
+import { normalizeNativeRoute } from './native-startup-route.mjs';
+import { onDocumentReady } from './document-ready.mjs';
+import { markNativeBoot } from './native-boot-diagnostics.mjs';
+import { installNativeMapConsoleDiagnostics } from './native-map-console-diagnostics.mjs';
+import { saveNativeAlbum, saveNativePhoto, shareNativeContent } from './native-content-actions.mjs';
 import { bindNativeExternalLinks } from './native-external-links.mjs';
 import { fetchApi } from './native-api-fetch.mjs';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
@@ -84,7 +88,6 @@ import { isVerifiedAccount } from './account-verification.mjs';
 import { APP_SECTIONS, normalizeAppSection, parseSectionHash } from './app-sections.mjs';
 import { getDroppedFiles, getUploadDropzoneClass } from './drag-drop-files.mjs';
 import { getExplorePreviewExpansionAction } from './explore-preview-expansion.mjs';
-import { shouldOpenExplorePreview } from './explore-selection.mjs';
 import {
     getLocationEditorCoordinateUpdate,
     hasCompleteLocation,
@@ -112,6 +115,7 @@ import {
     withGoogleMapsMapId
 } from './google-maps-runtime-config.mjs';
 import { createGoogleMapsMarker } from './google-maps-marker.mjs';
+import { createGoogleMapsLoader } from './google-maps-loader.mjs';
 import { mountGoogleMapsPlaceAutocomplete } from './google-maps-place-autocomplete.mjs';
 import { hasUsableCoordinates, hasUsablePhotoLocation } from './photo-location.mjs';
 import {
@@ -384,7 +388,6 @@ const state = {
     exploreMarkerPhotos: [],
     exploreSelectedAlbumId: null,
     exploreAutocomplete: null,
-    exploreMapLoadPromise: null,
     exploreLastBoundsKey: null,
     exploreMarkerRenderToken: 0,
     exploreRenderedZoom: null,
@@ -1074,6 +1077,17 @@ function resetAuthModal() {
     if (message) message.textContent = '';
 }
 
+function showAuthMethodChoices() {
+    const form = $('#auth-form');
+    if (form) form.hidden = true;
+    const choices = $('.social-login');
+    if (choices) choices.hidden = false;
+    const modeSwitch = $('.auth-mode-switch');
+    if (modeSwitch) modeSwitch.hidden = false;
+    const back = $('#btn-auth-methods');
+    if (back) back.hidden = true;
+}
+
 function setAuthMode(mode) {
     state.authMode = mode === 'signup' ? 'signup' : 'login';
     const isSignup = state.authMode === 'signup';
@@ -1104,28 +1118,38 @@ function setAuthMode(mode) {
             ? ' \uC774\uBA54\uC77C\uB85C \uD68C\uC6D0\uAC00\uC785'
             : ' \uC774\uBA54\uC77C\uB85C \uB85C\uADF8\uC778';
     }
-    if (emailSubmit) emailSubmit.textContent = isSignup ? '\uD68C\uC6D0\uAC00\uC785' : 'Login';
+    if (emailSubmit) emailSubmit.textContent = isSignup ? '\uD68C\uC6D0\uAC00\uC785' : '로그인';
     if (resetButton) resetButton.hidden = isSignup;
     if (form) form.hidden = true;
     if (emailInput) emailInput.autocomplete = isSignup ? 'email' : 'email';
     if (passwordInput) passwordInput.autocomplete = isSignup ? 'new-password' : 'current-password';
     if (message) message.textContent = '';
+    showAuthMethodChoices();
 }
 
 function showEmailAuthForm() {
     const form = $('#auth-form');
     if (form) form.hidden = false;
+    const choices = $('.social-login');
+    if (choices) choices.hidden = true;
+    const modeSwitch = $('.auth-mode-switch');
+    if (modeSwitch) modeSwitch.hidden = true;
+    const back = $('#btn-auth-methods');
+    if (back) {
+        back.hidden = false;
+        back.textContent = state.authMode === 'signup' ? '다른 가입 방법' : '다른 로그인 방법';
+    }
     $('#email-input')?.focus();
     void initTurnstile();
 }
 
 function parseRouteHash(hash) {
-    if (!hash) return LANDING_ROUTE;
+    if (!hash) return normalizeNativeRoute(LANDING_ROUTE, isNativeApp());
     if (!hash.startsWith('#/')) return APP_SECTIONS.HOME;
     const path = hash.slice(2).split('?')[0].replace(/^\/+|\/+$/g, '');
     if (!path) return APP_SECTIONS.HOME;
     if (path === APP_SECTIONS.MYPHOTO) return APP_SECTIONS.HOME;
-    if (ROUTES.has(path)) return path;
+    if (ROUTES.has(path)) return normalizeNativeRoute(path, isNativeApp());
     return parseSectionHash(hash) || APP_SECTIONS.HOME;
 }
 
@@ -1135,6 +1159,7 @@ function getRenderedRoute(route) {
 }
 
 function routeTo(section, { replace = false } = {}) {
+    section = normalizeNativeRoute(section, isNativeApp());
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     const renderedRoute = getRenderedRoute(normalized);
     if (normalized.startsWith('admin-') && !isLandingAdmin(state.currentUser)) {
@@ -1191,6 +1216,7 @@ function clearUploadQueue() {
 }
 
 function renderRoute(section) {
+    section = normalizeNativeRoute(section, isNativeApp());
     const routeRenderStartedAt = window.performance.now();
     const normalized = ROUTES.has(section) ? section : normalizeAppSection(section);
     if (normalized.startsWith('admin-') && !isLandingAdmin(state.currentUser)) {
@@ -1286,6 +1312,10 @@ async function refreshExploreMapAfterRouteEntry() {
 }
 
 function applyRouteHash(hash, options = {}) {
+    if (isNativeApp() && (!hash || /^#\/landing\/?(?:\?|$)/.test(hash))) {
+        hash = '#/';
+        options = { ...options, replace: true };
+    }
     const sharedRoute = getSharedRouteState(hash);
     if (sharedRoute.albumId) state.selectedPublicAlbumId = sharedRoute.albumId;
     if (sharedRoute.ownerId) {
@@ -1358,6 +1388,7 @@ function syncModalScrollLock() {
 }
 
 function closeModals() {
+    albumDownloadReady = null;
     if (albumDownloadJob) {
         albumDownloadJob.abort();
         albumDownloadJob = null;
@@ -2264,6 +2295,26 @@ function syncFeedbackMessageCount() {
     if (count) count.textContent = String(textarea?.value.length || 0);
 }
 
+function openPhotoReport(photoId) {
+    if (!photoId) return;
+    closeModals();
+    openProductFeedbackDialog();
+    if (!state.currentUser) {
+        showToast('로그인 후 사진의 신고 버튼을 다시 눌러주세요.');
+        return;
+    }
+    const category = $('#feedback-form [value="other"]');
+    if (category) category.checked = true;
+    const message = $('#feedback-message');
+    if (message) {
+        message.value = `사진 신고 (ID: ${photoId})\n신고 사유: `;
+        message.focus();
+    }
+    syncFeedbackMessageCount();
+    const status = $('#feedback-message-status');
+    if (status) status.textContent = '신고 사유를 작성하고 보내기를 눌러주세요. 아직 접수되지 않았습니다.';
+}
+
 async function handleProductFeedbackSubmit(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -2849,7 +2900,7 @@ function renderExploreDiscoveryPanel(photos, options = {}) {
 }
 
 async function getGoogleMapsRuntimeConfig() {
-    if (state.googleMapsApiKey !== null && state.googleMapsMapId !== null) {
+    if (state.googleMapsApiKey && state.googleMapsMapId !== null) {
         return { apiKey: state.googleMapsApiKey, mapId: state.googleMapsMapId };
     }
     if (state.googleMapsConfigPromise) return state.googleMapsConfigPromise;
@@ -2884,31 +2935,21 @@ async function getGoogleMapsRuntimeConfig() {
     return state.googleMapsConfigPromise;
 }
 
+const loadGoogleMapsSdk = createGoogleMapsLoader({
+    loadConfig: getGoogleMapsRuntimeConfig,
+    onStatus: code => {
+        markNativeBoot(code);
+        if (code === 'MAP_AUTH_ERROR') {
+            showToast('지도 사용 설정을 확인해야 합니다. 사진 목록은 계속 이용할 수 있어요. [MAP-AUTH]');
+        }
+    }
+});
+
 function loadGoogleMapsApi() {
-    if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
-    if (state.exploreMapLoadPromise) return state.exploreMapLoadPromise;
-
-    state.exploreMapLoadPromise = getGoogleMapsRuntimeConfig().then(({ apiKey }) => {
-        if (!apiKey) return null;
-
-        return new Promise((resolve, reject) => {
-            const callbackName = `initIkkyeeGoogleMap${Date.now()}`;
-            window[callbackName] = () => {
-                resolve(window.google.maps);
-                delete window[callbackName];
-            };
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places,marker&loading=async&callback=${callbackName}`;
-            script.async = true;
-            script.defer = true;
-            script.onerror = () => reject(new Error('Google Maps API failed to load'));
-            document.head.appendChild(script);
-        });
-    }).catch((error) => {
-        showToast('Google 지도 로드에 실패했습니다.');
+    return loadGoogleMapsSdk().catch(error => {
+        if (error.code !== 'MAP_AUTH_ERROR') showToast('지도를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해주세요.');
         return null;
     });
-    return state.exploreMapLoadPromise;
 }
 
 async function ensureExploreMap() {
@@ -3767,6 +3808,30 @@ async function downloadSelectedPhoto(eventOrPhotoId) {
 
 let albumDownloadJob = null;
 let albumDownloadUrl = null;
+let albumDownloadReady = null;
+
+async function savePreparedNativeAlbum() {
+    const ready = albumDownloadReady;
+    if (!ready || ready.saving || !ready.isActive()) return;
+    const button = $('#album-download-native-save');
+    const status = $('#album-download-status');
+    ready.saving = true;
+    button.disabled = true;
+    status.textContent = '앨범 저장창을 준비하고 있습니다.';
+    try {
+        const result = await saveNativeAlbum(ready.blob, ready.fileName, { isActive: ready.isActive });
+        if (!ready.isActive()) return;
+        status.textContent = result.error?.message || (!result.handled
+            ? '앱에서 다시 시도해주세요.'
+            : result.data?.status === 'cancelled' ? '저장을 취소했습니다. 다시 저장할 수 있습니다.'
+                : '공유창에서 선택한 앱을 확인해주세요. 저장 여부는 선택한 앱에서 확인할 수 있습니다.');
+    } catch {
+        if (ready.isActive()) status.textContent = '앨범 저장창을 열지 못했습니다. 다시 시도해주세요.';
+    } finally {
+        ready.saving = false;
+        if (albumDownloadReady === ready) button.disabled = false;
+    }
+}
 
 async function downloadSelectedAlbum(button) {
     if (albumDownloadJob) return;
@@ -3786,6 +3851,10 @@ async function downloadSelectedAlbum(button) {
     const status = $('#album-download-status');
     const progress = $('#album-download-progress');
     const saveLink = $('#album-download-save');
+    const nativeSave = $('#album-download-native-save');
+    albumDownloadReady = null;
+    nativeSave.hidden = true;
+    nativeSave.disabled = false;
     saveLink.hidden = true;
     saveLink.removeAttribute('href');
     $('#album-download-dismiss').textContent = '취소';
@@ -3853,13 +3922,25 @@ async function downloadSelectedAlbum(button) {
         });
         assertActive();
         const blob = new Blob([result.html], { type: 'text/html;charset=utf-8' });
-        albumDownloadUrl = URL.createObjectURL(blob);
-        saveLink.href = albumDownloadUrl;
-        saveLink.download = result.fileName;
-        saveLink.hidden = false;
+        if (document.documentElement.classList.contains('native-app')) {
+            const ready = { blob, fileName: result.fileName, saving: false, isActive: () => {
+                try {
+                    assertActive();
+                    return albumDownloadReady === ready && $('#album-download-modal').classList.contains('is-open');
+                } catch { return false; }
+            } };
+            albumDownloadReady = ready;
+            nativeSave.hidden = false;
+        } else {
+            if (albumDownloadUrl) URL.revokeObjectURL(albumDownloadUrl);
+            albumDownloadUrl = URL.createObjectURL(blob);
+            saveLink.href = albumDownloadUrl;
+            saveLink.download = result.fileName;
+            saveLink.hidden = false;
+        }
         $('#album-download-dismiss').textContent = '닫기';
         status.textContent = `사진 ${result.count}장과 위치 지도 준비 완료`;
-        saveLink.focus();
+        (nativeSave.hidden ? saveLink : nativeSave).focus();
     } catch (error) {
         if (!controller.signal.aborted && error?.name !== 'AbortError') {
             status.textContent = error?.message || '앨범을 다운로드하지 못했습니다.';
@@ -4866,11 +4947,6 @@ function getSelectedAuthorName(album = getSelectedPublicAlbum()) {
     });
 }
 
-function setSelectedPublicAlbum(albumId) {
-    state.selectedPublicAlbumId = albumId;
-    renderPublicSurfaces();
-}
-
 function routeToProfileFromAuthor(albumId, ownerId) {
     const ownerAlbum = albumId
         ? getPublicAlbums().find((album) => album.id === albumId)
@@ -5847,7 +5923,7 @@ function renderPublicSurfaces() {
                 </button>
             ` : ''}
             ${!state.albumDetailEditMode ? `
-                ${!document.documentElement.classList.contains('native-app') ? `<button id="btn-download-album" class="album-icon-button" type="button" aria-label="앨범 다운로드" data-tooltip="오프라인 앨범 다운로드"><span class="material-symbols-outlined" aria-hidden="true">download</span></button>` : ''}
+                <button id="btn-download-album" class="album-icon-button" type="button" aria-label="앨범 다운로드" data-tooltip="오프라인 앨범 다운로드"><span class="material-symbols-outlined" aria-hidden="true">download</span></button>
                 <button id="btn-copy-trip-link" class="album-icon-button" type="button" aria-label="앨범 공유" data-tooltip="앨범 공유">
                     <span class="material-symbols-outlined">ios_share</span>
                 </button>
@@ -5995,20 +6071,9 @@ function renderPublicSurfaces() {
             MAIN_BG_4_URL
         ), `${authorName} public profile cover`);
 
-    $$('[data-public-album-id]').forEach((item) => {
-        item.addEventListener('click', () => {
-            setSelectedPublicAlbum(item.dataset.publicAlbumId);
-            if (item.hasAttribute('data-go-trip')) routeToTrip(item.dataset.publicAlbumId);
-            if (shouldOpenExplorePreview({
-                isTripLink: item.hasAttribute('data-go-trip'),
-                isExploreListItem: item.classList.contains('explore-item')
-            })) {
-                setExplorePreviewExpanded(false);
-                document.body.classList.add('explore-pin-selected');
-                $('#explore-pin-preview')?.removeAttribute('hidden');
-            }
-        });
-    });
+    // Album navigation is delegated to [data-go-trip]. Metadata attributes also
+    // appear on author buttons; binding them here changes the photo before its
+    // author handler runs and accumulates listeners across background renders.
     $$('#public-trip-photo-grid [data-open-photo-detail], .profile-photo-grid [data-open-photo-detail], .profile-album-grid [data-open-photo-detail]').forEach((item) => {
         item.addEventListener('click', (event) => {
             if (!shouldOpenAlbumDetailPhotoClick(event.target, { isEditing: state.albumDetailEditMode })) return;
@@ -9320,7 +9385,7 @@ function bindEvents() {
         if (reportPhotoButton) {
             event.preventDefault();
             setPhotoDetailMoreMenuOpen(false);
-            showToast('신고가 접수되었습니다. 검토 후 조치하겠습니다.');
+            openPhotoReport(reportPhotoButton.dataset.photoId);
             return;
         }
 
@@ -9843,6 +9908,13 @@ function bindEvents() {
     $('#btn-open-auth')?.addEventListener('click', () => {
         openModal('#auth-modal');
     });
+    $('#btn-native-guest')?.addEventListener('click', () => {
+        state.pendingAuthRoute = null;
+        state.pendingAuthAction = null;
+        state.pendingAuthReturnRoute = null;
+        dismissModal($('#auth-modal'));
+        routeTo(APP_SECTIONS.HOME, { replace: true });
+    });
     $('#account-profile-edit')?.addEventListener('click', () => setAccountProfileEditMode(true));
     $('#account-profile-cancel')?.addEventListener('click', () => setAccountProfileEditMode(false));
     $('#account-profile-form')?.addEventListener('submit', saveAccountProfile);
@@ -9893,6 +9965,11 @@ function bindEvents() {
     $('#account-deletion-form')?.addEventListener('submit', handleAccountDeletionSubmit);
     $('#auth-form')?.addEventListener('submit', handleAuthSubmit);
     $('#btn-email-start')?.addEventListener('click', showEmailAuthForm);
+    $('#btn-auth-methods')?.addEventListener('click', () => {
+        showAuthMethodChoices();
+        $('#btn-email-start')?.focus();
+    });
+    $('#album-download-native-save')?.addEventListener('click', savePreparedNativeAlbum);
     $('#btn-signup')?.addEventListener('click', () => setAuthMode('signup'));
     $('#btn-switch-login')?.addEventListener('click', () => setAuthMode('login'));
     $('#btn-reset-password')?.addEventListener('click', handlePasswordReset);
@@ -9976,11 +10053,18 @@ function closeNativeTopModal() {
     return true;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+installNativeMapConsoleDiagnostics();
+markNativeBoot('MODULE_READY');
+onDocumentReady(document, async () => {
+    markNativeBoot('BOOT_START');
     initializePhotoImageReveal();
     let nativeLoginReady = false;
     let initialNativeLogin = null;
     try {
+        // Bind local controls before any plugin/network wait, including login.
+        ensureProfileHeaderShell();
+        bindEvents();
+        markNativeBoot('EVENTS_READY');
         await bindNativeAppRuntime({
             closeTopModal: closeNativeTopModal,
             requestExit: () => window.confirm('이끼 앱을 종료할까요?'),
@@ -9989,6 +10073,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         bindNativeExternalLinks({
             onError: () => showToast('외부 페이지를 열지 못했어요. 잠시 후 다시 시도해 주세요.')
         });
+        markNativeBoot('RUNTIME_READY');
         if (isNativeApp()) {
             try {
                 await initializeNativeAuth({
@@ -10008,6 +10093,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast('앱 로그인 연결을 준비하지 못했어요. 앱을 다시 열어주세요.');
             }
         }
+        markNativeBoot('AUTH_READY');
         const restoredAuthContext = restorePendingAuthContext(window.localStorage, state);
         if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
         if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
@@ -10018,14 +10104,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             applyRouteHash(window.location.hash);
         }
         state.currentUser = await getCurrentUser();
+        markNativeBoot('SESSION_READY');
         await ensureCurrentUserPublicProfile();
+        markNativeBoot('PROFILE_READY');
         updateAccountUI();
-        ensureProfileHeaderShell();
-        bindEvents();
         if (restoredAuthContext?.route) routeTo(restoredAuthContext.route, { replace: !window.location.hash });
         else applyRouteHash(window.location.hash, { replace: !window.location.hash });
+        // Session-aware routing is ready; image/network work must not hold the
+        // native startup overlay over otherwise usable navigation controls.
+        if (isNativeApp()) document.body.dataset.nativeUiReady = 'true';
         await Promise.all([loadSavedLibrary(), loadLandingCuration()]);
         await loadPublicProfileNames();
+        markNativeBoot('DATA_READY');
         showPendingKakaoProfileImport();
         renderStagedPhotos();
         renderSavedPhotoSurfaces();
@@ -10041,7 +10131,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         nativeLoginReady = true;
         if (initialNativeLogin) await finishNativeLogin(initialNativeLogin);
+    } catch {
+        markNativeBoot('BOOT_ERROR');
+        showToast('앱 준비를 마치지 못했어요. 인터넷 연결을 확인한 뒤 앱을 다시 열어주세요. [APP-START]');
     } finally {
         setAppBooting(false);
+        markNativeBoot('BOOT_COMPLETE');
     }
 });

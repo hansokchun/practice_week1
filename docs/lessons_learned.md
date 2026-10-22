@@ -71,6 +71,13 @@
 - Keep administrative previews limited to owned thumbnail/preview paths with short-lived signed URLs. Do not send original paths, raw Auth objects, or credentials to the browser.
 - Invalidate pending admin responses on navigation, account switching, and role loss; never render data from an earlier actor.
 
+## 2026-10-18: Native Plugin Proxies Are Not Promise Results
+
+- Capacitor plugin proxies can synthesize a callable `then` even though they are not Promises. Never return a raw plugin from an async function, resolve it through a Promise, or cache a Promise resolving to it. Use a plain wrapper or explicit method adapter and unwrap only after awaiting the loader.
+- Plain-object mocks miss this failure. Test default loaders with the installed Capacitor proxies and stub only the native transport; use a thenable-shaped storage mock for encrypted-session initialization too.
+- APK installation and a running Activity do not prove JavaScript startup. Check privacy-safe startup milestones, then get actual screen confirmation. Keep account authentication and OS sharing verification separate.
+- Startup overlays must inspect readiness immediately as well as observe later mutations, and should release usable navigation before image downloads finish.
+
 ## 2026-05-15
 
 - Some Korean text appears broken in PowerShell output even when JSON parses correctly. Verify with Node or UTF-8-aware tools before assuming file corruption.

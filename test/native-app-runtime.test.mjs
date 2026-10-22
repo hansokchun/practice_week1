@@ -149,7 +149,7 @@ test('a deep-linked route returns to the app root before an exit can be confirme
         requestExit: () => { exitRequests += 1; return true; }
     });
     await runtime.handleBackButton();
-    assert.equal(surface.window.location.hash, '#/landing');
+    assert.equal(surface.window.location.hash, '#/');
     assert.equal(exitRequests, 0);
     assert.equal(surface.calls.exits, 0);
     surface.events.get('hashchange')();

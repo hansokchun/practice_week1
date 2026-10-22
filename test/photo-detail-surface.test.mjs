@@ -206,6 +206,6 @@ test('photo detail click handling opens fullscreen and reports without nearby ph
     assert.match(source, /event\.target\.closest\('\[data-photo-detail-more\]'\)/);
     assert.match(source, /setPhotoDetailMoreMenuOpen\(!isOpen\)/);
     assert.match(source, /event\.target\.closest\('\[data-report-photo\]'\)/);
-    assert.match(source, /신고가 접수되었습니다/);
+    assert.match(source, /openPhotoReport\(reportPhotoButton\.dataset\.photoId\)/);
     assert.doesNotMatch(source, /event\.target\.closest\('\[data-photo-detail-nearby-photo\]'\)/);
 });

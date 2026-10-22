@@ -1,0 +1,47 @@
+#native-startup {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    box-sizing: border-box;
+    min-height: 100svh;
+    padding: max(24px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
+    color: #245457;
+    background: #faf9f6;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+}
+#native-startup[hidden], #native-startup-recovery[hidden] { display: none; }
+.native-startup-brand { display: flex; flex-direction: column; align-items: center; }
+.native-startup-brand img {
+    width: clamp(112px, 34vw, 156px);
+    height: auto;
+    object-fit: contain;
+    animation: ikkyee-logo-arrive 850ms cubic-bezier(.2,.8,.2,1) both;
+}
+.native-startup-wordmark {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: -.04em;
+    animation: ikkyee-logo-arrive 650ms 160ms both;
+}
+.native-startup-caption { margin-top: 12px; font-size: 13px; letter-spacing: .06em; }
+.native-startup-dots { display: flex; gap: 7px; margin-top: 32px; }
+.native-startup-dots i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: ikkyee-loading-step 1.4s infinite; }
+.native-startup-dots i:nth-child(2) { animation-delay: 180ms; }
+.native-startup-dots i:nth-child(3) { animation-delay: 360ms; }
+#native-startup-message { max-width: 28ch; margin: 0; color: #526765; font-size: 13px; line-height: 1.7; }
+#native-startup-retry { min-height: 48px; padding: 12px 24px; border: 1px solid #245457; border-radius: 24px; color: #245457; background: transparent; font: inherit; }
+#native-startup-retry:focus-visible { outline: 3px solid #245457; outline-offset: 4px; }
+#btn-native-guest { display: block; width: 100%; min-height: 44px; margin-top: 12px; color: #245457; text-decoration: underline; text-underline-offset: 4px; }
+#native-startup[data-slow="true"] .native-startup-dots i { animation: none; }
+@keyframes ikkyee-logo-arrive { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ikkyee-loading-step { 0%, 70%, 100% { opacity: .25; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+    .native-startup-brand img, .native-startup-wordmark, .native-startup-dots i { animation: none; }
+}

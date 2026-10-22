@@ -56,7 +56,12 @@ function getNativePlatform(capacitor) {
 
 async function loadDefaultAppPlugin() {
     const { App } = await import('@capacitor/app');
-    return App;
+    // Capacitor proxies synthesize `.then`; returning one from async would
+    // assimilate it as a Promise and leave startup waiting for App.then().
+    return {
+        addListener: (...args) => App.addListener(...args),
+        exitApp: () => App.exitApp()
+    };
 }
 
 function dispatchExitRequest(window, platform) {
@@ -86,7 +91,7 @@ export async function bindNativeAppRuntime({
     navigateBack,
     navigateRoot,
     requestExit,
-    rootHash = '#/landing',
+    rootHash = '#/',
     rootHashes = ['', '#/', '#/landing'],
     onError
 } = {}) {

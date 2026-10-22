@@ -91,7 +91,7 @@ test('stored cover path and hydrated public URL are part of the shared profile',
 
 test('app loads the stored profile before rendering the account header', () => {
     const source = readFileSync('js/app.js', 'utf8');
-    const bootStart = source.indexOf("document.addEventListener('DOMContentLoaded'");
+    const bootStart = source.indexOf('onDocumentReady(document,');
     const bootBody = source.slice(bootStart);
 
     assert.match(source, /resolveAccountProfile\(user,\s*storedProfile\)/);

@@ -22,7 +22,7 @@ test('the first route renders a dedicated full-screen landing before the existin
     assert.match(html, /id="page-home" class="page page-home"/);
     assert.doesNotMatch(html, /class="site-primary-nav"/);
     assert.match(html, /data-landing-enter[^>]*data-route="home"/);
-    assert.match(app, /if \(!hash\) return LANDING_ROUTE;/);
+    assert.match(app, /if \(!hash\) return normalizeNativeRoute\(LANDING_ROUTE, isNativeApp\(\)\);/);
     assert.match(app, /const hash = normalized === LANDING_ROUTE \? '#\/landing' : normalized === APP_SECTIONS\.HOME \? '#\/'/);
 });
 
@@ -32,14 +32,26 @@ test('landing waits for curated photos instead of flashing sample slides', () =>
     const landing = html.slice(landingStart, landingEnd);
     assert.match(landing, /class="landing-hero-slides"[^>]*aria-busy="true"[^>]*><\/div>/);
     assert.doesNotMatch(landing, /class="landing-hero-slide(?:\s|")/);
-    assert.match(landing, /<h1[^>]*>여긴 어디지\?<\/h1>/);
-    assert.match(landing, /<p>이끼에서 당신만의 장소를 찾아보거나 공유하세요<\/p>/);
+    const headline = landing.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g, '');
+    assert.equal(headline, '이 사진은 어디서 찍은 거지?');
+    assert.doesNotMatch(landing, /<p(?:\s|>)/);
     assert.match(css, /\.page-landing\s*\{[^}]*min-height:\s*100svh;/s);
     assert.match(css, /\.landing-hero-slide img\s*\{[^}]*object-fit:\s*cover;/s);
     assert.match(css, /\.landing-hero-content\s*\{[^}]*top:\s*46%;/s);
-    assert.match(css, /\.landing-hero-content h1\s*\{[^}]*font-size:\s*56px;/s);
-    assert.match(css, /\.landing-hero-content p\s*\{[^}]*margin:\s*34px 0 0;/s);
     assert.match(css, /body\[data-page="landing"\]\s+\.site-header\s*\{[^}]*background:\s*transparent;/s);
+});
+
+test('landing entry keeps its label and route with a balanced font-independent arrow', () => {
+    const button = html.match(/<button class="landing-hero-enter"[^>]*>[\s\S]*?<\/button>/)?.[0];
+    assert.ok(button);
+    assert.match(button, /data-landing-enter data-route="home"/);
+    assert.match(button, /<span>사진 둘러보기<\/span>/);
+    assert.match(button, /<svg class="landing-hero-enter-icon"[^>]*aria-hidden="true"[^>]*focusable="false"/);
+    assert.doesNotMatch(button, /material-symbols-outlined/);
+    assert.match(css, /\.landing-hero-enter\s*\{[^}]*align-items:\s*center;[^}]*min-height:\s*52px;[^}]*font-family:\s*var\(--body\);[^}]*line-height:\s*1\.25;/s);
+    assert.match(css, /\.landing-hero-enter-icon\s*\{[^}]*flex-shrink:\s*0;/s);
+    assert.match(css, /\.landing-hero-enter:focus-visible\s*\{[^}]*outline:\s*2px solid #ffffff;/s);
+    assert.match(html, /<svg class="landing-hero-sketch"[^>]*aria-hidden="true"[^>]*focusable="false"/);
 });
 
 test('landing slideshow advances every ten seconds and wraps around', () => {

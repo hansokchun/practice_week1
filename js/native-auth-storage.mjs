@@ -72,7 +72,9 @@ export function createNativeAuthStorage({
                         await plugin.setSynchronize(false);
                         ensureNative();
                         await plugin.setDefaultKeychainAccess(access);
-                        return plugin;
+                        // The Capacitor proxy is thenable; never resolve a
+                        // Promise with the raw encrypted-storage plugin.
+                        return { plugin };
                     });
                     configuredPlugins.set(plugin, ready);
                 }
@@ -86,7 +88,7 @@ export function createNativeAuthStorage({
         ensureNative();
         validateKey(key);
         if (method === 'setItem' && typeof value !== 'string') throw new NativeAuthStorageError();
-        const plugin = await getStorage();
+        const { plugin } = await getStorage();
         ensureNative();
         const result = method === 'setItem'
             ? await plugin.setItem(key, value)

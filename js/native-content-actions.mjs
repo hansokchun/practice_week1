@@ -9,7 +9,9 @@ const ERROR_MESSAGES = Object.freeze({
     NATIVE_PHOTO_SIZE: '50MB 이하의 사진만 저장할 수 있습니다.',
     NATIVE_PHOTO_TYPE: '저장할 사진 형식을 확인하지 못했습니다.',
     NATIVE_PHOTO_READ: '사진을 준비하지 못했습니다. 다시 시도해주세요.',
-    NATIVE_PHOTO_SAVE: '사진 저장창을 열지 못했습니다. 다시 시도해주세요.'
+    NATIVE_PHOTO_SAVE: '사진 저장창을 열지 못했습니다. 다시 시도해주세요.',
+    NATIVE_ALBUM_INVALID: '32MB 이하의 HTML 앨범만 저장할 수 있습니다.',
+    NATIVE_ALBUM_SAVE: '앨범 저장창을 열지 못했습니다. 다시 시도해주세요.'
 });
 
 function actionError(code) {
@@ -58,7 +60,8 @@ function getPublicShareUrl(value) {
 
 async function loadDefaultShare() {
     const { Share } = await import('@capacitor/share');
-    return Share;
+    // A plain method adapter avoids Promise assimilation of Share.then().
+    return { share: options => Share.share(options) };
 }
 
 async function loadDefaultFilesystem() {
@@ -187,5 +190,41 @@ export async function saveNativePhoto(blob, fileName, {
         return { handled: true, data: { status: 'shared', fileName: safeName }, error: null };
     } catch {
         return failedResult('NATIVE_PHOTO_SAVE');
+    }
+}
+
+/** Only the locally generated offline album is passed here, after a save click. */
+export async function saveNativeAlbum(blob, fileName, {
+    capacitor = globalThis.Capacitor,
+    loadFilesystem = loadDefaultFilesystem,
+    loadShare = loadDefaultShare,
+    readBlob = readDefaultBlob,
+    isActive = () => true
+} = {}) {
+    if (!isNativeApp(capacitor)) return unsupportedResult();
+    if (!Number.isFinite(blob?.size) || blob.size <= 0 || blob.size > 32 * 1024 * 1024
+        || !/^text\/html(?:;charset=utf-8)?$/i.test(blob?.type || '')) {
+        return failedResult('NATIVE_ALBUM_INVALID');
+    }
+    const cancelled = () => ({ handled: true, data: { status: 'cancelled' }, error: null });
+    try {
+        if (!isActive()) return cancelled();
+        const safeName = getPhotoFileName(String(fileName || 'ikkyee-album').replace(/\.html?$/i, ''), 'html');
+        const data = getBase64Photo(await readBlob(blob), blob.type);
+        if (!isActive()) return cancelled();
+        const { Filesystem, Directory } = await loadFilesystem();
+        if (!isActive()) return cancelled();
+        const path = `downloads/${createCacheId()}/${safeName}`;
+        await Filesystem.writeFile({ path, data, directory: Directory.Cache, recursive: true });
+        if (!isActive()) return cancelled();
+        const { uri } = await Filesystem.getUri({ path, directory: Directory.Cache });
+        if (typeof uri !== 'string' || !uri.startsWith('file://')) throw Error('Invalid cache URI');
+        const share = await loadShare();
+        if (!isActive()) return cancelled();
+        await share.share({ title: safeName, files: [uri], dialogTitle: '앨범 파일 저장 또는 공유' });
+        // Keep the cache file for recipients that read after the sheet closes.
+        return { handled: true, data: { status: 'shared', fileName: safeName }, error: null };
+    } catch (error) {
+        return isShareCancellation(error) ? cancelled() : failedResult('NATIVE_ALBUM_SAVE');
     }
 }

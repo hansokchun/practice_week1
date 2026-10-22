@@ -7,6 +7,8 @@ const ERROR_MESSAGES = {
     NATIVE_AUTH_IN_PROGRESS: '진행 중인 로그인을 마친 후 다시 시도해주세요.',
     NATIVE_AUTH_URL: '로그인 주소를 확인하지 못했습니다. 다시 시도해주세요.',
     NATIVE_AUTH_START: '로그인을 시작하지 못했습니다. 다시 시도해주세요.',
+    NATIVE_AUTH_BROWSER: '인증 브라우저를 열지 못했어요. 휴대전화의 기본 브라우저 사용 가능 여부를 확인해주세요. [AUTH-BROWSER]',
+    NATIVE_AUTH_STORAGE_UNAVAILABLE: '로그인 보관함을 열지 못했어요. 앱을 완전히 닫고 다시 실행해주세요. [AUTH-STORAGE]',
     NATIVE_AUTH_CANCEL: '진행 중인 로그인을 취소하지 못했습니다. 다시 시도해주세요.',
     NATIVE_AUTH_CALLBACK: '로그인을 완료하지 못했습니다. 다시 시도해주세요.',
     NATIVE_AUTH_EXCHANGE: '로그인 시간이 만료되었거나 인증에 실패했습니다. 다시 시도해주세요.',
@@ -42,14 +44,15 @@ async function clearPending(adapter) {
 }
 
 async function getBrowser(adapter) {
-    if (adapter.browser) return adapter.browser;
+    if (adapter.browser) return { browser: adapter.browser };
     const { Browser } = await import('@capacitor/browser');
-    return Browser;
+    // Keep the plugin proxy inside a plain object across Promise boundaries.
+    return { browser: Browser };
 }
 
 async function closeBrowser(adapter) {
     try {
-        const browser = await getBrowser(adapter);
+        const { browser } = await getBrowser(adapter);
         await browser.close?.();
     } catch {
         // Closing is unavailable on some native browser implementations.
@@ -103,17 +106,23 @@ export async function authorizeNativeOAuth(auth, provider, adapter = {}) {
                 ...(provider === 'kakao' ? { queryParams: { prompt: 'login' } } : {})
             }
         });
-        if (error) throw authError('NATIVE_AUTH_START');
+        if (error) throw authError(error.code === 'NATIVE_AUTH_STORAGE_UNAVAILABLE' ? error.code : 'NATIVE_AUTH_START');
         const url = requireAuthorizationUrl(data?.url, adapter.supabaseUrl, provider);
-        const browser = await getBrowser(adapter);
+        const { browser } = await getBrowser(adapter);
         if (adapter.getPending && !(await adapter.getPending())) {
             return { data: { provider, status: 'cancelled' }, error: null };
         }
-        await browser.open({ url });
+        try {
+            await browser.open({ url });
+        } catch {
+            throw authError('NATIVE_AUTH_BROWSER');
+        }
         return { data: { provider, status: 'pending' }, error: null };
     } catch (error) {
         if (ownsPending) await clearPending(adapter);
-        return { data: null, error: error?.code === 'NATIVE_AUTH_URL' ? authError('NATIVE_AUTH_URL') : authError('NATIVE_AUTH_START') };
+        const safeCode = ['NATIVE_AUTH_URL', 'NATIVE_AUTH_BROWSER', 'NATIVE_AUTH_STORAGE_UNAVAILABLE'].includes(error?.code)
+            ? error.code : 'NATIVE_AUTH_START';
+        return { data: null, error: authError(safeCode) };
     } finally {
         launchingClients.delete(auth);
     }
@@ -220,7 +229,7 @@ export async function registerNativeAuthCallbacks(auth, adapter = {}) {
     };
     try {
         const app = adapter.app || (await import('@capacitor/app')).App;
-        const browser = await getBrowser(adapter);
+        const { browser } = await getBrowser(adapter);
         handles.push(await app.addListener('appUrlOpen', handleUrl));
         if (browser.addListener) {
             handles.push(await browser.addListener('browserFinished', async () => {
