@@ -215,15 +215,11 @@ img[data-photo-reveal].is-photo-ready {
     pointer-events: none;
 }
 
-/* A landing-only animated interpretation of the pin, leaf and travel trail. */
-.landing-mark-trail circle {
-    animation: 280ms ease-out both;
-    animation-name: var(--landing-mark-dot-animation, none);
-}
-
-.landing-mark-trail circle:nth-child(2) { animation-delay: 90ms; }
-.landing-mark-trail circle:nth-child(3) { animation-delay: 180ms; }
-.landing-mark-trail circle:nth-child(4) { animation-delay: 270ms; }
+/* Shared button mark. Named animations must be declared on the active state:
+   production CSS minification discards timing from a nameless shorthand. */
+.landing-mark-trail circle:nth-child(2) { --landing-mark-delay: 90ms; }
+.landing-mark-trail circle:nth-child(3) { --landing-mark-delay: 180ms; }
+.landing-mark-trail circle:nth-child(4) { --landing-mark-delay: 270ms; }
 
 .landing-mark-pin,
 .landing-mark-vein,
@@ -232,34 +228,40 @@ img[data-photo-reveal].is-photo-ready {
     stroke-dashoffset: 0;
 }
 
-.landing-mark-pin {
-    animation: 600ms ease-out 300ms both;
-    animation-name: var(--landing-mark-line-animation, none);
-}
-
 .landing-mark-leaf {
     transform-box: fill-box;
     transform-origin: bottom left;
-    animation: 650ms cubic-bezier(0.2, 0.7, 0.3, 1) 700ms both;
-    animation-name: var(--landing-mark-leaf-animation, none);
 }
 
-.landing-mark-vein {
-    animation: 450ms ease-out 850ms both;
-    animation-name: var(--landing-mark-line-animation, none);
-}
+@media (prefers-reduced-motion: no-preference) {
+    [data-brand-motion]:focus-visible .landing-mark-trail circle {
+        animation: landing-mark-dot 280ms ease-out both;
+        animation-delay: var(--landing-mark-delay, 0ms);
+    }
+    [data-brand-motion]:focus-visible .landing-mark-pin {
+        animation: landing-mark-line 600ms ease-out 300ms both;
+    }
+    [data-brand-motion]:focus-visible .landing-mark-leaf {
+        animation: landing-mark-leaf 650ms cubic-bezier(0.2, 0.7, 0.3, 1) 700ms both;
+    }
+    [data-brand-motion]:focus-visible .landing-mark-vein {
+        animation: landing-mark-line 450ms ease-out 850ms both;
+    }
 
-.landing-hero-enter:focus-visible {
-    --landing-mark-dot-animation: landing-mark-dot;
-    --landing-mark-line-animation: landing-mark-line;
-    --landing-mark-leaf-animation: landing-mark-leaf;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .landing-hero-enter:hover {
-        --landing-mark-dot-animation: landing-mark-dot;
-        --landing-mark-line-animation: landing-mark-line;
-        --landing-mark-leaf-animation: landing-mark-leaf;
+    @media (hover: hover) and (pointer: fine) {
+        [data-brand-motion]:hover .landing-mark-trail circle {
+            animation: landing-mark-dot 280ms ease-out both;
+            animation-delay: var(--landing-mark-delay, 0ms);
+        }
+        [data-brand-motion]:hover .landing-mark-pin {
+            animation: landing-mark-line 600ms ease-out 300ms both;
+        }
+        [data-brand-motion]:hover .landing-mark-leaf {
+            animation: landing-mark-leaf 650ms cubic-bezier(0.2, 0.7, 0.3, 1) 700ms both;
+        }
+        [data-brand-motion]:hover .landing-mark-vein {
+            animation: landing-mark-line 450ms ease-out 850ms both;
+        }
     }
 }
 
@@ -1261,7 +1263,8 @@ body[data-page="landing"] .account-avatar {
         transition: none;
     }
 
-    .landing-hero-enter .landing-hero-enter-logo * {
+    .landing-hero-enter .landing-hero-enter-logo *,
+    [data-brand-motion] .landing-hero-enter-logo * {
         animation: none;
     }
 
@@ -1880,6 +1883,72 @@ body[data-page="home"] .landing-search-globe {
     outline-offset: 4px;
 }
 
+/* An editorial pause between photo rows, using the archive's existing palette. */
+.photo-contribution--inline {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 48px;
+    padding: 40px 48px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.photo-contribution--inline .photo-contribution-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    color: var(--teal);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.photo-contribution-eyebrow::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+}
+
+.photo-contribution--inline h2 {
+    color: var(--teal-dark);
+    font-size: clamp(26px, 2.7vw, 34px);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.photo-contribution--inline .photo-contribution-description {
+    max-width: 38ch;
+    margin-top: 12px;
+    color: var(--muted);
+}
+
+.photo-contribution-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 54px;
+    margin-top: 24px;
+    padding: 10px 20px;
+    border-radius: var(--thumbnail-radius);
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.photo-contribution-art {
+    display: block;
+    width: 280px;
+    height: 220px;
+    color: var(--teal);
+}
+
+.photo-contribution-art .contribution-paper { fill: var(--bg); }
+.photo-contribution-art .contribution-frame { fill: var(--surface); }
+.photo-contribution-art .contribution-landscape { fill: var(--surface-soft); }
+
 @media (max-width: 860px) {
     .photo-contribution {
         grid-template-columns: minmax(0, 1fr);
@@ -1893,6 +1962,32 @@ body[data-page="home"] .landing-search-globe {
 
     .photo-contribution > .btn-primary {
         justify-self: start;
+    }
+
+    .photo-contribution--inline {
+        grid-template-columns: minmax(0, 1fr) 180px;
+        gap: 24px;
+        padding: 32px;
+    }
+
+    .photo-contribution-art {
+        width: 180px;
+        height: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .photo-contribution--inline {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 28px 24px;
+    }
+
+    .photo-contribution-art {
+        display: none;
+    }
+
+    .photo-contribution-cta {
+        width: 100%;
     }
 }
 

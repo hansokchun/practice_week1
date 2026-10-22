@@ -1,5 +1,15 @@
 # Lessons Learned
 
+## 2026-10-23: Verify Button Motion In The Minified Build
+
+- A nameless `animation` shorthand followed by a variable `animation-name` can
+  be reduced to `animation:none` by production CSS minification. The name still
+  changes on hover, but its duration is zero and the drawing never appears.
+- Put complete named animations on hover/focus selectors and leave idle marks
+  static. Keep interaction rules inside the no-preference motion media query.
+- Check the compiled CSS and a deployed preview, not only source contracts or
+  an unminified development server. Exercise leave/re-enter and keyboard focus.
+
 ## 2026-10-13: Do Not Cache An HTML Fallback As CSS
 
 - Production Chrome can retain a `text/html` SPA fallback under a hashed CSS URL;
