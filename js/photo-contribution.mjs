@@ -12,7 +12,9 @@ function getPhotoVisibility(photo) {
         return photo.visibility;
     }
     if (Object.hasOwn(photo, 'visibility')) return 'unknown';
-    return photo.shared === true ? 'public' : 'unknown';
+    if (photo.shared === true) return 'public';
+    if (photo.shared === false) return 'private';
+    return 'unknown';
 }
 
 function getVisibilitySummary(photos) {
