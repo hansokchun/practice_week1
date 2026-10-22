@@ -5,6 +5,8 @@
 
 [Google Drive 전달 폴더](https://drive.google.com/drive/u/0/folders/1Hp1wZn68dAovT-0aY0GxGb7bNCcZ6wI9)
 에서 최종 MP4와 편집용 ZIP을 확인할 수 있습니다. 폴더 접근 권한은 Google Drive 설정을 따릅니다.
+3초·4초 MP4 두 개, 각 전달 ZIP 두 개와 `ikkyee-shorts-map-feed-sources-2026-10-23.zip`
+재제작 소스 묶음까지 총 5개 파일의 업로드 완료와 폴더 표시를 확인했습니다.
 
 | 최종본 | 영상 | 미리보기 | 장면 |
 | --- | --- | --- | --- |
