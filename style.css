@@ -403,7 +403,15 @@ body[data-page="landing"] .account-avatar {
     }
 }
 
-@media (max-height: 520px) and (min-width: 521px) {
+@media (max-height: 520px) {
+    body[data-page="landing"] {
+        overflow-y: auto;
+    }
+
+    .page-landing {
+        min-height: max(100svh, 400px);
+    }
+
     .landing-hero-content {
         top: 50%;
         transform: translate(-50%, -50%);

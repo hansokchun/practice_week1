@@ -51,6 +51,8 @@ test('native-only build removes the landing screen and starts with accessible lo
     const plugin = createNativeStartupPlugin();
     const result = plugin.transformIndexHtml.handler(input);
     assert.doesNotMatch(result.html, /id="page-landing"/);
+    assert.doesNotMatch(result.html, /data-landing-only|Gowun\+Batang/);
+    assert.match(result.html, /family=Cormorant\+Garamond/, 'shared brand font is preserved');
     assert.match(result.html, /data-page="home"/);
     assert.match(result.html, /id="page-home" class="page page-home active"/);
     assert.match(result.html, /class="brand" href="#\/" data-route="home"/);

@@ -14,6 +14,7 @@ export function createNativeStartupPlugin() {
                 const landing = /\s*<section id="page-landing"[\s\S]*?<\/section>/;
                 if (!landing.test(html)) throw new Error('Native landing boundary changed; review the entry transform.');
                 html = html.replace(landing, '')
+                    .replace(/\s*<link\b[^>]*\bdata-landing-only\b[^>]*>/g, '')
                     .replace('<html lang="ko">', '<html lang="ko" class="native-app">')
                     .replace('data-page="landing"', 'data-page="home"')
                     .replace('id="page-home" class="page page-home"', 'id="page-home" class="page page-home active"')
