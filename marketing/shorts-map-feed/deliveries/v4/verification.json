@@ -1,0 +1,53 @@
+{
+  "video": {
+    "file": "ikkyee-shorts-map-feed-4s-v4.mp4",
+    "allFramesDecoded": true,
+    "audioTrackCount": 0,
+    "codec": "avc1",
+    "decodedFrames": 240,
+    "durationSeconds": 4,
+    "firstFrameSeconds": 0,
+    "height": 1920,
+    "lastFrameSeconds": 3.9833333333333334,
+    "nominalFPS": 60,
+    "preferredTransform": [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    "videoTrackCount": 1,
+    "width": 1080
+  },
+  "preview": {
+    "file": "preview.gif",
+    "width": 360,
+    "height": 640,
+    "selectedSourceFrames": 120,
+    "encodedGIFFrames": 94,
+    "durationMilliseconds": 4000,
+    "nominalFPS": 30,
+    "loop": 0,
+    "bytes": 4460614,
+    "decodedAllFrames": true
+  },
+  "checks": {
+    "brandAssetTests": "6 passed",
+    "v3DeliveryHashesUnchanged": true,
+    "webCodeModified": false,
+    "encodedVideoSampleTimes": [
+      0,
+      0.4,
+      0.9,
+      1.4,
+      1.85,
+      2.25,
+      2.7,
+      3.05,
+      3.5,
+      3.95
+    ]
+  }
+}

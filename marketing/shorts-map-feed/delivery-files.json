@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-23",
+  "files": [
+    {
+      "version": "v3",
+      "name": "ikkyee-shorts-map-feed-3s-v3.mp4",
+      "bytes": 6966956,
+      "sha256": "8a34a38ab89f107e5a47f63e5c2b6a2825f1288a151a0e5a68c3dee331a7614e"
+    },
+    {
+      "version": "v3",
+      "name": "preview.gif",
+      "bytes": 1879191,
+      "sha256": "b1e8be5256775a5a9f2c98c0dace091d1708c47a8db5bff0884d237851bb4b26"
+    },
+    {
+      "version": "v3",
+      "name": "ikkyee-shorts-map-feed-v3.zip",
+      "bytes": 8830784,
+      "sha256": "40d63f58d762a484f3f18ed9b84c9362fdc2ae7724e871b18fa8442ddca6bc4c"
+    },
+    {
+      "version": "v4",
+      "name": "ikkyee-shorts-map-feed-4s-v4.mp4",
+      "bytes": 8363521,
+      "sha256": "2bd9bbee8baae849f4578ccfaeb78c572df661f5d0f6d9dde2294ce746985be8"
+    },
+    {
+      "version": "v4",
+      "name": "preview.gif",
+      "bytes": 4460614,
+      "sha256": "81978c2ebb3162d25cfb9ed1d4ee798833dae67abe7d42a29b9a5fcb3bfef75f"
+    },
+    {
+      "version": "v4",
+      "name": "ikkyee-shorts-map-feed-v4.zip",
+      "bytes": 12794423,
+      "sha256": "5e4256fade60b983d0f5ef6b78c49e9f13bb50ac4544c83fd80e3702f55a4926"
+    }
+  ],
+  "zipCRCVerified": true
+}

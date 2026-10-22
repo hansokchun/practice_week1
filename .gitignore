@@ -31,6 +31,7 @@ app-shell/artifacts/
 
 # Local QA and generated scratch files
 tmp/
+/output/
 supabase/.temp/
 .omo/evidence/
 supabase/.branches/
