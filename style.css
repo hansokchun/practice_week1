@@ -210,8 +210,70 @@ img[data-photo-reveal].is-photo-ready {
     display: block;
     width: 32px;
     height: 32px;
-    object-fit: contain;
     flex-shrink: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
+/* A landing-only animated interpretation of the pin, leaf and travel trail. */
+.landing-mark-trail circle {
+    animation: var(--landing-mark-dot-animation, none) 280ms ease-out both;
+}
+
+.landing-mark-trail circle:nth-child(2) { animation-delay: 90ms; }
+.landing-mark-trail circle:nth-child(3) { animation-delay: 180ms; }
+.landing-mark-trail circle:nth-child(4) { animation-delay: 270ms; }
+
+.landing-mark-pin,
+.landing-mark-vein,
+.landing-mark-leaf {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+}
+
+.landing-mark-pin {
+    animation: var(--landing-mark-line-animation, none) 600ms ease-out 300ms both;
+}
+
+.landing-mark-leaf {
+    transform-box: fill-box;
+    transform-origin: bottom left;
+    animation: var(--landing-mark-leaf-animation, none) 650ms cubic-bezier(0.2, 0.7, 0.3, 1) 700ms both;
+}
+
+.landing-mark-vein {
+    animation: var(--landing-mark-line-animation, none) 450ms ease-out 850ms both;
+}
+
+.landing-hero-enter:focus-visible {
+    --landing-mark-dot-animation: landing-mark-dot;
+    --landing-mark-line-animation: landing-mark-line;
+    --landing-mark-leaf-animation: landing-mark-leaf;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .landing-hero-enter:hover {
+        --landing-mark-dot-animation: landing-mark-dot;
+        --landing-mark-line-animation: landing-mark-line;
+        --landing-mark-leaf-animation: landing-mark-leaf;
+    }
+}
+
+@keyframes landing-mark-dot {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-mark-line {
+    from { opacity: 0; stroke-dashoffset: 1; }
+    12% { opacity: 1; }
+    to { opacity: 1; stroke-dashoffset: 0; }
+}
+
+@keyframes landing-mark-leaf {
+    from { opacity: 0; stroke-dashoffset: 1; transform: scale(0.65) rotate(-12deg); }
+    25% { opacity: 1; }
+    to { opacity: 1; stroke-dashoffset: 0; transform: scale(1) rotate(0); }
 }
 
 .landing-hero-footer {
@@ -1190,6 +1252,15 @@ body[data-page="landing"] .account-avatar {
     .landing-hero-slide,
     .landing-hero-enter {
         transition: none;
+    }
+
+    .landing-hero-enter .landing-hero-enter-logo * {
+        animation: none;
+    }
+
+    .landing-hero-enter:hover,
+    .landing-hero-enter:focus-visible {
+        transform: none;
     }
 }
 
