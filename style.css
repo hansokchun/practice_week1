@@ -1924,7 +1924,7 @@ body[data-page="home"] .landing-search-globe {
     color: var(--muted);
 }
 
-.photo-contribution-cta {
+.photo-contribution--inline .photo-contribution-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;

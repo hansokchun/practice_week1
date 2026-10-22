@@ -46,3 +46,13 @@ test('shared logo motion is opt-in and respects pointer and reduced-motion prefe
     assert.match(css, /\[data-brand-motion\]:hover \.landing-mark-pin/);
     assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\[data-brand-motion\] \.landing-hero-enter-logo \*/);
 });
+
+test('the contribution CTA keeps its touch target and quiet treatment over generic button styles', () => {
+    // Generic .btn-primary declarations appear later in this stylesheet.
+    const rule = css.match(/\.photo-contribution--inline \.photo-contribution-cta\s*\{([^}]+)\}/)?.[1];
+    assert.ok(rule, 'scope the CTA above the later generic button specificity');
+    assert.match(rule, /min-height: 54px/);
+    assert.match(rule, /border-radius: var\(--thumbnail-radius\)/);
+    assert.match(rule, /font-weight: 600/);
+    assert.match(rule, /box-shadow: none/);
+});
