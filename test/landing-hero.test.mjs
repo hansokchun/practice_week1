@@ -32,14 +32,25 @@ test('landing waits for curated photos instead of flashing sample slides', () =>
     const landing = html.slice(landingStart, landingEnd);
     assert.match(landing, /class="landing-hero-slides"[^>]*aria-busy="true"[^>]*><\/div>/);
     assert.doesNotMatch(landing, /class="landing-hero-slide(?:\s|")/);
-    assert.match(landing, /<h1[^>]*>여긴 어디지\?<\/h1>/);
-    assert.match(landing, /<p>이끼에서 당신만의 장소를 찾아보거나 공유하세요<\/p>/);
+    assert.match(landing, /<h1[^>]*>이 사진은 어디서 찍은 거지\?<\/h1>/);
+    assert.doesNotMatch(landing, /<p(?:\s|>)/);
     assert.match(css, /\.page-landing\s*\{[^}]*min-height:\s*100svh;/s);
     assert.match(css, /\.landing-hero-slide img\s*\{[^}]*object-fit:\s*cover;/s);
     assert.match(css, /\.landing-hero-content\s*\{[^}]*top:\s*46%;/s);
     assert.match(css, /\.landing-hero-content h1\s*\{[^}]*font-size:\s*56px;/s);
-    assert.match(css, /\.landing-hero-content p\s*\{[^}]*margin:\s*34px 0 0;/s);
     assert.match(css, /body\[data-page="landing"\]\s+\.site-header\s*\{[^}]*background:\s*transparent;/s);
+});
+
+test('landing entry keeps its label and route with a balanced font-independent arrow', () => {
+    const button = html.match(/<button class="landing-hero-enter"[^>]*>[\s\S]*?<\/button>/)?.[0];
+    assert.ok(button);
+    assert.match(button, /data-landing-enter data-route="home"/);
+    assert.match(button, /<span>사진 둘러보기<\/span>/);
+    assert.match(button, /<svg class="landing-hero-enter-icon"[^>]*aria-hidden="true"[^>]*focusable="false"/);
+    assert.doesNotMatch(button, /material-symbols-outlined/);
+    assert.match(css, /\.landing-hero-enter\s*\{[^}]*align-items:\s*center;[^}]*min-height:\s*52px;[^}]*font-family:\s*var\(--body\);[^}]*font-size:\s*16px;[^}]*line-height:\s*1\.25;/s);
+    assert.match(css, /\.landing-hero-enter-icon\s*\{[^}]*width:\s*20px;[^}]*height:\s*20px;[^}]*flex-shrink:\s*0;/s);
+    assert.match(css, /\.landing-hero-enter:focus-visible\s*\{[^}]*outline:\s*2px solid #ffffff;/s);
 });
 
 test('landing slideshow advances every ten seconds and wraps around', () => {

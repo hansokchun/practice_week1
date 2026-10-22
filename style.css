@@ -153,16 +153,7 @@ img[data-photo-reveal].is-photo-ready {
     line-height: 1.2;
     text-shadow: 0 2px 20px rgba(0, 0, 0, 0.42);
     word-break: keep-all;
-}
-
-.landing-hero-content p {
-    margin: 34px 0 0;
-    color: rgba(255, 255, 255, 0.96);
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.65;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.46);
-    word-break: keep-all;
+    text-wrap: balance;
 }
 
 .landing-hero-enter {
@@ -174,12 +165,16 @@ img[data-photo-reveal].is-photo-ready {
     min-height: 52px;
     margin-top: 34px;
     border: 1px solid rgba(255, 255, 255, 0.86);
-    border-radius: 6px;
+    border-radius: 8px;
     background: #ffffff;
     color: #173f40;
-    font-size: 15px;
-    font-weight: 800;
-    padding: 0 24px;
+    font-family: var(--body);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0;
+    padding: 14px 24px;
+    cursor: pointer;
     box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
     transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
@@ -191,8 +186,16 @@ img[data-photo-reveal].is-photo-ready {
     transform: translateY(-2px);
 }
 
-.landing-hero-enter .material-symbols-outlined {
-    font-size: 19px;
+.landing-hero-enter:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+}
+
+.landing-hero-enter-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 .landing-hero-footer {
@@ -302,9 +305,6 @@ body[data-page="landing"] .account-avatar {
         font-size: 40px;
     }
 
-    .landing-hero-content p {
-        font-size: 17px;
-    }
 }
 
 @media (max-width: 520px) {
@@ -353,14 +353,6 @@ body[data-page="landing"] .account-avatar {
     .landing-hero-content h1 {
         font-size: 36px;
         line-height: 1.25;
-    }
-
-    .landing-hero-content p {
-        max-width: 320px;
-        margin-right: auto;
-        margin-left: auto;
-        font-size: 16px;
-        line-height: 1.65;
     }
 
     .landing-hero-enter {
