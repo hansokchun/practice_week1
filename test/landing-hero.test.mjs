@@ -51,7 +51,8 @@ test('landing entry keeps its label and route with a balanced font-independent a
     assert.match(css, /\.landing-hero-enter\s*\{[^}]*align-items:\s*center;[^}]*min-height:\s*52px;[^}]*font-family:\s*var\(--body\);[^}]*line-height:\s*1\.25;/s);
     assert.match(css, /\.landing-hero-enter-icon\s*\{[^}]*flex-shrink:\s*0;/s);
     assert.match(css, /\.landing-hero-enter:focus-visible\s*\{[^}]*outline:\s*2px solid #ffffff;/s);
-    assert.match(html, /<svg class="landing-hero-sketch"[^>]*aria-hidden="true"[^>]*focusable="false"/);
+    assert.match(button, /<svg class="landing-hero-enter-logo"[^>]*aria-hidden="true"[^>]*focusable="false"/);
+    assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*\.landing-hero-enter-logo \*\s*\{\s*animation:\s*none;/s);
 });
 
 test('landing slideshow advances every ten seconds and wraps around', () => {
