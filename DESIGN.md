@@ -114,6 +114,13 @@ All spacing derives from a base of 4px.
 - **Style**: Notifications use one title line with ellipsis for overflow and the full title available on hover. Location-sharing guidance is included in its title. The upload note uses 14px/1.6 muted text, 12px padding, and Korean word-preserving wrapping. Dismiss targets are 44px. Profile menu buttons center their icons and labels vertically with balanced padding, including settings and logout.
 - **Accessibility**: A separately named dismiss button beside each notice. The popover scrolls on short viewports. Dismissal is stored per account in this browser and remains until storage is cleared.
 
+### Photo Contribution Invitations
+
+- **First photo**: A dismissible Home invitation appears only for a signed-in member whose own photo library has loaded successfully and is empty. Loading, failed reads and guest browsing never count as an empty account. Dismissal is stored per account in this browser, separately from the upload location reminder.
+- **Between sections**: One in-house invitation sits after the second visible topic section (between the first and second when only two are visible). Do not repeat it in every section or put it into search results. Its upload action uses the existing sign-in and pending-route flow.
+- **Style**: Reuse a shared contribution surface with `--surface-soft`, `--text`, `--teal`, `--thumbnail-radius` and the existing primary button. Desktop uses a leading 48px Material Symbol, a flexible text column and trailing action; mobile stacks the action below the copy. Padding is 32px desktop / 24px mobile, with 24px gaps, 24px headings, 16px body text and 1.6 line height. Keep Korean words together and allow the copy to wrap. The first invitation has a separately named 44px dismiss target. Focus-visible uses a 2px `--teal` outline with a 4px offset. No entrance motion or added media requests.
+- **Completion**: Celebrate the first upload distinctly, summarize actual saved visibility and offer `내 지도 보기` only when the just-uploaded photos have usable coordinates. Keep location assignment available for unlocated photos and retain the personal-library action. Completion copy never promises public sharing or a mapped place when those states are absent.
+
 ### Primary and Secondary Buttons
 
 - **Structure**: Native `button` with `.btn-primary`, `.btn-secondary`, `.nav-action`, or feature-specific action class.

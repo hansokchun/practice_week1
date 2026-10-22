@@ -413,9 +413,12 @@ body[data-page="landing"] .account-avatar {
 }
 
 .upload-complete-shell > p:not(.eyebrow) {
+    max-width: 75ch;
     margin: 0;
     color: var(--muted);
     font-size: 16px;
+    line-height: 1.6;
+    word-break: keep-all;
 }
 
 .upload-complete-preview {
@@ -1685,6 +1688,105 @@ body[data-page="home"] .landing-search-globe {
     display: grid;
     gap: 72px;
     padding-top: 28px;
+}
+
+.home-first-photo-invitation.page-container {
+    margin-top: 24px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.home-first-photo-invitation[hidden] {
+    display: none;
+}
+
+.photo-contribution {
+    position: relative;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    min-width: 0;
+    padding: 32px;
+    border-radius: var(--thumbnail-radius);
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+.photo-contribution--first {
+    padding-right: 80px;
+}
+
+.photo-contribution-icon {
+    color: var(--teal);
+    font-size: 48px;
+}
+
+.photo-contribution-copy {
+    min-width: 0;
+}
+
+.photo-contribution h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.3;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.photo-contribution p {
+    max-width: 75ch;
+    margin: 12px 0 0;
+    font-size: 16px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.photo-contribution > .btn-primary {
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+.photo-contribution-dismiss {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+    border: 0;
+    border-radius: var(--thumbnail-radius);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.photo-contribution-dismiss:hover {
+    background: var(--surface-muted);
+}
+
+.photo-contribution button:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 4px;
+}
+
+@media (max-width: 860px) {
+    .photo-contribution {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .photo-contribution--first .photo-contribution-icon {
+        margin-right: 44px;
+    }
+
+    .photo-contribution > .btn-primary {
+        justify-self: start;
+    }
 }
 
 .landing-map-footer {

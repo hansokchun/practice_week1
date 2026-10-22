@@ -132,6 +132,19 @@
                         <span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>관리자페이지
                     </button>
                 </div>
+                <div id="home-first-photo-invitation" class="home-first-photo-invitation page-container" hidden>
+                    <section class="photo-contribution photo-contribution--first" aria-labelledby="first-photo-invitation-title">
+                        <span class="material-symbols-outlined photo-contribution-icon" aria-hidden="true">add_a_photo</span>
+                        <div class="photo-contribution-copy">
+                            <h2 id="first-photo-invitation-title">첫 사진으로 내 지도를 시작해볼까요?</h2>
+                            <p>여행지가 아니어도 좋아요. 좋아하는 골목이나 카페를 사진으로 남겨보세요.</p>
+                        </div>
+                        <button class="btn-primary" data-route="upload" type="button">첫 사진 올리기</button>
+                        <button id="btn-dismiss-first-photo-invitation" class="photo-contribution-dismiss" type="button" aria-label="첫 사진 안내 닫기" title="첫 사진 안내 닫기">
+                            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                        </button>
+                    </section>
+                </div>
                 <div id="landing-sections" class="landing-sections page-container">
                     <section class="landing-photo-section" aria-labelledby="landing-loading-title">
                         <div class="landing-section-heading">
@@ -540,6 +553,10 @@
                     </div>
                 </div>
                 <div class="upload-complete-actions">
+                    <button id="btn-complete-map" class="btn-primary" type="button" hidden>
+                        <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                        내 지도 보기
+                    </button>
                     <button id="btn-complete-location-assign" class="btn-primary" type="button" hidden>
                         <span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span>
                         <span id="upload-complete-location-action-label">위치 추가하기</span>

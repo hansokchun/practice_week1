@@ -293,6 +293,13 @@ import {
     getNextLandingSlideIndex
 } from './landing-slideshow.mjs';
 import { normalizeLandingHeroLocationLabel } from './landing-location-label.mjs';
+import {
+    dismissFirstPhotoInvitation,
+    getContributionInsertIndex,
+    getUploadCompletionGuidance,
+    loadFirstPhotoInvitationDismissed,
+    shouldShowFirstPhotoInvitation
+} from './photo-contribution.mjs';
 import { uploadLandingHeroPhoto } from './landing-hero-upload.mjs';
 import {
     buildLandingTagHash,
@@ -1527,6 +1534,31 @@ function renderLandingPhotoCard(photo) {
     `;
 }
 
+function renderFirstPhotoInvitation() {
+    const invitation = $('#home-first-photo-invitation');
+    if (!invitation) return;
+    invitation.hidden = !shouldShowFirstPhotoInvitation({
+        userId: state.currentUser?.id,
+        hasLoadedPhotos: state.hasLoadedSavedPhotos && !state.isSavedLibraryLoading,
+        loadError: state.savedPhotosLoadError,
+        photoCount: getMySavedPhotos().length,
+        dismissed: loadFirstPhotoInvitationDismissed(window.localStorage, state.currentUser?.id)
+    });
+}
+
+function renderLandingContributionInvitation() {
+    return `
+        <aside class="photo-contribution photo-contribution--inline" aria-labelledby="landing-contribution-title">
+            <span class="material-symbols-outlined photo-contribution-icon" aria-hidden="true">add_photo_alternate</span>
+            <div class="photo-contribution-copy">
+                <h2 id="landing-contribution-title">당신의 장소도 들려주세요</h2>
+                <p>좋아하는 풍경부터 익숙한 골목까지, 사진 한 장으로 남겨보세요.</p>
+            </div>
+            <button class="btn-primary" data-contribution-upload type="button">사진 올려보기</button>
+        </aside>
+    `;
+}
+
 function renderLandingSections() {
     const container = $('#landing-sections');
     if (!container) return;
@@ -1557,7 +1589,7 @@ function renderLandingSections() {
     const resultCopy = $('#landing-search-result-copy');
     if (resultCopy) resultCopy.textContent = '공개 사진을 주제별로 둘러보세요.';
 
-    const sectionsMarkup = sections.map((section, sectionIndex) => {
+    const sectionMarkups = sections.map((section, sectionIndex) => {
         const sectionPhotos = getLandingSectionPhotos(section, allPhotos, sectionIndex);
         const visiblePhotos = getLandingVisiblePhotos(sectionPhotos);
         if (!visiblePhotos.length) return '';
@@ -1579,7 +1611,10 @@ function renderLandingSections() {
                 <div class="landing-photo-row${visiblePhotos.length ? '' : ' is-empty'}" data-landing-scroll tabindex="0" aria-label="${escapeHtml(section.title)} 사진 목록">${cards}</div>
             </section>
         `;
-    }).join('');
+    }).filter(Boolean);
+    const contributionIndex = getContributionInsertIndex(sectionMarkups.length);
+    if (contributionIndex !== null) sectionMarkups.splice(contributionIndex, 0, renderLandingContributionInvitation());
+    const sectionsMarkup = sectionMarkups.join('');
     // Keep image elements and horizontal scroll positions when only unrelated UI changes.
     if (lastLandingSectionsMarkup === sectionsMarkup) {
         centerLandingRowsOnMobile();
@@ -6214,6 +6249,7 @@ async function loadPublicProfileNames() {
 }
 
 function renderSavedPhotoSurfaces() {
+    renderFirstPhotoInvitation();
     const myPhotos = getMySavedPhotos();
     const isSavedPhotoLoading = Boolean(state.currentUser && !state.hasLoadedSavedPhotos);
     const missingLocationPhotos = getMissingLocationPhotos(myPhotos);
@@ -6630,6 +6666,7 @@ function formatLocationAssignmentRelativeTime(photo) {
 
 function renderUploadCompletePage() {
     const uploadedPhotos = getUploadCompletionPhotos(getMySavedPhotos(), state.lastSavedPhotoIds);
+    const guidance = getUploadCompletionGuidance(uploadedPhotos, getMySavedPhotos().length);
     const missingPhotos = getMissingLocationPhotos(uploadedPhotos);
     const preview = $('#upload-complete-preview');
     const summary = $('#upload-complete-summary');
@@ -6637,12 +6674,12 @@ function renderUploadCompletePage() {
     const promptTitle = $('#upload-complete-location-title');
     const action = $('#btn-complete-location-assign');
     const actionLabel = $('#upload-complete-location-action-label');
+    const mapAction = $('#btn-complete-map');
+    const title = $('#upload-complete-title');
 
-    if (summary) {
-        summary.textContent = uploadedPhotos.length
-            ? `${uploadedPhotos.length}장이 내 보관함에 비공개로 저장됐습니다.`
-            : '사진 저장이 완료됐습니다.';
-    }
+    if (title) title.textContent = guidance.title;
+    if (summary) summary.textContent = guidance.summary;
+    if (mapAction) mapAction.hidden = !guidance.hasLocatedPhotos;
     if (preview) {
         preview.innerHTML = uploadedPhotos.slice(0, 6).map((photo) => `
             <span>${renderPhotoImage(photo, '방금 저장한 사진')}</span>
@@ -6650,7 +6687,11 @@ function renderUploadCompletePage() {
         preview.hidden = uploadedPhotos.length === 0;
     }
     if (prompt) prompt.hidden = missingPhotos.length === 0;
-    if (action) action.hidden = missingPhotos.length === 0;
+    if (action) {
+        action.hidden = missingPhotos.length === 0;
+        action.classList.toggle('btn-primary', !guidance.hasLocatedPhotos);
+        action.classList.toggle('btn-secondary', guidance.hasLocatedPhotos);
+    }
     if (promptTitle) promptTitle.textContent = `위치 정보가 없는 사진 ${missingPhotos.length}장이 있어요`;
     if (actionLabel) actionLabel.textContent = `위치 없는 사진 ${missingPhotos.length}장 추가하기`;
 }
@@ -8847,6 +8888,14 @@ function bindEvents() {
     $('#btn-open-upload')?.addEventListener('click', () => routeTo('upload'));
     $('#btn-open-photos')?.addEventListener('click', () => routeTo('photos'));
     $('#btn-upload-more-photos')?.addEventListener('click', () => routeTo('upload'));
+    $('#btn-dismiss-first-photo-invitation')?.addEventListener('click', () => {
+        dismissFirstPhotoInvitation(window.localStorage, state.currentUser?.id);
+        $('#home-first-photo-invitation').hidden = true;
+        $('#landing-search-input')?.focus({ preventScroll: true });
+    });
+    $('#btn-complete-map')?.addEventListener('click', () => {
+        if (state.currentUser) routeToProfileFromAuthor(null, state.currentUser.id);
+    });
     $('#btn-complete-location-assign')?.addEventListener('click', () => {
         state.selectedLocationPhotoId = getMissingLocationAssignmentPhotos(getMySavedPhotos(), state.currentUser?.id)[0]?.id || null;
         routeTo('location-assign');
@@ -8939,6 +8988,10 @@ function bindEvents() {
             return;
         }
         if (!(event.target instanceof Element)) return;
+        if (event.target.closest('[data-contribution-upload]')) {
+            routeTo('upload');
+            return;
+        }
         const readLike = event.target.closest('[data-read-received-likes]');
         if (readLike) {
             const userId = state.currentUser?.id;
