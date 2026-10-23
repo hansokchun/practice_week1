@@ -7,7 +7,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 
-test('production CSS preserves nonzero durations for every part of the drawn logo', async () => {
+test('production CSS keeps every logo part repeating on one shared four-second cycle', async () => {
     // The source was correct while the production minifier collapsed the nameless
     // animation shorthand to `none`. Exercise the actual Vite production pipeline.
     const result = await build({ logLevel: 'silent', build: { write: false } });
@@ -15,15 +15,13 @@ test('production CSS preserves nonzero durations for every part of the drawn log
     const compiled = outputs.filter(item => item.type === 'asset' && item.fileName.endsWith('.css'))
         .map(item => String(item.source)).join('\n');
     const rules = Array.from(compiled.matchAll(/([^{}]+)\{([^{}]*)\}/g));
-    for (const [part, duration] of [
-        ['landing-mark-trail circle', /(?:\.28s|280ms)/],
-        ['landing-mark-pin', /(?:\.6s|600ms)/],
-        ['landing-mark-leaf', /(?:\.65s|650ms)/],
-        ['landing-mark-vein', /(?:\.45s|450ms)/]
-    ]) {
-        assert.ok(rules.some(([, selector, declarations]) => selector.includes(part)
-            && /animation(?:-duration)?:/.test(declarations) && duration.test(declarations)),
-        `${part} must keep its animation duration after production minification`);
+    for (const part of ['landing-mark-trail circle', 'landing-mark-pin', 'landing-mark-leaf', 'landing-mark-vein']) {
+        for (const interaction of [':hover', ':focus-visible']) {
+            assert.ok(rules.some(([, selector, declarations]) => selector.includes(part)
+                && selector.includes(interaction) && /animation:/.test(declarations)
+                && /\b(?:4s|4000ms)\b/.test(declarations) && /\binfinite\b/.test(declarations)),
+            `${part} must repeat with a visible pause on ${interaction} in the production build`);
+        }
     }
 });
 
@@ -42,7 +40,8 @@ test('landing and contribution actions share the drawn mark without changing the
 test('shared logo motion is opt-in and respects pointer and reduced-motion preferences', () => {
     assert.match(css, /@media \(prefers-reduced-motion: no-preference\)/);
     assert.match(css, /\[data-brand-motion\]:focus-visible \.landing-mark-pin/);
-    assert.match(css, /@media \(hover: hover\) and \(pointer: fine\)/);
+    // A touch-first laptop can still have a real, fine mouse attached.
+    assert.match(css, /@media \(any-hover: hover\) and \(any-pointer: fine\)/);
     assert.match(css, /\[data-brand-motion\]:hover \.landing-mark-pin/);
     assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\[data-brand-motion\] \.landing-hero-enter-logo \*/);
 });

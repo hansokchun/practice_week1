@@ -235,51 +235,63 @@ img[data-photo-reveal].is-photo-ready {
 
 @media (prefers-reduced-motion: no-preference) {
     [data-brand-motion]:focus-visible .landing-mark-trail circle {
-        animation: landing-mark-dot 280ms ease-out both;
+        animation: landing-mark-dot 4s ease-out infinite both;
         animation-delay: var(--landing-mark-delay, 0ms);
     }
     [data-brand-motion]:focus-visible .landing-mark-pin {
-        animation: landing-mark-line 600ms ease-out 300ms both;
+        animation: landing-mark-pin 4s ease-out infinite both;
     }
     [data-brand-motion]:focus-visible .landing-mark-leaf {
-        animation: landing-mark-leaf 650ms cubic-bezier(0.2, 0.7, 0.3, 1) 700ms both;
+        animation: landing-mark-leaf 4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite both;
     }
     [data-brand-motion]:focus-visible .landing-mark-vein {
-        animation: landing-mark-line 450ms ease-out 850ms both;
+        animation: landing-mark-vein 4s ease-out infinite both;
     }
 
-    @media (hover: hover) and (pointer: fine) {
+    @media (any-hover: hover) and (any-pointer: fine) {
         [data-brand-motion]:hover .landing-mark-trail circle {
-            animation: landing-mark-dot 280ms ease-out both;
+            animation: landing-mark-dot 4s ease-out infinite both;
             animation-delay: var(--landing-mark-delay, 0ms);
         }
         [data-brand-motion]:hover .landing-mark-pin {
-            animation: landing-mark-line 600ms ease-out 300ms both;
+            animation: landing-mark-pin 4s ease-out infinite both;
         }
         [data-brand-motion]:hover .landing-mark-leaf {
-            animation: landing-mark-leaf 650ms cubic-bezier(0.2, 0.7, 0.3, 1) 700ms both;
+            animation: landing-mark-leaf 4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite both;
         }
         [data-brand-motion]:hover .landing-mark-vein {
-            animation: landing-mark-line 450ms ease-out 850ms both;
+            animation: landing-mark-vein 4s ease-out infinite both;
         }
     }
 }
 
+/* Draw during the first 1.35s, hold the complete mark, then gently reset.
+   A shared cycle keeps the trail, pin and leaf in order on every repeat. */
 @keyframes landing-mark-dot {
-    from { opacity: 0; transform: translateY(2px); }
-    to { opacity: 1; transform: translateY(0); }
+    from, to { opacity: 0; transform: translateY(2px); }
+    7%, 80% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 0; transform: translateY(2px); }
 }
 
-@keyframes landing-mark-line {
-    from { opacity: 0; stroke-dashoffset: 1; }
-    12% { opacity: 1; }
-    to { opacity: 1; stroke-dashoffset: 0; }
+@keyframes landing-mark-pin {
+    from, 7.5%, to { opacity: 0; stroke-dashoffset: 1; }
+    9.3% { opacity: 1; stroke-dashoffset: 1; }
+    22.5%, 80% { opacity: 1; stroke-dashoffset: 0; }
+    90% { opacity: 0; stroke-dashoffset: 0; }
 }
 
 @keyframes landing-mark-leaf {
-    from { opacity: 0; stroke-dashoffset: 1; transform: scale(0.65) rotate(-12deg); }
-    25% { opacity: 1; }
-    to { opacity: 1; stroke-dashoffset: 0; transform: scale(1) rotate(0); }
+    from, 17.5%, to { opacity: 0; stroke-dashoffset: 1; transform: scale(0.65) rotate(-12deg); }
+    21.5% { opacity: 1; stroke-dashoffset: 1; transform: scale(0.8) rotate(-6deg); }
+    33.75%, 80% { opacity: 1; stroke-dashoffset: 0; transform: scale(1) rotate(0); }
+    90% { opacity: 0; stroke-dashoffset: 0; transform: scale(1) rotate(0); }
+}
+
+@keyframes landing-mark-vein {
+    from, 21.25%, to { opacity: 0; stroke-dashoffset: 1; }
+    23.5% { opacity: 1; stroke-dashoffset: 1; }
+    32.5%, 80% { opacity: 1; stroke-dashoffset: 0; }
+    90% { opacity: 0; stroke-dashoffset: 0; }
 }
 
 .landing-hero-footer {

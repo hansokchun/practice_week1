@@ -1,5 +1,16 @@
 # Lessons Learned
 
+## 2026-10-24: Verify The Actual Pointer, Not Only Keyboard Motion
+
+- A working keyboard focus animation does not prove mouse hover was tested.
+  Record the actual `:hover` state and changing opacity/dash offset on both
+  deployed buttons, including held hover, leaving and re-entering.
+- A one-shot 1.35-second effect is easy to miss after the pointer has settled.
+  The requested held-hover feedback now uses a synchronized four-second cycle
+  with a complete-symbol pause; reduced-motion and idle states remain static.
+- Primary-pointer `hover` / `pointer` media queries can exclude an attached
+  mouse on a touch-first computer. Use available-pointer queries for this mark.
+
 ## 2026-10-23: Verify Button Motion In The Minified Build
 
 - A nameless `animation` shorthand followed by a variable `animation-name` can

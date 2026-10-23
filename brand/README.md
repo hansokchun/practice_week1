@@ -19,7 +19,8 @@ user request is required for a new brand version.
 
 The landing entry and between-section photo contribution buttons share a separately
 requested inline SVG interpretation of the pin, leaf and dotted trail. Pointer hover or keyboard focus draws the
-trail, pin and leaf once; reduced-motion and idle states show the complete
+trail, pin and leaf, holds the complete symbol and repeats every four seconds;
+reduced-motion and idle states show the complete
 symbol. It is decorative, does not delay navigation, and does not replace the
 master or runtime logo files above.
 
