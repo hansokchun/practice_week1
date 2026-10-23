@@ -1,0 +1,22 @@
+[
+  {
+    "name": "ikkyee-shorts-map-feed-4s-v4.mp4",
+    "bytes": 8363521,
+    "sha256": "2bd9bbee8baae849f4578ccfaeb78c572df661f5d0f6d9dde2294ce746985be8"
+  },
+  {
+    "name": "preview.gif",
+    "bytes": 4460614,
+    "sha256": "81978c2ebb3162d25cfb9ed1d4ee798833dae67abe7d42a29b9a5fcb3bfef75f"
+  },
+  {
+    "name": "README.txt",
+    "bytes": 1328,
+    "sha256": "2cedf40b668cafdecdb12544675c2d12f0e847fd5931d6fc03fb6c8ef73a4c0a"
+  },
+  {
+    "name": "verification.json",
+    "bytes": 984,
+    "sha256": "3b7901d7add99c1842a4d79de2ffe7df6352c7558dd86da7bebdc8cd381fd545"
+  }
+]

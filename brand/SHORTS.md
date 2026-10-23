@@ -39,3 +39,13 @@ budgets, preserved sources and standalone non-autoplay delivery.
 
 Run `npm test` and `npm run build`. Native builds exclude `/brand` downloads,
 so video/ZIP packages do not become app-binary payload or normal-page requests.
+
+## Map-to-feed endings (2026-10-23)
+
+The separately requested final 3-second V3 and 4-second V4 endings show a map
+pin becoming a photo, joining an actual mobile main-page capture, scrolling,
+and finishing on the approved wordmark. Their portable renderers, shared source
+images, encoder, delivery fingerprints and verification records live in
+[`marketing/shorts-map-feed/`](../marketing/shorts-map-feed/README.md).
+These 60fps marketing deliveries do not replace the original kit above and are
+not added to normal website or app downloads.

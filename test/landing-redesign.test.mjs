@@ -83,7 +83,7 @@ test('랜딩 사진 카드는 이미지만 표시하고 하단 글 오버레이�
     const app = await readFile(new URL('js/app.js', root), 'utf8');
     const css = await readFile(new URL('style.css', root), 'utf8');
     const cardStart = app.indexOf('function renderLandingPhotoCard');
-    const cardEnd = app.indexOf('function renderLandingSections', cardStart);
+    const cardEnd = app.indexOf('\nfunction ', cardStart + 'function '.length);
     const cardRenderer = app.slice(cardStart, cardEnd);
     assert.match(cardRenderer, /<img /);
     assert.doesNotMatch(cardRenderer, /<span>/);

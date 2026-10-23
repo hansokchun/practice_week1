@@ -1580,12 +1580,45 @@ function renderFirstPhotoInvitation() {
 function renderLandingContributionInvitation() {
     return `
         <aside class="photo-contribution photo-contribution--inline" aria-labelledby="landing-contribution-title">
-            <span class="material-symbols-outlined photo-contribution-icon" aria-hidden="true">add_photo_alternate</span>
             <div class="photo-contribution-copy">
+                <p class="photo-contribution-eyebrow">사진 한 장, 나만의 장소 기록</p>
                 <h2 id="landing-contribution-title">당신의 장소도 들려주세요</h2>
-                <p>좋아하는 풍경부터 익숙한 골목까지, 사진 한 장으로 남겨보세요.</p>
+                <p class="photo-contribution-description">좋아하는 풍경부터 익숙한 골목까지,<br>사진 한 장으로 남겨보세요.</p>
+                <button class="btn-primary photo-contribution-cta" data-contribution-upload data-brand-motion type="button">
+                    <svg class="landing-hero-enter-logo" aria-hidden="true" focusable="false" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <g class="landing-mark-trail" fill="currentColor" stroke="none">
+                            <circle cx="5" cy="42" r="1.1" />
+                            <circle cx="10" cy="38.5" r="1.1" />
+                            <circle cx="15.5" cy="36.5" r="1.1" />
+                            <circle cx="21" cy="36" r="1.1" />
+                        </g>
+                        <path class="landing-mark-pin" pathLength="1" d="M29 35c-3-5-11-12-11-19a12 12 0 0 1 24 0c0 8-8 15-13 19Z" />
+                        <path class="landing-mark-leaf" pathLength="1" fill="currentColor" fill-opacity="0.12" d="M27 24c-5-8-1-13 9-13 1 8-2 12-9 13Z" />
+                        <path class="landing-mark-vein" pathLength="1" d="M27 27c0-6 3-11 7-14" />
+                    </svg>
+                    <span>사진 올려보기</span>
+                    <svg class="landing-hero-enter-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                </button>
             </div>
-            <button class="btn-primary" data-contribution-upload type="button">사진 올려보기</button>
+            <svg class="photo-contribution-art" aria-hidden="true" focusable="false" viewBox="0 0 280 220" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 181c39 31 84 6 110-21s61-20 97-38" stroke-dasharray="1 7" stroke-width="2" opacity=".4" />
+                <g transform="translate(27 34) rotate(-9 70 70)">
+                    <rect class="contribution-paper" width="132" height="152" rx="8" stroke-opacity=".18" />
+                    <path d="M16 126h63m-63 9h39" opacity=".25" />
+                </g>
+                <g transform="translate(69 25) rotate(7 70 76)">
+                    <rect class="contribution-frame" width="142" height="164" rx="8" stroke-opacity=".3" />
+                    <rect class="contribution-landscape" x="10" y="10" width="122" height="116" rx="4" stroke="none" />
+                    <circle cx="102" cy="36" r="12" stroke-opacity=".5" />
+                    <path d="M16 112 53 66l27 31 15-17 31 32" stroke-opacity=".6" />
+                    <path d="M18 142h62m-62 10h38" opacity=".25" />
+                </g>
+                <g transform="translate(207 109)">
+                    <path class="contribution-frame" d="M17 53C10 42-8 26-8 10a25 25 0 0 1 50 0c0 17-16 33-25 43Z" stroke-width="2" />
+                    <path d="M13 22C4 9 12 0 29 1c1 14-5 21-16 21Z" fill="currentColor" fill-opacity=".12" />
+                    <path d="M13 29c0-11 5-19 12-24" />
+                </g>
+            </svg>
         </aside>
     `;
 }

@@ -1,0 +1,20 @@
+{
+  "verifiedDate": "2026-10-23",
+  "checks": {
+    "originalSourceHashesVerifiedPerVersion": 5,
+    "originalDeliveryManifestEntriesVerifiedPerVersion": 4,
+    "archivedRendererSampleFramesMatchingOriginalPerVersion": 10,
+    "zipCRCVerified": true,
+    "v3VideoFullyDecodedFrames": 180,
+    "v3VideoDurationSeconds": 3,
+    "v4VideoFullyDecodedFrames": 240,
+    "v4VideoDurationSeconds": 4,
+    "videoDimensions": [1080, 1920],
+    "videoFPS": 60,
+    "audioTracks": 0,
+    "javascriptSyntaxChecks": "passed",
+    "repositoryTestsPassed": 1237,
+    "webBuild": "passed"
+  },
+  "notes": "The portable renderer dependency and file locations were adapted, then 10 regenerated frames from each version were compared byte-for-byte to the original still PNGs. Original MP4s were independently decoded using AVFoundation. No original video, archive or brand master was modified. Large original deliveries remain outside Git."
+}

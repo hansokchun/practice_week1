@@ -1,5 +1,26 @@
 # Lessons Learned
 
+## 2026-10-24: Verify The Actual Pointer, Not Only Keyboard Motion
+
+- A working keyboard focus animation does not prove mouse hover was tested.
+  Record the actual `:hover` state and changing opacity/dash offset on both
+  deployed buttons, including held hover, leaving and re-entering.
+- A one-shot 1.35-second effect is easy to miss after the pointer has settled.
+  The requested held-hover feedback now uses a synchronized four-second cycle
+  with a complete-symbol pause; reduced-motion and idle states remain static.
+- Primary-pointer `hover` / `pointer` media queries can exclude an attached
+  mouse on a touch-first computer. Use available-pointer queries for this mark.
+
+## 2026-10-23: Verify Button Motion In The Minified Build
+
+- A nameless `animation` shorthand followed by a variable `animation-name` can
+  be reduced to `animation:none` by production CSS minification. The name still
+  changes on hover, but its duration is zero and the drawing never appears.
+- Put complete named animations on hover/focus selectors and leave idle marks
+  static. Keep interaction rules inside the no-preference motion media query.
+- Check the compiled CSS and a deployed preview, not only source contracts or
+  an unminified development server. Exercise leave/re-enter and keyboard focus.
+
 ## 2026-10-13: Do Not Cache An HTML Fallback As CSS
 
 - Production Chrome can retain a `text/html` SPA fallback under a hashed CSS URL;
