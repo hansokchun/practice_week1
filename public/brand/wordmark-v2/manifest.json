@@ -1,0 +1,362 @@
+{
+  "version": "2.0",
+  "text": "장소아카이브 이끼",
+  "runtimeReplacement": false,
+  "source": {
+    "path": "brand/ikkyee-symbol-v1.png",
+    "sha256": "50cc546024b3a981a6a2ece4291e6f5820623b94d64fb1a67945037ccd66bdd8",
+    "fullPaddingPreserved": true,
+    "whiteTreatment": "original alpha silhouette"
+  },
+  "fontSource": {
+    "repository": "https://github.com/orioncactus/pretendard",
+    "commit": "7aeb0698819be2b4097dae8ec8fe6a795e5cf3ae"
+  },
+  "fonts": [
+    {
+      "family": "Pretendard",
+      "weight": 500,
+      "path": "brand/fonts/Pretendard-Medium.otf",
+      "sha256": "d39e50e4bb52b4993b6a4eeb821a171254745bd824446af01e1f616b89fface0",
+      "license": "brand/fonts/Pretendard-LICENSE.txt"
+    },
+    {
+      "family": "Pretendard",
+      "weight": 600,
+      "path": "brand/fonts/Pretendard-SemiBold.otf",
+      "sha256": "c89bc43027dc7cde5726e96223376f8eec09302b2fc1f8147fd5b57cfc376118",
+      "license": "brand/fonts/Pretendard-LICENSE.txt"
+    }
+  ],
+  "colors": {
+    "teal": "#245457",
+    "white": "#ffffff",
+    "light": "#f9f7f2",
+    "dark": "#003637",
+    "ink": "#191c1c",
+    "muted": "#70787d",
+    "line": "#dedfdc"
+  },
+  "svgFormat": "outlined lettering with embedded original PNG symbol; not a pure vector master",
+  "variants": [
+    {
+      "id": "horizontal",
+      "width": 1024,
+      "height": 400,
+      "symbolSize": 350,
+      "brandSize": 216,
+      "descriptorSize": 56,
+      "tracking": 2.8,
+      "gap": 44,
+      "labelGap": 24,
+      "minimumWidth": 280,
+      "text": "장소아카이브 이끼",
+      "layout": {
+        "width": 1024,
+        "height": 400,
+        "symbol": {
+          "x": 138.67384370015947,
+          "y": 23.185805422647523,
+          "width": 350,
+          "height": 350
+        },
+        "symbolArtwork": {
+          "x": 167.4218500797448,
+          "y": 45.23524720893141,
+          "width": 301.15629984051037,
+          "height": 309.5295055821372
+        },
+        "brand": {
+          "x": 512.5781499202551,
+          "y": 141.5,
+          "width": 344,
+          "height": 195
+        },
+        "descriptor": {
+          "x": 512.5781499202551,
+          "y": 63.5,
+          "width": 306,
+          "height": 54
+        }
+      }
+    },
+    {
+      "id": "stacked",
+      "width": 640,
+      "height": 720,
+      "symbolSize": 340,
+      "brandSize": 196,
+      "descriptorSize": 48,
+      "tracking": 2.4,
+      "gap": 36,
+      "labelGap": 24,
+      "minimumWidth": 180,
+      "text": "장소아카이브 이끼",
+      "layout": {
+        "width": 640,
+        "height": 720,
+        "symbol": {
+          "x": 145.7974481658692,
+          "y": 45.73763955342905,
+          "width": 340,
+          "height": 340
+        },
+        "symbolArtwork": {
+          "x": 173.72408293460924,
+          "y": 67.15709728867625,
+          "width": 292.5518341307815,
+          "height": 300.6858054226475
+        },
+        "brand": {
+          "x": 164,
+          "y": 403.84290271132375,
+          "width": 312,
+          "height": 178
+        },
+        "descriptor": {
+          "x": 188.5,
+          "y": 605.8429027113237,
+          "width": 263,
+          "height": 47
+        }
+      }
+    },
+    {
+      "id": "compact",
+      "width": 560,
+      "height": 220,
+      "symbolSize": 160,
+      "brandSize": 116,
+      "descriptorSize": 0,
+      "tracking": 0,
+      "gap": 24,
+      "labelGap": 0,
+      "minimumWidth": 104,
+      "text": "이끼",
+      "layout": {
+        "width": 560,
+        "height": 220,
+        "symbol": {
+          "x": 92.52232854864434,
+          "y": 29.17065390749602,
+          "width": 160,
+          "height": 160
+        },
+        "symbolArtwork": {
+          "x": 105.66427432216906,
+          "y": 39.25039872408294,
+          "width": 137.67145135566187,
+          "height": 141.49920255183412
+        },
+        "brand": {
+          "x": 267.33572567783096,
+          "y": 56.5,
+          "width": 187,
+          "height": 107
+        },
+        "descriptor": null
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "horizontal-teal.svg",
+      "variant": "horizontal",
+      "tone": "teal",
+      "format": "svg",
+      "width": 1024,
+      "height": 400,
+      "sha256": "38c62f68dd25e7591b9ee08ddf396cc70a36e96c67402dd3b1a59e2a11f83f1d"
+    },
+    {
+      "path": "horizontal-teal.png",
+      "variant": "horizontal",
+      "tone": "teal",
+      "format": "png",
+      "scale": 1,
+      "width": 1024,
+      "height": 400,
+      "sha256": "aa526c1b882b39b2ded978bf824fc6b74159b099b67a64466fc9fcf8b07ea3ae"
+    },
+    {
+      "path": "horizontal-teal@2x.png",
+      "variant": "horizontal",
+      "tone": "teal",
+      "format": "png",
+      "scale": 2,
+      "width": 2048,
+      "height": 800,
+      "sha256": "cb9798af77dbd0a039a3ee226fe64a9f49c109e5f466d8134bbb50ba7bb40b12"
+    },
+    {
+      "path": "horizontal-white.svg",
+      "variant": "horizontal",
+      "tone": "white",
+      "format": "svg",
+      "width": 1024,
+      "height": 400,
+      "sha256": "98446b27156a0c767b8047becacec6ce030361ec182d4891eac9fb86e9b6fd3b"
+    },
+    {
+      "path": "horizontal-white.png",
+      "variant": "horizontal",
+      "tone": "white",
+      "format": "png",
+      "scale": 1,
+      "width": 1024,
+      "height": 400,
+      "sha256": "cc67068e9ddb2c9134417082cd4f86f2db4c6a85b3c5a4dd21b76253c21d6204"
+    },
+    {
+      "path": "horizontal-white@2x.png",
+      "variant": "horizontal",
+      "tone": "white",
+      "format": "png",
+      "scale": 2,
+      "width": 2048,
+      "height": 800,
+      "sha256": "2ad569d9f936fd5dfecfa85216a781f36b9340684e30723525301e24476c60b8"
+    },
+    {
+      "path": "stacked-teal.svg",
+      "variant": "stacked",
+      "tone": "teal",
+      "format": "svg",
+      "width": 640,
+      "height": 720,
+      "sha256": "af6e0e169d0a5c708646994db9b16d089b34c5d35ca7c87df58bd34584c26841"
+    },
+    {
+      "path": "stacked-teal.png",
+      "variant": "stacked",
+      "tone": "teal",
+      "format": "png",
+      "scale": 1,
+      "width": 640,
+      "height": 720,
+      "sha256": "e0835db37a26610e37e2614272fa42a8d29f77e3e7fce889aeee7aabaa4348a1"
+    },
+    {
+      "path": "stacked-teal@2x.png",
+      "variant": "stacked",
+      "tone": "teal",
+      "format": "png",
+      "scale": 2,
+      "width": 1280,
+      "height": 1440,
+      "sha256": "b0301348c6c47f926d8f912795fef1c031ad42242effc642890f4b30bca05414"
+    },
+    {
+      "path": "stacked-white.svg",
+      "variant": "stacked",
+      "tone": "white",
+      "format": "svg",
+      "width": 640,
+      "height": 720,
+      "sha256": "f95fca0681ecd40fd881f81dd0c92e2b091fae7c639b07d21f0dd1482f5b96a2"
+    },
+    {
+      "path": "stacked-white.png",
+      "variant": "stacked",
+      "tone": "white",
+      "format": "png",
+      "scale": 1,
+      "width": 640,
+      "height": 720,
+      "sha256": "f8fdcba803388df32d2251e1bebefd19ea4daafba7fe18e81e7a92ea9555b0b6"
+    },
+    {
+      "path": "stacked-white@2x.png",
+      "variant": "stacked",
+      "tone": "white",
+      "format": "png",
+      "scale": 2,
+      "width": 1280,
+      "height": 1440,
+      "sha256": "25be84358e14f88d9a9364231d0d3ac186dc2f5c664908aff7cac3b685e46413"
+    },
+    {
+      "path": "compact-teal.svg",
+      "variant": "compact",
+      "tone": "teal",
+      "format": "svg",
+      "width": 560,
+      "height": 220,
+      "sha256": "6db554416b690ca29481972799b65cff0c57e0e1c511af0c78d08f489b7cb834"
+    },
+    {
+      "path": "compact-teal.png",
+      "variant": "compact",
+      "tone": "teal",
+      "format": "png",
+      "scale": 1,
+      "width": 560,
+      "height": 220,
+      "sha256": "4a16eae3abb05b01f72abfa3414cd807c86154dfe185dbc0aa3dd59c822979d9"
+    },
+    {
+      "path": "compact-teal@2x.png",
+      "variant": "compact",
+      "tone": "teal",
+      "format": "png",
+      "scale": 2,
+      "width": 1120,
+      "height": 440,
+      "sha256": "9f8a84bcf6feafeb00ccffa2dba24fd4eb52042ff2ab31963218bb1bffc5fb65"
+    },
+    {
+      "path": "compact-white.svg",
+      "variant": "compact",
+      "tone": "white",
+      "format": "svg",
+      "width": 560,
+      "height": 220,
+      "sha256": "b0c10cf69584a1a0aaddc5ff51f0a17966a4e08dcccd9437811ddbf9b9690f67"
+    },
+    {
+      "path": "compact-white.png",
+      "variant": "compact",
+      "tone": "white",
+      "format": "png",
+      "scale": 1,
+      "width": 560,
+      "height": 220,
+      "sha256": "eb54264e81de2f1035f06e66ec271cdd1a17079d6fe7bda8b8e5ef1612c6975d"
+    },
+    {
+      "path": "compact-white@2x.png",
+      "variant": "compact",
+      "tone": "white",
+      "format": "png",
+      "scale": 2,
+      "width": 1120,
+      "height": 440,
+      "sha256": "6da61847e4e89a06470580c1e61fcd63d4cb5aa33bc28566af4c0bd6b5622561"
+    }
+  ],
+  "previews": [
+    {
+      "path": "preview.png",
+      "width": 1800,
+      "height": 1600,
+      "sha256": "616b4fb389426dd0503c5025922e3c282946bcefa9c097883bbb4690e4438594"
+    },
+    {
+      "path": "preview-dark.png",
+      "width": 1800,
+      "height": 1600,
+      "sha256": "55cf86f8a939a676daf9e487fb210ef528e926690b28a63c60d090fa603f1b65"
+    },
+    {
+      "path": "size-check.png",
+      "width": 1000,
+      "height": 900,
+      "sha256": "6bc719c3315e05af176e8a539b3940470cee1b29d4db4d5fb41b32d35a9ebd53"
+    }
+  ],
+  "archive": {
+    "path": "ikkyee-wordmark-v2.zip",
+    "bytes": 3829909,
+    "sha256": "4dd1aa1cba5be564bc9472bbb70febcba95b2cb1a247253904b07d9a8b48b59b"
+  }
+}

@@ -55,6 +55,13 @@ The [Korean phrase wordmark](KOREAN-WORDMARK.md) pairs the approved symbol with
 `장소아카이브 이끼` on one line at `/brand/#korean-wordmark`; it is another
 separate delivery and does not replace the earlier logos.
 
+The separate [Korean wordmark v2 kit](WORDMARK-V2.md) gives `이끼` stronger
+typographic emphasis and supplies horizontal, stacked and compact layouts at
+[`public/brand/wordmark-v2/`](../public/brand/wordmark-v2/). It preserves the
+approved raster symbol and adds Pretendard-based transparent PNG and mixed
+raster/vector SVG exports for reuse. It does not automatically replace app UI,
+native assets, earlier kits or Shorts compositions.
+
 The [Shorts source kit](SHORTS.md) adds 9:16 intros, outros, alpha overlays and
 static editing sources for `장소아카이브 이끼` at `/brand/#shorts-kit`. These are
 standalone downloads and do not replace runtime logos or earlier animations.
