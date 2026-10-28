@@ -23,14 +23,14 @@ test('header uses one map-create action and a separate dismissible invitation', 
 
 test('guest invitation is distinct from its CTA and adapts its left-side placement to narrow viewports', () => {
     const bubble = css.match(/\.guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
-    assert.match(bubble, /--guest-map-invitation-surface: var\(--surface\)/);
+    assert.match(bubble, /--guest-map-invitation-surface: linear-gradient/);
     assert.match(bubble, /border: 1px solid var\(--line\)/);
     assert.doesNotMatch(bubble, /--gold/);
     assert.match(bubble, /inset-inline-end: calc\(100% \+/);
     assert.match(bubble, /width: min\([^;]*100vw/);
     assert.match(bubble, /color: var\(--teal-dark\)/);
     assert.match(css, /\.guest-map-invitation-action\s*\{[^}]*font:[^;]*var\(--body\);[^}]*letter-spacing: var\(--text-tracking\)/s);
-    assert.match(html, /class="guest-map-invitation-icon material-symbols-outlined" aria-hidden="true">map/);
+    assert.match(html, /class="guest-map-invitation-icon" aria-hidden="true"><img src="images\/logo\.png"/);
     assert.match(css, /@media \(max-width:[^)]+\)\s*\{\s*\.guest-map-invitation\s*\{[^}]*inset-block-start: calc\(100% \+[^}]*inset-inline-end: 0;/s);
     assert.match(css, /\.guest-map-invitation::before\s*\{[^}]*inset-inline-end: -/s);
     const close = css.match(/#btn-dismiss-guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
@@ -57,27 +57,29 @@ test('photo picker and save controls align their icon and label together', () =>
     assert.match(css, /\.photo-trial-picker \[data-trial-add\],\s*\.photo-trial-footer \[data-trial-continue\]\s*\{[^}]*display: inline-flex;[^}]*align-items: center;[^}]*justify-content: center;[^}]*gap: 8px;/s);
 });
 
-test('the first trial screen preserves the three original cards without their deleted descriptions', () => {
+test('the first trial screen presents a concise branded three-step experience', () => {
     const intro = html.match(/<section class="photo-trial-intro"[\s\S]*?<\/section>/)?.[0] || '';
     assert.match(intro, /data-trial-empty/);
-    assert.equal((intro.match(/<li>/g) || []).length, 3);
+    assert.match(intro, /이끼 · 장소 저장소/);
+    assert.match(intro, /사진을 골라 내 지도에 놓아보세요/);
+    assert.equal((intro.match(/<li(?:\s|>)/g) || []).length, 3);
     assert.deepEqual([...intro.matchAll(/class="photo-trial-step-number" aria-hidden="true">(\d{2})<\/span>/g)].map(match => match[1]), ['01', '02', '03']);
     for (const icon of ['add_photo_alternate', 'add_location_alt', 'photo_library']) assert.ok(intro.includes(icon), icon);
-    for (const title of ['사진 고르기', '지도에서 확인하기', '저장하기']) assert.ok(intro.includes(`<strong>${title}</strong>`), title);
-    assert.doesNotMatch(intro, /<p\b/);
+    for (const title of ['사진 고르기', '장소 확인', '지도에 저장']) assert.ok(intro.includes(`<strong>${title}</strong>`), title);
+    assert.match(intro, /aria-current="step"/);
     assert.match(css, /\.photo-trial-steps\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/s);
-    assert.match(css, /\.photo-trial-steps li\s*\{[^}]*background: var\(--photo-trial-step-surface\)/s);
+    assert.match(css, /\.photo-trial-intro\s*\{[^}]*background:/s);
+    assert.match(css, /\.photo-trial-steps::before\s*\{/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width: min\(var\(--photo-trial-empty-width\), 100%\)/s);
 });
 
-test('the compact empty dialog uses a decorative map mark without changing the selected editor', () => {
+test('the compact empty dialog uses the approved symbol without changing the selected editor', () => {
     const modal = html.slice(html.indexOf('id="photo-trial-modal"'), html.indexOf('id="auth-modal"'));
-    assert.match(modal, /class="photo-trial-map-mark material-symbols-outlined" aria-hidden="true">map<\/span>/);
-    assert.doesNotMatch(modal, /photo-trial-brand|<img[^>]+images\/logo\.png/);
+    assert.match(modal, /class="photo-trial-map-mark" aria-hidden="true"><img src="images\/logo\.png"/);
     const mark = css.match(/\.photo-trial-map-mark\s*\{([^}]+)\}/s)?.[1] || '';
     assert.match(mark, /display: none;/);
-    assert.match(mark, /color: var\(--teal\)/);
+    assert.match(css, /\.photo-trial-map-mark img\s*\{[^}]*object-fit:\s*contain;/s);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-map-mark\s*\{[^}]*display: grid;/s);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-picker\s*\{[^}]*justify-content: center;/s);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-footer\s*\{[^}]*padding:/s);

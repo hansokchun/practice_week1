@@ -11,8 +11,8 @@ export function getKakaoSharePayload(url, content = {}) {
     return {
         objectType: 'feed',
         content: {
-            title: content.title || 'Ikkyee 여행 앨범',
-            description: content.description || '장소 아카이브',
+            title: content.title || '이끼 여행 앨범',
+            description: content.description || '이끼 · 장소 저장소',
             imageUrl: content.imageUrl || 'https://practice-week1-cws.pages.dev/social-preview.jpg',
             link: {
                 mobileWebUrl: shareUrl,

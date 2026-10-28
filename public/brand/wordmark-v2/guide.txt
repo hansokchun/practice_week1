@@ -1,8 +1,8 @@
-장소아카이브 이끼 · 워드마크 2.0
+이끼 · 장소 저장소 · 워드마크 2.1
 
 1. 기본 사용
-horizontal: 심볼 왼쪽, 작은 장소아카이브와 큰 이끼를 두 줄로 배치합니다.
-stacked: 심볼 위, 이끼와 장소아카이브를 아래에 중앙 정렬합니다.
+horizontal: 심볼 왼쪽, 작은 장소 저장소와 큰 이끼를 두 줄로 배치합니다.
+stacked: 심볼 위, 이끼와 장소 저장소를 아래에 중앙 정렬합니다.
 compact: 심볼과 이끼만 사용합니다. 서비스가 이미 소개된 작은 헤더·워터마크에 적합합니다.
 
 2. 파일 선택
@@ -20,7 +20,7 @@ SVG 전체가 순수 벡터는 아닙니다. 심볼은 원본 1254px 래스터�
 쇼츠에서는 앱 버튼·자막 영역과 겹치지 않는지 실제 업로드 화면에서 확인하세요.
 
 4. 글꼴과 원본
-이끼: Pretendard SemiBold 600. 장소아카이브: Pretendard Medium 500.
+이끼: Pretendard SemiBold 600. 장소 저장소: Pretendard Medium 500.
 공식 출처: https://github.com/orioncactus/pretendard
 사용한 원본 커밋: 7aeb0698819be2b4097dae8ec8fe6a795e5cf3ae
 동봉된 원본 글꼴과 SIL Open Font License 문서를 함께 보관하세요.

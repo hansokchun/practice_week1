@@ -18,8 +18,8 @@ export function createNativeStartupPlugin() {
                     .replace('<html lang="ko">', '<html lang="ko" class="native-app">')
                     .replace('data-page="landing"', 'data-page="home"')
                     .replace('id="page-home" class="page page-home"', 'id="page-home" class="page page-home active"')
-                    .replace('href="#/landing" data-route="landing" aria-label="Ikkyee 이끼 landing"',
-                        'href="#/" data-route="home" aria-label="Ikkyee 이끼 메인"')
+                    .replace('href="#/landing" data-route="landing" aria-label="이끼 장소 저장소 홈"',
+                        'href="#/" data-route="home" aria-label="이끼 장소 저장소 메인"')
                     .replace(/https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@[^/]+\/dist\/umd\/supabase.min.js/,
                         './native-supabase.js')
                     .replace('<p id="auth-message"', '<button id="btn-native-guest" class="auth-link-button" type="button">로그인 없이 둘러보기</button>\n            <p id="auth-message"')
@@ -27,8 +27,8 @@ export function createNativeStartupPlugin() {
     <div id="native-startup" role="status" aria-live="polite" aria-label="이끼 시작 중">
         <div class="native-startup-brand">
             <img src="images/logo.png" alt="" width="256" height="256">
-            <span class="native-startup-wordmark">Ikkyee</span>
-            <span class="native-startup-caption">사진에서 시작되는 여행</span>
+            <span class="native-startup-wordmark">이끼</span>
+            <span class="native-startup-caption">장소 저장소</span>
             <span class="native-startup-dots" aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
         <p id="native-startup-message">로그인 없이 사진과 장소를 둘러보세요</p>

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 import {
@@ -30,7 +31,12 @@ function decodeIconSvg(icon) {
     return decodeURIComponent(encoded);
 }
 
-test('Explore photo pin icon uses a visible Google Maps symbol color', () => {
+test('desktop pointer hover gives the leaf pin a restrained lift', () => {
+    const css = readFileSync('style.css', 'utf8');
+    assert.match(css, /@media \(hover: hover\) and \(pointer: fine\)[\s\S]*\.explore-map \.google-map-marker-image:hover\s*\{[^}]*transform:\s*translateY\(-2px\) scale\(1\.08\);/s);
+});
+
+test('Explore photo pin uses one branded leaf with a grounded stem', () => {
     const maps = createMapsStub();
     const icon = getExplorePinSymbolIcon(maps, { type: 'photo' });
     const svg = decodeIconSvg(icon);
@@ -39,21 +45,18 @@ test('Explore photo pin icon uses a visible Google Maps symbol color', () => {
     assert.equal(icon.strokeColor, EXPLORE_PHOTO_PIN_COLOR);
     assert.equal(icon.strokeWeight, 0);
     assert.match(icon.url, /^data:image\/svg\+xml;charset=UTF-8,/);
-    assert.match(svg, /M14 35C/);
-    assert.match(svg, /<mask id="photo-pin-mask">/);
-    assert.match(svg, /<circle cx="14" cy="14" r="5\.2" fill="#000000" \/>/);
-    assert.match(svg, /mask="url\(#photo-pin-mask\)"/);
-    assert.doesNotMatch(svg, /<circle cx="14" cy="14" r="5\.2" fill="#ffffff" \/>/);
-    assert.doesNotMatch(svg, /stroke="#ffffff"/);
-    assert.doesNotMatch(svg, /drop-shadow|filter=/);
+    assert.match(svg, /id="ikkyee-leaf-pin"/);
+    assert.equal((svg.match(/class="leaf-shape"/g) || []).length, 1);
+    assert.match(svg, /class="leaf-stem"/);
+    assert.match(svg, /class="leaf-vein"/);
     assert.doesNotMatch(svg, /<animate /);
-    assert.equal(icon.scaledSize.width, 28);
-    assert.equal(icon.scaledSize.height, 36);
-    assert.equal(icon.anchor.x, 14);
-    assert.equal(icon.anchor.y, 35);
+    assert.equal(icon.scaledSize.width, 36);
+    assert.equal(icon.scaledSize.height, 44);
+    assert.equal(icon.anchor.x, 18);
+    assert.equal(icon.anchor.y, 42);
 });
 
-test('Explore cluster pin icon is visually distinct from a photo pin', () => {
+test('Explore cluster pin adds one smaller leaf beside the main leaf', () => {
     const maps = createMapsStub();
     const photoIcon = getExplorePinSymbolIcon(maps, { type: 'photo' });
     const clusterIcon = getExplorePinSymbolIcon(maps, { type: 'cluster' });
@@ -64,14 +67,16 @@ test('Explore cluster pin icon is visually distinct from a photo pin', () => {
     assert.equal(clusterIcon.strokeColor, EXPLORE_CLUSTER_PIN_COLOR);
     assert.equal(clusterIcon.strokeWeight, 0);
     assert.match(clusterIcon.url, /^data:image\/svg\+xml;charset=UTF-8,/);
-    assert.match(svg, /<mask id="cluster-pin-mask">/);
-    assert.match(svg, /<circle cx="17" cy="16\.5" r="5\.6" fill="#000000" \/>/);
-    assert.match(svg, /mask="url\(#cluster-pin-mask\)"/);
-    assert.doesNotMatch(svg, /stroke="#ffffff"/);
-    assert.doesNotMatch(svg, /drop-shadow|filter=/);
+    assert.match(svg, /id="ikkyee-leaf-cluster"/);
+    assert.equal((svg.match(/class="leaf-shape(?: |")/g) || []).length, 2);
+    assert.match(svg, /class="leaf-shape leaf-shape--small"/);
+    assert.equal(clusterIcon.scaledSize.width, 48);
+    assert.equal(clusterIcon.scaledSize.height, 48);
+    assert.equal(clusterIcon.anchor.x, 22);
+    assert.equal(clusterIcon.anchor.y, 46);
 });
 
-test('Explore selected photo pin is larger and layered above normal pins', () => {
+test('Explore selected photo keeps the leaf silhouette and adds a restrained pulse', () => {
     const maps = createMapsStub();
     const photoIcon = getExplorePinSymbolIcon(maps, { type: 'photo' });
     const selectedIcon = getExplorePinSymbolIcon(maps, { type: 'photo', selected: true });
@@ -83,18 +88,12 @@ test('Explore selected photo pin is larger and layered above normal pins', () =>
     assert.equal(selectedIcon.strokeColor, EXPLORE_SELECTED_PIN_COLOR);
     assert.notEqual(selectedIcon.fillColor, photoIcon.fillColor);
     assert.equal(selectedIcon.fillColor, EXPLORE_SELECTED_PIN_COLOR);
-    assert.equal(selectedIcon.anchor.x, 32);
+    assert.equal(selectedIcon.anchor.x, 28);
     assert.equal(selectedIcon.anchor.y, 62);
-    assert.match(svg, /M32 62C28 56\.5 12 41 12 28A20 20/);
-    assert.match(svg, /<mask id="selected-pin-mask">/);
-    assert.match(svg, /<circle cx="32" cy="28" r="8" fill="#000000" \/>/);
-    assert.match(svg, /mask="url\(#selected-pin-mask\)"/);
-    assert.doesNotMatch(svg, /<circle cx="32" cy="28" r="8" fill="#ffffff" \/>/);
-    assert.doesNotMatch(svg, /stroke="#ffffff"/);
-    assert.doesNotMatch(svg, /drop-shadow|filter=/);
-    assert.match(svg, /<ellipse cx="32" cy="62" rx="4" ry="1\.5"/);
-    assert.match(svg, /<animate attributeName="rx" values="4;30" dur="1\.8s" repeatCount="indefinite" \/>/);
-    assert.match(svg, /<animate attributeName="ry" values="1\.5;8" dur="1\.8s" repeatCount="indefinite" \/>/);
-    assert.match(svg, /<animateTransform attributeName="transform" type="translate" values="0 0;0 -7;0 2;0 0"/);
-    assert.match(svg, /dur="0\.44s" repeatCount="1" \/>/);
+    assert.match(svg, /id="ikkyee-leaf-selected"/);
+    assert.equal((svg.match(/class="leaf-shape"/g) || []).length, 1);
+    assert.match(svg, /<ellipse cx="28" cy="62" rx="4" ry="1\.5"/);
+    assert.match(svg, /<animate attributeName="rx" values="4;24" dur="1\.8s" repeatCount="indefinite" \/>/);
+    assert.match(svg, /<animateTransform attributeName="transform" type="translate" values="0 0;0 -5;0 1;0 0"/);
+    assert.match(svg, /dur="0\.42s" repeatCount="1" \/>/);
 });

@@ -66,6 +66,7 @@ test('style recovery executes before the app stylesheet and changes no applicati
 test('missing static files have a real static error page instead of the SPA shell', () => {
     const error = readFileSync(new URL('../public/404.html', import.meta.url), 'utf8');
     assert.match(error, /페이지를 찾을 수 없습니다/);
+    assert.match(error, /이끼 · 장소 저장소/);
     assert.doesNotMatch(error, /page-home|js\/app\.js|supabase/);
     assert.match(error, /href="\/#\/"/);
 });

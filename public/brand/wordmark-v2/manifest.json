@@ -1,6 +1,6 @@
 {
-  "version": "2.0",
-  "text": "장소아카이브 이끼",
+  "version": "2.1",
+  "text": "이끼 · 장소 저장소",
   "runtimeReplacement": false,
   "source": {
     "path": "brand/ikkyee-symbol-v1.png",
@@ -50,7 +50,7 @@
       "gap": 44,
       "labelGap": 24,
       "minimumWidth": 280,
-      "text": "장소아카이브 이끼",
+      "text": "이끼 · 장소 저장소",
       "layout": {
         "width": 1024,
         "height": 400,
@@ -75,7 +75,7 @@
         "descriptor": {
           "x": 512.5781499202551,
           "y": 63.5,
-          "width": 306,
+          "width": 271,
           "height": 54
         }
       }
@@ -91,7 +91,7 @@
       "gap": 36,
       "labelGap": 24,
       "minimumWidth": 180,
-      "text": "장소아카이브 이끼",
+      "text": "이끼 · 장소 저장소",
       "layout": {
         "width": 640,
         "height": 720,
@@ -114,9 +114,9 @@
           "height": 178
         },
         "descriptor": {
-          "x": 188.5,
+          "x": 203.5,
           "y": 605.8429027113237,
-          "width": 263,
+          "width": 233,
           "height": 47
         }
       }
@@ -166,7 +166,7 @@
       "format": "svg",
       "width": 1024,
       "height": 400,
-      "sha256": "38c62f68dd25e7591b9ee08ddf396cc70a36e96c67402dd3b1a59e2a11f83f1d"
+      "sha256": "92c843535cc8194d56d4b412e69b799c32862b62a21334f694403f1b0f242b59"
     },
     {
       "path": "horizontal-teal.png",
@@ -176,7 +176,7 @@
       "scale": 1,
       "width": 1024,
       "height": 400,
-      "sha256": "aa526c1b882b39b2ded978bf824fc6b74159b099b67a64466fc9fcf8b07ea3ae"
+      "sha256": "96bc8de13c173099e9d12f29a2aba08ff4974247eb591086d1dadd171501f80f"
     },
     {
       "path": "horizontal-teal@2x.png",
@@ -186,7 +186,7 @@
       "scale": 2,
       "width": 2048,
       "height": 800,
-      "sha256": "cb9798af77dbd0a039a3ee226fe64a9f49c109e5f466d8134bbb50ba7bb40b12"
+      "sha256": "a1cbb77181a5d73fdb5d23c8e2e725f6020f5b6966e6f57d46dda55b2594c62a"
     },
     {
       "path": "horizontal-white.svg",
@@ -195,7 +195,7 @@
       "format": "svg",
       "width": 1024,
       "height": 400,
-      "sha256": "98446b27156a0c767b8047becacec6ce030361ec182d4891eac9fb86e9b6fd3b"
+      "sha256": "ebb2616971a01dd5702e39811d5b41d0817957d395b46428e7cbfbd89a0c1bee"
     },
     {
       "path": "horizontal-white.png",
@@ -205,7 +205,7 @@
       "scale": 1,
       "width": 1024,
       "height": 400,
-      "sha256": "cc67068e9ddb2c9134417082cd4f86f2db4c6a85b3c5a4dd21b76253c21d6204"
+      "sha256": "950d8fa058697f7bafd47222cc3ce1420916ed1a86b0251d3ba1474e60fe57fd"
     },
     {
       "path": "horizontal-white@2x.png",
@@ -215,7 +215,7 @@
       "scale": 2,
       "width": 2048,
       "height": 800,
-      "sha256": "2ad569d9f936fd5dfecfa85216a781f36b9340684e30723525301e24476c60b8"
+      "sha256": "d24777b79a636aa1bd7063a0a6be0b7f56ff1abf71e5e8641975cffdf3321056"
     },
     {
       "path": "stacked-teal.svg",
@@ -224,7 +224,7 @@
       "format": "svg",
       "width": 640,
       "height": 720,
-      "sha256": "af6e0e169d0a5c708646994db9b16d089b34c5d35ca7c87df58bd34584c26841"
+      "sha256": "2d1a129f38ee8a2ff3873027af1058922ea75563e5b1037b9f1e60d54932ef84"
     },
     {
       "path": "stacked-teal.png",
@@ -234,7 +234,7 @@
       "scale": 1,
       "width": 640,
       "height": 720,
-      "sha256": "e0835db37a26610e37e2614272fa42a8d29f77e3e7fce889aeee7aabaa4348a1"
+      "sha256": "c7433be2d32f909031dfcebf4000e8aad42d584d8b3fdfdd6b5b417c18d51ddb"
     },
     {
       "path": "stacked-teal@2x.png",
@@ -244,7 +244,7 @@
       "scale": 2,
       "width": 1280,
       "height": 1440,
-      "sha256": "b0301348c6c47f926d8f912795fef1c031ad42242effc642890f4b30bca05414"
+      "sha256": "6434ccdbc3fd1746fb2eb97b974a870b72c52bfc9ec6fd7561da5448474c2ba5"
     },
     {
       "path": "stacked-white.svg",
@@ -253,7 +253,7 @@
       "format": "svg",
       "width": 640,
       "height": 720,
-      "sha256": "f95fca0681ecd40fd881f81dd0c92e2b091fae7c639b07d21f0dd1482f5b96a2"
+      "sha256": "620ac677fb4af2fc10c191342e22356d76f7563171281f41e2d0e5a2809f929d"
     },
     {
       "path": "stacked-white.png",
@@ -263,7 +263,7 @@
       "scale": 1,
       "width": 640,
       "height": 720,
-      "sha256": "f8fdcba803388df32d2251e1bebefd19ea4daafba7fe18e81e7a92ea9555b0b6"
+      "sha256": "ebdd6e24ccfeea9dc0a844b6268fa106d9cf230e98087490125e48f2f3828800"
     },
     {
       "path": "stacked-white@2x.png",
@@ -273,7 +273,7 @@
       "scale": 2,
       "width": 1280,
       "height": 1440,
-      "sha256": "25be84358e14f88d9a9364231d0d3ac186dc2f5c664908aff7cac3b685e46413"
+      "sha256": "73bc759f8332a207bc9a5daecec981672cebed8d61a0732dddac51e104c9a9a7"
     },
     {
       "path": "compact-teal.svg",
@@ -282,7 +282,7 @@
       "format": "svg",
       "width": 560,
       "height": 220,
-      "sha256": "6db554416b690ca29481972799b65cff0c57e0e1c511af0c78d08f489b7cb834"
+      "sha256": "c9115bc0c45c2bb7116e60a5c34e5d148ba614d0d175521447f0fcc36e2d2389"
     },
     {
       "path": "compact-teal.png",
@@ -311,7 +311,7 @@
       "format": "svg",
       "width": 560,
       "height": 220,
-      "sha256": "b0c10cf69584a1a0aaddc5ff51f0a17966a4e08dcccd9437811ddbf9b9690f67"
+      "sha256": "400b7c64814d88656399501264357693fa4e12dcc465219c112d34d94f2e8ef9"
     },
     {
       "path": "compact-white.png",
@@ -339,24 +339,24 @@
       "path": "preview.png",
       "width": 1800,
       "height": 1600,
-      "sha256": "616b4fb389426dd0503c5025922e3c282946bcefa9c097883bbb4690e4438594"
+      "sha256": "f539d5d0c15bfd9fd2bb1c9d36da1a1ba2782168b8f95b4ee7eb176629fc0f2a"
     },
     {
       "path": "preview-dark.png",
       "width": 1800,
       "height": 1600,
-      "sha256": "55cf86f8a939a676daf9e487fb210ef528e926690b28a63c60d090fa603f1b65"
+      "sha256": "07c169e9ce3f2e82daebef1b5d59deb793fee58fb7a51b8029b828af1ec645d6"
     },
     {
       "path": "size-check.png",
       "width": 1000,
       "height": 900,
-      "sha256": "6bc719c3315e05af176e8a539b3940470cee1b29d4db4d5fb41b32d35a9ebd53"
+      "sha256": "a0284fb87dbc6c94c9e1b133fd06570ac5831df05b5208732c2615fe39152dfe"
     }
   ],
   "archive": {
     "path": "ikkyee-wordmark-v2.zip",
-    "bytes": 3829909,
-    "sha256": "4dd1aa1cba5be564bc9472bbb70febcba95b2cb1a247253904b07d9a8b48b59b"
+    "bytes": 3824635,
+    "sha256": "06c3ad371b9a2fbde395b6d5a9333a55b81c6390ae3de33497127b48520d5fe5"
   }
 }

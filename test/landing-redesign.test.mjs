@@ -65,6 +65,7 @@ test('메인 검색창 위의 소개 문구를 제거하고 비워진 간격만�
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload \.material-symbols-outlined\s*\{[^}]*display:\s*inline-block;/s);
     assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*\.brand-korean\s*\{[^}]*display:\s*inline;/s);
     assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
+    assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*body\.is-logged-out #btn-header-upload\s*>\s*#header-upload-label\s*\{[^}]*display:\s*none;/s);
     assert.doesNotMatch(html, /지금 둘러보기|data-landing-query="도쿄 골목"|data-landing-query="벚꽃"|data-landing-query="일본"/);
 });
 

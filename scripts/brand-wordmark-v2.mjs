@@ -8,7 +8,7 @@ const variants = {
 };
 
 export const WORDMARK_V2 = Object.freeze({
-    version: '2.0', text: '장소아카이브 이끼', name: '이끼', descriptor: '장소아카이브',
+    version: '2.1', text: '이끼 · 장소 저장소', name: '이끼', descriptor: '장소 저장소',
     colors: Object.freeze({ teal: '#245457', white: '#ffffff', light: '#f9f7f2',
         dark: '#003637', ink: '#191c1c', muted: '#70787d', line: '#dedfdc' }),
     master: Object.freeze({ width: 1254, height: 1254,

@@ -37,7 +37,9 @@ test('wordmark layouts preserve the full symbol frame and separate all visible l
 
 test('the new reusable kit fingerprints the approved symbol and outlined lettering', () => {
     const manifest = JSON.parse(read('public/brand/wordmark-v2/manifest.json'));
-    assert.equal(manifest.text, '장소아카이브 이끼');
+    assert.equal(manifest.text, '이끼 · 장소 저장소');
+    assert.equal(WORDMARK_V2.name, '이끼');
+    assert.equal(WORDMARK_V2.descriptor, '장소 저장소');
     assert.equal(manifest.runtimeReplacement, false);
     assert.equal(manifest.source.sha256, hash(read('brand/ikkyee-symbol-v1.png')));
     assert.equal(manifest.source.sha256,
@@ -58,7 +60,7 @@ test('the new reusable kit fingerprints the approved symbol and outlined letteri
             assert.match(svg, /<path /);
             assert.match(svg, /data:image\/png;base64,/);
             assert.doesNotMatch(svg, /<text\b|<script\b|<foreignObject\b|href="https?:/);
-            assert.match(svg, /<title[^>]*>장소아카이브 이끼<\/title>/);
+            assert.match(svg, /<title[^>]*>이끼 · 장소 저장소<\/title>/);
         }
     }
     const archive = read(`public/brand/wordmark-v2/${manifest.archive.path}`);
@@ -66,4 +68,18 @@ test('the new reusable kit fingerprints the approved symbol and outlined letteri
     assert.equal(hash(archive), manifest.archive.sha256);
     assert.ok(archive.length < 25 * 1024 * 1024);
     assert.equal(WORDMARK_V2.colors.teal, '#245457');
+});
+
+test('the brand downloads page presents wordmark v2 as current and labels earlier kits as legacy', () => {
+    const html = read('public/brand/index.html').toString();
+    assert.match(html, /id="wordmark-v2"/);
+    assert.match(html, /wordmark-v2\/ikkyee-wordmark-v2\.zip/);
+    assert.match(html, /wordmark-v2\/horizontal-teal\.png/);
+    assert.match(html, /wordmark-v2\/stacked-teal\.png/);
+    assert.match(html, /wordmark-v2\/compact-teal\.png/);
+    assert.match(html, /이끼 · 장소 저장소/);
+    assert.match(html, /이전 브랜드 자료/);
+    assert.match(html, /현재 마케팅에 사용하지 마세요/);
+    assert.match(html, /id="brand-kit-v1" class="legacy"/);
+    assert.match(html, /id="marketing-v1" class="legacy"/);
 });

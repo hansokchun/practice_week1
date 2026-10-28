@@ -17,7 +17,7 @@ export function buildContentShare(origin, type, item = {}) {
         url,
         imageUrl: `${url}&image=1`,
         title: String(item.title || item.description || (type === 'photo' ? '이끼 사진' : '이끼 여행 앨범')).slice(0, 100),
-        description: '장소 아카이브',
+        description: '이끼 · 장소 저장소',
         buttonTitle: type === 'photo' ? '사진 보기' : '앨범 보기'
     };
 }

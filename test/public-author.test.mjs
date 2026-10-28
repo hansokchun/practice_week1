@@ -23,11 +23,11 @@ test('getPublicAuthorName uses current user metadata for own albums', () => {
     );
 });
 
-test('getPublicAuthorName keeps demo albums branded', () => {
-    assert.equal(getPublicAuthorName({ owner_id: 'demo' }, {}), 'Ikkyee');
+test('getPublicAuthorName uses a neutral public fallback for demo albums', () => {
+    assert.equal(getPublicAuthorName({ owner_id: 'demo' }, {}), '여행자');
 });
 
 test('getAuthorInitials makes compact initials', () => {
     assert.equal(getAuthorInitials('Nari Kim'), 'NK');
-    assert.equal(getAuthorInitials('Ikkyee'), 'IK');
+    assert.equal(getAuthorInitials('여행자'), '여');
 });

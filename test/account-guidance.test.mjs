@@ -15,7 +15,10 @@ test('new accounts receive friendly location guidance and an actionable upload i
     assert.equal(items.length, 2);
     assert.match(items[0].body, /집·직장/);
     assert.equal(items[1].route, 'upload');
-    assert.match(items[1].title, /지도/);
+    assert.equal(items[1].title, '첫 사진으로 지도를 시작해보세요');
+    assert.equal(items[1].body, '사진을 올리면 여행한 장소가 지도에 차곡차곡 쌓여요.');
+    assert.equal(items[1].cta, '나만의 지도 만들기');
+    assert.equal(items[1].featured, true);
     assert.deepEqual(loadAccountGuidance(store, 'new').welcomeNotices, guidance.welcomeNotices);
 });
 

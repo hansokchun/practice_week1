@@ -111,7 +111,7 @@ for (const dark of [false, true]) {
         background: inverse } }).png().toBuffer();
     const layers = [
         await label(design.text, 44, fg, 96, 64),
-        await label('WORDMARK 2.0', 22, fg, 1470, 82),
+        await label(`WORDMARK ${design.version}`, 22, fg, 1470, 82),
         await label('기본 가로형', 28, fg, 96, 174),
         await logo('horizontal', tone, 1400, 200, 218),
         await label('세로형 · 프로필과 표지', 28, fg, 96, 846),
@@ -161,7 +161,7 @@ const manifest = { version: design.version, text: design.text, runtimeReplacemen
     svgFormat: 'outlined lettering with embedded original PNG symbol; not a pure vector master',
     variants, assets, previews };
 const zip = new JSZip();
-const date = new Date('2026-10-24T00:00:00Z');
+const date = new Date('2026-10-29T00:00:00Z');
 for (const asset of [...assets, ...previews]) {
     zip.file(asset.path, await readFile(new URL(asset.path, output)), { date });
 }

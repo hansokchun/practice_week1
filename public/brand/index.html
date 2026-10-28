@@ -41,6 +41,14 @@
         .sample.square img { width: 76%; }
         .sample.poster { aspect-ratio: 1; background: #f0f2f1; padding: 12px; }
         .sample.poster img { width: auto; max-height: 100%; object-fit: contain; }
+        .wordmark-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .sample.wordmark { aspect-ratio: 1; padding: 24px; }
+        .sample.wordmark img { width: 100%; max-height: 100%; object-fit: contain; }
+        .current-kit { background: #f9f7f2; }
+        .legacy { background: #fbfbfa; color: #5e6664; }
+        .legacy h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .legacy-badge { display: inline-flex; align-items: center; min-height: 26px; padding: 3px 9px; border: 1px solid #c8cecb; border-radius: 999px; color: #66716e; font-size: 12px; font-weight: 700; }
+        .legacy-note { margin: -12px 0 24px; color: #7b5550; font-size: 13px; font-weight: 700; }
         video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #f9f7f2; }
         .shorts-video { aspect-ratio: 9 / 16; max-width: 240px; margin: 0 auto; }
         .shorts-sheet { max-width: 680px; margin: 24px auto 0; }
@@ -58,7 +66,7 @@
             .container { padding-left: 20px; padding-right: 20px; }
             header img { width: 170px; }
             h1 { font-size: 27px; }
-            .grid, .files { grid-template-columns: minmax(0, 1fr); }
+            .grid, .files, .wordmark-grid { grid-template-columns: minmax(0, 1fr); }
             .icons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .marketing { grid-template-columns: minmax(0, 1fr); }
             .intro { padding-top: 32px; }
@@ -66,47 +74,61 @@
     </style>
 </head>
 <body>
-    <header><div class="container"><img src="assets/logos/lockup-horizontal-teal.png" width="1800" height="600" alt="Ikkyee 이끼"><a href="/">서비스로 돌아가기</a></div></header>
+    <header><div class="container"><img src="wordmark-v2/horizontal-teal.png" width="1024" height="400" alt="이끼 · 장소 저장소"><a href="/">서비스로 돌아가기</a></div></header>
     <main>
         <div class="container intro">
             <h1>이끼 브랜드 파일</h1>
-            <p>앱, 웹, SNS와 마케팅에 사용할 로고와 이미지 24종입니다. 승인된 심볼의 형태는 그대로 유지했습니다.</p>
-            <p class="muted">브랜드 v1.0 · PNG · 2026년 10월 14일 제작</p>
-            <div class="actions"><a class="download" href="ikkyee-brand-kit-v1.zip" download>전체 파일 다운로드</a><a href="사용안내.txt" download>사용 안내</a><a href="preview.png" download>한눈에 보기</a></div>
+            <p>현재 브랜드인 <strong>이끼 · 장소 저장소</strong>의 웹·SNS·마케팅용 파일입니다. 승인된 심볼의 형태는 그대로 유지했습니다.</p>
+            <p class="muted">워드마크 v2.1 · PNG·SVG · 2026년 10월 29일 갱신</p>
+            <div class="actions"><a class="download" href="wordmark-v2/ikkyee-wordmark-v2.zip" download>현행 워드마크 다운로드</a><a href="wordmark-v2/guide.txt" download>사용 안내</a><a href="wordmark-v2/preview.png" download>한눈에 보기</a><a href="ikkyee-brand-kit-v1.zip" download>이전 전체 키트</a></div>
         </div>
-        <section><div class="container">
-            <h2>기본 로고</h2>
+        <section id="wordmark-v2" class="current-kit"><div class="container">
+            <h2>이끼 · 장소 저장소</h2>
+            <p class="muted">기본은 가로형을 사용하고, 좁은 공간에서는 세로형 또는 소형을 선택하세요.</p>
+            <div class="grid wordmark-grid">
+                <figure><div class="sample wordmark"><img src="wordmark-v2/horizontal-teal.png" width="1024" height="400" alt="이끼 장소 저장소 가로형 워드마크"></div><figcaption><span>가로형 · 기본</span><a href="wordmark-v2/horizontal-teal.png" download>PNG</a><a href="wordmark-v2/horizontal-teal.svg" download>SVG</a></figcaption></figure>
+                <figure><div class="sample wordmark"><img src="wordmark-v2/stacked-teal.png" width="640" height="720" alt="이끼 장소 저장소 세로형 워드마크"></div><figcaption><span>세로형</span><a href="wordmark-v2/stacked-teal.png" download>PNG</a><a href="wordmark-v2/stacked-teal.svg" download>SVG</a></figcaption></figure>
+                <figure><div class="sample wordmark"><img src="wordmark-v2/compact-teal.png" width="560" height="220" alt="이끼 소형 워드마크"></div><figcaption><span>소형 · 좁은 공간</span><a href="wordmark-v2/compact-teal.png" download>PNG</a><a href="wordmark-v2/compact-teal.svg" download>SVG</a></figcaption></figure>
+            </div>
+        </div></section>
+        <section id="brand-kit-v1" class="legacy"><div class="container">
+            <h2>이전 전체 키트 기본 로고 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에는 위의 워드마크 v2.1을 사용하세요. 이 영역은 과거 제작물 재현용입니다.</p>
             <div class="grid">
                 <figure><div class="sample"><img src="assets/logos/lockup-horizontal-teal.png" width="1800" height="600" alt="밝은 배경의 청록색 가로형 이끼 로고"></div><figcaption><span>밝은 배경용 · 투명 PNG</span><a href="assets/logos/lockup-horizontal-teal.png" download>다운로드</a></figcaption></figure>
                 <figure><div class="sample dark"><img src="assets/logos/lockup-horizontal-white.png" width="1800" height="600" alt="어두운 배경의 흰색 가로형 이끼 로고"></div><figcaption><span>어두운 배경용 · 투명 PNG</span><a href="assets/logos/lockup-horizontal-white.png" download>다운로드</a></figcaption></figure>
             </div>
         </div></section>
-        <section id="archive-logo"><div class="container">
-            <h2>장소아카이브 로고</h2>
+        <section id="archive-logo" class="legacy"><div class="container">
+            <h2>장소아카이브 로고 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에 사용하지 마세요. 2026년 10월 29일 이전 제작본입니다.</p>
             <div class="grid">
                 <figure><div class="sample archive"><img src="archive-logo/lockup-teal.png" width="2100" height="600" alt="Ikkyee 장소아카이브"></div><figcaption><span>청록색 · 투명 PNG</span><a href="archive-logo/lockup-teal.png" download>다운로드</a></figcaption></figure>
                 <figure><div class="sample archive dark"><img src="archive-logo/lockup-white.png" width="2100" height="600" alt="어두운 배경용 Ikkyee 장소아카이브"></div><figcaption><span>흰색 · 투명 PNG</span><a href="archive-logo/lockup-white.png" download>다운로드</a></figcaption></figure>
             </div>
             <div class="actions"><a class="download" href="archive-logo/ikkyee-archive-logo.zip" download>장소아카이브 버전 다운로드</a><a href="archive-logo/guide.txt" download>사용 안내</a></div>
         </div></section>
-        <section id="korean-wordmark"><div class="container">
-            <h2>장소아카이브 이끼</h2>
+        <section id="korean-wordmark" class="legacy"><div class="container">
+            <h2>장소아카이브 이끼 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에 사용하지 마세요. 2026년 10월 29일 이전 제작본입니다.</p>
             <div class="grid">
                 <figure><div class="sample korean"><img src="korean-wordmark/lockup-teal.png" width="1800" height="440" alt="장소아카이브 이끼"></div><figcaption><span>청록색 · 투명 PNG</span><a href="korean-wordmark/lockup-teal.png" download>다운로드</a></figcaption></figure>
                 <figure><div class="sample korean dark"><img src="korean-wordmark/lockup-white.png" width="1800" height="440" alt="어두운 배경용 장소아카이브 이끼"></div><figcaption><span>흰색 · 투명 PNG</span><a href="korean-wordmark/lockup-white.png" download>다운로드</a></figcaption></figure>
             </div>
             <div class="actions"><a class="download" href="korean-wordmark/ikkyee-korean-wordmark.zip" download>한글 문구 로고 다운로드</a><a href="korean-wordmark/guide.txt" download>사용 안내</a></div>
         </div></section>
-        <section id="korean-wordmark-layouts"><div class="container">
-            <h2>한글 로고 배치 비교</h2>
+        <section id="korean-wordmark-layouts" class="legacy"><div class="container">
+            <h2>한글 로고 배치 비교 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에 사용하지 마세요. 2026년 10월 29일 이전 제작본입니다.</p>
             <div class="grid">
                 <figure><div class="sample korean"><img src="korean-wordmark-layouts/close-left-teal.png" width="1800" height="440" alt="심볼과 문구를 가깝게 붙인 장소아카이브 이끼"></div><figcaption><span>가까운 간격 · 왼쪽 심볼</span><a href="korean-wordmark-layouts/close-left-teal.png" download>청록색 PNG</a><a href="korean-wordmark-layouts/close-left-white.png" download>흰색 PNG</a></figcaption></figure>
                 <figure><div class="sample korean"><img src="korean-wordmark-layouts/close-right-teal.png" width="1800" height="440" alt="문구 오른쪽에 심볼을 배치한 장소아카이브 이끼"></div><figcaption><span>오른쪽 심볼</span><a href="korean-wordmark-layouts/close-right-teal.png" download>청록색 PNG</a><a href="korean-wordmark-layouts/close-right-white.png" download>흰색 PNG</a></figcaption></figure>
             </div>
             <div class="actions"><a class="download" href="korean-wordmark-layouts/ikkyee-wordmark-layouts.zip" download>두 버전 전체 다운로드</a><a href="korean-wordmark-layouts/guide.txt" download>사용 안내</a></div>
         </div></section>
-        <section id="shorts-kit"><div class="container">
-            <h2>장소아카이브 이끼 · 쇼츠 소스</h2>
+        <section id="shorts-kit" class="legacy"><div class="container">
+            <h2>장소아카이브 이끼 · 쇼츠 소스 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에 사용하지 마세요. 2026년 10월 29일 이전 제작본입니다.</p>
             <div class="grid">
                 <figure><video class="shorts-video" controls playsinline preload="none" poster="shorts/intro-light.png" aria-label="3초 세로형 장소아카이브 이끼 인트로"><source src="shorts/intro-light.mp4" type="video/mp4"></video><figcaption><span>인트로 · 3초 · 1080×1920</span><a href="shorts/intro-light.mp4" download>밝은 MP4</a><a href="shorts/intro-dark.mp4" download>어두운 MP4</a></figcaption></figure>
                 <figure><video class="shorts-video" controls playsinline preload="none" poster="shorts/outro-dark.png" aria-label="4초 세로형 장소아카이브 이끼 마무리 화면"><source src="shorts/outro-dark.mp4" type="video/mp4"></video><figcaption><span>마무리 · 4초 · 1080×1920</span><a href="shorts/outro-light.mp4" download>밝은 MP4</a><a href="shorts/outro-dark.mp4" download>어두운 MP4</a></figcaption></figure>
@@ -121,8 +143,9 @@
                 <div class="file"><span>세로 조합<small>1080×1920 · 투명 PNG</small></span><a href="shorts/stacked-teal.png" download>청록색</a><a href="shorts/stacked-white.png" download>흰색</a></div>
             </div>
         </div></section>
-        <section id="logo-animation"><div class="container">
-            <h2>영상용 로고 애니메이션</h2>
+        <section id="logo-animation" class="legacy"><div class="container">
+            <h2>이전 영상용 로고 애니메이션 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에는 사용하지 마세요. 영문 Ikkyee 중심의 과거 제작본입니다.</p>
             <div class="grid">
                 <figure><video controls playsinline preload="none" poster="animation/poster-light.png" aria-label="밝은 배경의 3초 이끼 로고 애니메이션"><source src="animation/ikkyee-logo-light.mp4" type="video/mp4"></video><figcaption><span>밝은 배경 · 3초 · Full HD</span><a href="animation/ikkyee-logo-light.mp4" download>MP4 다운로드</a></figcaption></figure>
                 <figure><video controls playsinline preload="none" poster="animation/poster-dark.png" aria-label="어두운 배경의 3초 이끼 로고 애니메이션"><source src="animation/ikkyee-logo-dark.mp4" type="video/mp4"></video><figcaption><span>어두운 배경 · 3초 · Full HD</span><a href="animation/ikkyee-logo-dark.mp4" download>MP4 다운로드</a></figcaption></figure>
@@ -130,8 +153,9 @@
             <div class="actions"><a class="download" href="animation/ikkyee-logo-animation.zip" download>애니메이션 전체 다운로드</a><a href="animation/ikkyee-logo-transparent-teal.mov" download>투명 청록색 MOV</a><a href="animation/ikkyee-logo-transparent-white.mov" download>투명 흰색 MOV</a><a href="animation/preview.gif" download>GIF 미리보기</a></div>
             <p class="muted">영상 위에 겹쳐 쓸 때에는 ProRes 4444를 지원하는 편집기에서 투명 MOV를 사용하세요. MP4에는 배경색이 포함됩니다.</p>
         </div></section>
-        <section><div class="container">
-            <h2>앱과 프로필</h2>
+        <section id="app-assets-v1" class="legacy"><div class="container">
+            <h2>이전 전체 키트 앱·프로필 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">설치된 앱 자산 재현용입니다. 새 마케팅 워드마크로 사용하지 마세요.</p>
             <div class="grid icons">
                 <figure><div class="sample square"><img src="assets/app/app-store-1024.png" width="1024" height="1024" alt="App Store 아이콘"></div><figcaption><span>App Store · 1024px</span><a href="assets/app/app-store-1024.png" download>PNG</a></figcaption></figure>
                 <figure><div class="sample square"><img src="assets/app/google-play-512.png" width="512" height="512" alt="Google Play 아이콘"></div><figcaption><span>Google Play · 512px</span><a href="assets/app/google-play-512.png" download>PNG</a></figcaption></figure>
@@ -139,16 +163,18 @@
                 <figure><div class="sample square"><img src="assets/social/profile-dark-1080.png" width="1080" height="1080" alt="어두운 배경 SNS 프로필"></div><figcaption><span>SNS · 어두운 배경</span><a href="assets/social/profile-dark-1080.png" download>PNG</a></figcaption></figure>
             </div>
         </div></section>
-        <section><div class="container">
-            <h2>마케팅 이미지</h2>
+        <section id="marketing-v1" class="legacy"><div class="container">
+            <h2>이전 마케팅 이미지 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">현재 마케팅에는 사용하지 마세요. 현행 파일은 위의 <strong>이끼 · 장소 저장소</strong> 워드마크 v2.1입니다.</p>
             <div class="grid marketing">
                 <figure><div class="sample poster"><img src="assets/marketing/link-preview-light.png" width="1200" height="630" loading="lazy" alt="가로형 브랜드 소개 이미지"></div><figcaption><span>소개·링크 썸네일</span><a href="assets/marketing/link-preview-light.png" download>PNG</a></figcaption></figure>
                 <figure><div class="sample poster"><img src="assets/marketing/feed-dark.png" width="1080" height="1080" loading="lazy" alt="SNS 정사각 게시물"></div><figcaption><span>정사각 게시물</span><a href="assets/marketing/feed-dark.png" download>PNG</a></figcaption></figure>
                 <figure><div class="sample poster"><img src="assets/marketing/story-dark.png" width="1080" height="1920" loading="lazy" alt="SNS 스토리·세로 영상 끝 화면"></div><figcaption><span>스토리·영상</span><a href="assets/marketing/story-dark.png" download>PNG</a></figcaption></figure>
             </div>
         </div></section>
-        <section><div class="container">
-            <h2>개별 파일</h2>
+        <section id="brand-kit-v1-files" class="legacy"><div class="container">
+            <h2>이전 전체 키트 개별 파일 <span class="legacy-badge">이전 브랜드 자료</span></h2>
+            <p class="legacy-note">아이콘 호환과 과거 제작물 재현을 위해 보관합니다. 새 홍보물에는 워드마크 v2.1을 사용하세요.</p>
             <div class="files">
                 <div class="file"><span>기본 심볼<small>1254×1254 · 투명</small></span><a href="assets/logos/symbol-teal-1254.png" download>청록색</a><a href="assets/logos/symbol-white-1254.png" download>흰색</a></div>
                 <div class="file"><span>글자형 로고<small>1400×360 · 투명</small></span><a href="assets/logos/wordmark-teal.png" download>청록색</a><a href="assets/logos/wordmark-white.png" download>흰색</a></div>
@@ -162,8 +188,8 @@
                 <div class="file"><span>Google Play 피처 그래픽<small>1024×500</small></span><a href="assets/marketing/google-play-feature.png" download>PNG</a></div>
             </div>
         </div></section>
-        <section class="notes"><div class="container">
-            <h2>사용할 때</h2>
+        <section class="notes legacy"><div class="container">
+            <h2>이전 전체 키트 사용 안내 <span class="legacy-badge">이전 브랜드 자료</span></h2>
             <ul>
                 <li>로고의 비율과 투명 여백을 유지하고 점선을 자르지 마세요.</li>
                 <li>흰색 로고는 사진이나 어두운 배경 위에서 사용하세요.</li>
@@ -178,6 +204,6 @@
             <p>대형 인쇄용 벡터·인쇄 색상본, 실제 앱 화면을 사용한 스토어 스크린샷, 캠페인별 광고, 협업용 로고 조합은 실제 사용처가 정해질 때 제작하면 됩니다.</p>
         </div></section>
     </main>
-    <footer><div class="container">Ikkyee · 승인 심볼 v1.0 · Cormorant Garamond / 나눔고딕 · 공개 글꼴 라이선스는 전체 파일에 포함되어 있습니다.</div></footer>
+    <footer><div class="container">이끼 · 장소 저장소 · 승인 심볼 v1.0 · 공개 글꼴 라이선스는 전체 파일에 포함되어 있습니다.</div></footer>
 </body>
 </html>

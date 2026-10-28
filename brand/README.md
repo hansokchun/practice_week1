@@ -11,7 +11,7 @@ user request is required for a new brand version.
 - Brand color target: dark teal `#245457`; the approved raster is authoritative.
 - Keep the original aspect ratio and transparent padding. No stretching, glow,
   shadow, circular clipping, or added background rectangle.
-- Wordmark: existing `Ikkyee` Cormorant Garamond and Korean `이끼` remain unchanged.
+- Legacy wordmark: existing `Ikkyee` Cormorant Garamond and Korean `이끼` files remain unchanged for historical reproduction. Current marketing uses the separate `이끼 · 장소 저장소` wordmark v2.1.
 - White silhouette is allowed on the photographic landing header for contrast.
 - The separately requested delivery kit also uses that white alpha silhouette
   on dark marketing backgrounds; it does not change the master or runtime assets.
@@ -41,23 +41,26 @@ does not update an already installed app binary.
 
 ## App and Marketing Kit
 
-The 2026-10-14 request adds a separate [delivery kit](KIT.md): transparent symbol
-and wordmark exports, store icons, SNS profiles, marketing canvases and a ZIP.
-Preview and download at `/brand/`. Existing files listed above remain unchanged.
+The 2026-10-14 request added a separate [delivery kit](KIT.md): transparent symbol
+and legacy wordmark exports, store icons, SNS profiles, marketing canvases and a ZIP.
+It remains at `/brand/` for historical reproduction and is clearly labelled as
+legacy. Existing files listed above remain unchanged.
 
 The 2026-10-15 [logo animation](ANIMATION.md) adds a separate three-second MP4,
 alpha MOV and GIF package at `/brand/#logo-animation`; the 24-PNG kit is unchanged.
 
 The separate [archive-caption variant](ARCHIVE-LOGO.md) changes only the Korean
-caption to `장소아카이브` at `/brand/#archive-logo`. It does not replace the
-approved master, runtime logos or original animation.
+caption to `장소아카이브` at `/brand/#archive-logo`. It is a legacy delivery
+created before 2026-10-29 and must not be used for current marketing. It does
+not replace the approved master, runtime logos or original animation.
 
 The [Korean phrase wordmark](KOREAN-WORDMARK.md) pairs the approved symbol with
-`장소아카이브 이끼` on one line at `/brand/#korean-wordmark`; it is another
-separate delivery and does not replace the earlier logos.
+`장소아카이브 이끼` on one line at `/brand/#korean-wordmark`; it is a legacy
+delivery retained for historical reproduction and must not be used for current
+marketing.
 
-The separate [Korean wordmark v2 kit](WORDMARK-V2.md) gives `이끼` stronger
-typographic emphasis and supplies horizontal, stacked and compact layouts at
+The current [Korean wordmark v2.1 kit](WORDMARK-V2.md) pairs `이끼` with the
+`장소 저장소` descriptor and supplies horizontal, stacked and compact layouts at
 [`public/brand/wordmark-v2/`](../public/brand/wordmark-v2/). It preserves the
 approved raster symbol and adds Pretendard-based transparent PNG and mixed
 raster/vector SVG exports for reuse. It does not automatically replace app UI,
@@ -65,7 +68,8 @@ native assets, earlier kits or Shorts compositions.
 
 The [Shorts source kit](SHORTS.md) adds 9:16 intros, outros, alpha overlays and
 static editing sources for `장소아카이브 이끼` at `/brand/#shorts-kit`. These are
-standalone downloads and do not replace runtime logos or earlier animations.
+legacy downloads retained for historical reproduction and must not be used for
+current marketing; they do not replace runtime logos or earlier animations.
 
 ## Reproduction and Checks
 

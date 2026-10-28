@@ -10,7 +10,8 @@ test('share pages expose escaped OG metadata and a photo destination', async () 
     assert.equal(response.status, 200);
     assert.match(html, /property="og:image" content="https:\/\/example.com\/share\/photo\/p1\?v=2&amp;image=1"/);
     assert.match(html, /&lt;여행&gt;/);
-    assert.match(html, /property="og:description" content="장소 아카이브"/);
+    assert.match(html, /property="og:site_name" content="이끼"/);
+    assert.match(html, /property="og:description" content="이끼 · 장소 저장소"/);
     assert.match(html, /\/#\/\?photo=p1/);
     assert.match(response.headers.get('cache-control'), /no-store/);
 });

@@ -54,6 +54,9 @@ test('the no-install fallback keeps bearer tokens out of the server request and 
   assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
   const body = await response.text();
+  assert.match(body, /<title>이끼 공유 사진<\/title>/);
+  assert.match(body, /<p>이끼 · 장소 저장소<\/p>/);
+  assert.match(body, />이끼 앱에서 열기<\/a>/);
   assert.doesNotMatch(body, new RegExp(token));
   assert.match(body, /mobile-photo-link-fallback\.js/);
   assert.match(fallbackScript, /location\.hash\.slice\(1\)/);

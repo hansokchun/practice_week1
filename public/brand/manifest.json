@@ -152,7 +152,7 @@
       "height": 32,
       "alpha": true,
       "transparent": true,
-      "sha256": "6ddb19ecc886dc6f5cdb3d40a5ee0671530a0f137e5b2045b3d9d4b6c9d95d02"
+      "sha256": "8da8287effcf38a0f49063c83227130e747862dcf12696ab285ee5468a11a185"
     },
     {
       "path": "assets/web/favicon-48.png",
@@ -162,7 +162,7 @@
       "height": 48,
       "alpha": true,
       "transparent": true,
-      "sha256": "96be115945f064d703c1d9b496dac33f885e0961677734331a98a90fd308cbf5"
+      "sha256": "8e9ec3d565115553874e6f475a26ca9b317f0a1a531e1b4f0a0b324d2f1e0b86"
     },
     {
       "path": "assets/web/favicon-96.png",
@@ -172,7 +172,7 @@
       "height": 96,
       "alpha": true,
       "transparent": true,
-      "sha256": "763d19a22b8f3191ccdfcf6d9fb357a9054d4b46bd32cb0765e77980f4bf698c"
+      "sha256": "0a11f6d7f7bf0f1be230f580083a366b30fef2026af24dcd31016a001a7c5713"
     },
     {
       "path": "assets/web/apple-touch-180.png",
@@ -192,7 +192,7 @@
       "height": 1080,
       "alpha": false,
       "transparent": false,
-      "sha256": "4200a6a1e0377a0c0408da374395e99e283ad3e69dc41bb8942ddf61aa5367bc"
+      "sha256": "2b3a95354735fc2ad1dd5d1a70766dad2797a4f5ce6883f22020937246492192"
     },
     {
       "path": "assets/social/profile-dark-1080.png",
@@ -212,7 +212,7 @@
       "height": 630,
       "alpha": false,
       "transparent": false,
-      "sha256": "fc84a8aa055cb4e4b235ae8efb538e24f3a255983b41d5e0d49b8e292f80a546"
+      "sha256": "f321ef0c29cf6fb8ef3551a063b895cbb2a49ef9bf00b18d3b0358e68b23eab0"
     },
     {
       "path": "assets/marketing/feed-light.png",
@@ -222,7 +222,7 @@
       "height": 1080,
       "alpha": false,
       "transparent": false,
-      "sha256": "8e2f8bba471827943b9bb94507c5b6897e5d4103bdfa4759c54995174332c9a1"
+      "sha256": "360020d2974f0860beb79d42b81be9e009a58a6e2bdbaff2cfaf9dbbd43a20d0"
     },
     {
       "path": "assets/marketing/link-preview-dark.png",
@@ -232,7 +232,7 @@
       "height": 630,
       "alpha": false,
       "transparent": false,
-      "sha256": "12bf8fb6c192b72e300652e71e0e7af179b58330f9e71a54545143da23706a3a"
+      "sha256": "56e318a9a4982e91215a1f4692d2416d3a9af39e372c3bad08a63747f82139d6"
     },
     {
       "path": "assets/marketing/feed-dark.png",
@@ -242,7 +242,7 @@
       "height": 1080,
       "alpha": false,
       "transparent": false,
-      "sha256": "9c464f3b9c3bebb5cb1c680dcceb9fd1978727f96c3fa3f99fa4e9882963ab1e"
+      "sha256": "f6ec628996bce620ea5bffed39299b46769a4b7d6617fa63fb0c8f0d9faca831"
     },
     {
       "path": "assets/marketing/story-dark.png",
@@ -252,7 +252,7 @@
       "height": 1920,
       "alpha": false,
       "transparent": false,
-      "sha256": "b672ffcf7cd3eea21b33c723b453c27eaeb6442938e5240ea51ac9e9d9f2448e"
+      "sha256": "e9599051f111a91a8283c6b1ab57c9f3ec496e768ca4ff5a04557715bf2f0c03"
     },
     {
       "path": "assets/marketing/google-play-feature.png",
@@ -262,16 +262,16 @@
       "height": 500,
       "alpha": false,
       "transparent": false,
-      "sha256": "f6910dea5f98c9638339d4e897e416d37495f5f0291031082761641f2854d6bc"
+      "sha256": "a2c1a15a762b9bea6e1426a26b4aaebee94cba8cdb369626069b10f040d8eb6f"
     }
   ],
   "preview": {
     "path": "preview.png",
-    "sha256": "1344854f46632f8a6314365cffcdefbb1bc235e7b31accbd5f7709e4de5dcf37"
+    "sha256": "0a9d8e387e21d517ca6190516564736ae513276f9c895133e6d7376986451e52"
   },
   "archive": {
     "path": "ikkyee-brand-kit-v1.zip",
-    "bytes": 2623330,
-    "sha256": "0e4dcd4647ec22eca5204ecbe6608c59257ad327ba65ee012fbd16c9fbe6fe47"
+    "bytes": 2620915,
+    "sha256": "4bc7ea63f4d8be1d523ad227cd962041406ac895bb3d922af254e0dd82ce6ca3"
   }
 }

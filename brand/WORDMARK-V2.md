@@ -1,6 +1,6 @@
-# Korean Wordmark v2
+# Korean Wordmark v2.1
 
-This is a separate, reusable Korean wordmark kit for `장소아카이브 이끼`.
+This is the current reusable Korean wordmark kit for `이끼 · 장소 저장소`.
 It improves type hierarchy, symbol placement and small-size legibility without
 redrawing or replacing the approved raster symbol. The existing app UI, app
 icons, runtime logos, earlier wordmark kits and Shorts assets remain unchanged.
@@ -9,7 +9,7 @@ Assets live in [`public/brand/wordmark-v2/`](../public/brand/wordmark-v2/).
 ## Identity and Typography
 
 - `이끼` is the primary brand name and uses Pretendard SemiBold 600.
-- `장소아카이브` is the smaller service descriptor and uses Pretendard Medium
+- `장소 저장소` is the smaller service descriptor and uses Pretendard Medium
   500. It must remain subordinate to `이끼`, not read as a second brand name.
 - The approved symbol keeps its original raster pixels, aspect ratio,
   transparent alpha and safety padding. Do not trace, crop, stretch, recolor or
@@ -26,8 +26,8 @@ Assets live in [`public/brand/wordmark-v2/`](../public/brand/wordmark-v2/).
 
 | Variant | Composition | Base canvas | Minimum display width | Use |
 | --- | --- | ---: | ---: | --- |
-| Horizontal | Symbol on the left; small `장소아카이브` above large `이끼` | 1024 x 400 | 280px | Headers, partner pages, horizontal marketing placements |
-| Stacked | Symbol above `이끼`, then smaller `장소아카이브` | 640 x 720 | 180px | Square or narrow placements, posters and centered brand panels |
+| Horizontal | Symbol on the left; small `장소 저장소` above large `이끼` | 1024 x 400 | 280px | Headers, partner pages, horizontal marketing placements |
+| Stacked | Symbol above `이끼`, then smaller `장소 저장소` | 640 x 720 | 180px | Square or narrow placements, posters and centered brand panels |
 | Compact | Symbol plus `이끼`; service descriptor omitted | 560 x 220 | 104px | Small watermarks, profile-adjacent marks and constrained UI surfaces |
 
 Use the horizontal layout by default when width permits. Choose stacked where

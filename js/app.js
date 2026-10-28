@@ -2442,7 +2442,7 @@ function getHomeReferencePhotoDetail(trigger) {
         url: image?.currentSrc || image?.src || trigger?.dataset?.homePhotoSrc || MAIN_BG_2_URL,
         description: trigger?.dataset?.homePhotoCopy || trigger?.dataset?.homePhotoTitle || image?.getAttribute('alt') || '여행 사진',
         date: trigger?.dataset?.homePhotoDate || new Date().toISOString(),
-        album: 'Ikkyee 소개 사진',
+        album: '이끼 소개 사진',
         visibility: 'public',
         location_precision: 'exact',
         shared: true,
@@ -3096,7 +3096,7 @@ function getExplorePinIcon(maps, options = {}) {
 
 function getProfileMapPinIcon(maps, zoom) {
     const width = getProfileMapPinSize(zoom);
-    const height = Math.round((width * 36) / 28);
+    const height = Math.round((width * 44) / 36);
     return {
         ...getExplorePinIcon(maps, { type: 'photo' }),
         scaledSize: maps.Size ? new maps.Size(width, height) : { width, height },
@@ -4110,7 +4110,7 @@ function ensureProfileHeaderShell() {
                         <img id="profile-avatar-image" alt="" hidden>
                         <span id="profile-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
                     </label>
-                    <h1 id="profile-title">Ikkyee</h1>
+                    <h1 id="profile-title">여행자</h1>
                 </div>
                 <div class="profile-owner-actions">
                     <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" aria-label="프로필 수정" title="프로필 수정" hidden>
@@ -4131,7 +4131,7 @@ function ensureProfileHeaderShell() {
                 <div class="account-profile-fields">
                     <div class="account-profile-field profile-edit-name-field">
                         <label for="profile-nickname-input">닉네임</label>
-                        <input id="profile-nickname-input" type="text" maxlength="40" placeholder="Ikkyee">
+                        <input id="profile-nickname-input" type="text" maxlength="40" placeholder="여행자">
                     </div>
                     <div class="account-profile-field profile-edit-photo-field">
                         <span class="account-profile-field-label">프로필 사진</span>
@@ -4586,18 +4586,21 @@ function renderAccountNotifications() {
     if (!list) return;
 
     list.innerHTML = items.map((item) => {
+        const invitationClass = item.featured ? ' is-map-invitation' : '';
         const content = `
-            <span class="material-symbols-outlined" aria-hidden="true">${escapeHtml(item.icon)}</span>
+            <span class="account-notification-icon material-symbols-outlined" aria-hidden="true">${escapeHtml(item.icon)}</span>
             <span class="account-notification-copy">
-                <strong title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong>
+                <strong>${escapeHtml(item.title)}</strong>
+                ${item.body ? `<span class="account-notification-body">${escapeHtml(item.body)}</span>` : ''}
+                ${item.cta ? `<span class="account-notification-cta">${escapeHtml(item.cta)}<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>` : ''}
             </span>
         `;
         if (item.moderationId) return `<button class="account-notification-item" data-open-account-warning="${escapeHtml(item.moderationId)}" type="button">${content}</button>`;
         if (item.id) {
             const action = item.route
-                ? `<button class="account-notification-item" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`
+                ? `<button class="account-notification-item${invitationClass}" data-route="${escapeHtml(item.route)}" type="button">${content}</button>`
                 : `<article class="account-notification-item">${content}</article>`;
-            return `<div class="account-guidance-entry">${action}<button class="account-guidance-dismiss" data-dismiss-account-guidance="${escapeHtml(item.id)}" type="button" aria-label="${escapeHtml(item.title)} 알림 삭제">×</button></div>`;
+            return `<div class="account-guidance-entry${invitationClass}">${action}<button class="account-guidance-dismiss" data-dismiss-account-guidance="${escapeHtml(item.id)}" type="button" aria-label="${escapeHtml(item.title)} 알림 삭제">×</button></div>`;
         }
         if (!item.route) {
             return `<article class="account-notification-item is-empty">${content}</article>`;
@@ -4610,7 +4613,7 @@ function showNewAccountGuidance() {
     if (!state.hasNewAccountGuidance) return;
     state.hasNewAccountGuidance = false;
     if (!$('.modal.is-open')) setAccountNotificationsOpen(true);
-    showToast('이끼에 오신 걸 환영해요! 알림에 첫 여행 지도를 위한 안내를 담아뒀어요.');
+    showToast('첫 사진으로 나만의 지도를 시작해보세요.');
 }
 
 async function handleLogout() {
@@ -5182,12 +5185,12 @@ function renderEmptyPublicSurfaces() {
     $('.profile-album-grid') && ($('.profile-album-grid').innerHTML = emptyCard);
     $('.route-strip') && ($('.route-strip').innerHTML = '<span>공개 지도</span>');
     $$('.public-author-card h2, #profile-title, .pin-author strong').forEach((node) => {
-        node.textContent = 'Ikkyee';
+        node.textContent = '여행자';
     });
     $$('.public-author-card .avatar, .pin-author .avatar').forEach((avatar) => {
-        avatar.textContent = 'IK';
+        avatar.textContent = '여';
     });
-    setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), '', 'Ikkyee');
+    setAvatarDisplay($('#profile-avatar-image'), $('#profile-avatar-fallback'), '', '여행자');
     $$('[data-explore-pin]').forEach((target) => {
         delete target.dataset.publicAlbumId;
         target.classList.remove('is-selected');
@@ -7308,9 +7311,11 @@ function renderStagedPhotos() {
             uploadDropzone.className = 'upload-dropzone';
             uploadDropzone.innerHTML = `
                 <input id="photo-input" type="file" multiple accept="image/*">
-                <span class="material-symbols-outlined">cloud_upload</span>
-                <strong>사진 파일 선택</strong>
-                <small>사진을 선택하거나 이곳에 끌어다 놓을 수 있습니다.</small>
+                <span class="upload-dropzone-kicker">첫 단계</span>
+                <span class="upload-dropzone-icon" aria-hidden="true"><span class="material-symbols-outlined">add_photo_alternate</span></span>
+                <strong>사진 선택하기</strong>
+                <small>사진을 선택하거나 이곳에 끌어다 놓으세요.</small>
+                <span class="upload-privacy-chip"><span class="material-symbols-outlined" aria-hidden="true">lock</span>기본 비공개 저장</span>
             `;
             bindPhotoInput();
         }
@@ -8166,6 +8171,8 @@ async function openHeaderUpload() {
 }
 
 async function openPhotoTrial() {
+    guestMapInvitation.dismiss();
+    syncGuestMapInvitation();
     closeModals();
     openModal('#photo-trial-modal');
     await getPhotoTrialController().open();

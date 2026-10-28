@@ -6,22 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="color-scheme" content="only light">
     <script src="/stylesheet-recovery.js"></script>
-    <title>장소 아카이브</title>
-    <meta name="description" content="이끼(Ikkyee)는 장소를 찾고 저장하고 공유하는 장소 아카이브입니다. 마음에 드는 장소를 지도에 모으고, 사진과 이야기로 기록하며 새로운 장소를 발견해보세요.">
+    <title>이끼 | 장소 저장소</title>
+    <meta name="description" content="이끼는 사진 속 장소를 찾고, 저장하고, 공유하는 장소 저장소입니다. 마음에 드는 장소를 지도에 차곡차곡 모아보세요.">
     <link rel="canonical" href="https://ikkyee.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="이끼">
     <meta property="og:locale" content="ko_KR">
-    <meta property="og:title" content="장소 아카이브">
-    <meta property="og:description" content="이끼(Ikkyee)는 장소를 찾고 저장하고 공유하는 장소 아카이브입니다. 마음에 드는 장소를 지도에 모으고, 사진과 이야기로 기록하며 새로운 장소를 발견해보세요.">
+    <meta property="og:title" content="이끼 | 장소 저장소">
+    <meta property="og:description" content="이끼는 사진 속 장소를 찾고, 저장하고, 공유하는 장소 저장소입니다. 마음에 드는 장소를 지도에 차곡차곡 모아보세요.">
     <meta property="og:url" content="https://ikkyee.com/">
     <meta property="og:image" content="https://ikkyee.com/social-preview.jpg">
     <meta property="og:image:width" content="1672">
     <meta property="og:image:height" content="941">
-    <meta property="og:image:alt" content="Ikkyee Explore 지도에서 여행 사진과 장소를 둘러보는 화면">
+    <meta property="og:image:alt" content="이끼 장소 저장소 지도에서 여행 사진과 장소를 둘러보는 화면">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="장소 아카이브">
-    <meta name="twitter:description" content="이끼(Ikkyee)는 장소를 찾고 저장하고 공유하는 장소 아카이브입니다. 마음에 드는 장소를 지도에 모으고, 사진과 이야기로 기록하며 새로운 장소를 발견해보세요.">
+    <meta name="twitter:title" content="이끼 | 장소 저장소">
+    <meta name="twitter:description" content="이끼는 사진 속 장소를 찾고, 저장하고, 공유하는 장소 저장소입니다. 마음에 드는 장소를 지도에 차곡차곡 모아보세요.">
     <meta name="twitter:image" content="https://ikkyee.com/social-preview.jpg">
     <script type="application/ld+json">
         {
@@ -49,10 +49,10 @@
 <body class="is-logged-out is-app-booting" data-page="landing">
     <header class="site-header">
         <div class="site-header-inner">
-            <a class="brand" href="#/landing" data-route="landing" aria-label="Ikkyee 이끼 landing">
+            <a class="brand" href="#/landing" data-route="landing" aria-label="이끼 장소 저장소 홈">
                 <img src="images/logo.png" alt="" width="256" height="256">
-                <span class="brand-wordmark">Ikkyee</span>
-                <span class="brand-korean" lang="ko">이끼</span>
+                <span class="brand-wordmark">이끼</span>
+                <span class="brand-korean">장소 저장소</span>
             </a>
             <div class="account-area">
                 <button id="btn-header-upload" class="nav-action nav-create" type="button" aria-label="나만의 지도 만들기">
@@ -60,7 +60,14 @@
                     <span id="header-upload-label">나만의 지도 만들기</span>
                 </button>
                 <aside id="guest-map-invitation" class="guest-map-invitation" role="note" aria-label="나만의 지도 만들기 안내" hidden>
-                    <button id="btn-open-guest-map-invitation" class="guest-map-invitation-action" type="button"><span class="guest-map-invitation-icon material-symbols-outlined" aria-hidden="true">map</span><span>나만의 지도 만들기</span></button>
+                    <button id="btn-open-guest-map-invitation" class="guest-map-invitation-action" type="button">
+                        <span class="guest-map-invitation-icon" aria-hidden="true"><img src="images/logo.png" alt="" width="256" height="256"></span>
+                        <span class="guest-map-invitation-copy">
+                            <strong>첫 사진으로 지도를 시작해보세요</strong>
+                            <span>로그인 없이 3장까지 체험할 수 있어요.</span>
+                            <span class="guest-map-invitation-cta">나만의 지도 만들기<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
+                        </span>
+                    </button>
                     <button id="btn-dismiss-guest-map-invitation" type="button" aria-label="지도 만들기 안내 닫기" title="지도 만들기 안내 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
                 </aside>
                 <button id="btn-open-auth" class="nav-action" type="button">로그인</button>
@@ -171,12 +178,12 @@
                 </div>
             </section>
             <section class="white-band home-houses-reference" aria-labelledby="home-houses-reference-title">
-                <div class="home-houses-reference__word" aria-hidden="true">Ikkyee</div>
+                <div class="home-houses-reference__word" aria-hidden="true">이끼</div>
                 <div class="home-houses-reference__content">
-                    <h2 id="home-houses-reference-title" class="sr-only">장소 아카이브 소개</h2>
+                    <h2 id="home-houses-reference-title" class="sr-only">이끼 장소 저장소 소개</h2>
                     <p class="home-houses-reference__copy">
                         이 사진은 어디서 찍은 거지?<br>
-                        Ikkyee에서 취향에 맞는 사진과 장소를 알아가세요.
+                        이끼에서 마음에 드는 장소를 찾고 저장해보세요.
                     </p>
                     <div class="home-houses-reference__actions">
                         <button class="home-houses-reference__action btn-primary" data-route="upload" type="button">
@@ -185,7 +192,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="home-houses-reference__collage" aria-label="장소 아카이브 사진 콜라주">
+                <div class="home-houses-reference__collage" aria-label="이끼 장소 저장소 사진 콜라주">
                     <figure class="home-houses-reference__photo home-houses-reference__photo--a" role="button" tabindex="0" data-home-photo-detail data-home-photo-id="home-reference-nice" data-home-photo-title="거리와 카페가 있는 여행 사진" data-home-photo-location="France · Nice" data-home-photo-src="images/main_bg1.jpg" data-home-photo-date="2025-05-14" data-home-photo-lat="43.7102" data-home-photo-lng="7.2620" data-home-photo-copy="니스의 오래된 거리와 카페 앞에서 멈춘 장면입니다. 장소 이름과 함께 남겨두면 사진이 다시 여행의 방향을 알려줍니다." aria-label="France Nice 사진 정보 보기">
                         <img src="images/main_bg1.jpg" width="743" height="1115" alt="거리와 카페가 있는 여행 사진" decoding="async">
                         <figcaption>France · Nice</figcaption>
@@ -194,7 +201,7 @@
                         <img src="images/main_bg2.jpg" width="1080" height="1350" alt="자전거와 산이 있는 여행 사진" decoding="async">
                         <figcaption>Japan · Kyoto</figcaption>
                     </figure>
-                    <figure class="home-houses-reference__photo home-houses-reference__photo--c" role="button" tabindex="0" data-home-photo-detail data-home-photo-id="home-reference-interlaken" data-home-photo-title="숲을 바라보는 여행자 사진" data-home-photo-location="Switzerland · Interlaken" data-home-photo-src="images/main_bg3.jpg" data-home-photo-date="2025-06-18" data-home-photo-lat="46.6863" data-home-photo-lng="7.8632" data-home-photo-copy="인터라켄의 숲과 길 위에서 남긴 한 장면입니다. Ikkyee는 사진을 장소와 시간의 흐름으로 조용히 펼쳐 보여줍니다." aria-label="Switzerland Interlaken 사진 정보 보기">
+                    <figure class="home-houses-reference__photo home-houses-reference__photo--c" role="button" tabindex="0" data-home-photo-detail data-home-photo-id="home-reference-interlaken" data-home-photo-title="숲을 바라보는 여행자 사진" data-home-photo-location="Switzerland · Interlaken" data-home-photo-src="images/main_bg3.jpg" data-home-photo-date="2025-06-18" data-home-photo-lat="46.6863" data-home-photo-lng="7.8632" data-home-photo-copy="인터라켄의 숲과 길 위에서 남긴 한 장면입니다. 이끼는 사진을 장소와 시간의 흐름으로 조용히 펼쳐 보여줍니다." aria-label="Switzerland Interlaken 사진 정보 보기">
                         <img src="images/main_bg3.jpg" width="1920" height="1280" alt="숲을 바라보는 여행자 사진" decoding="async">
                         <figcaption>Switzerland · Interlaken</figcaption>
                     </figure>
@@ -214,7 +221,7 @@
             </div>
 
             <section class="home-feature-stories" aria-labelledby="home-feature-stories-title">
-                <h2 id="home-feature-stories-title" class="sr-only">Ikkyee 주요 기능 소개</h2>
+                <h2 id="home-feature-stories-title" class="sr-only">이끼 장소 저장소 주요 기능 소개</h2>
                 <article class="home-feature-story">
                     <div class="home-feature-story__media">
                         <img src="images/home-map-memory-board.jpg" width="1535" height="1024" alt="여행 사진이 지도 핀과 기록 카드로 정리된 화면" loading="lazy" decoding="async">
@@ -509,15 +516,31 @@
                     Home
                 </button>
                 <div class="flow-hero">
-                    <p class="eyebrow">Photo Upload</p>
-                    <h1 id="upload-title">여행 사진을 선택해주세요.</h1>
-                    <p>앨범을 만들지 않고 개별 사진을 내 보관함에 저장합니다. 위치가 없는 사진은 저장 후 개별사진 페이지에서 확인할 수 있습니다.</p>
+                    <p class="eyebrow">나만의 지도 만들기</p>
+                    <h1 id="upload-title">사진 한 장으로 시작해보세요</h1>
+                    <p>사진을 고르면 촬영 장소를 확인하고, 비공개로 안전하게 저장해요.</p>
+                </div>
+                <div class="upload-step-list" aria-label="사진 등록 3단계">
+                    <article class="upload-step" aria-current="step">
+                        <span>1</span>
+                        <div><strong>사진 고르기</strong><p>여행 사진을 선택하세요.</p></div>
+                    </article>
+                    <article class="upload-step">
+                        <span>2</span>
+                        <div><strong>장소 확인</strong><p>촬영 위치를 확인해요.</p></div>
+                    </article>
+                    <article class="upload-step">
+                        <span>3</span>
+                        <div><strong>지도에 저장</strong><p>먼저 비공개로 저장해요.</p></div>
+                    </article>
                 </div>
                 <div class="upload-dropzone" id="upload-dropzone" role="button" tabindex="0">
                     <input id="photo-input" type="file" multiple accept="image/*">
-                    <span class="material-symbols-outlined">cloud_upload</span>
-                    <strong>사진 파일 선택</strong>
-                    <small>사진을 선택하거나 이곳에 끌어다 놓을 수 있습니다.</small>
+                    <span class="upload-dropzone-kicker">첫 단계</span>
+                    <span class="upload-dropzone-icon" aria-hidden="true"><span class="material-symbols-outlined">add_photo_alternate</span></span>
+                    <strong>사진 선택하기</strong>
+                    <small>사진을 선택하거나 이곳에 끌어다 놓으세요.</small>
+                    <span class="upload-privacy-chip"><span class="material-symbols-outlined" aria-hidden="true">lock</span>기본 비공개 저장</span>
                 </div>
                 <section id="upload-result-panel" class="upload-result-panel" aria-live="polite">
                     <div>
@@ -540,11 +563,6 @@
                         <span id="upload-storage-status">모든 사진은 기본 비공개로 저장됩니다.</span>
                     </div>
                 </section>
-                <div class="upload-step-list">
-                    <article><span>1</span><strong>사진 선택</strong><p>여행 중 찍은 사진을 기기에서 선택합니다.</p></article>
-                    <article><span>2</span><strong>위치 확인</strong><p>GPS가 있는 사진은 자동으로 지도에 연결됩니다.</p></article>
-                    <article><span>3</span><strong>기본 비공개</strong><p>업로드된 사진은 공개 전까지 Home에만 보관됩니다.</p></article>
-                </div>
                 <aside id="upload-location-notice" class="upload-location-notice" aria-label="사진 위치 안내">
                     <p>사진에는 촬영 위치가 담겨 있을 수 있어요. 공개하기 전에 집·직장 등 민감한 장소가 포함돼 있지 않은지 확인해 주세요. 사진은 기본 비공개로 저장돼요.</p>
                     <button id="btn-dismiss-upload-location-notice" type="button" aria-label="사진 위치 안내 삭제">×</button>
@@ -761,7 +779,7 @@
                         <button class="pin-author-link" data-go-profile type="button">
                             <span class="avatar">IK</span>
                             <span class="pin-author-copy">
-                                <strong>Ikkyee</strong>
+                                <strong>여행자</strong>
                                 <span class="pin-author-time">방금 전</span>
                             </span>
                         </button>
@@ -880,7 +898,7 @@
                     <div class="avatar">IK</div>
                     <div>
                         <p class="eyebrow">Author</p>
-                        <h2>Ikkyee</h2>
+                        <h2>여행자</h2>
                         <p>개인 여행 사진을 조용히 기록하고, 공개해도 좋은 장면만 지도에 남깁니다.</p>
                     </div>
                     <button class="btn-secondary" data-go-profile type="button">프로필 보기</button>
@@ -1030,7 +1048,7 @@
                                     <img id="profile-avatar-image" alt="" hidden>
                                     <span id="profile-avatar-fallback" class="material-symbols-outlined avatar-fallback-icon" aria-hidden="true">person</span>
                                 </label>
-                                <h1 id="profile-title">Ikkyee</h1>
+                                <h1 id="profile-title">여행자</h1>
                             </div>
                             <div class="profile-owner-actions">
                                 <button id="account-profile-edit" class="profile-action profile-action--edit" type="button" aria-label="프로필 수정" title="프로필 수정" hidden>
@@ -1075,8 +1093,8 @@
     <footer class="site-footer" aria-labelledby="site-footer-title">
         <div class="site-footer__inner">
             <section class="site-footer__brand">
-                <h2 id="site-footer-title">Ikkyee</h2>
-                <p>사진과 장소, 위치를 함께 기록하고 지도에서 새로운 여행 장면을 발견하는 사진 아카이브입니다.</p>
+                <h2 id="site-footer-title">이끼 <span>장소 저장소</span></h2>
+                <p>사진 속 장소를 지도에 차곡차곡 모으고, 새로운 장소를 발견하는 장소 저장소입니다.</p>
             </section>
             <nav class="site-footer__nav" aria-label="서비스 및 정책">
                 <a href="#/">메인</a>
@@ -1086,12 +1104,12 @@
                 <a href="/account-deletion/">계정 삭제 안내</a>
                     <a href="/privacy/#analytics">방문 통계 안내</a>
             </nav>
-            <div class="site-footer__notes" aria-label="Ikkyee 이용 원칙">
+            <div class="site-footer__notes" aria-label="이끼 이용 원칙">
                 <span>내 사진은 기본 비공개로 안전하게 보관됩니다.</span>
                 <span>공개한 사진만 지도와 공개 프로필에서 다른 사람에게 보입니다.</span>
                 <span>사진 위치는 정확한 위치 또는 대략적인 위치로 표시할 수 있습니다.</span>
             </div>
-            <p class="site-footer__copyright">© 2026 Ikkyee. 사진과 기록의 권리는 작성자에게 있습니다.</p>
+            <p class="site-footer__copyright">© 2026 이끼 · 장소 저장소. 사진과 기록의 권리는 작성자에게 있습니다.</p>
         </div>
     </footer>
     <button id="landing-map-footer" class="landing-map-footer" data-route="explore" type="button" aria-labelledby="landing-map-footer-title">
@@ -1207,7 +1225,7 @@
                     </span>
                     <span class="photo-detail-author-copy">
                         <span>올린 사람</span>
-                        <strong id="photo-detail-author-name">Ikkyee</strong>
+                        <strong id="photo-detail-author-name">여행자</strong>
                     </span>
                     <span class="material-symbols-outlined photo-detail-author-arrow" aria-hidden="true">chevron_right</span>
                 </button>
@@ -1354,17 +1372,21 @@
         <section class="modal-card photo-trial-card">
             <header class="photo-trial-header">
                 <div class="photo-trial-heading">
-                    <span class="photo-trial-map-mark material-symbols-outlined" aria-hidden="true">map</span>
+                    <span class="photo-trial-map-mark" aria-hidden="true"><img src="images/logo.png" alt="" width="256" height="256"></span>
                     <h2 id="photo-trial-title">나만의 지도 만들기</h2>
                 </div>
                 <button class="photo-trial-close" type="button" data-close-modal aria-label="사진 체험 닫기" title="사진 체험 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
             </header>
             <div class="photo-trial-body">
                 <section class="photo-trial-intro" data-trial-empty aria-label="사진으로 지도 만드는 순서">
+                    <div class="photo-trial-intro-copy">
+                        <span>이끼 · 장소 저장소</span>
+                        <p>사진을 골라 내 지도에 놓아보세요.</p>
+                    </div>
                     <ol class="photo-trial-steps" role="list">
-                        <li><span class="photo-trial-step-number" aria-hidden="true">01</span><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span><strong>사진 고르기</strong></li>
-                        <li><span class="photo-trial-step-number" aria-hidden="true">02</span><span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span><strong>지도에서 확인하기</strong></li>
-                        <li><span class="photo-trial-step-number" aria-hidden="true">03</span><span class="material-symbols-outlined" aria-hidden="true">photo_library</span><strong>저장하기</strong></li>
+                        <li aria-current="step"><span class="photo-trial-step-number" aria-hidden="true">01</span><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span><strong>사진 고르기</strong></li>
+                        <li><span class="photo-trial-step-number" aria-hidden="true">02</span><span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span><strong>장소 확인</strong></li>
+                        <li><span class="photo-trial-step-number" aria-hidden="true">03</span><span class="material-symbols-outlined" aria-hidden="true">photo_library</span><strong>지도에 저장</strong></li>
                     </ol>
                 </section>
                 <div class="photo-trial-picker">
@@ -1462,7 +1484,7 @@
             <button class="modal-close" data-kakao-profile-dismiss type="button" aria-label="닫기">&times;</button>
             <p class="eyebrow">Kakao Profile</p>
             <h2 id="kakao-profile-import-title">카카오 프로필을 적용할까요?</h2>
-            <p>카카오의 이름과 프로필 사진으로 Ikkyee 프로필을 바꿀 수 있어요.</p>
+            <p>카카오의 이름과 프로필 사진으로 이끼 프로필을 바꿀 수 있어요.</p>
             <div class="kakao-profile-import-preview">
                 <div class="avatar large-avatar kakao-profile-import-avatar">
                     <img id="kakao-profile-import-avatar-image" alt="" hidden>

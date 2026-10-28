@@ -27,9 +27,9 @@ test('site loads version-pinned Pretendard variable subsets for public and legal
   assert.match(css, /body\s*\{[^}]*font-synthesis:\s*none;/s);
 });
 
-test('only the Ikkyee wordmark and Material Symbols use dedicated non-Pretendard fonts', () => {
+test('Korean brand text stays in Pretendard and Material Symbols keep their icon font', () => {
     assert.match(css, /\.brand\s*\{[^}]*font-family:\s*var\(--brand\);/s);
-    assert.match(css, /\.brand-wordmark\s*\{[^}]*font-family:\s*'Cormorant Garamond',\s*serif;/s);
+    assert.match(css, /\.brand-wordmark\s*\{[^}]*font-family:\s*var\(--brand\);/s);
     assert.match(css, /\.home-houses-reference__word\s*\{[^}]*font-family:\s*var\(--brand\);/s);
     assert.match(css, /\.site-footer__brand h2\s*\{[^}]*font-family:\s*var\(--brand\);/s);
     assert.match(css, /font-family:\s*"Material Symbols Outlined";/);

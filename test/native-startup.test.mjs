@@ -55,9 +55,11 @@ test('native-only build removes the landing screen and starts with accessible lo
     assert.match(result.html, /family=Cormorant\+Garamond/, 'shared brand font is preserved');
     assert.match(result.html, /data-page="home"/);
     assert.match(result.html, /id="page-home" class="page page-home active"/);
-    assert.match(result.html, /class="brand" href="#\/" data-route="home"/);
+    assert.match(result.html, /class="brand" href="#\/" data-route="home" aria-label="이끼 장소 저장소 메인"/);
     assert.match(result.html, /id="native-startup"[^>]*role="status"/);
     assert.match(result.html, /images\/logo.png/);
+    assert.match(result.html, /class="native-startup-wordmark">이끼<\/span>/);
+    assert.match(result.html, /class="native-startup-caption">장소 저장소<\/span>/);
     assert.match(result.html, /로그인 없이 사진과 장소를 둘러보세요/);
     assert.match(result.html, /id="btn-native-guest"/);
     assert.doesNotMatch(result.html, /cdn\.jsdelivr\.net\/npm\/@supabase/);

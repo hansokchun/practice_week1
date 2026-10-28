@@ -43,8 +43,8 @@ export function createAndroidAssociationResponse(env) {
 export function createPhotoLinkFallbackResponse() {
   const body = `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ikkyee 공유 사진</title><style>body{background:#f9f7f2;color:#191c1c;font-family:system-ui,sans-serif;margin:0;padding:32px}main{margin:12vh auto;max-width:480px}h1{color:#1a4d4e}a{display:inline-block;margin:8px 8px 0 0;padding:14px 18px;border:1px solid #1a4d4e;border-radius:8px;color:#003637;text-decoration:none}</style></head>
-<body><main><p>Ikkyee</p><h1>공유받은 여행 사진</h1><p id="photo-link-status">링크를 확인하고 있습니다.</p><a id="photo-link-open" hidden>Ikkyee 앱에서 열기</a><a href="/">웹 홈으로 이동</a></main><script src="/mobile-photo-link-fallback.js" defer></script></body></html>`;
+<title>이끼 공유 사진</title><style>body{background:#f9f7f2;color:#191c1c;font-family:system-ui,sans-serif;margin:0;padding:32px}main{margin:12vh auto;max-width:480px}h1{color:#1a4d4e}a{display:inline-block;margin:8px 8px 0 0;padding:14px 18px;border:1px solid #1a4d4e;border-radius:8px;color:#003637;text-decoration:none}</style></head>
+<body><main><p>이끼 · 장소 저장소</p><h1>공유받은 여행 사진</h1><p id="photo-link-status">링크를 확인하고 있습니다.</p><a id="photo-link-open" hidden>이끼 앱에서 열기</a><a href="/">웹 홈으로 이동</a></main><script src="/mobile-photo-link-fallback.js" defer></script></body></html>`;
   return new Response(body, { status: 200, headers: fallbackHeaders('text/html; charset=utf-8') });
 }
 

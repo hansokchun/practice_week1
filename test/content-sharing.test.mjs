@@ -9,7 +9,7 @@ test('public photos and albums have crawlable URLs and their own thumbnail endpo
         const content = buildContentShare('https://example.com', type, { id: 'abc', visibility: 'public', title: '부산 여행' });
         assert.equal(content.url, `https://example.com/share/${type}/abc?v=2`);
         assert.equal(content.imageUrl, `${content.url}&image=1`);
-        assert.equal(content.description, '장소 아카이브');
+        assert.equal(content.description, '이끼 · 장소 저장소');
         const payload = getKakaoSharePayload(content.url, content);
         assert.equal(payload.content.imageUrl, content.imageUrl);
         assert.equal(payload.content.title, '부산 여행');

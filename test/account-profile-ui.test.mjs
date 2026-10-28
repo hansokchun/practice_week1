@@ -8,7 +8,7 @@ const app = readFileSync('js/app.js', 'utf8');
 const auth = readFileSync('auth.js', 'utf8');
 
 test('brand logo routes to the landing home page', () => {
-    assert.match(html, /<a class="brand" href="#\/landing" data-route="landing" aria-label="Ikkyee 이끼 landing">/);
+    assert.match(html, /<a class="brand" href="#\/landing" data-route="landing" aria-label="이끼 장소 저장소 홈">/);
     assert.match(app, /const LANDING_ROUTE = 'landing';/);
     assert.match(app, /ROUTES = new Set\(\[LANDING_ROUTE,/);
     assert.match(app, /normalized === LANDING_ROUTE \? '#\/landing'/);
@@ -47,10 +47,11 @@ test('logged-in header exposes an image-only profile trigger', () => {
     assert.doesNotMatch(app, /button\.textContent = state\.currentUser \? 'Logout' : 'Login'/);
 });
 
-test('logged-in header exposes compact recommended notifications beside profile', () => {
+test('logged-in header exposes readable, actionable notifications beside profile', () => {
     const notificationRenderer = app.slice(app.indexOf('function renderAccountNotifications()'), app.indexOf('function showNewAccountGuidance()'));
-    assert.doesNotMatch(notificationRenderer, /escapeHtml\(item\.body\)/);
-    assert.match(css, /\.account-notification-copy strong\s*\{[^}]*white-space:\s*nowrap;[^}]*overflow:\s*hidden;[^}]*text-overflow:\s*ellipsis;/s);
+    assert.match(notificationRenderer, /escapeHtml\(item\.body\)/);
+    assert.match(notificationRenderer, /account-notification-cta/);
+    assert.match(css, /\.account-notification-copy strong\s*\{[^}]*word-break:\s*keep-all;/s);
     const notificationIndex = html.indexOf('id="btn-open-notifications"');
     const profileIndex = html.indexOf('id="btn-open-profile"');
 

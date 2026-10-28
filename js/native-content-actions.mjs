@@ -80,7 +80,7 @@ export async function shareNativeContent(content, {
     try {
         const share = await loadShare();
         await share.share({
-            title: safeText(content?.title, 240, 'Ikkyee'),
+            title: safeText(content?.title, 240, '이끼'),
             text: safeText(content?.text || content?.description, 2000),
             url,
             dialogTitle: '공유하기'

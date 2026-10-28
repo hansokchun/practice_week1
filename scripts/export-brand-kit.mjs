@@ -2,6 +2,9 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
+// Legacy full-kit exporter kept for reproducible historical downloads.
+// Current marketing uses public/brand/wordmark-v2 (이끼 · 장소 저장소).
+
 const root = new URL('../', import.meta.url);
 const require = createRequire(import.meta.url);
 const sharp = require(process.env.SHARP_MODULE_PATH || 'sharp');
@@ -151,14 +154,14 @@ for (const tone of ['light', 'dark']) {
     const logo = tone === 'dark' ? horizontal.white : horizontal.teal;
     const link = await canvas(1200, 630, colors[tone]).composite([
         { input: await fit(logo, 1040, 347), left: 80, top: 90 },
-        await centeredText('장소 아카이브', 32, color, 1200, 435),
+        await centeredText('장소 저장소', 32, color, 1200, 435),
         await centeredText('ikkyee.com', 26, color, 1200, 548)
     ]).png().toBuffer();
     await deliver(`link-preview-${tone}`, await opaque(link), 'marketing', '기본 소개·링크 썸네일 · 1200×630');
     const feed = await canvas(1080, 1080, colors[tone]).composite([
         { input: await fit(tone === 'dark' ? white : source, 500), left: 290, top: 120 },
         { input: await fit(wordmarks[tone === 'dark' ? 'white' : 'teal'], 820, 211), left: 130, top: 625 },
-        await centeredText('장소 아카이브', 32, color, 1080, 866),
+        await centeredText('장소 저장소', 32, color, 1080, 866),
         await centeredText('ikkyee.com', 24, color, 1080, 984)
     ]).png().toBuffer();
     await deliver(`feed-${tone}`, await opaque(feed), 'marketing', 'SNS 정사각 게시물 · 1080×1080');
@@ -167,13 +170,13 @@ const story = await canvas(1080, 1920, colors.dark).composite([
     await centeredText('사진 · 장소 · 위치', 32, colors.white, 1080, 230),
     { input: await fit(white, 700), left: 190, top: 390 },
     { input: await fit(wordmarks.white, 900, 231), left: 90, top: 1100 },
-    await centeredText('장소 아카이브', 40, colors.white, 1080, 1400),
+    await centeredText('장소 저장소', 40, colors.white, 1080, 1400),
     await centeredText('ikkyee.com', 28, colors.white, 1080, 1660)
 ]).png().toBuffer();
 await deliver('story-dark', await opaque(story), 'marketing', 'SNS 스토리·영상 끝 화면 · 1080×1920');
 const feature = await canvas(1024, 500, colors.light).composite([
     { input: await fit(horizontal.teal, 880, 293), left: 72, top: 50 },
-    await centeredText('장소 아카이브', 28, colors.teal, 1024, 358),
+    await centeredText('장소 저장소', 28, colors.teal, 1024, 358),
     await centeredText('ikkyee.com', 22, colors.teal, 1024, 443)
 ]).png().toBuffer();
 await deliver('google-play-feature', await opaque(feature), 'marketing', 'Google Play 피처 그래픽 · 1024×500');

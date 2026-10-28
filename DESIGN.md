@@ -64,10 +64,10 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 - Use serif only for brand identity moments; page titles, section titles, menus, captions, and descriptions stay in the primary stack.
 - Body text stays at 14px or larger.
 
-### Reusable Korean Wordmark v2
+### Reusable Korean Wordmark v2.1
 
 - Standalone brand deliveries use the unchanged `brand/ikkyee-symbol-v1.png`, its full transparent padding and aspect ratio, teal `#245457` or the approved white alpha silhouette. They do not replace application branding automatically.
-- `이끼` uses Pretendard SemiBold (600); `장소아카이브` uses Pretendard Medium (500). The horizontal layout places the descriptor above the larger name; the stacked layout places it below. Compact deliveries omit the descriptor for small contexts where the service is already identified.
+- `이끼` uses Pretendard SemiBold (600); `장소 저장소` uses Pretendard Medium (500). The horizontal layout places the descriptor above the larger name; the stacked layout places it below. Compact deliveries omit the descriptor for small contexts where the service is already identified.
 - Authoring tokens live in `scripts/brand-wordmark-v2.mjs`: horizontal 1024 x 400, stacked 640 x 720, compact 560 x 220. Layout derives placement from actual glyph bounds and the master alpha bounds. Keep visible separation, center the combined artwork and preserve the entire symbol frame.
 - Minimum displayed widths are 280px horizontal, 180px stacked and 104px compact. Previews use existing warm-white, deep-teal and text colors. Deliver transparent 1x/2x PNG and self-contained SVG with outlined type and embedded raster symbol; never describe the latter as a pure vector master.
 
