@@ -60,7 +60,7 @@
                     <span id="header-upload-label">내 지도 만들기</span>
                 </button>
                 <aside id="guest-map-invitation" class="guest-map-invitation" role="note" aria-label="내 지도 만들기 안내" hidden>
-                    <button id="btn-open-guest-map-invitation" class="guest-map-invitation-action" type="button"><span>나만 아는 장소로 지도를 만들어보세요!</span></button>
+                    <button id="btn-open-guest-map-invitation" class="guest-map-invitation-action" type="button"><span class="guest-map-invitation-icon material-symbols-outlined" aria-hidden="true">add_location_alt</span><span>나만 아는 장소로 지도를 만들어보세요!</span></button>
                     <button id="btn-dismiss-guest-map-invitation" type="button" aria-label="지도 만들기 안내 닫기" title="지도 만들기 안내 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
                 </aside>
                 <button id="btn-open-auth" class="nav-action" type="button">로그인</button>
@@ -1353,10 +1353,11 @@
     <div class="modal" id="photo-trial-modal" role="dialog" aria-modal="true" aria-labelledby="photo-trial-title" aria-hidden="true">
         <section class="modal-card photo-trial-card">
             <header class="photo-trial-header">
-                <div>
+                <div class="photo-trial-heading">
+                    <img class="photo-trial-brand" src="images/logo.png" alt="" width="48" height="48" aria-hidden="true">
                     <h2 id="photo-trial-title">사진으로 내 지도를 만들어보세요</h2>
                 </div>
-                <button class="photo-trial-close" type="button" data-close-modal aria-label="사진 체험 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+                <button class="photo-trial-close" type="button" data-close-modal aria-label="사진 체험 닫기" title="사진 체험 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
             </header>
             <div class="photo-trial-body">
                 <section class="photo-trial-intro" data-trial-empty aria-label="사진으로 지도 만드는 순서">

@@ -22,11 +22,14 @@ test('header uses one map-create action and a separate dismissible invitation', 
 
 test('guest invitation is distinct from its CTA and adapts its left-side placement to narrow viewports', () => {
     const bubble = css.match(/\.guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
-    assert.match(bubble, /--guest-map-invitation-surface: color-mix\([^;]*var\(--gold\)[^;]*var\(--bg\)/);
+    assert.match(bubble, /--guest-map-invitation-surface: var\(--surface\)/);
+    assert.match(bubble, /border: 1px solid var\(--line\)/);
+    assert.doesNotMatch(bubble, /--gold/);
     assert.match(bubble, /inset-inline-end: calc\(100% \+/);
     assert.match(bubble, /width: min\([^;]*100vw/);
     assert.match(bubble, /color: var\(--teal-dark\)/);
     assert.match(css, /\.guest-map-invitation-action\s*\{[^}]*font:[^;]*var\(--body\);[^}]*letter-spacing: var\(--text-tracking\)/s);
+    assert.match(html, /class="guest-map-invitation-icon material-symbols-outlined" aria-hidden="true">add_location_alt/);
     assert.match(css, /@media \(max-width:[^)]+\)\s*\{\s*\.guest-map-invitation\s*\{[^}]*inset-block-start: calc\(100% \+[^}]*inset-inline-end: 0;/s);
     assert.match(css, /\.guest-map-invitation::before\s*\{[^}]*inset-inline-end: -/s);
     const close = css.match(/#btn-dismiss-guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
@@ -61,9 +64,21 @@ test('the first trial screen preserves the three original cards without their de
     for (const title of ['사진 고르기', '지도에서 확인하기', '저장하기']) assert.ok(intro.includes(`<strong>${title}</strong>`), title);
     assert.doesNotMatch(intro, /<p\b/);
     assert.match(css, /\.photo-trial-steps\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/s);
-    assert.match(css, /\.photo-trial-steps li\s*\{[^}]*background: var\(--surface-soft\)/s);
+    assert.match(css, /\.photo-trial-steps li\s*\{[^}]*background: var\(--photo-trial-step-surface\)/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
-    assert.doesNotMatch(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width:/s);
+    assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width: min\(var\(--photo-trial-empty-width\), 100%\)/s);
+});
+
+test('the compact empty dialog uses the existing decorative brand without changing the selected editor', () => {
+    const modal = html.slice(html.indexOf('id="photo-trial-modal"'), html.indexOf('id="auth-modal"'));
+    assert.match(modal, /<img class="photo-trial-brand" src="images\/logo\.png" alt=""[^>]*aria-hidden="true"/);
+    const logo = css.match(/\.photo-trial-brand\s*\{([^}]+)\}/s)?.[1] || '';
+    assert.match(logo, /display: none;/);
+    assert.match(logo, /object-fit: contain;/);
+    assert.doesNotMatch(logo, /filter:|box-shadow:|border-radius:|clip-path:/);
+    assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-brand\s*\{[^}]*display: block;/s);
+    assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-picker\s*\{[^}]*justify-content: center;/s);
+    assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-footer\s*\{[^}]*padding:/s);
 });
 
 test('both trial stages keep the original footer frame while only its helper copy is removed', () => {
