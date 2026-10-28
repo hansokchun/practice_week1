@@ -108,6 +108,26 @@ test('upload review can add guest files through the same persisted three-photo c
     assert.equal(photos[0].geo_source, 'exif');
 });
 
+test('the original intro cards appear only while the trial has no photos', async () => {
+    const { root, elements } = createRoot();
+    const controller = createPhotoTrialController({
+        root,
+        store: { load: async () => [], save: async () => {} },
+        readExif: async () => ({}),
+        createObjectUrl: () => 'blob:intro-photo',
+        revokeObjectUrl: () => {}
+    });
+    await controller.open();
+    assert.equal(elements.get('[data-trial-empty]').hidden, false);
+    assert.equal(elements.get('[data-trial-workspace]').hidden, true);
+    const [photo] = await controller.addPhotos([namedPhoto('intro.jpg')]);
+    assert.equal(elements.get('[data-trial-empty]').hidden, true);
+    assert.equal(elements.get('[data-trial-workspace]').hidden, false);
+    await controller.removeSaved([photo.id]);
+    assert.equal(elements.get('[data-trial-empty]').hidden, false);
+    assert.equal(elements.get('[data-trial-workspace]').hidden, true);
+});
+
 test('controller disables Continue until EXIF finishes and ignores repeated Continue clicks', async () => {
     // Given
     const { root, elements } = createRoot();

@@ -53,6 +53,19 @@ test('photo picker and save controls align their icon and label together', () =>
     assert.match(css, /\.photo-trial-picker \[data-trial-add\],\s*\.photo-trial-footer \[data-trial-continue\]\s*\{[^}]*display: inline-flex;[^}]*align-items: center;[^}]*justify-content: center;[^}]*gap: 8px;/s);
 });
 
+test('the first trial screen preserves the three original cards without their deleted descriptions', () => {
+    const intro = html.match(/<section class="photo-trial-intro"[\s\S]*?<\/section>/)?.[0] || '';
+    assert.match(intro, /data-trial-empty/);
+    assert.equal((intro.match(/<li>/g) || []).length, 3);
+    for (const icon of ['add_photo_alternate', 'add_location_alt', 'photo_library']) assert.ok(intro.includes(icon), icon);
+    for (const title of ['사진 고르기', '지도에서 확인하기', '저장하기']) assert.ok(intro.includes(`<strong>${title}</strong>`), title);
+    assert.doesNotMatch(intro, /<p\b/);
+    assert.match(css, /\.photo-trial-steps\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/s);
+    assert.match(css, /\.photo-trial-steps li\s*\{[^}]*background: var\(--surface-soft\)/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
+    assert.doesNotMatch(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width:/s);
+});
+
 test('trial auth completion restores browser drafts into upload review before any server save', () => {
     const stage = app.slice(app.indexOf('async function stagePhotoTrialForUpload('), app.indexOf('async function continuePhotoTrial('));
     assert.match(stage, /loadDraft\(\)/);
