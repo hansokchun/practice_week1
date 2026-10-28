@@ -11,7 +11,7 @@ test('guest callout has a keyboard-operable entry separate from its dismiss butt
     const entry = invitation.match(/<button id="btn-open-guest-map-invitation"[\s\S]*?<\/button>/)?.[0] || '';
     assert.ok(entry, 'the invitation body needs a native button');
     assert.match(entry, /type="button"/);
-    assert.match(entry, /나만 아는 장소로 지도를 만들어보세요!/);
+    assert.match(entry, /나만의 지도 만들기/);
     assert.doesNotMatch(entry, /btn-dismiss-guest-map-invitation/);
     assert.match(invitation, /<button id="btn-dismiss-guest-map-invitation"[^>]*aria-label="지도 만들기 안내 닫기"/);
     const close = invitation.match(/<button id="btn-dismiss-guest-map-invitation"[^>]*>/)?.[0] || '';

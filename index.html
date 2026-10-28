@@ -55,12 +55,12 @@
                 <span class="brand-korean" lang="ko">이끼</span>
             </a>
             <div class="account-area">
-                <button id="btn-header-upload" class="nav-action nav-create" type="button" aria-label="내 지도 만들기">
-                    <span class="material-symbols-outlined" aria-hidden="true">add_a_photo</span>
-                    <span id="header-upload-label">내 지도 만들기</span>
+                <button id="btn-header-upload" class="nav-action nav-create" type="button" aria-label="나만의 지도 만들기">
+                    <span id="header-upload-icon" class="material-symbols-outlined" aria-hidden="true">map</span>
+                    <span id="header-upload-label">나만의 지도 만들기</span>
                 </button>
-                <aside id="guest-map-invitation" class="guest-map-invitation" role="note" aria-label="내 지도 만들기 안내" hidden>
-                    <button id="btn-open-guest-map-invitation" class="guest-map-invitation-action" type="button"><span class="guest-map-invitation-icon material-symbols-outlined" aria-hidden="true">add_location_alt</span><span>나만 아는 장소로 지도를 만들어보세요!</span></button>
+                <aside id="guest-map-invitation" class="guest-map-invitation" role="note" aria-label="나만의 지도 만들기 안내" hidden>
+                    <button id="btn-open-guest-map-invitation" class="guest-map-invitation-action" type="button"><span class="guest-map-invitation-icon material-symbols-outlined" aria-hidden="true">map</span><span>나만의 지도 만들기</span></button>
                     <button id="btn-dismiss-guest-map-invitation" type="button" aria-label="지도 만들기 안내 닫기" title="지도 만들기 안내 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
                 </aside>
                 <button id="btn-open-auth" class="nav-action" type="button">로그인</button>
@@ -1354,17 +1354,17 @@
         <section class="modal-card photo-trial-card">
             <header class="photo-trial-header">
                 <div class="photo-trial-heading">
-                    <img class="photo-trial-brand" src="images/logo.png" alt="" width="48" height="48" aria-hidden="true">
-                    <h2 id="photo-trial-title">사진으로 내 지도를 만들어보세요</h2>
+                    <span class="photo-trial-map-mark material-symbols-outlined" aria-hidden="true">map</span>
+                    <h2 id="photo-trial-title">나만의 지도 만들기</h2>
                 </div>
                 <button class="photo-trial-close" type="button" data-close-modal aria-label="사진 체험 닫기" title="사진 체험 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
             </header>
             <div class="photo-trial-body">
                 <section class="photo-trial-intro" data-trial-empty aria-label="사진으로 지도 만드는 순서">
-                    <ol class="photo-trial-steps">
-                        <li><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span><strong>사진 고르기</strong></li>
-                        <li><span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span><strong>지도에서 확인하기</strong></li>
-                        <li><span class="material-symbols-outlined" aria-hidden="true">photo_library</span><strong>저장하기</strong></li>
+                    <ol class="photo-trial-steps" role="list">
+                        <li><span class="photo-trial-step-number" aria-hidden="true">01</span><span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span><strong>사진 고르기</strong></li>
+                        <li><span class="photo-trial-step-number" aria-hidden="true">02</span><span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span><strong>지도에서 확인하기</strong></li>
+                        <li><span class="photo-trial-step-number" aria-hidden="true">03</span><span class="material-symbols-outlined" aria-hidden="true">photo_library</span><strong>저장하기</strong></li>
                     </ol>
                 </section>
                 <div class="photo-trial-picker">

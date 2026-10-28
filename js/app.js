@@ -140,7 +140,7 @@ import {
 import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
 import { readPhotoExif } from './photo-exif-reader.mjs';
 import { buildTrialUploadPhotos, getTrialUploadMetadata, isGuestPhotoTrialUpload, selectPhotoTrialUpload } from './photo-trial.mjs';
-import { createGuestMapInvitationState } from './guest-map-entry.mjs';
+import { createGuestMapInvitationState, getHeaderUploadAction } from './guest-map-entry.mjs';
 import { createPhotoTrialController } from './photo-trial-controller.mjs';
 import { createPhotoTrialStore } from './photo-trial-store.mjs';
 import {
@@ -4451,9 +4451,12 @@ function updateAccountUI() {
     const profileButton = $('#btn-open-profile');
     document.body.classList.toggle('is-logged-in', Boolean(state.currentUser));
     document.body.classList.toggle('is-logged-out', !state.currentUser);
+    const uploadAction = getHeaderUploadAction(state.currentUser);
     const uploadLabel = $('#header-upload-label');
-    if (uploadLabel) uploadLabel.textContent = state.currentUser ? '사진 추가' : '내 지도 만들기';
-    $('#btn-header-upload')?.setAttribute('aria-label', state.currentUser ? '사진 추가' : '내 지도 만들기');
+    if (uploadLabel) uploadLabel.textContent = uploadAction.label;
+    const uploadIcon = $('#header-upload-icon');
+    if (uploadIcon) uploadIcon.textContent = uploadAction.icon;
+    $('#btn-header-upload')?.setAttribute('aria-label', uploadAction.label);
     syncGuestMapInvitation();
     if (profileButton) profileButton.hidden = !state.currentUser;
     const landingEditButton = $('#btn-edit-landing');
@@ -8182,7 +8185,7 @@ async function stagePhotoTrialForUpload(items = null, { selectedIds = null } = {
         catch { showToast('선택한 사진이 없거나 만료됐어요. 사진을 다시 골라 주세요.'); return false; }
     }
     if (!photos.length) {
-        showToast('사진이 없어요. 내 지도 만들기에서 사진을 골라 주세요.');
+        showToast('사진이 없어요. 나만의 지도 만들기에서 사진을 골라 주세요.');
         return false;
     }
     const importedIds = new Set(photos.map((photo) => String(photo.id)));
@@ -8225,7 +8228,7 @@ async function persistStagedPhotos() {
     }
     if (!state.currentUser) {
         if (!isGuestPhotoTrialUpload(state.stagedPhotos)) {
-            showToast('내 지도 만들기에서 사진을 다시 골라 주세요.');
+            showToast('나만의 지도 만들기에서 사진을 다시 골라 주세요.');
             return;
         }
         state.pendingPhotoTrialIds = selectedPhotos.map(photo => photo.trialId);

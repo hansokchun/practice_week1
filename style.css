@@ -14307,7 +14307,7 @@ body.modal-open {
 
 .guest-map-invitation-action {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr);
     align-items: center;
     gap: 12px;
     width: 100%;
@@ -14318,7 +14318,7 @@ body.modal-open {
     border-radius: inherit;
     background: transparent;
     color: inherit;
-    font: 500 16px/1.6 var(--body);
+    font: 600 16px/1.5 var(--body);
     letter-spacing: var(--text-tracking);
     text-align: start;
     word-break: keep-all;
@@ -14327,8 +14327,15 @@ body.modal-open {
 }
 
 .guest-map-invitation-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--teal) 6%, var(--surface));
     color: var(--teal);
-    font-size: 28px;
+    font-size: 24px;
     line-height: 1;
 }
 
@@ -14450,18 +14457,24 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 
 .photo-trial-heading { min-width: 0; }
 
-.photo-trial-brand {
+.photo-trial-map-mark {
     display: none;
     flex: 0 0 auto;
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--teal) 6%, var(--surface));
+    color: var(--teal);
+    font-size: 28px;
+    line-height: 1;
 }
 
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-header { align-items: center; }
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-heading { display: flex; align-items: center; gap: 12px; }
-.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-brand { display: block; }
-.photo-trial-card:has([data-trial-workspace][hidden]) h2 { font-size: 26px; }
+.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-map-mark { display: grid; }
+.photo-trial-card:has([data-trial-workspace][hidden]) h2 { font-size: 26px; font-weight: 600; }
 
 .photo-trial-card h2 {
     margin: 0;
@@ -14525,6 +14538,11 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 }
 
 .photo-trial-steps li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "number icon" "label label";
+    align-content: start;
+    gap: 12px;
     min-width: 0;
     min-height: 104px;
     padding: 16px;
@@ -14533,17 +14551,35 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     background: var(--photo-trial-step-surface);
 }
 
+.photo-trial-step-number {
+    grid-area: number;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--teal-dark);
+    font: 600 12px/1 var(--body);
+    font-variant-numeric: tabular-nums;
+}
+
 .photo-trial-steps .material-symbols-outlined {
+    grid-area: icon;
     display: block;
-    margin-bottom: 12px;
+    margin: 0;
     color: var(--teal);
     font-size: 28px;
 }
 
 .photo-trial-steps strong {
+    grid-area: label;
     display: block;
+    min-width: 0;
     font-size: 16px;
-    line-height: 1.6;
+    font-weight: 600;
+    line-height: 1.5;
     word-break: keep-all;
 }
 
@@ -14777,8 +14813,8 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
         grid-template-columns: minmax(0, 1fr);
     }
     .photo-trial-steps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-    .photo-trial-steps li { min-height: 64px; padding: 16px; }
-    .photo-trial-steps .material-symbols-outlined { float: left; margin: 0 16px 0 0; }
+    .photo-trial-steps li { grid-template-columns: 28px 28px minmax(0, 1fr); grid-template-areas: "number icon label"; align-content: center; align-items: center; min-height: 64px; padding: 16px; }
+    .photo-trial-steps .material-symbols-outlined { margin: 0; }
     #photo-trial-modal { padding: 12px; }
     .modal-card.photo-trial-card { max-height: calc(100dvh - 24px); }
     .photo-trial-header, .photo-trial-body { padding: 16px; }
@@ -14788,7 +14824,7 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     .photo-trial-list > div { max-width: calc(100% - 4px); }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-header { position: relative; display: block; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-heading { display: grid; gap: 12px; }
-    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-brand { width: 36px; height: 36px; }
+    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-map-mark { width: 40px; height: 40px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) h2 { font-size: 22px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-close { position: absolute; top: 16px; right: 16px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-body { padding: 16px; }

@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGuestMapInvitationState } from '../js/guest-map-entry.mjs';
+import { createGuestMapInvitationState, getHeaderUploadAction } from '../js/guest-map-entry.mjs';
 import { isGuestPhotoTrialUpload, selectPhotoTrialUpload } from '../js/photo-trial.mjs';
+
+test('header action keeps the map name and icon together and restores the member photo action', () => {
+    assert.deepEqual(getHeaderUploadAction(null), { label: '나만의 지도 만들기', icon: 'map' });
+    assert.deepEqual(getHeaderUploadAction({ id: 'member' }), { label: '사진 추가', icon: 'add_a_photo' });
+    assert.deepEqual(getHeaderUploadAction(undefined), { label: '나만의 지도 만들기', icon: 'map' });
+});
 
 test('guest invitation appears on each home visit but never on landing or before session resolution', () => {
     const notice = createGuestMapInvitationState();
