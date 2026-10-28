@@ -1,4 +1,4 @@
-const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album']);
+const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album', 'save-photo-trial']);
 const SUPPORTED_PENDING_ROUTES = new Set(['upload']);
 const STORAGE_KEY = 'ikkyee.pendingAuth';
 const PENDING_AUTH_TTL_MS = 15 * 60 * 1000;

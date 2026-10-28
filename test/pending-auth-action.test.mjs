@@ -20,6 +20,8 @@ test('pending auth actions accept only supported follow-up actions', () => {
     assert.equal(getPendingAuthAction(state), 'persist-upload');
     assert.equal(setPendingAuthAction(state, 'save-album'), 'save-album');
     assert.equal(getPendingAuthAction(state), 'save-album');
+    assert.equal(setPendingAuthAction(state, 'save-photo-trial'), 'save-photo-trial');
+    assert.equal(getPendingAuthAction(state), 'save-photo-trial');
     assert.equal(setPendingAuthAction(state, 'unknown'), null);
     assert.equal(getPendingAuthAction(state), null);
 });
@@ -129,4 +131,20 @@ test('app stores pending OAuth navigation in local storage for cross-tab returns
     const app = readFileSync('js/app.js', 'utf8');
     assert.match(app, /storePendingAuthContext\(window\.localStorage/);
     assert.match(app, /restorePendingAuthContext\(window\.localStorage/);
+});
+
+test('photo trial save intent survives OAuth without storing photo bytes in auth context', () => {
+    const storage = new Map();
+    const adapter = {
+        getItem: key => storage.get(key) || null,
+        setItem: (key, value) => storage.set(key, value),
+        removeItem: key => storage.delete(key)
+    };
+    const state = createPendingAuthState();
+    setPendingAuthAction(state, 'save-photo-trial');
+    storePendingAuthContext(adapter, state, { route: 'home', visibility: 'private' }, 1_000);
+    const restored = createPendingAuthState();
+    assert.equal(restorePendingAuthContext(adapter, restored, 2_000)?.action, 'save-photo-trial');
+    assert.equal(getPendingAuthAction(restored), 'save-photo-trial');
+    assert.doesNotMatch(JSON.stringify([...storage.values()]), /blob:|data:image|base64/);
 });
