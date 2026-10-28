@@ -14418,8 +14418,6 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     display: none;
 }
 
-.photo-trial-footer:has([data-trial-continue][hidden]) { display: none; }
-
 .photo-trial-header {
     display: flex;
     align-items: flex-start;
@@ -14522,6 +14520,8 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     font-size: 20px;
     line-height: 1;
 }
+
+.photo-trial-footer [data-trial-continue][hidden] { display: none; }
 
 .photo-trial-picker > button,
 .photo-trial-footer > button,
@@ -14708,6 +14708,7 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 
 .photo-trial-footer {
     display: flex;
+    min-height: 56px;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;

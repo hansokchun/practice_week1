@@ -66,6 +66,19 @@ test('the first trial screen preserves the three original cards without their de
     assert.doesNotMatch(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width:/s);
 });
 
+test('both trial stages keep the original footer frame while only its helper copy is removed', () => {
+    const modal = html.slice(html.indexOf('id="photo-trial-modal"'), html.indexOf('id="auth-modal"'));
+    const footer = modal.match(/<footer class="photo-trial-footer">([\s\S]*?)<\/footer>/)?.[1] || '';
+    assert.match(footer, /data-trial-continue/);
+    assert.match(footer, /내 보관함에 저장하기/);
+    assert.doesNotMatch(footer, /사진 속 위치 정보도 확인하고 저장해 주세요/);
+    assert.doesNotMatch(css, /\.photo-trial-footer:has\([^}]+display: none/s);
+    assert.match(css, /\.photo-trial-footer\s*\{[^}]*min-height:[^;]+;[^}]*border-top: 1px solid var\(--line\);[^}]*background: var\(--bg\);/s);
+    assert.match(css, /\.photo-trial-footer \[data-trial-continue\]\[hidden\]\s*\{\s*display: none;/);
+    assert.doesNotMatch(modal, /data-trial-clear/);
+    for (const action of ['data-trial-add', 'data-trial-map-start', 'data-trial-location-save', 'data-trial-location-clear']) assert.ok(modal.includes(action), action);
+});
+
 test('trial auth completion restores browser drafts into upload review before any server save', () => {
     const stage = app.slice(app.indexOf('async function stagePhotoTrialForUpload('), app.indexOf('async function continuePhotoTrial('));
     assert.match(stage, /loadDraft\(\)/);
