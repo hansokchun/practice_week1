@@ -103,7 +103,7 @@
 | 자동 검증 | 통과 | 2026-10-29 현재 웹 `npm test` 1,306개 통과, 실패 0개 |
 | 로컬 프로덕션 빌드 | 통과 | 웹 `npm run build` 통과. 대형 동적 앨범 내보내기 청크 경고는 유지 |
 | 웹 성능 예산 | 기존 기준부터 미통과 | 원격 `dev` 기준 JS Brotli 303.40KB·CSS 34.21KB, 현재 JS 303.34KB·CSS 34.95KB. 한도는 각각 70.5KB·30KB이며 이미지 2개 예산은 통과. 한도를 임의로 높이지 않음 |
-| 미리보기 배포 | 10월 29일 변경 배포 대기 | 이전 `dev` 미리보기는 `https://dev.practice-week1-cws.pages.dev`에서 운영 중이며, 이번 온보딩·브랜드·풀잎 핀 변경은 최종 커밋 뒤 다시 배포한다. |
+| 미리보기 배포 | 10월 29일 변경 완료 | `dev` 앱 커밋 `01b90b2`를 `https://32430446.practice-week1-cws.pages.dev`와 `https://dev.practice-week1-cws.pages.dev`에 배포했다. 375px 헤더·안내 카드·3단계 창, 실제 Google 지도 단일·겹침·선택 풀잎 핀, 보안 헤더와 브랜드 다운로드의 현행·이전 자료 구분을 원격에서 확인했다. |
 | 운영 배포 | 완료 | 정적→동적 거리뷰와 랜딩 문구 통합 커밋 `4cc9d3e`를 `dev`와 `main`에 반영하고 Cloudflare Pages 운영에 배포했다. 고정 배포 주소 `https://c85f0e46.practice-week1-cws.pages.dev`, 운영 주소 `https://practice-week1-cws.pages.dev`에서 정적 JPEG 200 응답, 상세의 정적 미리보기, 클릭 후 가장 가까운 동적 파노라마 전환을 확인했다. (2026-08-27) |
 | Supabase RLS | 활성화 | 기존 6개 테이블과 새 `landing_sections`, `landing_section_photos`에 RLS 적용. 새 테이블은 정책 4개씩, 익명 조회 허용·익명 쓰기 차단 검증 (2026-08-26) |
 | 사진 Storage 개인정보 | 비공개·통과 | `photos` 버킷 비공개. 소유자·타 사용자·익명·서명 URL·과거 공개 URL·로그아웃 운영 Explore 점검 통과 |
