@@ -14277,60 +14277,87 @@ body.modal-open {
 .account-area { position: relative; }
 
 .guest-map-invitation {
-    --guest-map-invitation-offset: clamp(0px, calc(100vw - 360px), 56px);
+    --guest-map-invitation-surface: color-mix(in srgb, var(--gold) 28%, var(--bg));
     position: absolute;
-    inset-block-start: calc(100% + 12px);
-    inset-inline-end: var(--guest-map-invitation-offset);
+    inset-block-start: 22px;
+    inset-inline-end: calc(100% + 12px);
     z-index: 20;
-    width: min(288px, calc(100vw - 48px - var(--guest-map-invitation-offset)));
-    padding: 20px 60px 20px 24px;
+    width: min(304px, calc(100vw - 48px));
+    padding: 0;
     border-radius: 12px;
-    background: var(--teal);
-    color: var(--bg);
+    background: var(--guest-map-invitation-surface);
+    color: var(--teal-dark);
     box-shadow: var(--shadow);
 }
 
 .guest-map-invitation::before {
     content: '';
     position: absolute;
-    inset-block-start: -6px;
-    inset-inline-end: calc(146px - var(--guest-map-invitation-offset));
+    inset-block-start: 16px;
+    inset-inline-end: -6px;
     width: 12px;
     height: 12px;
     background: inherit;
     transform: rotate(45deg);
 }
 
-.guest-map-invitation p {
+.guest-map-invitation-action {
+    display: block;
+    width: 100%;
+    min-height: 44px;
     margin: 0;
+    padding: 16px 56px 16px 20px;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
     font: 500 16px/1.6 var(--body);
     letter-spacing: var(--text-tracking);
+    text-align: start;
     word-break: keep-all;
     overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.guest-map-invitation-action:hover {
+    color: var(--text);
+}
+
+.guest-map-invitation-action:active {
+    opacity: 0.8;
+}
+
+.guest-map-invitation-action:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
 }
 
 #btn-dismiss-guest-map-invitation {
     position: absolute;
-    inset-block-start: 8px;
-    inset-inline-end: 8px;
+    inset-block-start: 4px;
+    inset-inline-end: 4px;
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 0;
     color: inherit;
-    background: color-mix(in srgb, var(--surface) 10%, transparent);
+    background: transparent;
     cursor: pointer;
 }
 
 #btn-dismiss-guest-map-invitation:hover {
-    background: color-mix(in srgb, var(--surface) 18%, transparent);
+    color: var(--text);
+}
+
+#btn-dismiss-guest-map-invitation:active {
+    opacity: 0.65;
 }
 
 #btn-dismiss-guest-map-invitation:focus-visible {
-    outline: 2px solid var(--bg);
+    outline: 2px solid var(--teal);
     outline-offset: 2px;
 }
 
@@ -14338,6 +14365,18 @@ body.modal-open {
 .guest-map-invitation[hidden],
 body:not(.is-logged-out) #guest-map-invitation { display: none; }
 body[data-page="landing"] #guest-map-invitation { display: none; }
+
+@media (max-width: 860px) {
+    .guest-map-invitation {
+        inset-block-start: calc(100% + 8px);
+        inset-inline-end: 0;
+        width: min(336px, calc(100vw - 48px));
+    }
+    .guest-map-invitation::before {
+        inset-block-start: -6px;
+        inset-inline-end: 132px;
+    }
+}
 
 body.is-logged-out #btn-header-upload {
     display: inline-flex;

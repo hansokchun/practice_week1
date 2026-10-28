@@ -9133,6 +9133,7 @@ async function runPendingAuthAction() {
 function bindEvents() {
     adminAccountsController.bind();
     $('#btn-header-upload')?.addEventListener('click', openHeaderUpload);
+    $('#btn-open-guest-map-invitation')?.addEventListener('click', openHeaderUpload);
     $('#btn-dismiss-guest-map-invitation')?.addEventListener('click', () => {
         guestMapInvitation.dismiss();
         syncGuestMapInvitation();
