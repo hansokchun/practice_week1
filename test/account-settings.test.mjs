@@ -91,7 +91,7 @@ test('profile menu and settings route expose the complete account settings surfa
     assert.match(app, /function renderAccountSettingsPage\(\)/u);
     assert.match(app, /getUploadVisibilityPlan\(\{/u);
     assert.match(app, /새 사진을 자동 공개합니다\./u);
-    assert.match(app, /getAuthRequiredRoute\(normalized, state\.currentUser\)[\s\S]*routeTo\(normalized, options\)/u);
+    assert.match(app, /getAuthRequiredRoute\(normalized, state\.currentUser, \{ hasGuestPhotoTrial: isGuestPhotoTrialUpload\(state\.stagedPhotos\) \}\)[\s\S]*routeTo\(normalized, options\)/u);
     assert.match(css, /\.settings-page-shell\s*\{/u);
     assert.match(css, /\.settings-toggle\s*\{/u);
 });

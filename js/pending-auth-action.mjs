@@ -1,7 +1,15 @@
-const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album', 'save-photo-trial']);
+const SUPPORTED_ACTIONS = new Set(['persist-upload', 'save-share', 'save-album', 'save-photo-trial', 'persist-photo-trial']);
 const SUPPORTED_PENDING_ROUTES = new Set(['upload']);
 const STORAGE_KEY = 'ikkyee.pendingAuth';
 const PENDING_AUTH_TTL_MS = 15 * 60 * 1000;
+const PHOTO_TRIAL_AUTH_TTL_MS = 24 * 60 * 60 * 1000;
+
+function normalizeTrialIds(value) {
+    if (!Array.isArray(value)) return [];
+    return [...new Set(value.filter(id => (
+        typeof id === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(id)
+    )))].slice(0, 3);
+}
 
 export function createPendingAuthState() {
     return {
@@ -56,37 +64,57 @@ export function storePendingAuthContext(storage, state, context = {}, now = Date
         pendingRoute,
         createdAt: now
     };
+    if (action === 'persist-photo-trial') {
+        payload.trialIds = normalizeTrialIds(context.trialIds ?? state.pendingPhotoTrialIds);
+    }
     storage.setItem(STORAGE_KEY, JSON.stringify(payload));
     return payload;
 }
 
-export function restorePendingAuthContext(storage, state, now = Date.now()) {
+export function clearPendingAuthContext(storage) {
+    storage?.removeItem(STORAGE_KEY);
+}
+
+export function restorePendingAuthContext(storage, state, now = Date.now(), { consume = true } = {}) {
     if (!storage) return null;
     const raw = storage.getItem(STORAGE_KEY);
-    storage.removeItem(STORAGE_KEY);
     if (!raw) return null;
 
     try {
         const parsed = JSON.parse(raw);
+        const action = SUPPORTED_ACTIONS.has(parsed?.action) ? parsed.action : null;
+        const ttl = action === 'persist-photo-trial' ? PHOTO_TRIAL_AUTH_TTL_MS : PENDING_AUTH_TTL_MS;
         const isFresh = Number.isFinite(parsed?.createdAt)
             && now - parsed.createdAt >= 0
-            && now - parsed.createdAt <= PENDING_AUTH_TTL_MS;
-        if (!isFresh) return null;
-        const action = SUPPORTED_ACTIONS.has(parsed?.action) ? parsed.action : null;
+            && now - parsed.createdAt <= ttl;
+        if (!isFresh) {
+            clearPendingAuthContext(storage);
+            return null;
+        }
         const pendingRoute = SUPPORTED_PENDING_ROUTES.has(parsed?.pendingRoute) ? parsed.pendingRoute : null;
         const route = typeof parsed?.route === 'string' ? parsed.route : null;
-        if (!action && !pendingRoute && !route) return null;
+        if (!action && !pendingRoute && !route) {
+            clearPendingAuthContext(storage);
+            return null;
+        }
+        if (consume) clearPendingAuthContext(storage);
         state.pendingAuthAction = action;
         state.pendingAuthRoute = pendingRoute;
         state.pendingAuthReturnRoute = route;
-        return {
+        const context = {
             action,
             route,
             visibility: ['private', 'link', 'public'].includes(parsed.visibility) ? parsed.visibility : null,
             albumId: typeof parsed.albumId === 'string' ? parsed.albumId : null,
             pendingRoute
         };
+        if (action === 'persist-photo-trial') {
+            state.pendingPhotoTrialIds = normalizeTrialIds(parsed.trialIds);
+            context.trialIds = [...state.pendingPhotoTrialIds];
+        }
+        return context;
     } catch {
+        clearPendingAuthContext(storage);
         return null;
     }
 }

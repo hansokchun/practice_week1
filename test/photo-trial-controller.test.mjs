@@ -91,6 +91,23 @@ test('controller appends at most three photos and survives EXIF failures', async
     assert.equal(firstRemove.attributes.get('aria-label'), '1.jpg 삭제');
 });
 
+test('upload review can add guest files through the same persisted three-photo controller', async () => {
+    const { root } = createRoot();
+    let persisted = [];
+    const controller = createPhotoTrialController({
+        root,
+        store: { load: async () => [], save: async photos => { persisted = photos; }, clear: async () => {} },
+        readExif: async () => ({ lat: 37.5, lng: 127.1 }),
+        createObjectUrl: file => `blob:${file.name}`,
+        revokeObjectUrl: () => {}
+    });
+    await controller.open();
+    const photos = await controller.addPhotos(['a', 'b', 'c', 'd'].map(name => namedPhoto(`${name}.jpg`)));
+    assert.equal(photos.length, 3);
+    assert.equal(persisted.length, 3);
+    assert.equal(photos[0].geo_source, 'exif');
+});
+
 test('controller disables Continue until EXIF finishes and ignores repeated Continue clicks', async () => {
     // Given
     const { root, elements } = createRoot();

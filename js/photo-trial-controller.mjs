@@ -310,12 +310,17 @@ export function createPhotoTrialController({
         if (target.closest?.('[data-trial-clear]')) void clear().catch((error) => reportError(error, PERSISTENCE_MESSAGE));
     }
 
+    function addPhotos(files) {
+        const requestRevision = revision;
+        addQueue = addQueue.then(() => addFiles(Array.from(files || []), requestRevision));
+        return addQueue.then(() => clonePhotos(photos));
+    }
+
     function handleChange(event) {
         if (event.target !== refs.fileInput) return;
         const files = Array.from(refs.fileInput.files || []);
         refs.fileInput.value = '';
-        const requestRevision = revision;
-        addQueue = addQueue.then(() => addFiles(files, requestRevision));
+        void addPhotos(files);
     }
 
     function deactivate() {
@@ -387,6 +392,7 @@ export function createPhotoTrialController({
             else render();
         },
         loadDraft,
+        addPhotos,
         getPhotos: () => clonePhotos(photos),
         removeSaved,
         clear,

@@ -129,6 +129,7 @@ import { getPhotoDeliverySource, getLandingWarmSlideIndexes } from './photo-deli
 import { getMyphotoAlbumAction } from './myphoto-album-action.mjs';
 import { getNewAccountLimitMessage, getNewAccountLimitStatus } from './new-account-limits.mjs';
 import {
+    clearPendingAuthContext,
     restorePendingAuthContext,
     setPendingAuthReturnRoute,
     setPendingAuthAction,
@@ -138,7 +139,8 @@ import {
 } from './pending-auth-action.mjs';
 import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
 import { readPhotoExif } from './photo-exif-reader.mjs';
-import { buildTrialUploadPhotos, getTrialUploadMetadata } from './photo-trial.mjs';
+import { buildTrialUploadPhotos, getTrialUploadMetadata, isGuestPhotoTrialUpload, selectPhotoTrialUpload } from './photo-trial.mjs';
+import { createGuestMapInvitationState } from './guest-map-entry.mjs';
 import { createPhotoTrialController } from './photo-trial-controller.mjs';
 import { createPhotoTrialStore } from './photo-trial-store.mjs';
 import {
@@ -330,6 +332,7 @@ const initialAuthHash = window.location.hash;
 
 const state = {
     currentUser: null,
+    hasLoadedAuthSession: false,
     authMode: 'login',
     stagedPhotos: [],
     savedPhotos: [],
@@ -381,6 +384,7 @@ const state = {
     pendingAuthAction: null,
     pendingAuthRoute: null,
     pendingAuthReturnRoute: null,
+    pendingPhotoTrialIds: [],
     exploreZoom: 7,
     exploreMap: null,
     exploreMapResizeObserver: null,
@@ -1169,7 +1173,9 @@ function routeTo(section, { replace = false } = {}) {
         showToast('관리자 계정에서만 사용할 수 있습니다.');
         return;
     }
-    const authRequiredRoute = getAuthRequiredRoute(normalized, state.currentUser);
+    const authRequiredRoute = getAuthRequiredRoute(normalized, state.currentUser, {
+        hasGuestPhotoTrial: isGuestPhotoTrialUpload(state.stagedPhotos)
+    });
     if (authRequiredRoute) {
         state.pendingAuthRoute = authRequiredRoute;
         openModal('#auth-modal');
@@ -1258,6 +1264,7 @@ function renderRoute(section) {
             : renderedRoute;
 
     document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : normalized === 'tag' ? 'tag' : renderedRoute;
+    syncGuestMapInvitation();
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
     if (normalized === LANDING_ROUTE) renderLandingHeroSlides();
@@ -1336,7 +1343,7 @@ function applyRouteHash(hash, options = {}) {
     }
     const route = sharedRoute.route || parseRouteHash(hash);
     const normalized = ROUTES.has(route) ? route : normalizeAppSection(route);
-    if (getAuthRequiredRoute(normalized, state.currentUser)) {
+    if (getAuthRequiredRoute(normalized, state.currentUser, { hasGuestPhotoTrial: isGuestPhotoTrialUpload(state.stagedPhotos) })) {
         routeTo(normalized, options);
         return;
     }
@@ -1415,6 +1422,11 @@ function closeModals() {
 }
 
 function dismissModal(modal) {
+    if (modal?.id === 'auth-modal' && !state.currentUser && state.pendingAuthAction === 'persist-photo-trial') {
+        state.pendingAuthAction = null;
+        state.pendingPhotoTrialIds = [];
+        clearPendingAuthContext(window.localStorage);
+    }
     if (modal?.id === 'content-share-modal') {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
@@ -4439,6 +4451,10 @@ function updateAccountUI() {
     const profileButton = $('#btn-open-profile');
     document.body.classList.toggle('is-logged-in', Boolean(state.currentUser));
     document.body.classList.toggle('is-logged-out', !state.currentUser);
+    const uploadLabel = $('#header-upload-label');
+    if (uploadLabel) uploadLabel.textContent = state.currentUser ? '사진 추가' : '내 지도 만들기';
+    $('#btn-header-upload')?.setAttribute('aria-label', state.currentUser ? '사진 추가' : '내 지도 만들기');
+    syncGuestMapInvitation();
     if (profileButton) profileButton.hidden = !state.currentUser;
     const landingEditButton = $('#btn-edit-landing');
     if (landingEditButton) landingEditButton.hidden = !isLandingAdmin(state.currentUser);
@@ -7274,11 +7290,13 @@ function renderStagedPhotos() {
     $('#upload-total-count') && ($('#upload-total-count').textContent = `${selectedUploadCount}장`);
     $('#upload-result-panel')?.classList.toggle('is-visible', state.stagedPhotos.length > 0);
     if (reviewButton) reviewButton.textContent = '업로드하기';
-    if (reviewButton) reviewButton.disabled = !selectedUploadCount || isUploadLimitBlocked;
+    if (reviewButton) reviewButton.disabled = !selectedUploadCount || isUploadLimitBlocked || state.isPersistingUpload;
     if (uploadStorageStatus) {
         uploadStorageStatus.textContent = isUploadLimitBlocked
             ? getAccountUploadLimitMessage(uploadLimitStatus)
-            : `남은 업로드 가능 수 ${uploadLimitStatus.remainingUploads}장 · 모든 사진은 기본 비공개로 저장됩니다.`;
+            : !state.currentUser
+                ? '로그인 후 선택한 사진을 비공개로 저장합니다.'
+                : `남은 업로드 가능 수 ${uploadLimitStatus.remainingUploads}장 · 모든 사진은 기본 비공개로 저장됩니다.`;
     }
     renderTravelDraftSurfaces();
 
@@ -8039,6 +8057,10 @@ function renderAlbumDrafts() {
 }
 
 function handlePhotoFiles(files) {
+    if (!state.currentUser) {
+        void addGuestReviewPhotos(files);
+        return;
+    }
     const { accepted: selected, rejected } = filterAcceptedPhotoFiles(files || []);
     if (rejected.length) {
         const message = rejected.length === 1
@@ -8080,6 +8102,17 @@ function safeFileName(value) {
 let photoTrialController = null;
 let photoTrialStore = null;
 let photoTrialOwnerId;
+let isOpeningHeaderUpload = false;
+const guestMapInvitation = createGuestMapInvitationState();
+
+function syncGuestMapInvitation() {
+    const invitation = $('#guest-map-invitation');
+    if (invitation) invitation.hidden = !guestMapInvitation.update({
+        route: document.body.dataset.page,
+        currentUser: state.currentUser,
+        sessionReady: state.hasLoadedAuthSession
+    });
+}
 
 function getPhotoTrialController() {
     const ownerId = state.currentUser?.id || null;
@@ -8099,9 +8132,7 @@ function getPhotoTrialController() {
             const next = root.querySelector('[data-trial-continue]');
             if (next) next.hidden = !hasPhotos;
             const nextLabel = root.querySelector('[data-trial-continue-label]');
-            if (nextLabel) nextLabel.textContent = state.currentUser ? '내 보관함에 저장하기' : '가입·로그인하고 저장하기';
-            const clear = root.querySelector('[data-trial-clear]');
-            if (clear) clear.hidden = !hasPhotos;
+            if (nextLabel) nextLabel.textContent = '내 보관함에 저장하기';
             const addLabel = root.querySelector('[data-trial-add-label]');
             if (addLabel) addLabel.textContent = hasPhotos ? '사진 추가' : '사진 고르기';
             const add = root.querySelector('[data-trial-add]');
@@ -8113,50 +8144,76 @@ function getPhotoTrialController() {
     return photoTrialController;
 }
 
+async function openHeaderUpload() {
+    if (isOpeningHeaderUpload) return;
+    if (!state.currentUser) { await openPhotoTrial(); return; }
+    const ownerId = state.currentUser.id;
+    const button = $('#btn-header-upload');
+    isOpeningHeaderUpload = true;
+    if (button) button.disabled = true;
+    try {
+        const photos = await getPhotoTrialController().loadDraft();
+        if (state.currentUser?.id !== ownerId) return;
+        if (photos.length) await openPhotoTrial();
+        else routeTo('upload');
+    } finally {
+        isOpeningHeaderUpload = false;
+        if (button) button.disabled = false;
+    }
+}
+
 async function openPhotoTrial() {
     closeModals();
     openModal('#photo-trial-modal');
     await getPhotoTrialController().open();
 }
 
-async function stagePhotoTrialForUpload(items = null) {
-    if (!state.currentUser) return;
+async function stagePhotoTrialForUpload(items = null, { selectedIds = null } = {}) {
     const trial = getPhotoTrialController();
     try {
-        if (!items) await photoTrialStore.claimGuestDraft();
+        if (!items && state.currentUser) await photoTrialStore.claimGuestDraft();
     } catch {
-        showToast('이 계정에 미저장 체험 사진이 있어요. 체험하기에서 먼저 확인해 주세요. 가입 전 사진도 브라우저에 그대로 보관했어요.');
-        return;
+        showToast('사진을 이어받지 못했어요. 기존 사진은 브라우저에 보관했으니 다시 확인해 주세요.');
+        return false;
     }
-    const photos = items || await trial.loadDraft();
+    let photos = items || await trial.loadDraft();
+    if (selectedIds !== null) {
+        try { photos = selectPhotoTrialUpload(photos, selectedIds); }
+        catch { showToast('선택한 사진이 없거나 만료됐어요. 사진을 다시 골라 주세요.'); return false; }
+    }
     if (!photos.length) {
-        showToast('체험 사진이 없어요. 체험하기에서 사진을 다시 골라 주세요.');
-        return;
+        showToast('사진이 없어요. 내 지도 만들기에서 사진을 골라 주세요.');
+        return false;
     }
     const importedIds = new Set(photos.map((photo) => String(photo.id)));
-    const previous = state.stagedPhotos.filter((photo) => !importedIds.has(String(photo.trialId)));
-    state.stagedPhotos.filter((photo) => importedIds.has(String(photo.trialId))).forEach((photo) => URL.revokeObjectURL(photo.url));
+    const previous = state.currentUser ? state.stagedPhotos.filter((photo) => !importedIds.has(String(photo.trialId))) : [];
+    state.stagedPhotos.filter((photo) => !previous.includes(photo)).forEach((photo) => URL.revokeObjectURL(photo.url));
     state.stagedPhotos = [...previous, ...buildTrialUploadPhotos(photos)];
     closeModals();
     routeTo('upload');
     renderStagedPhotos();
-    showToast('체험 사진과 지정한 위치를 가져왔어요. 업로드하기를 누르면 비공개로 저장돼요.');
+    return true;
 }
 
 async function continuePhotoTrial(items) {
-    if (state.currentUser) {
-        await stagePhotoTrialForUpload(items);
-        return;
+    await stagePhotoTrialForUpload(items);
+}
+
+async function addGuestReviewPhotos(files) {
+    const trial = getPhotoTrialController();
+    await trial.open();
+    const photos = await trial.addPhotos(files);
+    if (photos.length) await stagePhotoTrialForUpload(photos);
+}
+
+async function restoreGuestPhotoTrialReview() {
+    const photos = await getPhotoTrialController().loadDraft();
+    if (!photos.length) return;
+    state.stagedPhotos = buildTrialUploadPhotos(photos);
+    if (state.pendingPhotoTrialIds.length) {
+        const selected = new Set(state.pendingPhotoTrialIds);
+        state.stagedPhotos.forEach(photo => { photo.selected = selected.has(photo.trialId); });
     }
-    closeModals();
-    state.pendingAuthRoute = null;
-    setPendingAuthAction(state, 'save-photo-trial');
-    openModal('#auth-modal');
-    setAuthMode('signup');
-    storePendingAuthContext(window.localStorage, state, {
-        route: getCurrentRoute(),
-        visibility: 'private'
-    });
 }
 
 async function persistStagedPhotos() {
@@ -8167,9 +8224,18 @@ async function persistStagedPhotos() {
         return;
     }
     if (!state.currentUser) {
-        setPendingAuthAction(state, 'persist-upload');
+        if (!isGuestPhotoTrialUpload(state.stagedPhotos)) {
+            showToast('내 지도 만들기에서 사진을 다시 골라 주세요.');
+            return;
+        }
+        state.pendingPhotoTrialIds = selectedPhotos.map(photo => photo.trialId);
+        state.pendingAuthRoute = null;
+        setPendingAuthAction(state, 'persist-photo-trial');
+        storePendingAuthContext(window.localStorage, state, {
+            route: 'upload', visibility: 'private'
+        });
         openModal('#auth-modal');
-        showToast('사진을 저장하려면 먼저 로그인해주세요.');
+        setAuthMode('login');
         return;
     }
     if (!enforceVerifiedAccount('upload')) return;
@@ -8278,10 +8344,13 @@ async function persistStagedPhotos() {
         const savedTrialIds = selectedPhotos.filter((photo) => photo.trialId).map((photo) => photo.trialId);
         if (savedTrialIds.length) {
             try { await getPhotoTrialController().removeSaved(savedTrialIds); }
-            catch { showToast('사진은 저장됐지만 체험 초안을 정리하지 못했어요. 체험하기에서 비워 주세요.'); }
+            catch { showToast('사진은 저장됐지만 브라우저 초안을 정리하지 못했어요.'); }
         }
+        state.pendingPhotoTrialIds = [];
+        clearPendingAuthContext(window.localStorage);
         clearUploadQueue();
-        routeTo(getUploadNextRoute(saved.length));
+        setProfileTab('map');
+        openAccountProfilePage();
     } catch (error) {
         await Promise.all(pendingStoragePaths.map((path) => removeUploadedImage(path)));
         for (const record of [...saved].reverse()) {
@@ -9031,11 +9100,17 @@ async function cancelPendingNativeLogin() {
 async function runPendingAuthAction() {
     const returnRoute = takePendingAuthReturnRoute(state);
     const route = takePendingAuthRoute(state);
+    const action = takePendingAuthAction(state);
+    if (action === 'persist-photo-trial') {
+        if (await stagePhotoTrialForUpload(null, { selectedIds: state.pendingPhotoTrialIds })) {
+            await persistStagedPhotos();
+        }
+        return;
+    }
     if (route) {
         routeTo(route);
         return;
     }
-    const action = takePendingAuthAction(state);
     if (action === 'save-photo-trial') {
         await stagePhotoTrialForUpload();
         return;
@@ -9057,7 +9132,11 @@ async function runPendingAuthAction() {
 
 function bindEvents() {
     adminAccountsController.bind();
-    $('#btn-open-photo-trial')?.addEventListener('click', openPhotoTrial);
+    $('#btn-header-upload')?.addEventListener('click', openHeaderUpload);
+    $('#btn-dismiss-guest-map-invitation')?.addEventListener('click', () => {
+        guestMapInvitation.dismiss();
+        syncGuestMapInvitation();
+    });
     $('#album-cover-picker-grid').addEventListener('change', event => {
         const draft = state.albumCoverPicker;
         if (!draft || draft.saving || event.target.name !== 'album-cover-photo') return;
@@ -10156,6 +10235,7 @@ function bindEvents() {
 async function finishNativeLogin(data) {
     renderNativePendingLoginButton();
     state.currentUser = data.user || await getCurrentUser();
+    state.hasLoadedAuthSession = true;
     await ensureCurrentUserPublicProfile();
     updateAccountUI();
     dismissModal($('#auth-modal'));
@@ -10225,16 +10305,22 @@ onDocumentReady(document, async () => {
             }
         }
         markNativeBoot('AUTH_READY');
-        const restoredAuthContext = restorePendingAuthContext(window.localStorage, state);
-        if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
-        if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
         const sharedAlbumId = parseSharedAlbumId(window.location.hash);
         if (sharedAlbumId) state.selectedPublicAlbumId = sharedAlbumId;
         const requestedInitialRoute = parseRouteHash(window.location.hash);
-        if (!restoredAuthContext?.route && requestedInitialRoute === APP_SECTIONS.EXPLORE) {
+        if (requestedInitialRoute === APP_SECTIONS.EXPLORE) {
             applyRouteHash(window.location.hash);
         }
         state.currentUser = await getCurrentUser();
+        state.hasLoadedAuthSession = true;
+        const restoredAuthContext = restorePendingAuthContext(window.localStorage, state, Date.now(), {
+            consume: Boolean(state.currentUser)
+        });
+        if (restoredAuthContext?.visibility) state.visibility = restoredAuthContext.visibility;
+        if (restoredAuthContext?.albumId) state.selectedPublicAlbumId = restoredAuthContext.albumId;
+        if (!state.currentUser && (requestedInitialRoute === 'upload' || restoredAuthContext?.route === 'upload')) {
+            await restoreGuestPhotoTrialReview();
+        }
         markNativeBoot('SESSION_READY');
         await ensureCurrentUserPublicProfile();
         markNativeBoot('PROFILE_READY');

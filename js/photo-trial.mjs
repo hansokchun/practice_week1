@@ -2,6 +2,22 @@ import { hasUsableCoordinates } from './photo-location.mjs';
 
 export const MAX_TRIAL_PHOTOS = 3;
 
+export function isGuestPhotoTrialUpload(photos = []) {
+    return photos.length > 0 && photos.length <= MAX_TRIAL_PHOTOS
+        && photos.every(photo => typeof photo.trialId === 'string' && photo.trialId && photo.file instanceof Blob);
+}
+
+export function selectPhotoTrialUpload(items, selectedIds) {
+    if (!Array.isArray(selectedIds) || !selectedIds.length || selectedIds.length > MAX_TRIAL_PHOTOS
+        || new Set(selectedIds).size !== selectedIds.length) {
+        throw new Error('저장할 사진을 다시 선택해 주세요.');
+    }
+    const photosById = new Map(items.map(photo => [String(photo.id), photo]));
+    const selected = selectedIds.map(id => photosById.get(String(id)));
+    if (selected.some(photo => !photo)) throw new Error('선택한 사진이 만료됐어요. 사진을 다시 골라 주세요.');
+    return selected;
+}
+
 function normalizeDate(value) {
     if (!value) return null;
     const date = new Date(value);

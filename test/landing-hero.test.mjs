@@ -33,7 +33,8 @@ test('landing waits for curated photos instead of flashing sample slides', () =>
     assert.match(landing, /class="landing-hero-slides"[^>]*aria-busy="true"[^>]*><\/div>/);
     assert.doesNotMatch(landing, /class="landing-hero-slide(?:\s|")/);
     const headline = landing.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g, '');
-    assert.equal(headline, '이 사진은 어디서 찍은 거지?');
+    assert.equal(headline, '여긴 어디서 찍은거지?');
+    assert.match(css, /\.landing-hero-content h1\s*\{[^}]*white-space: nowrap;/s);
     assert.doesNotMatch(landing, /<p(?:\s|>)/);
     assert.match(css, /\.page-landing\s*\{[^}]*min-height:\s*100svh;/s);
     assert.match(css, /\.landing-hero-slide img\s*\{[^}]*object-fit:\s*cover;/s);
@@ -48,11 +49,18 @@ test('landing entry keeps its label and route with a balanced font-independent a
     assert.match(button, /<span>사진 둘러보기<\/span>/);
     assert.match(button, /<svg class="landing-hero-enter-icon"[^>]*aria-hidden="true"[^>]*focusable="false"/);
     assert.doesNotMatch(button, /material-symbols-outlined/);
-    assert.match(css, /\.landing-hero-enter\s*\{[^}]*align-items:\s*center;[^}]*min-height:\s*52px;[^}]*font-family:\s*var\(--body\);[^}]*line-height:\s*1\.25;/s);
+    assert.match(css, /\.landing-hero-enter\s*\{[^}]*align-items:\s*center;[^}]*min-height:\s*52px;[^}]*font-family:\s*var\(--landing-display\);[^}]*line-height:\s*1\.25;/s);
     assert.match(css, /\.landing-hero-enter-icon\s*\{[^}]*flex-shrink:\s*0;/s);
     assert.match(css, /\.landing-hero-enter:focus-visible\s*\{[^}]*outline:\s*2px solid #ffffff;/s);
     assert.match(button, /<svg class="landing-hero-enter-logo"[^>]*aria-hidden="true"[^>]*focusable="false"/);
     assert.match(css, /@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*\.landing-hero-enter-logo \*\s*\{\s*animation:\s*none;/s);
+});
+
+test('landing typography uses a self-hosted licensed Baemin Jua font without changing the brand master', () => {
+    assert.match(css, /@font-face\s*\{[^}]*font-family: 'Ikkyee Jua';[^}]*src: url\('\/fonts\/jua\/Jua-Regular\.woff2'\) format\('woff2'\);[^}]*font-display: swap;/s);
+    assert.match(css, /\.page-landing\s*\{[^}]*font-family: var\(--landing-display\);/s);
+    assert.equal(readFileSync('public/fonts/jua/Jua-Regular.woff2').subarray(0, 4).toString(), 'wOF2');
+    assert.match(readFileSync('public/fonts/jua/OFL.txt', 'utf8'), /SIL OPEN FONT LICENSE Version 1\.1/);
 });
 
 test('landing slideshow advances every ten seconds and wraps around', () => {

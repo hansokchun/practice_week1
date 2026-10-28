@@ -60,7 +60,7 @@ test('메인 검색창 위의 소개 문구를 제거하고 비워진 간격만�
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search\s*\{[^}]*min-height:\s*56px;[^}]*margin-top:\s*0;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search input\s*\{[^}]*font-size:\s*16px;/s);
     assert.match(css, /@media \(max-width:\s*760px\)[\s\S]*\.landing-search-suggestions\s*\{[^}]*flex-wrap:\s*nowrap;/s);
-    assert.match(html, /id="btn-header-upload"[^>]*aria-label="사진 추가"/);
+    assert.match(html, /id="btn-header-upload"[^>]*aria-label="내 지도 만들기"/);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload\s*>\s*span:not\(\.material-symbols-outlined\)\s*\{[^}]*display:\s*none;/s);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*#btn-header-upload \.material-symbols-outlined\s*\{[^}]*display:\s*inline-block;/s);
     assert.match(css, /@media \(max-width:\s*520px\)[\s\S]*\.brand-korean\s*\{[^}]*display:\s*inline;/s);
@@ -209,7 +209,8 @@ test('헤더 사진 추가와 계정 메뉴는 개인 사진 및 설정 메뉴�
     const accountMenuStart = html.indexOf('id="account-menu-popover"');
     const accountMenuEnd = html.indexOf('</div>', accountMenuStart);
     const accountMenu = html.slice(accountMenuStart, accountMenuEnd);
-    assert.match(html, /id="btn-header-upload"[^>]*data-route="upload"/);
+    assert.match(html, /id="header-upload-label">내 지도 만들기<\/span>/);
+    assert.doesNotMatch(html, /id="btn-header-upload"[^>]*data-route="upload"/);
     assert.match(accountMenu, /내 프로필/);
     assert.match(accountMenu, /내 사진/);
     assert.match(accountMenu, /좋아요한 사진/);

@@ -21,6 +21,15 @@ test('public routes do not require login', () => {
     assert.equal(getAuthRequiredRoute('explore', null), null);
 });
 
+test('only a confirmed guest photo-trial draft allows unauthenticated upload review', () => {
+    assert.equal(getAuthRequiredRoute('upload', null, { hasGuestPhotoTrial: true }), null);
+    assert.equal(getAuthRequiredRoute('upload', null, { hasGuestPhotoTrial: false }), 'upload');
+    assert.equal(getAuthRequiredRoute('upload', null, { hasGuestPhotoTrial: 'true' }), 'upload');
+    for (const route of ['settings', 'liked', 'upload-complete', 'location-assign']) {
+        assert.equal(getAuthRequiredRoute(route, null, { hasGuestPhotoTrial: true }), route);
+    }
+});
+
 test('pending auth route is returned and cleared once after login', () => {
     const state = { pendingAuthRoute: 'upload' };
 

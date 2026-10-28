@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import * as pendingAuth from '../js/pending-auth-action.mjs';
 
 import {
     createPendingAuthState,
@@ -22,6 +23,8 @@ test('pending auth actions accept only supported follow-up actions', () => {
     assert.equal(getPendingAuthAction(state), 'save-album');
     assert.equal(setPendingAuthAction(state, 'save-photo-trial'), 'save-photo-trial');
     assert.equal(getPendingAuthAction(state), 'save-photo-trial');
+    assert.equal(setPendingAuthAction(state, 'persist-photo-trial'), 'persist-photo-trial');
+    assert.equal(getPendingAuthAction(state), 'persist-photo-trial');
     assert.equal(setPendingAuthAction(state, 'unknown'), null);
     assert.equal(getPendingAuthAction(state), null);
 });
@@ -147,4 +150,108 @@ test('photo trial save intent survives OAuth without storing photo bytes in auth
     assert.equal(restorePendingAuthContext(adapter, restored, 2_000)?.action, 'save-photo-trial');
     assert.equal(getPendingAuthAction(restored), 'save-photo-trial');
     assert.doesNotMatch(JSON.stringify([...storage.values()]), /blob:|data:image|base64/);
+});
+
+function createMemoryStorage() {
+    const values = new Map();
+    return {
+        getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value),
+        removeItem: key => values.delete(key)
+    };
+}
+
+test('trial upload intent stores at most three unique photo IDs without photo or location data', () => {
+    const storage = createMemoryStorage();
+    const state = { ...createPendingAuthState(), pendingPhotoTrialIds: ['state-photo'] };
+    setPendingAuthAction(state, 'persist-photo-trial');
+
+    const payload = storePendingAuthContext(storage, state, {
+        route: 'upload',
+        trialIds: ['photo-1', 'photo-2', 'photo-1', null, {}, 'data:image/jpeg;base64,x', 'photo-3', 'photo-4', 'x'.repeat(129)],
+        file: 'private-photo-bytes',
+        lat: 37.5,
+        lng: 127.1
+    }, 1_000);
+
+    assert.deepEqual(payload.trialIds, ['photo-1', 'photo-2', 'photo-3']);
+    const serialized = storage.getItem('ikkyee.pendingAuth');
+    assert.doesNotMatch(serialized, /private-photo-bytes|data:image|base64|"lat"|"lng"/);
+    const restored = createPendingAuthState();
+    const context = restorePendingAuthContext(storage, restored, 2_000);
+    assert.equal(context.action, 'persist-photo-trial');
+    assert.deepEqual(context.trialIds, ['photo-1', 'photo-2', 'photo-3']);
+    assert.deepEqual(restored.pendingPhotoTrialIds, context.trialIds);
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), null);
+});
+
+test('trial upload IDs fall back to state across social-login context rewrites', () => {
+    const storage = createMemoryStorage();
+    const state = { ...createPendingAuthState(), pendingPhotoTrialIds: ['photo-2'] };
+    setPendingAuthAction(state, 'persist-photo-trial');
+
+    storePendingAuthContext(storage, state, { route: 'upload' }, 1_000);
+
+    assert.deepEqual(JSON.parse(storage.getItem('ikkyee.pendingAuth')).trialIds, ['photo-2']);
+});
+
+test('only trial-upload actions persist photo IDs and can survive the email-confirmation window', () => {
+    const storage = createMemoryStorage();
+    const state = { ...createPendingAuthState(), pendingPhotoTrialIds: ['photo-1'] };
+    setPendingAuthAction(state, 'persist-photo-trial');
+    storePendingAuthContext(storage, state, { route: 'upload' }, 1_000);
+
+    const restored = createPendingAuthState();
+    assert.equal(restorePendingAuthContext(storage, restored, 1_000 + 23 * 60 * 60 * 1000)?.action, 'persist-photo-trial');
+    assert.deepEqual(restored.pendingPhotoTrialIds, ['photo-1']);
+
+    setPendingAuthAction(state, 'persist-upload');
+    storePendingAuthContext(storage, state, { route: 'upload', trialIds: ['photo-1'] }, 1_000);
+    assert.equal(Object.hasOwn(JSON.parse(storage.getItem('ikkyee.pendingAuth')), 'trialIds'), false);
+    assert.equal(restorePendingAuthContext(storage, createPendingAuthState(), 1_000 + 16 * 60 * 1000), null);
+});
+
+test('guest refresh retains valid trial intent until an authenticated return consumes it', () => {
+    const storage = createMemoryStorage();
+    const state = { ...createPendingAuthState(), pendingPhotoTrialIds: ['photo-1'] };
+    setPendingAuthAction(state, 'persist-photo-trial');
+    storePendingAuthContext(storage, state, { route: 'upload' }, 1_000);
+    const original = storage.getItem('ikkyee.pendingAuth');
+
+    const guestState = createPendingAuthState();
+    assert.equal(restorePendingAuthContext(storage, guestState, 2_000, { consume: false })?.action, 'persist-photo-trial');
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), original);
+    assert.deepEqual(guestState.pendingPhotoTrialIds, ['photo-1']);
+
+    const memberState = createPendingAuthState();
+    assert.equal(restorePendingAuthContext(storage, memberState, 3_000)?.action, 'persist-photo-trial');
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), null);
+});
+
+test('expired and malformed auth intents are removed even when consumption is deferred', () => {
+    const storage = createMemoryStorage();
+    const state = { ...createPendingAuthState(), pendingPhotoTrialIds: ['photo-1'] };
+    setPendingAuthAction(state, 'persist-photo-trial');
+    storePendingAuthContext(storage, state, { route: 'upload' }, 1_000);
+
+    assert.equal(restorePendingAuthContext(storage, createPendingAuthState(), 1_001 + 24 * 60 * 60 * 1000, { consume: false }), null);
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), null);
+    storage.setItem('ikkyee.pendingAuth', '{broken');
+    assert.equal(restorePendingAuthContext(storage, createPendingAuthState(), 2_000, { consume: false }), null);
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), null);
+    storage.setItem('ikkyee.pendingAuth', JSON.stringify({ action: 'unsupported', createdAt: 1_000 }));
+    assert.equal(restorePendingAuthContext(storage, createPendingAuthState(), 2_000, { consume: false }), null);
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), null);
+});
+
+test('explicit auth-context cancellation clears storage without touching other browser data', () => {
+    const storage = createMemoryStorage();
+    storage.setItem('ikkyee.pendingAuth', 'pending');
+    storage.setItem('unrelated-setting', 'keep');
+
+    pendingAuth.clearPendingAuthContext(storage);
+
+    assert.equal(storage.getItem('ikkyee.pendingAuth'), null);
+    assert.equal(storage.getItem('unrelated-setting'), 'keep');
+    assert.doesNotThrow(() => pendingAuth.clearPendingAuthContext(null));
 });
