@@ -17,7 +17,19 @@ test('header uses one map-create action and a separate dismissible invitation', 
     assert.match(header, /나만 아는 장소로 지도를 만들어보세요!/);
     assert.match(html, /id="photo-trial-modal"[^>]*role="dialog"[^>]*aria-modal="true"[^>]*aria-labelledby="photo-trial-title"/);
     assert.match(css, /body\[data-page="landing"\] #guest-map-invitation\s*\{\s*display: none;/);
-    assert.match(css, /\.guest-map-invitation\s*\{[^}]*background: var\(--coral\)/s);
+    assert.match(css, /\.guest-map-invitation\s*\{[^}]*background: var\(--teal\)/s);
+});
+
+test('guest invitation follows site typography and keeps its leftward offset inside narrow viewports', () => {
+    const bubble = css.match(/\.guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
+    assert.match(bubble, /--guest-map-invitation-offset: clamp\(/);
+    assert.match(bubble, /inset-inline-end: var\(--guest-map-invitation-offset\)/);
+    assert.match(bubble, /width: min\([^;]*100vw[^;]*var\(--guest-map-invitation-offset\)/);
+    assert.match(bubble, /color: var\(--bg\)/);
+    assert.doesNotMatch(bubble, /--coral/);
+    assert.match(css, /\.guest-map-invitation p\s*\{[^}]*font:[^;]*var\(--body\);[^}]*letter-spacing: var\(--text-tracking\)/s);
+    assert.match(css, /\.guest-map-invitation::before\s*\{[^}]*inset-inline-end: calc\([^;]*- var\(--guest-map-invitation-offset\)/s);
+    assert.match(css, /#btn-dismiss-guest-map-invitation:focus-visible\s*\{[^}]*outline:[^;]*var\(--bg\)/s);
 });
 
 test('trial exposes local photo preview, selected pin editing, and an explicit account-save action', () => {

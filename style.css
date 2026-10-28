@@ -14277,50 +14277,61 @@ body.modal-open {
 .account-area { position: relative; }
 
 .guest-map-invitation {
+    --guest-map-invitation-offset: clamp(0px, calc(100vw - 360px), 56px);
     position: absolute;
     inset-block-start: calc(100% + 12px);
-    inset-inline-end: 0;
+    inset-inline-end: var(--guest-map-invitation-offset);
     z-index: 20;
-    width: min(280px, calc(100vw - 32px));
-    padding: 48px 20px 20px;
-    border-radius: 16px;
-    background: var(--coral);
-    color: var(--text);
+    width: min(288px, calc(100vw - 48px - var(--guest-map-invitation-offset)));
+    padding: 20px 60px 20px 24px;
+    border-radius: 12px;
+    background: var(--teal);
+    color: var(--bg);
     box-shadow: var(--shadow);
 }
 
 .guest-map-invitation::before {
     content: '';
     position: absolute;
-    inset-block-start: -8px;
-    inset-inline-end: 144px;
-    width: 16px;
-    height: 16px;
+    inset-block-start: -6px;
+    inset-inline-end: calc(146px - var(--guest-map-invitation-offset));
+    width: 12px;
+    height: 12px;
     background: inherit;
     transform: rotate(45deg);
 }
 
 .guest-map-invitation p {
     margin: 0;
-    font: 700 16px/1.5 var(--body);
+    font: 500 16px/1.6 var(--body);
+    letter-spacing: var(--text-tracking);
     word-break: keep-all;
     overflow-wrap: anywhere;
 }
 
 #btn-dismiss-guest-map-invitation {
     position: absolute;
-    inset-block-start: 4px;
-    inset-inline-end: 4px;
+    inset-block-start: 8px;
+    inset-inline-end: 8px;
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
     border: 0;
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 0;
     color: inherit;
-    background: transparent;
+    background: color-mix(in srgb, var(--surface) 10%, transparent);
     cursor: pointer;
+}
+
+#btn-dismiss-guest-map-invitation:hover {
+    background: color-mix(in srgb, var(--surface) 18%, transparent);
+}
+
+#btn-dismiss-guest-map-invitation:focus-visible {
+    outline: 2px solid var(--bg);
+    outline-offset: 2px;
 }
 
 #btn-dismiss-guest-map-invitation .material-symbols-outlined { font-size: 20px; }
@@ -14636,8 +14647,7 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     background: var(--bg);
 }
 
-.photo-trial-card button:focus-visible,
-#btn-dismiss-guest-map-invitation:focus-visible {
+.photo-trial-card button:focus-visible {
     outline: 2px solid var(--teal);
     outline-offset: 4px;
 }
