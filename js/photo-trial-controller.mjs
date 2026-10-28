@@ -398,6 +398,9 @@ export function createPhotoTrialController({
             photos.forEach(revokePhoto);
             photos = [];
             marker?.setMap?.(null);
+            map?.__trialMaps?.event?.clearInstanceListeners?.(map);
+            map = null;
+            refs.map?.replaceChildren();
             root.removeEventListener('click', handleClick);
             root.removeEventListener('change', handleChange);
             root.removeEventListener('close', deactivate);

@@ -355,3 +355,32 @@ test('controller removeSaved removes only uploaded trial ids and persists the re
     assert.deepEqual(revoked, ['blob:one.jpg']);
     assert.deepEqual(saved.at(-1).map((photo) => photo.id), [remaining.id]);
 });
+
+test('disposing an account trial removes its map tiles and listeners before another account opens', async () => {
+    const { root, elements } = createRoot();
+    const mapElement = elements.get('[data-trial-map]');
+    let cleanedMap = null;
+    const controller = createPhotoTrialController({
+        root,
+        store: { load: async () => [], save: async () => {}, clear: async () => {} },
+        loadMaps: async () => ({
+            Map: class {
+                constructor(element) { element.replaceChildren('previous account map tiles'); }
+                addListener() {}
+            },
+            Marker: class {},
+            event: { clearInstanceListeners(map) { cleanedMap = map; } }
+        })
+    });
+    controller.bind();
+    await controller.open();
+    root.emit('click', elements.get('[data-trial-map-start]'));
+    await settle();
+    assert.deepEqual(mapElement.children, ['previous account map tiles']);
+
+    controller.dispose();
+
+    assert.deepEqual(mapElement.children, []);
+    assert.ok(cleanedMap);
+    assert.equal(root.listeners.has('click'), false);
+});
