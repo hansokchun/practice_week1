@@ -21,6 +21,8 @@ test('the map dot is a small red corner indicator, not another clickable target'
     assert.match(dot, /position: absolute/);
     assert.match(dot, /top: -3px/);
     assert.match(dot, /right: -3px/);
+    assert.match(dot, /width: 14px/);
+    assert.match(dot, /height: 14px/);
     assert.match(dot, /background: var\(--notification-red\)/);
     assert.match(dot, /pointer-events: none/);
     assert.match(css, /\.header-map-dot\[hidden\]/);

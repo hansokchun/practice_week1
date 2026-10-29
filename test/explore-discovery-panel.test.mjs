@@ -271,8 +271,8 @@ test('Explore discovery title shares the header row with the photo scope control
     assert.match(css, /\.explore-discovery-header\s*\{[^}]*display:\s*contents;/s);
     assert.match(css, /\.explore-discovery-header > div\s*\{[^}]*grid-column:\s*1;[^}]*grid-row:\s*1;[^}]*align-self:\s*center;/s);
     assert.match(css, /\.explore-photo-scope\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1;[^}]*align-self:\s*center;[^}]*width:\s*max-content;/s);
-    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*width:\s*max-content;/s);
-    assert.match(css, /\.explore-photo-scope-trigger \.material-symbols-outlined\s*\{[^}]*flex:\s*0 0 18px;[^}]*width:\s*18px;[^}]*overflow:\s*hidden;/s);
+    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*width:\s*44px;/s);
+    assert.match(css, /\.explore-photo-scope-trigger \.material-symbols-outlined\s*\{[^}]*flex:\s*0 0 22px;[^}]*width:\s*22px;[^}]*overflow:\s*hidden;/s);
     assert.match(css, /\.explore-discovery-toggle\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*1;[^}]*align-self:\s*center;/s);
     assert.match(css, /\.explore-discovery-body\s*\{[^}]*grid-column:\s*1 \/ -1;[^}]*grid-row:\s*2;/s);
 });

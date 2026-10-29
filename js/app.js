@@ -256,6 +256,7 @@ import {
     normalizeExploreBounds,
     shouldPreserveExploreViewport
 } from './explore-discovery-panel.mjs';
+import { getExploreScopeControl, getNextExplorePhotoScope } from './explore-scope-toggle.mjs';
 import {
     formatDayCount,
     formatPhotoCount,
@@ -406,7 +407,6 @@ const state = {
     isExploreMarkerLoading: false,
     explorePhotoScope: 'others',
     exploreInitializedUserId: null,
-    isExplorePhotoScopeMenuOpen: false,
     explorePreserveViewportOnce: false,
     isExploreDiscoveryCollapsed: false,
     isExploreMobileDiscoveryOpen: false,
@@ -475,11 +475,6 @@ const state = {
     myLibraryTab: 'photos',
     isAccountMenuOpen: false,
     photoDetailStreetView: null
-};
-
-const EXPLORE_PHOTO_SCOPE_META = {
-    mine: { icon: 'person', label: '내 사진' },
-    others: { icon: 'groups', label: '다른 사람 사진' }
 };
 
 const getCurrentRoute = () => parseRouteHash(window.location.hash);
@@ -2510,35 +2505,26 @@ function renderExplorePhotoScopeControls() {
     if (!state.currentUser && state.explorePhotoScope === 'mine') {
         state.explorePhotoScope = 'others';
     }
-    const scopeMeta = EXPLORE_PHOTO_SCOPE_META[state.explorePhotoScope] || EXPLORE_PHOTO_SCOPE_META.mine;
-    const scope = $('.explore-photo-scope');
+    const scopeMeta = getExploreScopeControl(state.explorePhotoScope);
     const trigger = $('[data-explore-scope-trigger]');
     const triggerIcon = $('[data-explore-scope-trigger-icon]');
-    const triggerLabel = $('[data-explore-scope-trigger-label]');
-    const menu = $('#explore-photo-scope-menu');
-    scope?.classList.toggle('is-open', state.isExplorePhotoScopeMenuOpen);
-    if (trigger) trigger.setAttribute('aria-expanded', state.isExplorePhotoScopeMenuOpen ? 'true' : 'false');
+    const tooltip = $('[data-explore-scope-tooltip]');
+    if (trigger) {
+        trigger.setAttribute('aria-pressed', String(scopeMeta.pressed));
+        trigger.setAttribute('aria-label', scopeMeta.label);
+    }
     if (triggerIcon) triggerIcon.textContent = scopeMeta.icon;
-    if (triggerLabel) triggerLabel.textContent = scopeMeta.label;
-    if (menu) menu.hidden = !state.isExplorePhotoScopeMenuOpen;
-    $$('[data-explore-scope]').forEach((button) => {
-        const isActive = button.dataset.exploreScope === state.explorePhotoScope;
-        button.classList.toggle('active', isActive);
-        button.setAttribute('aria-checked', isActive ? 'true' : 'false');
-        if (button.dataset.exploreScope === 'mine') button.disabled = !state.currentUser;
-    });
-}
-
-function setExplorePhotoScopeMenuOpen(isOpen) {
-    state.isExplorePhotoScopeMenuOpen = Boolean(isOpen);
-    renderExplorePhotoScopeControls();
+    if (tooltip) tooltip.textContent = scopeMeta.label;
 }
 
 function setExplorePhotoScope(scope) {
     if (!['mine', 'others'].includes(scope)) return;
+    if (scope === 'mine' && !state.currentUser) {
+        showToast('내 사진은 로그인 후 볼 수 있어요.');
+        return;
+    }
     const keepMobileDiscoveryOpen = isExploreMobileViewport() && state.isExploreMobileDiscoveryOpen;
     state.explorePhotoScope = scope;
-    state.isExplorePhotoScopeMenuOpen = false;
     state.explorePreserveViewportOnce = shouldPreserveExploreViewport(
         getExplorePhotoMapItems(),
         getExploreCurrentBounds()
@@ -2869,7 +2855,6 @@ function setExploreMobileDiscoveryOpen(isOpen) {
             : (state.isExploreDiscoveryCollapsed ? 'chevron_left' : 'chevron_right');
     }
     if (state.isExploreMobileDiscoveryOpen) {
-        state.isExplorePhotoScopeMenuOpen = false;
         renderExplorePhotoScopeControls();
     }
 }
@@ -9294,9 +9279,6 @@ function bindEvents() {
         }
         if (!event.target.closest('.account-menu-shell')) setAccountMenuOpen(false);
         if (!event.target.closest('.account-notification-shell')) setAccountNotificationsOpen(false);
-        if (state.isExplorePhotoScopeMenuOpen && !event.target.closest('.explore-photo-scope')) {
-            setExplorePhotoScopeMenuOpen(false);
-        }
 
         const adminDockPhoto = event.target.closest('[data-admin-dock-photo]');
         if (adminDockPhoto) { addPhotoFromLandingAdminDock(adminDockPhoto.dataset.adminDockPhoto); return; }
@@ -9604,13 +9586,7 @@ function bindEvents() {
 
         const exploreScopeTrigger = event.target.closest('[data-explore-scope-trigger]');
         if (exploreScopeTrigger) {
-            setExplorePhotoScopeMenuOpen(!state.isExplorePhotoScopeMenuOpen);
-            return;
-        }
-
-        const exploreScopeButton = event.target.closest('[data-explore-scope]');
-        if (exploreScopeButton) {
-            setExplorePhotoScope(exploreScopeButton.dataset.exploreScope);
+            setExplorePhotoScope(getNextExplorePhotoScope(state.explorePhotoScope));
             return;
         }
 
@@ -9986,10 +9962,6 @@ function bindEvents() {
         updateLandingScrollButtons(row);
     }, true);
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && state.isExplorePhotoScopeMenuOpen) {
-            setExplorePhotoScopeMenuOpen(false);
-            return;
-        }
         const activeModal = $$('.modal.is-open').at(-1);
         if (event.key === 'Escape' && activeModal) {
             event.preventDefault();

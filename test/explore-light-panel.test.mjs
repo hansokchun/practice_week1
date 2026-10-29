@@ -32,6 +32,6 @@ test('Explore keeps light controls readable in its mobile photo drawer', () => {
     assert.match(mobile, /\.explore-mobile-list-toggle\s*\{[^}]*background:\s*var\(--action-soft\);[^}]*color:\s*var\(--teal\);/s);
     assert.match(rule('.explore-discovery-panel.is-mobile-open .explore-photo-scope-trigger > span'), /color:\s*inherit;/);
     assert.match(rule('.explore-discovery-header .explore-photo-scope-trigger > span'), /color:\s*inherit;/);
-    assert.match(rule('.explore-photo-scope-trigger [data-explore-scope-trigger-label]'), /font-size:\s*inherit;/);
+    assert.match(rule('.explore-photo-scope-trigger .material-symbols-outlined'), /font-size:\s*22px;/);
     assert.match(rule('.explore-discovery-toggle'), /box-shadow:\s*none;/);
 });

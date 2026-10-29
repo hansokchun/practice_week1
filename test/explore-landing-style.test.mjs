@@ -15,12 +15,12 @@ test('Explore map controls follow the landing surface and accent language', () =
     assert.match(css, /\.map-search\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.map-search button\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
     assert.match(css, /\.explore-photo-scope\s*\{[^}]*position:\s*relative;[^}]*justify-content:\s*flex-end;[^}]*justify-self:\s*end;/s);
-    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*12px;[^}]*background:\s*var\(--action-soft\);[^}]*padding:\s*0 14px;/s);
-    assert.match(css, /\.explore-photo-scope-menu\s*\{[^}]*top:\s*calc\(100% \+ 6px\);[^}]*right:\s*0;[^}]*z-index:\s*20;[^}]*border-radius:\s*12px;[^}]*background:\s*#ffffff;/s);
+    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*width:\s*44px;[^}]*min-height:\s*44px;[^}]*border-radius:\s*12px;[^}]*background:\s*var\(--action-soft\);[^}]*padding:\s*0;/s);
+    assert.match(css, /\.explore-photo-scope-tooltip\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*20;/s);
     assert.doesNotMatch(css, /\.explore-photo-scope-copy\s*\{/);
     assert.doesNotMatch(css, /\.explore-photo-scope-control\s*\{/);
-    assert.match(css, /\.explore-photo-scope-menu button\s*\{[^}]*grid-template-columns:\s*20px minmax\(0,\s*1fr\) 18px;[^}]*min-height:\s*38px;[^}]*font-size:\s*14px;/s);
-    assert.match(css, /\.explore-photo-scope-menu button\.active\s*\{[^}]*color:\s*var\(--teal-dark\);/s);
+    assert.doesNotMatch(css, /\.explore-photo-scope-menu|\.explore-photo-scope-chevron/);
+    assert.match(css, /\.explore-photo-scope:focus-within \.explore-photo-scope-tooltip/);
 });
 
 test('Explore preview and discovery panels use landing-style archive cards', () => {
