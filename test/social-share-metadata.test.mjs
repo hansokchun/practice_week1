@@ -7,7 +7,7 @@ test('the app shell exposes a Kakao-friendly social preview', () => {
 
     assert.match(html, /<link rel="canonical" href="https:\/\/ikkyee\.com\/">/);
     assert.match(html, /<meta property="og:type" content="website">/);
-    assert.match(html, /<meta property="og:title" content="이끼 \| 장소 저장소">/);
+    assert.match(html, /<meta property="og:title" content="Ikkyee \| 장소 저장소">/);
     assert.match(html, /<meta property="og:site_name" content="이끼">/);
     assert.match(html, /<meta property="og:locale" content="ko_KR">/);
     assert.match(html, /<meta property="og:description" content="[^"]+">/);
@@ -22,11 +22,11 @@ test('search and social metadata explain the Korean place archive consistently',
     const description = '이끼는 사진 속 장소를 찾고, 저장하고, 공유하는 장소 저장소입니다. 마음에 드는 장소를 지도에 차곡차곡 모아보세요.';
 
     assert.match(html, /<html lang="ko">/);
-    assert.deepEqual([...head.matchAll(/<title>([^<]+)<\/title>/g)].map((match) => match[1]), ['이끼 | 장소 저장소']);
+    assert.deepEqual([...head.matchAll(/<title>([^<]+)<\/title>/g)].map((match) => match[1]), ['Ikkyee | 장소 저장소']);
     for (const selector of ['name="description"', 'property="og:description"', 'name="twitter:description"']) {
         assert.ok(head.includes(`<meta ${selector} content="${description}">`));
     }
-    assert.match(head, /<meta name="twitter:title" content="이끼 \| 장소 저장소">/);
+    assert.match(head, /<meta name="twitter:title" content="Ikkyee \| 장소 저장소">/);
     assert.match(head, /<meta name="twitter:image" content="https:\/\/ikkyee\.com\/social-preview\.jpg">/);
     assert.doesNotMatch(head, /Personal Travel Map Archive|practice-week1-cws\.pages\.dev/);
 });
