@@ -48,7 +48,7 @@ test('the first trial screen keeps three steps without branding or the removed i
     assert.match(intro, /aria-current="step"/);
     assert.match(css, /\.photo-trial-steps\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/s);
     assert.match(css, /\.photo-trial-intro\s*\{[^}]*background:/s);
-    assert.match(css, /\.photo-trial-steps::before\s*\{/s);
+    assert.match(css, /\.photo-trial-steps li:not\(:last-child\)::before\s*\{/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width: min\(var\(--photo-trial-empty-width\), 100%\)/s);
 });
@@ -65,7 +65,7 @@ test('step numbering preserves native order and adapts to the compact row layout
     assert.match(css, /\.photo-trial-step-number\s*\{[^}]*font-variant-numeric: tabular-nums;/s);
     assert.match(css, /\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number status icon" "label label label" "detail detail detail";/s);
     assert.match(css, /\.photo-trial-steps li\[aria-current="step"\]\s*\{[^}]*border-color: transparent/s);
-    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number icon label status" "detail detail detail detail";/);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number icon label status" "\. \. detail detail";/);
 });
 
 test('both trial stages keep the original footer frame while only its helper copy is removed', () => {

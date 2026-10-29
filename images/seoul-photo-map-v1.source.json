@@ -1,0 +1,17 @@
+{
+  "asset": "images/seoul-photo-map-v1.webp",
+  "created": "2026-10-30",
+  "method": "built-in image_gen, followed by a targeted image_gen correction",
+  "purpose": "홈 사진 섹션 사이 업로드 홍보 영역의 장식 이미지",
+  "note": "서울을 모티프로 새로 생성한 지도 일러스트다. 실제 Google 지도 캡처나 사용자 사진을 사용하지 않았으며, 정확한 지리·실제 공개 사진 데이터를 표현하는 지도가 아니다. 실제 Explore 지도와 핀은 변경하지 않는다.",
+  "originalPrompt": "Use case: stylized-concept. Asset type: production web illustration for Ikkyee, a calm Korean travel-photo place archive. Create one polished landscape 3:2 transparent-background cutout illustration, not a screenshot and not a whole webpage. Show a simplified miniature map of Seoul as a thin ivory map slab viewed obliquely from the side and above, a graceful 30-degree isometric tilt. A softly blue-green Han River crosses the map with a couple of understated bridges, simplified pale road lines and low city blocks. A few clearly separated miniature 3D landmarks, including Namsan with N Seoul Tower and a quiet traditional palace roof, give a subtle architectural model feeling without clutter. The map is mostly flat and clean, with occasional raised trees/hills/landmarks. Place exactly three ordinary teardrop location pins, NOT leaves, at separated locations. Above each pin floats a small clean white framed travel photograph card, oriented upright toward the viewer; one larger foreground card is the focal point, showing a realistic Seoul travel scene with tower or river, and two smaller cards show a palace and city/river scenery. Cards, stems and pins visibly correspond to their own map position. The map and the three photo pins form one cohesive scene. Refined soft clay-and-paper 3D rendering, carefully crafted edges, gentle daylight and subtle ambient shadows. Palette matches warm ivory #f9f7f2, white, muted sage greens, restrained deep teal #1a4d4e accents, low-saturation blue-green water; no dark heavy base. Entire map slab, pins and photo cards fully visible with comfortable transparent margins on every side, the scene fills about 88% of the canvas, no clipping. No text, no letters, no numbers, no labels, no map controls, no Google branding, no watermarks, no logos, no people portraits, no extra floating UI. This is an original illustrative Seoul-inspired map, not a cartographic/navigation product.",
+  "correctionPrompt": "Precise correction of this production web illustration only: remove duplicate N Seoul Tower structures. The green Namsan hill on the miniature map must have exactly ONE N Seoul Tower: keep the main tower and delete the two small duplicate tower copies around it. The central large floating photograph should likewise depict only ONE realistic N Seoul Tower, not two similar towers side by side. Preserve the entire original composition, original 1536x1024 landscape aspect, transparent alpha background, all three photo-card/pin locations, palace photo, river/city photo, map slab, river, bridges, city blocks, warm ivory/sage/teal palette, camera angle and lighting. Do not crop or re-layout anything. No new objects or text. Preserve transparency.",
+  "delivery": {
+    "width": 1152,
+    "height": 768,
+    "format": "webp",
+    "alpha": true,
+    "bytes": 151820,
+    "conversion": "Sharp resize to 1152px, WebP quality 82 / effort 6; no content edits outside image_gen"
+  }
+}

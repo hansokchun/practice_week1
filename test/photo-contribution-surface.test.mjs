@@ -27,6 +27,25 @@ test('the dynamic upload invitation has its own delegated route action', () => {
     assert.match(renderer, /splice\(contributionIndex, 0, renderLandingContributionInvitation\(\)\)/);
 });
 
+test('the inline invitation leads with its title and a concise sharing subtitle', () => {
+    const invitation = app.slice(app.indexOf('function renderLandingContributionInvitation()'), app.indexOf('function renderLandingSections()'));
+    assert.match(invitation, /<h2 id="landing-contribution-title">당신의 장소도 들려주세요<\/h2>\s*<p class="photo-contribution-description">사진 한 장으로, 나만의 장소를 공유해요\.<\/p>/);
+    assert.doesNotMatch(invitation, /photo-contribution-eyebrow|사진 한 장, 나만의 장소 기록|좋아하는 풍경부터 익숙한 골목까지/);
+    assert.match(app, /import contributionPhotoMapUrl from '\.\.\/images\/seoul-photo-map-v1\.webp';/);
+    assert.match(invitation, /<img class="photo-contribution-art"[^>]*aria-hidden="true"[^>]*src="\$\{contributionPhotoMapUrl\}"[^>]*alt=""[^>]*width="1152"[^>]*height="768"[^>]*loading="lazy"[^>]*decoding="async"/);
+    assert.doesNotMatch(invitation, /<svg class="photo-contribution-art"/);
+});
+
+test('the decorative Seoul map stays visible below the copy on mobile without replacing the upload action', () => {
+    const contributionStyles = styles.slice(styles.indexOf('/* An editorial pause'), styles.indexOf('.landing-map-footer'));
+    assert.match(contributionStyles, /\.photo-contribution--inline\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 480px\)/s);
+    assert.match(contributionStyles, /\.photo-contribution-art\s*\{[^}]*width: 100%;[^}]*height: 320px;[^}]*object-fit: contain/s);
+    assert.match(contributionStyles, /@media \(max-width: 600px\)[\s\S]*?\.photo-contribution-art\s*\{[^}]*display: block;[^}]*height: 220px/s);
+    assert.doesNotMatch(contributionStyles, /\.photo-contribution-art\s*\{[^}]*display: none/s);
+    assert.match(contributionStyles, /\.photo-contribution--inline \.photo-contribution-description\s*\{[^}]*color: color-mix\(in srgb, var\(--muted\) 85%, var\(--text\)\)/s);
+    assert.match(app, /<button class="btn-primary photo-contribution-cta" data-contribution-upload data-brand-motion type="button"/);
+});
+
 test('upload completion uses real upload guidance and routes the map to its owner', () => {
     assert.match(html, /id="btn-complete-map"[^>]*hidden/);
     assert.match(app, /getUploadCompletionGuidance\(uploadedPhotos, getMySavedPhotos\(\)\.length\)/);

@@ -29,13 +29,23 @@ test('site loads version-pinned Pretendard variable subsets for public and legal
 
 test('Korean brand text stays in Pretendard and Material Symbols keep their icon font', () => {
     assert.match(css, /\.brand\s*\{[^}]*font-family:\s*var\(--brand\);/s);
-    assert.match(css, /\.brand-wordmark\s*\{[^}]*font-family:\s*var\(--brand\);/s);
     assert.match(css, /\.home-houses-reference__word\s*\{[^}]*font-family:\s*var\(--brand\);/s);
     assert.match(css, /\.site-footer__brand h2\s*\{[^}]*font-family:\s*var\(--brand\);/s);
     assert.match(css, /font-family:\s*"Material Symbols Outlined";/);
     assert.doesNotMatch(css, /font-family:\s*(?:'SUIT Variable'|'SUIT'|'Inter'|Georgia|'Times New Roman')/);
   assert.doesNotMatch(css, /font-family:\s*var\(--font\)/);
   assert.doesNotMatch(css, /letter-spacing:\s*-/);
+});
+
+test('only the English header wordmark restores its legacy Cormorant typography', () => {
+  assert.match(html, /family=Cormorant\+Garamond:wght@600;700&display=swap/);
+  const wordmark = css.match(/\.brand-wordmark\s*\{[^}]*font-family:[^}]*\}/s)?.[0] || '';
+  assert.match(wordmark, /font-family:\s*'Cormorant Garamond', serif;/);
+  assert.match(wordmark, /font-size:\s*1\.14em;/);
+  assert.match(wordmark, /font-weight:\s*700;/);
+  assert.match(css, /\.brand\s*\{[^}]*letter-spacing:\s*var\(--text-tracking\);/s);
+  assert.doesNotMatch(wordmark, /font-weight:\s*800/);
+  assert.match(css, /\.brand-korean\s*\{[^}]*font-family:\s*var\(--body\);/s);
 });
 
 test('external scripts are deferred without removing route modules', () => {
