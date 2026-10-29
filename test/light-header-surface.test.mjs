@@ -15,3 +15,8 @@ test('header actions use the selected pale-teal design without changing the shar
     assert.match(css, /#btn-header-upload > span\.header-map-dot\s*\{\s*display: block;/);
     assert.match(css, /#btn-header-upload > span\.header-map-dot\[hidden\]/);
 });
+
+test('compact member header preserves the wordmark without crowding three account controls', () => {
+    assert.match(css, /@media \(max-width: 520px\)[\s\S]*body\.is-logged-in \.brand-korean\s*\{\s*display: none;/);
+    assert.match(css, /@media \(max-width: 360px\)[\s\S]*body\.is-logged-in \.account-menu-chevron\s*\{\s*display: none;/);
+});

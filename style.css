@@ -15130,11 +15130,13 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     body.is-logged-out #btn-header-upload > #header-upload-label { display: none; }
     body.is-logged-out .account-area { gap: 8px; }
     body.is-logged-out #btn-open-auth { padding-right: 12px; padding-left: 12px; }
+    body.is-logged-in .brand-korean { display: none; }
 }
 
 @media (max-width: 360px) {
     body.is-logged-out .brand-wordmark { display: none; }
     body.is-logged-out .brand-korean { display: none; }
+    body.is-logged-in .account-menu-chevron { display: none; }
 }
 .album-cover-picker-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-content: start; gap: 12px; overflow-y: auto; min-height: 0; padding: 4px; }
 .album-cover-choice { position: relative; display: block; cursor: pointer; min-width: 0; border-radius: 6px; }

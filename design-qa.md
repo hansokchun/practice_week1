@@ -1,47 +1,61 @@
-# Main map capsule QA
+# 상단 메뉴·지도 탐색 패널 디자인 검수
 
-- Date: 2026-09-12
-- Source: `/Users/hansokchun/.codex/generated_images/019e5ff8-8c85-73f3-9a35-7758946be066/exec-5153e628-733b-42f0-a0ca-d396a05ac3f5.png`
-- Implementation: `/tmp/ikkyee-capsule-desktop.png`, `/tmp/ikkyee-capsule-mobile.png`
-- Preview: http://127.0.0.1:8089/#/
-- Fixture comparison: http://127.0.0.1:8088/#/
-- Scope: map button only; the surrounding gallery is unchanged.
+- 날짜: 2026-10-30
+- 범위: 공통 헤더, 지도 탐색 패널·범위 필터·모바일 목록. 다른 본문 버튼과 지도 핀은 제외.
+- 기준 시안: /Users/hansokchun/.codex/generated_images/01a0246a-b4ff-7752-9d0b-93639e91ba46/exec-77e90b3c-7eec-4358-93fd-95a2ad4196b4.png
+- 개발 배포: https://dev.practice-week1-cws.pages.dev/?ui=b93dea2#/home
+- 지도 배포: https://dev.practice-week1-cws.pages.dev/?ui=b93dea2#/explore
+- 증거 폴더: /tmp/ikkyee-light-ui-2026-10-30/
+- 이전 지도 캡슐 QA는 이 파일의 이전 Git 버전에 보존된다.
 
-## Comparison
+## 비교 조건과 증거
 
-The source is an enlarged component concept (1448 x 1086 pixels), not a
-literal full-page layout. Its capsule silhouette, real map photograph,
-white map icon/text/arrow, light rim and subtle shadow were compared in the
-same image-review input with the rendered desktop and mobile captures.
-No claim of whole-page pixel matching is made.
+- 원본 시안은 1586×992 이미지로, CSS px 밀도 정보는 없다. 구현은 1440×900 CSS px/화면 픽셀로 캡처했다. 약 1.10배 차이를 감안해 동일한 화면비의 구성과 헤더를 비교했다.
+- 전체 비교: 기준 시안과 `15-dev-home-desktop.jpg`를 한 이미지 검토 입력에서 함께 열었다.
+- 상세 비교: 기준 시안과 1440×76 헤더 크롭 `16-dev-header-detail.jpg`를 같은 입력에서 열어 버튼 색, 선, 라벨, 빨간 점 위치를 확인했다.
+- 비회원 데스크톱 상태가 기준이다. 시안의 빈 사진 칸과 두 번째 상태 예시를 페이지 콘텐츠로 옮기지 않았다. 실제 사진·지구 배경·검색과 본문 크기는 사용자 요청에 따라 유지했다.
+- `06-dev-explore-desktop.jpg`: 실제 지도·공개 사진이 로드된 탐색 패널.
+- `07-dev-explore-collapsed.jpg`: 접힌 탐색 패널.
+- `04-home-mobile.jpg`: 375×812 비회원 메인.
+- `05-home-320.jpg`: 320×720 비회원 헤더, 가로 넘침 없음.
+- `08-dev-explore-mobile.jpg`, `09-dev-explore-mobile-drawer.jpg`, `10-dev-explore-mobile-filter.jpg`: 375×812 실제 지도, 사진 목록 드로어, 열린 필터.
+- `13-member-header-fixed-375.jpg`, `14-member-header-fixed-320.jpg`: 실제 헤더 마크업과 CSS를 사용한 고립 회원 화면. 로그인 세션을 조작하거나 서버 계정에 로그인한 결과가 아니다.
+- 최초 리사이즈 도중 캡처한 `01-home-desktop.jpg`와 `04-home-mobile-first.jpg`는 최종 밀도·배치 증거에서 제외했다.
 
-Implementation screenshots are 1280 x 720 and 390 x 844 at one pixel per CSS
-pixel. The component uses the agreed practical dimensions: 360 x 64 CSS px
-desktop and 280 x 56 CSS px mobile, centered 20px above the safe area.
-The darker scrim keeps small white type legible over the same map photo.
+## 발견 사항과 수정 이력
 
-## Checks
+1. [P2, 수정 완료] 모바일 지도 점이 기존 글자 숨김 선택자에 가려졌다.
+   - 수정: 점 전용 선택자의 우선순위와 hidden 처리를 분리.
+   - 재검수: `04-home-mobile.jpg`, `05-home-320.jpg`; 화면 너비와 문서 너비가 동일하고 빨간 점 표시가 block임을 확인.
+2. [P2, 수정 완료] 375px 회원 헤더에서 부제가 오른쪽 버튼 영역 아래로 밀렸다.
+   - 이전 증거: `12-member-header-fixture-mobile.jpg`.
+   - 수정: 520px 이하 회원 부제 숨김, 360px 이하 프로필 화살표 숨김. 영문 이름과 사진 추가·알림·프로필은 유지.
+   - 재검수: `13-member-header-fixed-375.jpg`, `14-member-header-fixed-320.jpg`. 320px에서 가로 넘침 없고 브랜드와 버튼 사이 약 40px 간격.
+3. 남은 P0/P1/P2 디자인 차이 없음.
 
-- Desktop screenshot: capsule silhouette, photograph and centered contents pass.
-- Mobile screenshot: 390px layout, no horizontal page overflow, contents fit.
-- 320px layout: map icon, label and arrow all remain inside the button bounds.
-- Scroll by 2160px: button stays at y=636 in a 720px viewport (20px bottom gap).
-- Click: opens Explore; capsule disappears outside Home.
-- Photo detail and login dialogs: capsule hidden; closing restores it.
-- Intro landing: capsule hidden.
-- Footer has extra bottom space; reduced-motion styles disable transitions.
-- 776 tests pass; production build passes.
+## 필수 표면별 결과
 
-## Findings And Limits
+- 글꼴·타이포: 기존 Pretendard와 Material Symbols 유지. 헤더와 범위 버튼은 14px/700으로 가볍게 조정. 시안보다 기존 브랜드와 헤더의 실제 크기를 보존한 차이는 의도된 범위 제한이다.
+- 여백·레이아웃: 기존 헤더 위치와 메인 본문 배치 유지. 버튼 44px, 모서리 12px. 탐색 패널은 기존 위치/폭/드로어 구조를 보존하며 제목 24px, 낮은 그림자로 정돈.
+- 색·토큰: 기존 배경 #f9f7f2와 청록 #1a4d4e 유지. 연한 동작 면 #eaf1ef, 호버 #dce9e5. 알림 강조만 #e53935. 밝은 파란 계열이나 새 브랜드색으로 교체하지 않음.
+- 이미지·아이콘: 승인된 로고 파일과 기존 지도 핀·사진은 변경하지 않음. 새 래스터 자산 또는 임의 아이콘을 만들지 않음.
+- 문구·내용: 비회원 지도 만들기/회원 사진 추가와 로그인 라벨 유지. 유도 팝업 DOM·CSS·핸들러는 제거. 회원 배지는 0 숨김, 1~8 숫자, 9 이상도 8. 실제 수는 접근성 라벨에 유지.
 
-No actionable P0/P1/P2 differences for this component. Initial mobile capture
-was taken before the browser finished resizing and was discarded; the accepted
-mobile capture was taken after layout stabilized. The map photograph crop is
-adapted to the smaller production button, not stretched from the concept.
+## 동작·오류 검수
 
-Production photo data remains blocked by the previously verified Supabase
-quota restriction. Gallery interaction tests use local fixtures; this change
-does not resolve that server restriction. Physical-device safe-area behavior
-was not tested; CSS uses the browser safe-area inset.
+- 로컬 헤더에서 지도 만들기 → 기존 3장 체험 창, 로그인 → 기존 로그인 창, 닫기 정상.
+- 개발 배포에서 실제 지도와 사진 정상 표시.
+- 데스크톱 패널 접기/다시 펼치기, 범위 드롭다운의 열림·선택 표시 확인.
+- 모바일 사진 목록 열기/닫기와 범위 드롭다운 표시 확인. 문서 너비 375px로 가로 넘침 없음.
+- 개발 배포 지도 브라우저 error 로그 0개.
+- 전체 Node 테스트 1,308개 통과, 프로덕션 빌드 통과, git diff --check 통과.
+
+## 한계와 후속 확인
+
+- 실제 회원 로그인 세션의 알림 수신은 이번 UI 변경에서 재실행하지 않았다. 숫자 계산과 상한·숨김은 순수 함수/연결 계약 테스트로, 회원 헤더 배치는 고립 화면으로 검증했다.
+- 실제 iPhone/Android 기기, 스크린리더와 키보드 전체 흐름은 별도 QA다. 포커스 테두리와 최소 터치 크기는 보존했다.
+- 로컬 Vite에서는 지도 런타임 설정을 받지 못해, 지도 통합 검수는 Cloudflare 개발 배포에서 수행했다.
+- 기존 대용량 번들 경고는 남아 있으며 이번 작업에서 예산을 올리거나 본문을 재설계하지 않았다.
+- 운영 main은 변경하지 않았다.
 
 final result: passed
