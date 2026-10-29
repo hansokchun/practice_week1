@@ -76,7 +76,7 @@ import {
     resolveAccountProfile
 } from './account-profile.mjs';
 import { getLandingAdminDockPage, addLandingAdminPhoto } from './landing-admin-dock.mjs';
-import { buildAccountNotificationItems } from './account-notifications.mjs';
+import { buildAccountNotificationItems, getAccountNotificationBadgeLabel } from './account-notifications.mjs';
 import { getProfilePhotoMetrics } from './profile-photo-metrics.mjs';
 import { initializeAccountGuidance, loadAccountGuidance, dismissAccountGuidance } from './account-guidance.mjs';
 import { selectAlbumForSharing } from './album-sharing-selection.mjs';
@@ -140,7 +140,7 @@ import {
 import { filterAcceptedPhotoFiles, validatePhotoFile } from './photo-file-validation.mjs';
 import { readPhotoExif } from './photo-exif-reader.mjs';
 import { buildTrialUploadPhotos, getTrialUploadMetadata, isGuestPhotoTrialUpload, selectPhotoTrialUpload } from './photo-trial.mjs';
-import { createGuestMapInvitationState, getHeaderUploadAction } from './guest-map-entry.mjs';
+import { shouldShowHeaderMapDot, getHeaderUploadAction } from './guest-map-entry.mjs';
 import { createPhotoTrialController } from './photo-trial-controller.mjs';
 import { createPhotoTrialStore } from './photo-trial-store.mjs';
 import {
@@ -1264,7 +1264,7 @@ function renderRoute(section) {
             : renderedRoute;
 
     document.body.dataset.page = normalized === LANDING_ROUTE ? LANDING_ROUTE : normalized === 'tag' ? 'tag' : renderedRoute;
-    syncGuestMapInvitation();
+    syncHeaderMapDot();
     $$('.page').forEach((page) => page.classList.remove('active'));
     $(`#page-${renderedRoute}`)?.classList.add('active');
     if (normalized === LANDING_ROUTE) renderLandingHeroSlides();
@@ -4457,7 +4457,7 @@ function updateAccountUI() {
     const uploadIcon = $('#header-upload-icon');
     if (uploadIcon) uploadIcon.textContent = uploadAction.icon;
     $('#btn-header-upload')?.setAttribute('aria-label', uploadAction.label);
-    syncGuestMapInvitation();
+    syncHeaderMapDot();
     if (profileButton) profileButton.hidden = !state.currentUser;
     const landingEditButton = $('#btn-edit-landing');
     if (landingEditButton) landingEditButton.hidden = !isLandingAdmin(state.currentUser);
@@ -4579,7 +4579,7 @@ function renderAccountNotifications() {
     }
     if (badge) {
         badge.hidden = !isLoggedIn || actionableCount === 0;
-        badge.textContent = '';
+        badge.textContent = getAccountNotificationBadgeLabel(actionableCount);
         badge.setAttribute('aria-label', `새 알림 ${actionableCount}개`);
     }
     if (popover) popover.hidden = !isLoggedIn || !state.isNotificationPopoverOpen;
@@ -8111,12 +8111,9 @@ let photoTrialController = null;
 let photoTrialStore = null;
 let photoTrialOwnerId;
 let isOpeningHeaderUpload = false;
-const guestMapInvitation = createGuestMapInvitationState();
-
-function syncGuestMapInvitation() {
-    const invitation = $('#guest-map-invitation');
-    if (invitation) invitation.hidden = !guestMapInvitation.update({
-        route: document.body.dataset.page,
+function syncHeaderMapDot() {
+    const dot = $('#header-map-dot');
+    if (dot) dot.hidden = !shouldShowHeaderMapDot({
         currentUser: state.currentUser,
         sessionReady: state.hasLoadedAuthSession
     });
@@ -8171,8 +8168,6 @@ async function openHeaderUpload() {
 }
 
 async function openPhotoTrial() {
-    guestMapInvitation.dismiss();
-    syncGuestMapInvitation();
     closeModals();
     openModal('#photo-trial-modal');
     await getPhotoTrialController().open();
@@ -9143,11 +9138,6 @@ async function runPendingAuthAction() {
 function bindEvents() {
     adminAccountsController.bind();
     $('#btn-header-upload')?.addEventListener('click', openHeaderUpload);
-    $('#btn-open-guest-map-invitation')?.addEventListener('click', openHeaderUpload);
-    $('#btn-dismiss-guest-map-invitation')?.addEventListener('click', () => {
-        guestMapInvitation.dismiss();
-        syncGuestMapInvitation();
-    });
     $('#album-cover-picker-grid').addEventListener('change', event => {
         const draft = state.albumCoverPicker;
         if (!draft || draft.saving || event.target.name !== 'album-cover-photo') return;

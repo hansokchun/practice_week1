@@ -1,5 +1,11 @@
 import { getMissingLocationAssignmentPhotos } from './location-assignment.mjs';
 
+export function getAccountNotificationBadgeLabel(count) {
+    const value = Number(count);
+    if (!Number.isFinite(value) || value < 1) return '';
+    return String(Math.min(8, Math.floor(value)));
+}
+
 export function buildAccountNotificationItems({
     currentUserId = '',
     savedPhotos = [],

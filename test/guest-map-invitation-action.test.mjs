@@ -6,42 +6,33 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 
-test('guest callout has a keyboard-operable entry separate from its dismiss button', () => {
-    const invitation = html.match(/<aside id="guest-map-invitation"[\s\S]*?<\/aside>/)?.[0] || '';
-    const entry = invitation.match(/<button id="btn-open-guest-map-invitation"[\s\S]*?<\/button>/)?.[0] || '';
-    assert.ok(entry, 'the invitation body needs a native button');
+test('a numberless header dot replaces the guest popup and retains the native action', () => {
+    const entry = html.match(/<button id="btn-header-upload"[\s\S]*?<\/button>/)?.[0] || '';
     assert.match(entry, /type="button"/);
-    assert.match(entry, /첫 사진으로 지도를 시작해보세요/);
-    assert.match(entry, /로그인 없이 3장까지 체험할 수 있어요/);
     assert.match(entry, /나만의 지도 만들기/);
-    assert.match(entry, /guest-map-invitation-cta/);
-    assert.match(entry, /images\/logo\.png/);
-    assert.doesNotMatch(entry, /btn-dismiss-guest-map-invitation/);
-    assert.match(invitation, /<button id="btn-dismiss-guest-map-invitation"[^>]*aria-label="지도 만들기 안내 닫기"/);
-    const close = invitation.match(/<button id="btn-dismiss-guest-map-invitation"[^>]*>/)?.[0] || '';
-    assert.match(close, /title="지도 만들기 안내 닫기"/);
+    assert.match(entry, /id="header-map-dot" class="header-map-dot" aria-hidden="true" hidden><\/span>/);
+    assert.doesNotMatch(html, /guest-map-invitation|btn-open-guest-map-invitation|btn-dismiss-guest-map-invitation/);
+    assert.doesNotMatch(app, /guestMapInvitation|syncGuestMapInvitation|createGuestMapInvitationState/);
+    assert.ok(app.includes("$('#btn-header-upload')?.addEventListener('click', openHeaderUpload)"));
 });
 
-test('the plain X acknowledges a press without adding a tile', () => {
-    const pressed = css.match(/#btn-dismiss-guest-map-invitation:active\s*\{([^}]+)\}/s)?.[1] || '';
-    assert.match(pressed, /opacity:\s*0\.\d+/);
-    assert.doesNotMatch(pressed, /background|border:/);
+test('the map dot is a small red corner indicator, not another clickable target', () => {
+    const dot = css.match(/\.header-map-dot\s*\{([^}]+)\}/s)?.[1] || '';
+    assert.match(dot, /position: absolute/);
+    assert.match(dot, /top: -3px/);
+    assert.match(dot, /right: -3px/);
+    assert.match(dot, /background: var\(--notification-red\)/);
+    assert.match(dot, /pointer-events: none/);
+    assert.match(css, /\.header-map-dot\[hidden\]/);
+    assert.match(app, /dot\.hidden = !shouldShowHeaderMapDot/);
 });
 
-test('guest callout makes the map action the visual destination', () => {
-    assert.match(css, /\.guest-map-invitation-cta\s*\{[^}]*background:\s*var\(--teal\);[^}]*color:\s*#ffffff;/s);
-    assert.match(css, /\.guest-map-invitation-action:hover \.guest-map-invitation-cta\s*\{[^}]*transform:\s*translateX\(2px\);/s);
-});
-
-test('guest callout and header enter the same map creation flow', () => {
-    for (const id of ['btn-header-upload', 'btn-open-guest-map-invitation']) {
-        assert.ok(app.includes(`$('#${id}')?.addEventListener('click', openHeaderUpload)`), id);
-    }
-});
-
-test('opening the photo trial removes the callout behind the modal', () => {
-    const openTrial = app.match(/async function openPhotoTrial\(\) \{([\s\S]*?)\n\}/)?.[1] || '';
-    assert.match(openTrial, /guestMapInvitation\.dismiss\(\);/);
-    assert.match(openTrial, /syncGuestMapInvitation\(\);/);
-    assert.ok(openTrial.indexOf('guestMapInvitation.dismiss()') < openTrial.indexOf("openModal('#photo-trial-modal')"));
+test('notification badges render capped labels and preserve the real accessible count', () => {
+    assert.match(app, /badge\.textContent = getAccountNotificationBadgeLabel\(actionableCount\)/);
+    assert.ok(app.includes('`새 알림 ${actionableCount}개`'));
+    const badge = css.match(/\.account-notification-badge\s*\{([^}]+)\}/s)?.[1] || '';
+    assert.match(badge, /min-width: 18px/);
+    assert.match(badge, /height: 18px/);
+    assert.match(badge, /background: var\(--notification-red\)/);
+    assert.match(badge, /color: #ffffff/);
 });

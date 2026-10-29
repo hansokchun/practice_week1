@@ -1,7 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { buildAccountNotificationItems } from '../js/account-notifications.mjs';
+import { buildAccountNotificationItems, getAccountNotificationBadgeLabel } from '../js/account-notifications.mjs';
+
+test('notification badge shows zero as empty, exact counts to eight, and caps larger counts without a plus', () => {
+    for (const count of [0, -1, null, undefined, NaN, Infinity, 'invalid']) {
+        assert.equal(getAccountNotificationBadgeLabel(count), '');
+    }
+    for (let count = 1; count <= 8; count++) assert.equal(getAccountNotificationBadgeLabel(count), String(count));
+    for (const count of [9, 10, 99, 1000]) assert.equal(getAccountNotificationBadgeLabel(count), '8');
+    assert.equal(getAccountNotificationBadgeLabel('3'), '3');
+    assert.equal(getAccountNotificationBadgeLabel(2.9), '2');
+});
 
 test('account notifications show unread received likes but never liked-photo summaries', () => {
     const items = buildAccountNotificationItems({

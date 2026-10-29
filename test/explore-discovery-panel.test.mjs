@@ -247,9 +247,9 @@ test('Explore discovery collapsed state uses a compact Explore control', () => {
     assert.match(html, /id="explore-discovery-title"[\s\S]*탐색/);
     assert.match(html, /aria-label="탐색 패널 접기"/);
     assert.match(source, /nextCollapsed \? '탐색 패널 열기' : '탐색 패널 접기'/);
-    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*border-radius:\s*10px;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*top:\s*16px;[^}]*right:\s*16px;/s);
-    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*background:\s*var\(--action-soft\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*height:\s*auto;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*max-height:\s*none;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*min-width:\s*84px;/s);
@@ -257,7 +257,7 @@ test('Explore discovery collapsed state uses a compact Explore control', () => {
     assert.match(css, /\.explore-discovery-panel\.is-collapsed\s*\{[^}]*cursor:\s*pointer;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header\s*\{[^}]*justify-items:\s*center;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header\s*\{[^}]*text-align:\s*center;/s);
-    assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header h2\s*\{[^}]*color:\s*#ffffff;/s);
+    assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header h2\s*\{[^}]*color:\s*var\(--teal\);/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-header h2\s*\{[^}]*text-align:\s*center;/s);
     assert.match(css, /\.explore-discovery-panel\.is-collapsed \.explore-discovery-toggle\s*\{[^}]*display:\s*none;/s);
     assert.match(source, /const collapsedDiscoveryPanel = event\.target\.closest\('#explore-list\.is-collapsed'\);/);

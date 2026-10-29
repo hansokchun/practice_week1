@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGuestMapInvitationState, getHeaderUploadAction } from '../js/guest-map-entry.mjs';
+import { shouldShowHeaderMapDot, getHeaderUploadAction } from '../js/guest-map-entry.mjs';
 import { isGuestPhotoTrialUpload, selectPhotoTrialUpload } from '../js/photo-trial.mjs';
 
 test('header action keeps the map name and icon together and restores the member photo action', () => {
@@ -9,17 +9,13 @@ test('header action keeps the map name and icon together and restores the member
     assert.deepEqual(getHeaderUploadAction(undefined), { label: '나만의 지도 만들기', icon: 'map' });
 });
 
-test('guest invitation appears on each home visit but never on landing or before session resolution', () => {
-    const notice = createGuestMapInvitationState();
-    assert.equal(notice.update({ route: 'home', sessionReady: false }), false);
-    assert.equal(notice.update({ route: 'home', sessionReady: true }), true);
-    notice.dismiss();
-    assert.equal(notice.update({ route: 'home', sessionReady: true }), false);
-    assert.equal(notice.update({ route: 'landing', sessionReady: true }), false);
-    assert.equal(notice.update({ route: 'home', sessionReady: true }), true);
-    assert.equal(notice.update({ route: 'home', sessionReady: true, currentUser: { id: 'member' } }), false);
-    assert.equal(notice.update({ route: 'home', sessionReady: true }), true);
-    assert.equal(createGuestMapInvitationState().update({ route: 'home', sessionReady: true }), true);
+test('the header map dot appears for resolved guests on every route, never for members or while booting', () => {
+    assert.equal(shouldShowHeaderMapDot(), false);
+    assert.equal(shouldShowHeaderMapDot({ sessionReady: false }), false);
+    for (const route of ['landing', 'home', 'explore', 'photos']) {
+        assert.equal(shouldShowHeaderMapDot({ route, sessionReady: true }), true);
+        assert.equal(shouldShowHeaderMapDot({ route, sessionReady: true, currentUser: { id: 'member' } }), false);
+    }
 });
 
 test('guest upload review accepts only a bounded local trial queue', () => {

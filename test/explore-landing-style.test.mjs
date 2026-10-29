@@ -15,8 +15,8 @@ test('Explore map controls follow the landing surface and accent language', () =
     assert.match(css, /\.map-search\s*\{[^}]*border-radius:\s*12px;/s);
     assert.match(css, /\.map-search button\s*\{[^}]*background:\s*var\(--teal-dark\);/s);
     assert.match(css, /\.explore-photo-scope\s*\{[^}]*position:\s*relative;[^}]*justify-content:\s*flex-end;[^}]*justify-self:\s*end;/s);
-    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*min-height:\s*38px;[^}]*border-radius:\s*8px;[^}]*background:\s*var\(--teal-dark\);[^}]*padding:\s*0 14px;/s);
-    assert.match(css, /\.explore-photo-scope-menu\s*\{[^}]*top:\s*calc\(100% \+ 6px\);[^}]*right:\s*0;[^}]*z-index:\s*20;[^}]*border-radius:\s*9px;[^}]*background:\s*#ffffff;/s);
+    assert.match(css, /\.explore-photo-scope-trigger\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*12px;[^}]*background:\s*var\(--action-soft\);[^}]*padding:\s*0 14px;/s);
+    assert.match(css, /\.explore-photo-scope-menu\s*\{[^}]*top:\s*calc\(100% \+ 6px\);[^}]*right:\s*0;[^}]*z-index:\s*20;[^}]*border-radius:\s*12px;[^}]*background:\s*#ffffff;/s);
     assert.doesNotMatch(css, /\.explore-photo-scope-copy\s*\{/);
     assert.doesNotMatch(css, /\.explore-photo-scope-control\s*\{/);
     assert.match(css, /\.explore-photo-scope-menu button\s*\{[^}]*grid-template-columns:\s*20px minmax\(0,\s*1fr\) 18px;[^}]*min-height:\s*38px;[^}]*font-size:\s*14px;/s);
@@ -27,9 +27,9 @@ test('Explore preview and discovery panels use landing-style archive cards', () 
     assert.match(css, /\.explore-pin-preview\s*\{[^}]*border:\s*1px solid rgba\(26,\s*77,\s*78,\s*0\.14\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);[^}]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.18\)/s);
     assert.match(css, /\.explore-pin-preview\s*\{[^}]*border-radius:\s*10px;/s);
     assert.match(css, /\.pin-preview-story\s*\{[^}]*background:\s*var\(--bg\);/s);
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*width:\s*min\(390px,\s*calc\(100% - 56px\)\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);[^}]*0 30px 70px rgba\(70,\s*40,\s*32,\s*0\.16\)/s);
-    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*border-radius:\s*10px;/s);
-    assert.match(css, /\.explore-discovery-header h2\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*28px;/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*width:\s*min\(390px,\s*calc\(100% - 56px\)\);[^}]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.97\);[^}]*0 8px 24px rgba\(26,\s*77,\s*78,\s*0\.08\)/s);
+    assert.match(css, /\.explore-discovery-panel\s*\{[^}]*border-radius:\s*14px;/s);
+    assert.match(css, /\.explore-discovery-header h2\s*\{[^}]*color:\s*var\(--teal-dark\);[^}]*font-size:\s*24px;/s);
     assert.match(css, /\.explore-discovery-item\s*\{[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s);
     assert.doesNotMatch(css, /\.explore-discovery-copy\s*\{/);
     assert.doesNotMatch(css, /\.explore-discovery-time\s*\{/);

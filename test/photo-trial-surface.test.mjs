@@ -6,38 +6,15 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 
-test('header uses one map-create action and a separate dismissible invitation', () => {
+test('header keeps one map-create action and its trial without a promotional popup', () => {
     const header = html.slice(html.indexOf('<header class="site-header"'), html.indexOf('</header>'));
     assert.match(header, /id="btn-header-upload"[^>]*aria-label="나만의 지도 만들기"/);
     assert.match(header, /id="header-upload-label">나만의 지도 만들기<\/span>/);
     assert.match(header, /id="header-upload-icon"[^>]*aria-hidden="true">map<\/span>/);
-    assert.doesNotMatch(header, /id="btn-open-photo-trial"/);
+    assert.match(header, /id="header-map-dot"[^>]*aria-hidden="true"[^>]*hidden/);
+    assert.doesNotMatch(header, /guest-map-invitation|id="btn-open-photo-trial"/);
     assert.doesNotMatch(header.match(/<button id="btn-header-upload"[^>]*>/)?.[0] || '', /data-route=/);
-    assert.match(header, /id="guest-map-invitation"[^>]*hidden/);
-    assert.match(header, /id="btn-dismiss-guest-map-invitation"[^>]*aria-label="지도 만들기 안내 닫기"/);
-    assert.match(header, /나만의 지도 만들기/);
     assert.match(html, /id="photo-trial-modal"[^>]*role="dialog"[^>]*aria-modal="true"[^>]*aria-labelledby="photo-trial-title"/);
-    assert.match(css, /body\[data-page="landing"\] #guest-map-invitation\s*\{\s*display: none;/);
-    assert.match(css, /\.guest-map-invitation\s*\{[^}]*background: var\(--guest-map-invitation-surface\)/s);
-});
-
-test('guest invitation is distinct from its CTA and adapts its left-side placement to narrow viewports', () => {
-    const bubble = css.match(/\.guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
-    assert.match(bubble, /--guest-map-invitation-surface: linear-gradient/);
-    assert.match(bubble, /border: 1px solid var\(--line\)/);
-    assert.doesNotMatch(bubble, /--gold/);
-    assert.match(bubble, /inset-inline-end: calc\(100% \+/);
-    assert.match(bubble, /width: min\([^;]*100vw/);
-    assert.match(bubble, /color: var\(--teal-dark\)/);
-    assert.match(css, /\.guest-map-invitation-action\s*\{[^}]*font:[^;]*var\(--body\);[^}]*letter-spacing: var\(--text-tracking\)/s);
-    assert.match(html, /class="guest-map-invitation-icon" aria-hidden="true"><img src="images\/logo\.png"/);
-    assert.match(css, /@media \(max-width:[^)]+\)\s*\{\s*\.guest-map-invitation\s*\{[^}]*inset-block-start: calc\(100% \+[^}]*inset-inline-end: 0;/s);
-    assert.match(css, /\.guest-map-invitation::before\s*\{[^}]*inset-inline-end: -/s);
-    const close = css.match(/#btn-dismiss-guest-map-invitation\s*\{([^}]+)\}/s)?.[1] || '';
-    assert.match(close, /border: 0;/);
-    assert.match(close, /background: transparent;/);
-    assert.doesNotMatch(css.match(/#btn-dismiss-guest-map-invitation:hover\s*\{([^}]+)\}/s)?.[1] || '', /background:/);
-    assert.match(css, /#btn-dismiss-guest-map-invitation:focus-visible\s*\{[^}]*outline:[^;]*var\(--teal\)/s);
 });
 
 test('trial exposes local photo preview, selected pin editing, and an explicit account-save action', () => {

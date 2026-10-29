@@ -59,9 +59,9 @@ test('logged-in header exposes readable, actionable notifications beside profile
     assert.ok(profileIndex > notificationIndex);
     assert.match(html, /id="account-notification-popover"/);
     assert.match(html, /id="account-notification-list"/);
-    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*36px;[^}]*height:\s*40px;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/s);
+    assert.match(css, /\.account-notification-trigger\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;[^}]*border:\s*0;[^}]*border-radius:\s*12px;[^}]*background:\s*var\(--surface\);/s);
     assert.match(css, /\.account-notification-trigger \.material-symbols-outlined\s*\{[^}]*font-size:\s*25px;/s);
-    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*4px;[^}]*right:\s*4px;[^}]*width:\s*9px;[^}]*height:\s*9px;[^}]*border:\s*0;[^}]*border-radius:\s*50%;/s);
+    assert.match(css, /\.account-notification-badge\s*\{[^}]*top:\s*-3px;[^}]*right:\s*-3px;[^}]*min-width:\s*18px;[^}]*height:\s*18px;[^}]*border:\s*2px solid var\(--bg\);[^}]*border-radius:\s*50%;/s);
     assert.doesNotMatch(css, /\.account-notification-badge\s*\{[^}]*box-shadow:/s);
     assert.match(css, /\.account-notification-popover\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;/s);
     assert.match(css, /body\.is-logged-out\s+#btn-open-notifications\s*\{[^}]*display:\s*none;/s);
@@ -74,7 +74,7 @@ test('logged-in header exposes readable, actionable notifications beside profile
     assert.doesNotMatch(notificationBuilder, /likedPhotoIds/);
     assert.match(app, /data-read-received-likes/);
     assert.match(app, /await markReceivedLikesRead\(/);
-    assert.match(app, /badge\.textContent = '';/);
+    assert.match(app, /badge\.textContent = getAccountNotificationBadgeLabel\(actionableCount\);/);
     assert.match(app, /badge\.setAttribute\('aria-label', `새 알림 \$\{actionableCount\}개`\)/);
     assert.match(app, /data-route="\$\{escapeHtml\(item\.route\)\}"/);
     assert.match(app, /\$\('#btn-open-notifications'\)\?\.addEventListener\('click', toggleAccountNotifications\)/);

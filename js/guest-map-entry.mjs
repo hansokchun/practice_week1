@@ -4,18 +4,6 @@ export function getHeaderUploadAction(currentUser) {
         : { label: '나만의 지도 만들기', icon: 'map' };
 }
 
-export function createGuestMapInvitationState() {
-    let previousRoute = null;
-    let dismissed = false;
-    let previousAuthenticated = false;
-    return {
-        update({ route, currentUser = null, sessionReady = false }) {
-            const authenticated = Boolean(currentUser);
-            if (route !== previousRoute || previousAuthenticated !== authenticated) dismissed = false;
-            previousRoute = route;
-            previousAuthenticated = authenticated;
-            return sessionReady && !currentUser && route === 'home' && !dismissed;
-        },
-        dismiss() { dismissed = true; }
-    };
+export function shouldShowHeaderMapDot({ currentUser = null, sessionReady = false } = {}) {
+    return Boolean(sessionReady && !currentUser);
 }
