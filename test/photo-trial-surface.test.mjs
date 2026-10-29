@@ -34,11 +34,11 @@ test('photo picker and save controls align their icon and label together', () =>
     assert.match(css, /\.photo-trial-picker \[data-trial-add\],\s*\.photo-trial-footer \[data-trial-continue\]\s*\{[^}]*display: inline-flex;[^}]*align-items: center;[^}]*justify-content: center;[^}]*gap: 8px;/s);
 });
 
-test('the first trial screen presents a concise branded three-step experience', () => {
+test('the first trial screen keeps three steps without branding or the removed introductory sentence', () => {
     const intro = html.match(/<section class="photo-trial-intro"[\s\S]*?<\/section>/)?.[0] || '';
     assert.match(intro, /data-trial-empty/);
     assert.doesNotMatch(intro, /Ikkyee|장소 저장소/);
-    assert.match(intro, /사진을 골라 내 지도에 놓아보세요/);
+    assert.doesNotMatch(intro, /사진을 골라 내 지도에 놓아보세요|photo-trial-intro-copy/);
     assert.equal((intro.match(/<li(?:\s|>)/g) || []).length, 3);
     assert.deepEqual([...intro.matchAll(/class="photo-trial-step-number" aria-hidden="true">(\d{2})<\/span>/g)].map(match => match[1]), ['01', '02', '03']);
     for (const icon of ['add_photo_alternate', 'add_location_alt', 'photo_library']) assert.ok(intro.includes(icon), icon);
@@ -55,7 +55,7 @@ test('the first trial screen presents a concise branded three-step experience', 
 
 test('the compact empty dialog omits duplicate branding without changing the selected editor', () => {
     const modal = html.slice(html.indexOf('id="photo-trial-modal"'), html.indexOf('id="auth-modal"'));
-    assert.doesNotMatch(modal, /photo-trial-map-mark|images\/logo\.png|Ikkyee|장소 저장소/);
+    assert.doesNotMatch(modal, /photo-trial-map-mark|images\/logo\.png|Ikkyee|장소 저장소|사진을 골라 내 지도에 놓아보세요/);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-picker\s*\{[^}]*justify-content: center;/s);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-footer\s*\{[^}]*padding:/s);
 });
@@ -64,7 +64,7 @@ test('step numbering preserves native order and adapts to the compact row layout
     assert.match(html, /<ol class="photo-trial-steps" role="list">/);
     assert.match(css, /\.photo-trial-step-number\s*\{[^}]*font-variant-numeric: tabular-nums;/s);
     assert.match(css, /\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number status icon" "label label label" "detail detail detail";/s);
-    assert.match(css, /\.photo-trial-steps li\[aria-current="step"\]\s*\{[^}]*border-color: var\(--teal\)/s);
+    assert.match(css, /\.photo-trial-steps li\[aria-current="step"\]\s*\{[^}]*border-color: transparent/s);
     assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number icon label status" "detail detail detail detail";/);
 });
 

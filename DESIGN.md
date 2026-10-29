@@ -21,6 +21,10 @@ Ikkyee feels like a quiet travel archive: personal photographs become a map, and
 | Accent/deep | `--teal-dark` | `#003637` | `#9ad8d3` | Strong teal surfaces |
 | 가벼운 동작 면 | `--action-soft` | `#eaf1ef` | — | 상단 메뉴·지도 탐색 패널의 연한 청록 버튼 |
 | 가벼운 동작 호버 | `--action-soft-hover` | `#dce9e5` | — | 같은 버튼의 호버·열림 상태 |
+| 체험 사진 선택 면 | `--photo-trial-picker-surface` | `#e6f1e3` | — | 지도 만들기 첫 화면의 녹색 사진 선택 영역 |
+| 체험 사진 선택 호버 | `--photo-trial-picker-hover` | `#dbead7` | — | 사진 선택 영역의 호버·파일 드래그 상태 |
+| 체험 사진 선택 글씨 | `--photo-trial-picker-ink` | `#2d623f` | — | 사진 선택 제목·안내·테두리 |
+| 체험 사진 선택 아이콘 | `--photo-trial-picker-accent` | `#3c7a4c` | — | 흰색 사진 아이콘의 녹색 바탕 |
 | 알림 강조 | `--notification-red` | `#e53935` | — | 지도 만들기 점·최대 8의 알림 숫자 배지 |
 | Accent/warm | `--coral` | `#f48c71` | `#ffb39f` | Warm highlights |
 | Accent/gold | `--gold` | `#c9a050` | `#dfc276` | Rare archival emphasis |
@@ -137,7 +141,7 @@ All spacing derives from a base of 4px.
 
 - **진입(2026-10-30)**: 비회원은 지도 아이콘의 `나만의 지도 만들기`, 회원은 카메라 아이콘의 `사진 추가`를 유지한다. 선택한 1번 시안에 따라 상단 버튼은 `--action-soft` 바탕·청록 글씨·얇은 테두리·그림자 없음으로, 로그인은 흰색 보조 버튼으로 표시한다. 기존 안내 팝업과 닫기·재노출 로직은 제거한다. 세션이 확인된 비회원에게만 지도 만들기 버튼 오른쪽 위에 숫자 없는 빨간 점을 표시한다. 회원 알림 버튼은 빨간 숫자 배지를 사용하며 0개는 숨기고 1~8은 그대로, 9개 이상도 `8`까지만 표시한다. 접근성 이름에는 실제 수를 유지한다. 공통 `.btn-primary`와 본문 버튼은 변경하지 않는다.
 - **좁은 헤더(2026-10-30)**: 비회원은 빈 계정 래퍼를 숨기고 기존 44px 지도 버튼을 유지한다. 로그인한 520px 이하 화면에서는 부제 `장소 저장소`를 숨겨 사진 추가·알림·프로필과 겹치지 않게 한다. 360px 이하 회원 화면은 프로필 화살표도 숨기되 영문 `Ikkyee` 이름과 세 버튼은 유지한다. 숫자 없는 빨간 점은 모바일에서 글자를 숨기는 선택자에 가려지지 않아야 한다.
-- **단계 안내 후속 조정(2026-10-30)**: 세 개의 번호·아이콘·문구와 전체 단계 구조는 유지한다. 현재 단계만 연한 청록 면과 청록 테두리를 사용하고, 다음 단계는 테두리·배경·그림자 없이 차분한 글씨로 표시한다. 반복되는 바깥 카드 면과 실행 영역의 상자를 제거한다. 초기 사진 선택 버튼은 기존 업로드 첫 화면처럼 점선 테두리의 큰 흰색 박스·청록 사진 아이콘·선택/끌어놓기 안내·기본 비공개 칩으로 보충한다. 모달 내부 로고와 서비스명은 제거하고 기능 제목만 남긴다. 0/3 카운터는 박스 오른쪽 위에, 사진 선택 후에는 기존 작은 추가 버튼 옆에 표시한다. 사진 선택 후 기존 편집·지도·저장 화면은 그대로 유지한다.
+- **단계 안내 후속 조정(2026-10-30)**: 세 개의 번호·아이콘·문구와 전체 단계 구조는 유지하되 모든 단계는 투명한 면·테두리와 차분한 글씨를 사용한다. 현재 단계는 숫자의 옅은 회색 바탕과 작은 상태 글씨로만 구분해 사진 선택보다 눈에 띄지 않게 한다. 반복되는 바깥 카드 면과 실행 영역의 상자를 제거한다. 초기 사진 선택 버튼은 기존 업로드 첫 화면의 큰 점선 박스 구조를 재사용하되 밝은 녹색 면·녹색 사진 아이콘·굵은 제목으로 가장 먼저 보이게 한다. 선택/끌어놓기 안내·기본 비공개 칩을 유지한다. 모달 내부 로고·서비스명과 `사진을 골라 내 지도에 놓아보세요.` 문구는 제거하고 기능 제목만 남긴다. 0/3 카운터는 박스 오른쪽 위에, 사진 선택 후에는 기존 작은 추가 버튼 옆에 표시한다. 사진 선택 후 기존 편집·지도·저장 화면은 그대로 유지한다.
 - **Copy-only deletion boundary**: Preserve the dialog header, body, footer frame, intro cards, photo/metadata panels, map, and upload/auth surfaces across the flow. The authorized density change reduces only the empty footer to a 20px divider/endcap with 8px vertical padding and compact safe-area clearance; its unavailable save action remains hidden. The selected editor retains the existing footer padding, 56px minimum height and right-aligned save action. Only the explicitly requested separate header trial action and whole-draft clear action are removed; per-photo deletion and location controls remain. Deleted prose does not return as replacement marketing text or invisible placeholder strings.
 - **Privacy and continuity**: Use bounded IndexedDB drafts so files and chosen positions survive same-browser OAuth redirects. Expired drafts are removed on the next read. Let users remove individual photos. The photo dialog proceeds to upload review before requiring an account; the final upload action opens authentication if needed, resumes the selected originals and positions, and routes to the owner's profile after successful private persistence.
 - **Anatomy and layout**: The dialog is at most 1000px wide, with 24px padding/gaps, a 28px heading, 16px body and 14px metadata. Its header and footer stay outside one scrolling body; the body uses a two-column photo/map workspace, stacking below 860px. Use an existing 4:3 photo frame, a map at least 280px high and a 44px minimum target for every action. Mobile uses 16px gutters and safe-area footer padding. Keep Korean phrases together.

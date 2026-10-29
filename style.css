@@ -14529,7 +14529,10 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 
 .modal-card.photo-trial-card {
     --photo-trial-empty-width: 760px;
-    --photo-trial-step-surface: color-mix(in srgb, var(--teal) 4%, var(--surface));
+    --photo-trial-picker-surface: #e6f1e3;
+    --photo-trial-picker-hover: #dbead7;
+    --photo-trial-picker-ink: #2d623f;
+    --photo-trial-picker-accent: #3c7a4c;
     width: min(1000px, 100%);
     max-height: calc(100dvh - 48px);
     min-height: 0;
@@ -14636,17 +14639,17 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     min-width: 0;
     min-height: 224px;
     border-radius: 20px;
-    border: 1.5px dashed rgba(26, 77, 78, 0.3);
+    border: 1.5px dashed color-mix(in srgb, var(--photo-trial-picker-ink) 50%, transparent);
     padding: 24px 16px;
-    background: var(--surface);
-    color: var(--teal);
+    background: var(--photo-trial-picker-surface);
+    color: var(--photo-trial-picker-ink);
     box-shadow: none;
     transition: background-color 160ms ease;
 }
 
 .photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add]:hover {
-    border-color: var(--teal);
-    background: var(--action-soft);
+    border-color: var(--photo-trial-picker-ink);
+    background: var(--photo-trial-picker-hover);
 }
 
 .photo-trial-dropzone [data-trial-dropzone-copy] { display: none; }
@@ -14658,13 +14661,14 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     height: 56px;
     border-radius: 18px;
     margin: 0;
+    background: var(--photo-trial-picker-accent);
     box-shadow: none;
 }
 .photo-trial-card:has([data-trial-workspace][hidden]) .upload-dropzone-icon .material-symbols-outlined { font-size: 30px; }
 .photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add-label] { font-size: 20px; font-weight: 700; }
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-dropzone-help {
     display: block;
-    color: var(--text);
+    color: var(--photo-trial-picker-ink);
     font-size: 13px;
     font-weight: 400;
     line-height: 1.6;
@@ -14676,35 +14680,33 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     right: 12px;
     min-width: 48px;
     min-height: 30px;
+    border: 0;
     padding: 4px 8px;
+    background: transparent;
+    color: var(--photo-trial-picker-ink);
+    font-weight: 500;
     pointer-events: none;
 }
+.photo-trial-card:has([data-trial-workspace][hidden]) .upload-privacy-chip {
+    padding: 0;
+    background: transparent;
+    color: var(--photo-trial-picker-ink);
+    font-weight: 500;
+}
+.photo-trial-card:has([data-trial-workspace][hidden]) .upload-privacy-chip .material-symbols-outlined { font-size: 15px; }
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-dropzone.is-dragging {
-    border-color: var(--teal);
-    background: var(--action-soft-hover);
+    border-color: var(--photo-trial-picker-ink);
+    background: var(--photo-trial-picker-hover);
 }
 
 .photo-trial-intro {
     position: relative;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     overflow: hidden;
     border: 0;
     border-radius: 0;
     background: transparent;
-    padding: 8px 0 0;
-}
-
-.photo-trial-intro-copy {
-    margin-bottom: 28px;
-    text-align: center;
-}
-
-.photo-trial-card .photo-trial-intro-copy > p {
-    margin: 7px 0 0;
-    color: var(--teal-dark);
-    font-size: 20px;
-    font-weight: 760;
-    line-height: 1.4;
+    padding: 0;
 }
 
 .photo-trial-steps {
@@ -14737,7 +14739,7 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     column-gap: 10px;
     row-gap: 8px;
     min-width: 0;
-    min-height: 134px;
+    min-height: 116px;
     padding: 16px;
     border: 1px solid transparent;
     border-radius: 16px;
@@ -14746,8 +14748,8 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 }
 
 .photo-trial-steps li[aria-current="step"] {
-    border-color: var(--teal);
-    background: var(--action-soft);
+    border-color: transparent;
+    background: transparent;
     box-shadow: none;
 }
 
@@ -14765,15 +14767,15 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     border: 1px solid rgba(26, 77, 78, 0.18);
     border-radius: 50%;
     background: var(--bg);
-    color: var(--teal-dark);
+    color: var(--text);
     font: 600 12px/1 var(--body);
     font-variant-numeric: tabular-nums;
 }
 
 .photo-trial-steps li[aria-current="step"] .photo-trial-step-number {
-    border-color: var(--teal);
-    background: var(--teal);
-    color: #ffffff;
+    border-color: transparent;
+    background: var(--surface-soft);
+    color: var(--text);
     box-shadow: none;
 }
 
@@ -14783,10 +14785,10 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     justify-self: start;
     border-radius: 999px;
     padding: 5px 9px;
-    background: rgba(26, 77, 78, 0.1);
-    color: var(--teal-dark);
+    background: var(--bg);
+    color: color-mix(in srgb, var(--muted) 85%, var(--text));
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -14800,17 +14802,17 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     height: 36px;
     margin: 0;
     border-radius: 11px;
-    background: var(--surface);
-    color: var(--teal);
-    font-size: 24px;
+    background: var(--bg);
+    color: color-mix(in srgb, var(--muted) 85%, var(--text));
+    font-size: 20px;
 }
 
 .photo-trial-steps strong {
     grid-area: label;
     display: block;
     min-width: 0;
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
     line-height: 1.4;
     word-break: keep-all;
 }
@@ -14821,7 +14823,7 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     min-width: 0;
     color: color-mix(in srgb, var(--muted) 85%, var(--text));
     font-size: 13px;
-    font-weight: 560;
+    font-weight: 400;
     line-height: 1.45;
     word-break: keep-all;
 }
@@ -15083,8 +15085,6 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-close { position: absolute; top: 16px; right: 16px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-body { padding: 16px; }
     .photo-trial-intro { border-radius: 0; padding: 0; }
-    .photo-trial-intro-copy { margin-bottom: 16px; }
-    .photo-trial-card .photo-trial-intro-copy > p { font-size: 18px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-picker { flex-wrap: nowrap; padding: 0; }
     .photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add] { min-width: 0; flex: 1 1 auto; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-footer { padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px)); }
