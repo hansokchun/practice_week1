@@ -14735,7 +14735,8 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 }
 
 .photo-trial-steps li:not([aria-current]) strong {
-    color: var(--muted);
+    color: var(--text);
+    font-weight: 600;
 }
 
 .photo-trial-step-number {
@@ -14801,7 +14802,7 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     grid-area: detail;
     display: block;
     min-width: 0;
-    color: var(--muted);
+    color: color-mix(in srgb, var(--muted) 85%, var(--text));
     font-size: 13px;
     font-weight: 560;
     line-height: 1.45;

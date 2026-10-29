@@ -8,7 +8,8 @@ test('trial introduction separates the current step from quieter upcoming stages
     assert.match(css, /\.photo-trial-intro\s*\{[^}]*border: 0;[^}]*background: transparent;/s);
     assert.match(css, /\.photo-trial-steps li\s*\{[^}]*background: transparent;[^}]*box-shadow: none;/s);
     assert.match(css, /\.photo-trial-steps li\[aria-current="step"\]\s*\{[^}]*background: var\(--action-soft\)/s);
-    assert.match(css, /\.photo-trial-steps li:not\(\[aria-current\]\) strong\s*\{[^}]*color: var\(--muted\)/s);
+    assert.match(css, /\.photo-trial-steps li:not\(\[aria-current\]\) strong\s*\{[^}]*color: var\(--text\);[^}]*font-weight: 600/s);
+    assert.match(css, /\.photo-trial-step-detail\s*\{[^}]*color: color-mix\(in srgb, var\(--muted\) 85%, var\(--text\)\)/s);
 });
 
 test('the first picker has a warm accent, not another teal or nested card', () => {
