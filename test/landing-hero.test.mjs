@@ -120,8 +120,8 @@ test('landing location captions keep only country and major region', () => {
     assert.doesNotMatch(labelFunction, /photo\.(?:title|description|album)/);
 });
 
-test('landing brand presents 이끼 as the name and 장소 저장소 as the descriptor', () => {
-    assert.match(html, /class="brand-wordmark">이끼<\/span>[\s\S]*?class="brand-korean"[^>]*>장소 저장소<\/span>/);
+test('landing brand presents Ikkyee as the name and 장소 저장소 as the descriptor', () => {
+    assert.match(html, /class="brand-wordmark">Ikkyee<\/span>[\s\S]*?class="brand-korean"[^>]*>장소 저장소<\/span>/);
     assert.match(css, /\.brand-wordmark\s*\{[^}]*font-family:\s*var\(--brand\)/s);
     assert.match(css, /@media \(max-width:\s*360px\)[\s\S]*?\.brand-wordmark\s*\{[^}]*display:\s*none;/s);
 });

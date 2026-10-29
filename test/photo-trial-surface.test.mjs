@@ -60,12 +60,14 @@ test('photo picker and save controls align their icon and label together', () =>
 test('the first trial screen presents a concise branded three-step experience', () => {
     const intro = html.match(/<section class="photo-trial-intro"[\s\S]*?<\/section>/)?.[0] || '';
     assert.match(intro, /data-trial-empty/);
-    assert.match(intro, /이끼 · 장소 저장소/);
+    assert.match(intro, /Ikkyee · 장소 저장소/);
     assert.match(intro, /사진을 골라 내 지도에 놓아보세요/);
     assert.equal((intro.match(/<li(?:\s|>)/g) || []).length, 3);
     assert.deepEqual([...intro.matchAll(/class="photo-trial-step-number" aria-hidden="true">(\d{2})<\/span>/g)].map(match => match[1]), ['01', '02', '03']);
     for (const icon of ['add_photo_alternate', 'add_location_alt', 'photo_library']) assert.ok(intro.includes(icon), icon);
     for (const title of ['사진 고르기', '장소 확인', '지도에 저장']) assert.ok(intro.includes(`<strong>${title}</strong>`), title);
+    for (const detail of ['최대 3장까지 선택', '사진 속 장소 확인', '내 지도에 비공개 저장']) assert.ok(intro.includes(`<span class="photo-trial-step-detail">${detail}</span>`), detail);
+    assert.match(intro, /class="photo-trial-step-status">현재 단계<\/span>/);
     assert.match(intro, /aria-current="step"/);
     assert.match(css, /\.photo-trial-steps\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/s);
     assert.match(css, /\.photo-trial-intro\s*\{[^}]*background:/s);
@@ -88,8 +90,9 @@ test('the compact empty dialog uses the approved symbol without changing the sel
 test('step numbering preserves native order and adapts to the compact row layout', () => {
     assert.match(html, /<ol class="photo-trial-steps" role="list">/);
     assert.match(css, /\.photo-trial-step-number\s*\{[^}]*font-variant-numeric: tabular-nums;/s);
-    assert.match(css, /\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number icon" "label label";/s);
-    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number icon label";/);
+    assert.match(css, /\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number status icon" "label label label" "detail detail detail";/s);
+    assert.match(css, /\.photo-trial-steps li\[aria-current="step"\]\s*\{[^}]*border-color: var\(--teal\)/s);
+    assert.match(css, /@media \(max-width: 860px\)[\s\S]*\.photo-trial-steps li\s*\{[^}]*grid-template-areas: "number icon label status" "detail detail detail detail";/);
 });
 
 test('both trial stages keep the original footer frame while only its helper copy is removed', () => {
