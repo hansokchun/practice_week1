@@ -12,9 +12,13 @@ test('trial introduction separates the current step from quieter upcoming stages
     assert.match(css, /\.photo-trial-step-detail\s*\{[^}]*color: color-mix\(in srgb, var\(--muted\) 85%, var\(--text\)\)/s);
 });
 
-test('the first picker has a warm accent, not another teal or nested card', () => {
-    const empty = '.photo-trial-card:has([data-trial-workspace][hidden])';
-    assert.ok(css.includes(`${empty} [data-trial-add]`));
-    assert.match(css, /\[data-trial-add\]\s*\{[^}]*background: color-mix\(in srgb, var\(--coral\) 34%, var\(--surface\)\);[^}]*color: var\(--teal-dark\)/s);
+test('the initial picker reuses the upload dropzone design and returns to a compact button after selection', () => {
+    const html = readFileSync('index.html', 'utf8');
+    const modal = html.slice(html.indexOf('id="photo-trial-modal"'), html.indexOf('id="auth-modal"'));
+    assert.match(modal, /class="btn-primary photo-trial-dropzone" data-trial-add/);
+    assert.match(modal, /upload-dropzone-icon/);
+    assert.match(modal, /사진을 선택하거나 이곳에 끌어다 놓으세요/);
+    assert.match(css, /\[data-trial-add\]\s*\{[^}]*border: 1\.5px dashed[^}]*background: var\(--surface\)/s);
+    assert.match(css, /\.photo-trial-dropzone \[data-trial-dropzone-copy\]\s*\{\s*display: none;/);
     assert.match(css, /\.photo-trial-picker\s*\{[^}]*border: 0;[^}]*background: transparent;[^}]*box-shadow: none;/s);
 });

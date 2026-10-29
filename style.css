@@ -3311,13 +3311,14 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 
 .header-map-dot {
     position: absolute;
-    top: -3px;
-    right: -3px;
+    top: -1px;
+    right: -1px;
     width: 14px;
     height: 14px;
     border: 2px solid var(--bg);
     border-radius: 50%;
     background: var(--notification-red);
+    transform: translate(50%, -50%);
     pointer-events: none;
 }
 
@@ -14562,31 +14563,11 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 
 .photo-trial-heading { min-width: 0; }
 
-.photo-trial-map-mark {
-    display: none;
-    flex: 0 0 auto;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid rgba(26, 77, 78, 0.12);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.88);
-    box-shadow: 0 8px 20px rgba(26, 77, 78, 0.1);
-    overflow: hidden;
-}
-
-.photo-trial-map-mark img {
-    width: 38px;
-    height: 38px;
-    object-fit: contain;
-}
-
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-header {
     align-items: center;
     background: var(--surface);
 }
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-heading { display: flex; align-items: center; gap: 12px; }
-.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-map-mark { display: grid; }
 .photo-trial-card:has([data-trial-workspace][hidden]) h2 { font-size: 26px; font-weight: 600; }
 
 .photo-trial-card h2 {
@@ -14637,27 +14618,70 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-body { padding: 20px 24px 24px; }
 .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-picker {
+    position: relative;
     justify-content: center;
     margin: 0;
     border: 0;
     border-radius: 0;
-    padding: 8px 0 4px;
+    padding: 0;
     background: transparent;
     box-shadow: none;
 }
 .photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add] {
-    min-width: 220px;
-    min-height: 52px;
-    border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--coral) 60%, var(--surface));
-    background: color-mix(in srgb, var(--coral) 34%, var(--surface));
-    color: var(--teal-dark);
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    min-height: 224px;
+    border-radius: 20px;
+    border: 1.5px dashed rgba(26, 77, 78, 0.3);
+    padding: 24px 16px;
+    background: var(--surface);
+    color: var(--teal);
     box-shadow: none;
     transition: background-color 160ms ease;
 }
 
 .photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add]:hover {
-    background: color-mix(in srgb, var(--coral) 48%, var(--surface));
+    border-color: var(--teal);
+    background: var(--action-soft);
+}
+
+.photo-trial-dropzone [data-trial-dropzone-copy] { display: none; }
+.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-add-compact { display: none; }
+.photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-dropzone-copy] { display: inline-flex; }
+.photo-trial-card:has([data-trial-workspace][hidden]) .upload-dropzone-icon {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    margin: 0;
+    box-shadow: none;
+}
+.photo-trial-card:has([data-trial-workspace][hidden]) .upload-dropzone-icon .material-symbols-outlined { font-size: 30px; }
+.photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add-label] { font-size: 20px; font-weight: 700; }
+.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-dropzone-help {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-counter {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    min-width: 48px;
+    min-height: 30px;
+    padding: 4px 8px;
+    pointer-events: none;
+}
+.photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-dropzone.is-dragging {
+    border-color: var(--teal);
+    background: var(--action-soft-hover);
 }
 
 .photo-trial-intro {
@@ -14673,13 +14697,6 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
 .photo-trial-intro-copy {
     margin-bottom: 28px;
     text-align: center;
-}
-
-.photo-trial-intro-copy > span {
-    color: var(--teal);
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
 }
 
 .photo-trial-card .photo-trial-intro-copy > p {
@@ -15061,15 +15078,14 @@ body.is-logged-out .brand-korean { white-space: nowrap; }
     .photo-trial-footer > button { width: 100%; }
     .photo-trial-list > div { max-width: calc(100% - 4px); }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-header { position: relative; display: block; }
-    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-heading { display: grid; gap: 12px; }
-    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-map-mark { width: 40px; height: 40px; }
+    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-heading { padding-right: 44px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) h2 { font-size: 22px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-close { position: absolute; top: 16px; right: 16px; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-body { padding: 16px; }
     .photo-trial-intro { border-radius: 0; padding: 0; }
     .photo-trial-intro-copy { margin-bottom: 16px; }
     .photo-trial-card .photo-trial-intro-copy > p { font-size: 18px; }
-    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-picker { flex-wrap: nowrap; padding: 12px; }
+    .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-picker { flex-wrap: nowrap; padding: 0; }
     .photo-trial-card:has([data-trial-workspace][hidden]) [data-trial-add] { min-width: 0; flex: 1 1 auto; }
     .photo-trial-card:has([data-trial-workspace][hidden]) .photo-trial-footer { padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px)); }
 }

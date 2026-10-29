@@ -12,6 +12,12 @@ class FakeElement {
         this.textContent = '';
         this.value = '';
         this.attributes = new Map();
+        const classes = new Set();
+        this.classList = {
+            toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); },
+            remove(name) { classes.delete(name); },
+            contains(name) { return classes.has(name); }
+        };
     }
     addEventListener(type, listener) { this.listeners.set(type, listener); }
     removeEventListener(type) { this.listeners.delete(type); }
@@ -60,6 +66,73 @@ async function settle() {
     await new Promise((resolve) => setImmediate(resolve));
     await new Promise((resolve) => setImmediate(resolve));
 }
+
+test('the active trial picker accepts dropped files through the bounded persisted photo queue', async () => {
+    const { root, elements } = createRoot();
+    const saved = [];
+    const controller = createPhotoTrialController({
+        root,
+        store: { load: async () => [], save: async photos => saved.push(photos), clear: async () => {} },
+        readExif: async () => ({}),
+        createObjectUrl: file => `blob:${file.name}`,
+        revokeObjectUrl: () => {}
+    });
+    controller.bind();
+    await controller.open();
+    const add = elements.get('[data-trial-add]');
+    const dataTransfer = { types: ['Files'], files: ['1', '2', '3', '4'].map(name => namedPhoto(`${name}.jpg`)) };
+    let prevented = 0;
+    const event = { target: add, dataTransfer, preventDefault() { prevented++; } };
+
+    root.listeners.get('dragover')?.(event);
+    assert.equal(add.classList.contains('is-dragging'), true);
+    root.listeners.get('drop')?.(event);
+    await settle();
+
+    assert.equal(prevented, 2);
+    assert.equal(add.classList.contains('is-dragging'), false);
+    assert.equal(controller.getPhotos().length, 3);
+    assert.equal(saved.at(-1).length, 3);
+    assert.equal(add.disabled, true);
+    root.listeners.get('drop')?.(event);
+    await settle();
+    assert.equal(prevented, 3, 'a full picker must still prevent browser file navigation');
+    assert.equal(controller.getPhotos().length, 3);
+});
+
+test('trial drag feedback ignores text, clears on leave/close, and detaches on disposal', async () => {
+    const { root, elements } = createRoot();
+    const controller = createPhotoTrialController({
+        root,
+        store: { load: async () => [], save: async () => {}, clear: async () => {} }
+    });
+    controller.bind();
+    await controller.open();
+    const add = elements.get('[data-trial-add]');
+    let prevented = 0;
+    const text = { target: add, dataTransfer: { types: ['text/plain'], files: [] }, preventDefault() { prevented++; } };
+    root.listeners.get('dragover')?.(text);
+    root.listeners.get('drop')?.(text);
+    assert.equal(prevented, 0);
+    assert.equal(add.classList.contains('is-dragging'), false);
+
+    const files = { target: add, dataTransfer: { types: ['Files'], files: [namedPhoto('a.jpg')] }, preventDefault() { prevented++; } };
+    root.listeners.get('dragenter')?.(files);
+    assert.equal(add.classList.contains('is-dragging'), true);
+    root.listeners.get('dragleave')?.(files);
+    assert.equal(add.classList.contains('is-dragging'), false);
+    root.listeners.get('dragover')?.(files);
+    root.emit('photo-trial:close');
+    assert.equal(add.classList.contains('is-dragging'), false);
+    const beforeClosedDrop = prevented;
+    root.listeners.get('drop')?.(files);
+    await settle();
+    assert.equal(prevented, beforeClosedDrop);
+    assert.equal(controller.getPhotos().length, 0);
+
+    controller.dispose();
+    for (const type of ['dragenter', 'dragover', 'dragleave', 'drop']) assert.equal(root.listeners.has(type), false, type);
+});
 
 test('controller appends at most three photos and survives EXIF failures', async () => {
     // Given

@@ -37,7 +37,7 @@ test('photo picker and save controls align their icon and label together', () =>
 test('the first trial screen presents a concise branded three-step experience', () => {
     const intro = html.match(/<section class="photo-trial-intro"[\s\S]*?<\/section>/)?.[0] || '';
     assert.match(intro, /data-trial-empty/);
-    assert.match(intro, /Ikkyee · 장소 저장소/);
+    assert.doesNotMatch(intro, /Ikkyee|장소 저장소/);
     assert.match(intro, /사진을 골라 내 지도에 놓아보세요/);
     assert.equal((intro.match(/<li(?:\s|>)/g) || []).length, 3);
     assert.deepEqual([...intro.matchAll(/class="photo-trial-step-number" aria-hidden="true">(\d{2})<\/span>/g)].map(match => match[1]), ['01', '02', '03']);
@@ -53,13 +53,9 @@ test('the first trial screen presents a concise branded three-step experience', 
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\)\s*\{[^}]*width: min\(var\(--photo-trial-empty-width\), 100%\)/s);
 });
 
-test('the compact empty dialog uses the approved symbol without changing the selected editor', () => {
+test('the compact empty dialog omits duplicate branding without changing the selected editor', () => {
     const modal = html.slice(html.indexOf('id="photo-trial-modal"'), html.indexOf('id="auth-modal"'));
-    assert.match(modal, /class="photo-trial-map-mark" aria-hidden="true"><img src="images\/logo\.png"/);
-    const mark = css.match(/\.photo-trial-map-mark\s*\{([^}]+)\}/s)?.[1] || '';
-    assert.match(mark, /display: none;/);
-    assert.match(css, /\.photo-trial-map-mark img\s*\{[^}]*object-fit:\s*contain;/s);
-    assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-map-mark\s*\{[^}]*display: grid;/s);
+    assert.doesNotMatch(modal, /photo-trial-map-mark|images\/logo\.png|Ikkyee|장소 저장소/);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-picker\s*\{[^}]*justify-content: center;/s);
     assert.match(css, /\.photo-trial-card:has\(\[data-trial-workspace\]\[hidden\]\) \.photo-trial-footer\s*\{[^}]*padding:/s);
 });

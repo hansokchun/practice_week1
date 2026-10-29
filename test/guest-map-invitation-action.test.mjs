@@ -19,8 +19,9 @@ test('a numberless header dot replaces the guest popup and retains the native ac
 test('the map dot is a small red corner indicator, not another clickable target', () => {
     const dot = css.match(/\.header-map-dot\s*\{([^}]+)\}/s)?.[1] || '';
     assert.match(dot, /position: absolute/);
-    assert.match(dot, /top: -3px/);
-    assert.match(dot, /right: -3px/);
+    assert.match(dot, /top: -1px/);
+    assert.match(dot, /right: -1px/);
+    assert.match(dot, /transform: translate\(50%, -50%\)/);
     assert.match(dot, /width: 14px/);
     assert.match(dot, /height: 14px/);
     assert.match(dot, /background: var\(--notification-red\)/);

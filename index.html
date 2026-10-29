@@ -1349,7 +1349,6 @@
         <section class="modal-card photo-trial-card">
             <header class="photo-trial-header">
                 <div class="photo-trial-heading">
-                    <span class="photo-trial-map-mark" aria-hidden="true"><img src="images/logo.png" alt="" width="256" height="256"></span>
                     <h2 id="photo-trial-title">나만의 지도 만들기</h2>
                 </div>
                 <button class="photo-trial-close" type="button" data-close-modal aria-label="사진 체험 닫기" title="사진 체험 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
@@ -1357,7 +1356,6 @@
             <div class="photo-trial-body">
                 <section class="photo-trial-intro" data-trial-empty aria-label="사진으로 지도 만드는 순서">
                     <div class="photo-trial-intro-copy">
-                        <span>Ikkyee · 장소 저장소</span>
                         <p>사진을 골라 내 지도에 놓아보세요.</p>
                     </div>
                     <ol class="photo-trial-steps" role="list">
@@ -1368,7 +1366,13 @@
                 </section>
                 <div class="photo-trial-picker">
                     <input data-trial-file-input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden aria-label="체험할 사진 선택">
-                    <button class="btn-primary" data-trial-add type="button"><span class="material-symbols-outlined" aria-hidden="true">add_a_photo</span><span data-trial-add-label>사진 고르기</span></button>
+                    <button class="btn-primary photo-trial-dropzone" data-trial-add type="button">
+                        <span class="material-symbols-outlined photo-trial-add-compact" aria-hidden="true">add_a_photo</span>
+                        <span class="upload-dropzone-icon" data-trial-dropzone-copy aria-hidden="true"><span class="material-symbols-outlined">add_photo_alternate</span></span>
+                        <span data-trial-add-label>사진 고르기</span>
+                        <span class="photo-trial-dropzone-help" data-trial-dropzone-copy>사진을 선택하거나 이곳에 끌어다 놓으세요.</span>
+                        <span class="upload-privacy-chip" data-trial-dropzone-copy><span class="material-symbols-outlined" aria-hidden="true">lock</span>기본 비공개 저장</span>
+                    </button>
                     <span class="photo-trial-counter" aria-label="선택한 체험 사진 수" data-trial-count>0/3</span>
                 </div>
                 <div class="photo-trial-workspace" data-trial-workspace hidden>

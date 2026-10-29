@@ -7287,7 +7287,7 @@ function renderStagedPhotos() {
             ? getAccountUploadLimitMessage(uploadLimitStatus)
             : !state.currentUser
                 ? '로그인 후 선택한 사진을 비공개로 저장합니다.'
-                : `남은 업로드 가능 수 ${uploadLimitStatus.remainingUploads}장 · 모든 사진은 기본 비공개로 저장됩니다.`;
+                : '모든 사진은 기본 비공개로 저장됩니다.';
     }
     renderTravelDraftSurfaces();
 

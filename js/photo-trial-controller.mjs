@@ -4,6 +4,7 @@ import { createGoogleMapsMarker } from './google-maps-marker.mjs';
 import { hasUsableCoordinates } from './photo-location.mjs';
 import { MAX_TRIAL_PHOTOS, getTrialUploadMetadata } from './photo-trial.mjs';
 import { createPhotoTrialStore } from './photo-trial-store.mjs';
+import { getDroppedFiles, hasFileDrop } from './drag-drop-files.mjs';
 
 const SEOUL = { lat: 37.5665, lng: 126.978 };
 const PERSISTENCE_MESSAGE = '브라우저 저장소를 사용할 수 없어 로그인 후 사진을 이어갈 수 없습니다. 저장소 권한을 확인해 주세요.';
@@ -323,9 +324,35 @@ export function createPhotoTrialController({
         void addPhotos(files);
     }
 
+    function isPickerTarget(event) {
+        return event.target?.closest?.('[data-trial-add]') === refs.add;
+    }
+
+    function handleDragOver(event) {
+        if (!active || disposed || !hasFileDrop(event.dataTransfer)) return;
+        event.preventDefault();
+        const canAdd = isPickerTarget(event) && !refs.add?.disabled;
+        refs.add?.classList.toggle('is-dragging', canAdd);
+        event.dataTransfer.dropEffect = canAdd ? 'copy' : 'none';
+    }
+
+    function handleDragLeave(event) {
+        if (refs.add?.contains?.(event.relatedTarget)) return;
+        refs.add?.classList.remove('is-dragging');
+    }
+
+    function handleDrop(event) {
+        if (!active || disposed || !hasFileDrop(event.dataTransfer)) return;
+        event.preventDefault();
+        refs.add?.classList.remove('is-dragging');
+        if (!isPickerTarget(event) || refs.add?.disabled) return;
+        void addPhotos(getDroppedFiles(event.dataTransfer));
+    }
+
     function deactivate() {
         active = false;
         mapRequest += 1;
+        refs.add?.classList.remove('is-dragging');
     }
 
     async function loadDraft() {
@@ -382,6 +409,10 @@ export function createPhotoTrialController({
             bound = true;
             root.addEventListener('click', handleClick);
             root.addEventListener('change', handleChange);
+            root.addEventListener('dragenter', handleDragOver);
+            root.addEventListener('dragover', handleDragOver);
+            root.addEventListener('dragleave', handleDragLeave);
+            root.addEventListener('drop', handleDrop);
             root.addEventListener('close', deactivate);
             root.addEventListener('photo-trial:close', deactivate);
         },
@@ -409,6 +440,10 @@ export function createPhotoTrialController({
             refs.map?.replaceChildren();
             root.removeEventListener('click', handleClick);
             root.removeEventListener('change', handleChange);
+            root.removeEventListener('dragenter', handleDragOver);
+            root.removeEventListener('dragover', handleDragOver);
+            root.removeEventListener('dragleave', handleDragLeave);
+            root.removeEventListener('drop', handleDrop);
             root.removeEventListener('close', deactivate);
             root.removeEventListener('photo-trial:close', deactivate);
         }
