@@ -1969,8 +1969,7 @@ body[data-page="home"] .landing-search-globe {
     background: var(--surface-muted);
 }
 
-.photo-contribution button:focus-visible,
-.photo-contribution-credits:focus-visible {
+.photo-contribution button:focus-visible {
     outline: 2px solid var(--teal);
     outline-offset: 4px;
 }
@@ -2048,7 +2047,7 @@ body[data-page="home"] .landing-search-globe {
     pointer-events: none;
 }
 
-.photo-contribution-photo--bukchon {
+.photo-contribution-photo--alley {
     left: calc(236 / 1152 * 100%);
     top: calc(143 / 768 * 100%);
     width: calc(160 / 1152 * 100%);
@@ -2067,33 +2066,6 @@ body[data-page="home"] .landing-search-globe {
     top: calc(351 / 768 * 100%);
     width: calc(166 / 1152 * 100%);
     height: calc(134 / 768 * 100%);
-}
-
-.photo-contribution-credits {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    display: grid;
-    place-items: center;
-    min-width: 44px;
-    min-height: 44px;
-    border-radius: var(--thumbnail-radius);
-    color: color-mix(in srgb, var(--muted) 85%, var(--text));
-    text-decoration: none;
-}
-
-.photo-contribution-credits .material-symbols-outlined {
-    font-size: 18px;
-}
-
-.photo-contribution-credits:hover {
-    background: var(--surface-soft);
-    color: var(--teal);
-}
-
-.photo-contribution-credits:active {
-    background: var(--surface-muted);
-    color: var(--teal-dark);
 }
 
 @media (max-width: 860px) {

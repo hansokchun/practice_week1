@@ -37,10 +37,10 @@ test('the inline invitation leads with its title and a concise sharing subtitle'
     assert.doesNotMatch(invitation, /<svg class="photo-contribution-art"/);
 });
 
-test('the original map carries three contained real-photo overlays with an accessible source link', () => {
+test('the original map carries three contained real-photo overlays without an adjacent info icon', () => {
     const invitation = app.slice(app.indexOf('function renderLandingContributionInvitation()'), app.indexOf('function renderLandingSections()'));
     for (const [place, variable] of [
-        ['bukchon', 'contributionBukchonPhotoUrl'],
+        ['alley', 'contributionAlleyPhotoUrl'],
         ['daeo', 'contributionDaeoPhotoUrl'],
         ['ihwa', 'contributionIhwaPhotoUrl']
     ]) {
@@ -48,7 +48,9 @@ test('the original map carries three contained real-photo overlays with an acces
         assert.ok(invitation.includes(`class="photo-contribution-photo photo-contribution-photo--${place}" src="\${${variable}}" alt="" width="160" height="120" loading="lazy" decoding="async"`));
     }
     assert.equal((invitation.match(/class="photo-contribution-photo /g) || []).length, 3);
-    assert.match(invitation, /<\/div>\s*<a class="photo-contribution-credits" href="\/artwork\/photo-credits\.html" aria-label="사진 출처" title="사진 출처">\s*<span class="material-symbols-outlined" aria-hidden="true">info<\/span>\s*<\/a>/);
+    assert.doesNotMatch(invitation, /photo-contribution-credits|>info<\/span>/);
+    const footer = html.slice(html.indexOf('<footer class="site-footer"'), html.indexOf('id="landing-map-footer"'));
+    assert.match(footer, /<a href="\/artwork\/photo-credits\.html">사진 출처<\/a>/);
     assert.doesNotMatch(invitation, /<svg class="photo-contribution-map|geolocation/);
 });
 
@@ -73,7 +75,7 @@ test('photo frames scale from the unchanged map coordinates without cropping the
     const contributionStyles = styles.slice(styles.indexOf('/* An editorial pause'), styles.indexOf('.landing-map-footer'));
     assert.match(contributionStyles, /\.photo-contribution-photo\s*\{[^}]*position: absolute;[^}]*padding: calc\(100% \* 3 \/ 1152\);[^}]*background: var\(--photo-contribution-frame\);[^}]*object-fit: contain/s);
     for (const [place, x, y, width, height] of [
-        ['bukchon', 236, 143, 160, 125],
+        ['alley', 236, 143, 160, 125],
         ['daeo', 854, 170, 137, 119],
         ['ihwa', 639, 351, 166, 134]
     ]) {
@@ -84,11 +86,7 @@ test('photo frames scale from the unchanged map coordinates without cropping the
         assert.ok(rule.includes(`width: calc(${width} / 1152 * 100%);`));
         assert.ok(rule.includes(`height: calc(${height} / 768 * 100%);`));
     }
-    assert.match(contributionStyles, /\.photo-contribution-credits\s*\{[^}]*position: absolute;[^}]*right: 0;[^}]*bottom: 0;[^}]*min-width: 44px;[^}]*min-height: 44px/s);
-    assert.match(contributionStyles, /\.photo-contribution-credits \.material-symbols-outlined\s*\{[^}]*font-size: 18px/s);
-    assert.match(styles, /\.photo-contribution-credits:focus-visible\s*\{[^}]*outline: 2px solid var\(--teal\);[^}]*outline-offset: 4px/s);
-    assert.match(styles, /\.photo-contribution-credits:hover\s*\{[^}]*background: var\(--surface-soft\);[^}]*color: var\(--teal\)/s);
-    assert.match(styles, /\.photo-contribution-credits:active\s*\{[^}]*background: var\(--surface-muted\);[^}]*color: var\(--teal-dark\)/s);
+    assert.doesNotMatch(styles, /\.photo-contribution-credits/);
 });
 
 test('upload completion uses real upload guidance and routes the map to its owner', () => {

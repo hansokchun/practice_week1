@@ -5,21 +5,22 @@
   "map": "기존 장식 그림을 바꾸지 않는다. 실제 지리 좌표나 정확한 장소 핀을 의미하지 않는다.",
   "photos": [
     {
-      "id": "bukchon",
-      "asset": "images/contribution-bukchon.webp",
-      "title": "Area east of Bukchon Hanok Village A",
-      "author": "Sakaori",
-      "source": "https://commons.wikimedia.org/wiki/File:Area_east_of_Bukchon_Hanok_Village_A.JPG",
-      "original": "https://upload.wikimedia.org/wikipedia/commons/5/58/Area_east_of_Bukchon_Hanok_Village_A.JPG",
-      "licence": "CC BY-SA 3.0",
-      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "id": "alley",
+      "asset": "images/contribution-alley.webp",
+      "title": "An Alley in Ganghwa Island",
+      "author": "Nt",
+      "source": "https://commons.wikimedia.org/wiki/File:An_Alley_in_Ganghwa_Island.jpg",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/0/07/An_Alley_in_Ganghwa_Island.jpg",
+      "downloadedSource": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/An_Alley_in_Ganghwa_Island.jpg/960px-An_Alley_in_Ganghwa_Island.jpg",
+      "licence": "CC0 1.0",
+      "licenceUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "frame": {
         "x": 236,
         "y": 143,
         "width": 160,
         "height": 125
       },
-      "bytes": 3154
+      "bytes": 4794
     },
     {
       "id": "daeo",
@@ -57,8 +58,9 @@
       "bytes": 4704
     }
   ],
-  "processing": "Sharp auto-orient, contain entire original inside160x120 white canvas, WebP quality76/effort6. No crop, recolour, generative edit or watermark removal. A subpixel aspect difference can produce a1px white letterbox. DOM uses contain on opaque white frames.",
-  "combinedArtworkBytes": 240380,
+  "processing": "Sharp auto-orient, contain entire source inside 160x120 white canvas, WebP quality76/effort6. No crop, recolour, generative edit or watermark removal. Differing aspect ratios use white letterboxing. DOM uses contain on opaque white frames.",
+  "combinedArtworkBytes": 242020,
   "budgetBytes": 256000,
-  "visibleCredits": "/artwork/photo-credits.html"
+  "visibleCredits": "/artwork/photo-credits.html",
+  "creditsPlacement": "Site footer text link; no adjacent information icon"
 }

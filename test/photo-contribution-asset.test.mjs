@@ -21,7 +21,19 @@ test('real photo credits retain each author and original licence outside the dec
     assert.match(stylesheet, /\.artwork-credits a:active\s*\{[^}]*background: var\(--line\)/s);
 });
 
-const photographNames = ['bukchon', 'daeo', 'ihwa'];
+const photographNames = ['alley', 'daeo', 'ihwa'];
+
+test('the replacement photo depicts a real small alley and the other two photos remain unchanged', () => {
+    const provenance = JSON.parse(readFileSync(new URL('../images/contribution-real-photos.source.json', import.meta.url), 'utf8'));
+    const alley = provenance.photos.find(photo => photo.id === 'alley');
+    assert.equal(alley?.title, 'An Alley in Ganghwa Island');
+    assert.equal(alley?.source, 'https://commons.wikimedia.org/wiki/File:An_Alley_in_Ganghwa_Island.jpg');
+    assert.equal(alley?.licence, 'CC0 1.0');
+    assert.deepEqual(alley?.frame, { x: 236, y: 143, width: 160, height: 125 });
+    for (const [place, bytes] of [['daeo', 5448], ['ihwa', 4704]]) {
+        assert.equal(readFileSync(new URL(`../images/contribution-${place}.webp`, import.meta.url)).length, bytes);
+    }
+});
 
 function readWebpDimensions(bytes) {
     assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');

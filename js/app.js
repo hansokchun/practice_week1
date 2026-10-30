@@ -199,7 +199,7 @@ import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import defaultProfileAvatarUrl from '../images/default-profile-avatar.png';
 import contributionPhotoMapUrl from '../images/seoul-photo-map-v2.webp';
-import contributionBukchonPhotoUrl from '../images/contribution-bukchon.webp?no-inline';
+import contributionAlleyPhotoUrl from '../images/contribution-alley.webp?no-inline';
 import contributionDaeoPhotoUrl from '../images/contribution-daeo.webp?no-inline';
 import contributionIhwaPhotoUrl from '../images/contribution-ihwa.webp?no-inline';
 import {
@@ -1618,13 +1618,10 @@ function renderLandingContributionInvitation() {
             <div class="photo-contribution-visual">
                 <div class="photo-contribution-art" aria-hidden="true">
                     <img class="photo-contribution-map-image" src="${contributionPhotoMapUrl}" alt="" width="1152" height="768" loading="lazy" decoding="async">
-                    <img class="photo-contribution-photo photo-contribution-photo--bukchon" src="${contributionBukchonPhotoUrl}" alt="" width="160" height="120" loading="lazy" decoding="async">
+                    <img class="photo-contribution-photo photo-contribution-photo--alley" src="${contributionAlleyPhotoUrl}" alt="" width="160" height="120" loading="lazy" decoding="async">
                     <img class="photo-contribution-photo photo-contribution-photo--daeo" src="${contributionDaeoPhotoUrl}" alt="" width="160" height="120" loading="lazy" decoding="async">
                     <img class="photo-contribution-photo photo-contribution-photo--ihwa" src="${contributionIhwaPhotoUrl}" alt="" width="160" height="120" loading="lazy" decoding="async">
                 </div>
-                <a class="photo-contribution-credits" href="/artwork/photo-credits.html" aria-label="사진 출처" title="사진 출처">
-                    <span class="material-symbols-outlined" aria-hidden="true">info</span>
-                </a>
             </div>
         </aside>
     `;
