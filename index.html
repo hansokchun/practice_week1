@@ -454,6 +454,25 @@
                     <div class="admin-overview-traffic"><div><h3>방문 수·유입 경로</h3><p>Cloudflare의 방문 통계에서 기간별 방문 횟수와 유입 경로를 확인할 수 있어요. 방문 횟수는 정확한 사람 수와 다릅니다.</p></div><a href="https://dash.cloudflare.com/3cfafb9cc160b2c0b0c5eaa13c62c07d/web-analytics/overview/visits?siteTag~in=c33f9959d44a482382a9dea6aa9affb6&amp;excludeBots=Yes" target="_blank" rel="noopener noreferrer">방문 통계 보기<span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a></div>
                     <div id="admin-site-overview-content" aria-live="polite"></div>
                 </section>
+                <section id="admin-photo-review" class="admin-photo-review" aria-labelledby="admin-photo-review-title">
+                    <div class="admin-overview-heading"><div><h2 id="admin-photo-review-title">최근 업로드 사진</h2><p>최신순으로 확인하세요. <span class="admin-overview-phrase">날짜는 한국 시간 기준입니다.</span></p></div></div>
+                    <form id="admin-photo-review-form" class="admin-photo-review-filters">
+                        <label for="admin-photo-day">등록일 <input id="admin-photo-day" type="date"></label>
+                        <button class="btn-secondary" type="submit">날짜로 보기</button>
+                        <button id="admin-photo-filter-reset" class="btn-secondary" type="button">전체 보기</button>
+                    </form>
+                    <div id="admin-photo-review-owner" class="admin-photo-review-owner"></div>
+                    <p id="admin-photo-review-status" class="admin-photo-review-status" role="status" aria-live="polite"></p>
+                    <div id="admin-photo-review-list" class="admin-photo-review-list"></div>
+                    <nav class="admin-pagination" aria-label="업로드 사진 페이지"><button id="admin-photo-review-previous" type="button" aria-label="이전 업로드 사진 페이지"><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></button><span id="admin-photo-review-page">1 / 1</span><button id="admin-photo-review-next" type="button" aria-label="다음 업로드 사진 페이지"><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button></nav>
+                </section>
+                <dialog id="admin-photo-original-dialog" class="admin-original-dialog" aria-labelledby="admin-photo-original-title">
+                    <div class="admin-original-heading"><h2 id="admin-photo-original-title">저장된 원본</h2><button id="admin-photo-original-close" type="button" aria-label="원본 보기 닫기"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+                    <p id="admin-photo-original-status" role="status" aria-live="polite"></p>
+                    <img id="admin-photo-original-image" width="1600" height="1200" alt="선택한 사진의 저장된 원본" referrerpolicy="no-referrer" hidden>
+                    <p class="admin-original-note">서버에 저장된 파일입니다. 업로드할 때 최적화된 파일일 수 있어요. <span class="admin-overview-phrase">새 탭 링크는 1분간 유효해요.</span></p>
+                    <a id="admin-photo-original-link" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" hidden>새 탭에서 원본 열기<span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>
+                </dialog>
                 <div class="admin-account-toolbar">
                     <form id="admin-account-search-form" role="search"><label class="sr-only" for="admin-account-search">계정 검색</label><input id="admin-account-search" type="search" maxlength="100" placeholder="닉네임·이메일 검색"><button type="submit" aria-label="계정 검색"><span class="material-symbols-outlined">search</span></button></form>
                     <label class="sr-only" for="admin-account-status">계정 상태</label><select id="admin-account-status"><option value="all">모든 계정</option><option value="active">정상</option><option value="banned">차단</option></select>

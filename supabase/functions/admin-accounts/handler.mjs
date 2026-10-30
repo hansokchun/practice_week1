@@ -1,3 +1,5 @@
+import { getAdminPhotoFilters, isAdminPhotoId } from './photo-inspection.mjs';
+
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const origins = new Set(['https://ikkyee.com', 'https://www.ikkyee.com', 'https://practice-week1-cws.pages.dev', 'https://dev.practice-week1-cws.pages.dev']);
 
@@ -22,6 +24,15 @@ export function createAdminAccountsHandler(operations) {
             try { body = JSON.parse(raw); } catch { return json({ error: 'invalid_request' }, 400); }
             if (!body || Array.isArray(body) || typeof body !== 'object') return json({ error: 'invalid_request' }, 400);
             if (body.action === 'overview') return json(await operations.getOverview());
+            if (body.action === 'photos') {
+                const filters = getAdminPhotoFilters(body);
+                return filters ? json(await operations.listPhotos(filters)) : json({ error: 'invalid_request' }, 400);
+            }
+            if (body.action === 'photo-original') {
+                if (!isAdminPhotoId(body.photoId)) return json({ error: 'invalid_request' }, 400);
+                const original = await operations.getPhotoOriginal(body.photoId);
+                return original ? json(original) : json({ error: 'not_found' }, 404);
+            }
             if (body.action === 'list') {
                 const page = body.page ?? 1, search = String(body.search || '').trim(), status = body.status || 'all';
                 if (!Number.isInteger(page) || page < 1 || page > 100000 || search.length > 100 || !['all', 'active', 'banned'].includes(status)) return json({ error: 'invalid_request' }, 400);

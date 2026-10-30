@@ -82,5 +82,5 @@ export function createAdminAccountsController({ getUser, fetchAccounts, inspectA
         });
         node('admin-moderation-form').addEventListener('submit', submit);
     }
-    return { bind, load, clear };
+    return { bind, load, clear, select };
 }

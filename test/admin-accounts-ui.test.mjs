@@ -52,6 +52,14 @@ test('photo captions distinguish visibility and retain readable missing-thumbnai
 test('photo inspection preserves the empty account state', () => {
     assert.match(renderAdminAccountDetail(), /등록된 사진이 없습니다\./);
 });
+test('account photo inspection requests originals by escaped photo ID and offers the complete owner filter', () => {
+    const html = renderAdminAccountDetail({ account: { id: 'owner', nickname: '<회원>' }, photos: [{ id: 'photo"1', title: '<사진>', url: 'https://example.com/original.jpg' }] });
+    assert.match(html, /data-admin-photo-original="photo&quot;1"/);
+    assert.match(html, /data-admin-photo-filter-owner="owner"/);
+    assert.match(html, /data-admin-photo-owner-name="&lt;회원&gt;"/);
+    assert.match(html, /저장된 원본 보기/);
+    assert.doesNotMatch(html, /original\.jpg/);
+});
 test('administrator pages have dedicated guarded account and feedback routes', () => {
     const html = readFileSync('index.html', 'utf8');
     const app = readFileSync('js/app.js', 'utf8');

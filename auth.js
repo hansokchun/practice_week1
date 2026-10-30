@@ -598,6 +598,8 @@ async function callAdminAccounts(body) {
 }
 export const fetchAdminAccounts = options => callAdminAccounts({ ...options, action: 'list' });
 export const fetchAdminSiteOverview = () => callAdminAccounts({ action: 'overview' });
+export const fetchAdminPhotos = options => callAdminAccounts({ ...options, action: 'photos' });
+export const fetchAdminPhotoOriginal = photoId => callAdminAccounts({ action: 'photo-original', photoId });
 export const fetchAdminAccountDetail = userId => callAdminAccounts({ action: 'detail', userId });
 export const moderateAdminAccount = operation => callAdminAccounts({ ...operation, action: 'moderate' });
 

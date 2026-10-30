@@ -4,7 +4,9 @@ Approved scope: owner request on 2026-10-31. No new paid analytics provider.
 
 ## Where to check
 
-- Sign into an administrator account → 관리자페이지 → 계정 관리. The top section shows site aggregates. Pick a member below to inspect the latest 12 derivative previews with title, visibility and upload date. Original files and coordinates are not added to this response. Existing short-lived signed derivatives and fresh server-side Auth role checks remain mandatory.
+- Sign into an administrator account → 관리자페이지 → 계정 관리. The top section shows site aggregates. The daily table's photo count opens that KST date's uploads. Below it, 최근 업로드 사진 lists12 derivative previews per page with date and account filters. Pick a member in the account directory to inspect their recent12 photos; 이 계정의 사진 모두 보기 opens their paginated collection.
+- 저장된 원본 보기 requests one60-second signed original only after an explicit click. The list never includes original URLs/paths or coordinates. Closing/navigation/account or role changes clear temporary image/link references. The server rechecks the actor's current Auth admin status for every request and resolves the photo's owned storage path itself. The saved original may have been optimized during upload; an unavailable camera file cannot be restored.
+- Original viewing uses existing Supabase Storage bandwidth only when opened. There is no new paid provider, schema, or subscription; large originals can consume more egress than thumbnails.
 - The 방문 통계 보기 link opens the existing Cloudflare Web Analytics site report for visits, page views and referrals. A visit is not an exact person, and page load time is not dwell time. No visitor total is invented in the local dashboard.
 
 ## Metric definitions

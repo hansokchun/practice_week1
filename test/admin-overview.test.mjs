@@ -37,6 +37,12 @@ test('initial loading keeps the metric/table geometry without presenting invente
     assert.equal((html.match(/<th scope="row">—<\/th>/g) || []).length, 7);
     assert.doesNotMatch(html, />0<|측정 완료 0건/);
 });
+test('daily photo counts open the corresponding KST date without exposing a loading action', () => {
+    const html = renderAdminOverview({ daily: [{ date: '2026-10-31', registrations: 1, uploads: 4 }] });
+    assert.match(html, /data-admin-photo-day="2026-10-31"[^>]*>4<\/button>/);
+    assert.match(html, /사진 수를 누르면/);
+    assert.doesNotMatch(renderAdminOverview({}, { loading: true }), /data-admin-photo-day/);
+});
 
 test('refresh retains settled data while pending and after a temporary failure', async () => {
     let resolve, calls = 0;

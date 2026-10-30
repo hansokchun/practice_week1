@@ -2487,7 +2487,7 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 .admin-account-photo-count { text-align: center; }
 .admin-status { font-size: 12px; font-weight: 700; color: var(--teal); }
 .admin-status.is-banned { color: #a83e32; }
-.admin-account-detail { min-width: 0; border-left: 1px solid var(--line); padding-left: 24px; }
+.admin-account-detail { min-width: 0; border-left: 1px solid var(--line); padding-left: 24px; scroll-margin-top: calc(var(--header-height, 64px) + 24px); }
 .admin-account-detail[hidden] { display: none; }
 .admin-detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .admin-detail-heading > div { min-width: 0; }
@@ -2539,6 +2539,55 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
     .admin-account-photos .admin-tiny-photos figcaption { font-size: 15px; }
 }
 .admin-account-id { font-size: 11px; }
+.admin-photo-review { margin: 24px 0 32px; padding: 24px; border: 1px solid var(--line); border-radius: var(--thumbnail-radius); background: var(--surface); scroll-margin-top: calc(var(--header-height, 64px) + 24px); }
+.admin-photo-review-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 24px; }
+.admin-photo-review-filters label { display: grid; gap: 8px; font-size: 14px; color: var(--text); }
+.admin-photo-review-filters input { max-width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; }
+.admin-photo-review button, .admin-owner-photos, .admin-account-original { min-width: 44px; min-height: 44px; font: inherit; font-size: 14px; }
+.admin-photo-review-owner:empty { display: none; }
+.admin-photo-review-owner { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.admin-photo-review-owner button { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 8px 12px; border: 0; border-radius: 6px; background: var(--surface-soft); color: var(--teal-dark); overflow-wrap: anywhere; }
+.admin-photo-review-status { min-height: 24px; margin: 16px 0; color: color-mix(in srgb, var(--muted) 85%, var(--text)); font-size: 14px; line-height: 1.6; word-break: keep-all; }
+.admin-photo-review-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 16px; }
+.admin-review-photo { min-width: 0; margin: 0; }
+.admin-review-photo-preview { display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; padding: 0; border: 0; overflow: hidden; border-radius: var(--thumbnail-radius); background: var(--surface-muted); color: var(--text); }
+.admin-review-photo-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.admin-review-photo-meta { display: grid; gap: 4px; margin-top: 12px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.admin-review-photo-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; min-height: 3em; font-size: 16px; font-weight: 600; word-break: keep-all; }
+.admin-review-photo-owner { justify-self: start; max-width: 100%; padding: 4px 0; border: 0; background: transparent; color: var(--teal); text-align: left; text-decoration: underline; text-underline-offset: 4px; word-break: keep-all; overflow-wrap: anywhere; }
+.admin-photo-review .admin-review-photo-owner { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; min-height: 56px; }
+.admin-review-photo-meta time { display: flex; flex-wrap: wrap; column-gap: 4px; }
+.admin-review-photo-meta time span { white-space: nowrap; }
+.admin-review-photo-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.admin-review-photo-actions button, .admin-account-original { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--teal); }
+.admin-account-original { padding-inline: 8px; width: 100%; }
+.admin-owner-photos { margin-bottom: 16px; }
+.admin-overview-trend td:last-child { padding-block: 0; }
+.admin-day-photos { min-width: 44px; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--teal); font: inherit; text-decoration: underline; text-underline-offset: 4px; }
+.admin-photo-review button:hover, .admin-owner-photos:hover, .admin-account-original:hover, .admin-day-photos:hover { background: var(--surface-soft); }
+.admin-photo-review button:active, .admin-owner-photos:active, .admin-account-original:active, .admin-day-photos:active { background: var(--surface-muted); }
+.admin-photo-review button:focus-visible, .admin-photo-review input:focus-visible, .admin-owner-photos:focus-visible, .admin-account-original:focus-visible, .admin-day-photos:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+.admin-photo-review-list > .admin-empty { grid-column: 1 / -1; padding-block: 24px; margin: 0; font-size: 16px; }
+.admin-original-dialog { width: min(1000px, calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 24px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text); }
+.admin-original-dialog::backdrop { background: color-mix(in srgb, var(--teal-dark) 65%, transparent); }
+.admin-original-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.admin-original-heading h2 { min-width: 0; margin: 0; font-size: 20px; line-height: 1.4; overflow-wrap: anywhere; }
+.admin-original-heading button { display: grid; place-items: center; flex: 0 0 44px; width: 44px; min-height: 44px; padding: 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); }
+.admin-original-dialog img { display: block; width: 100%; height: auto; max-height: 60dvh; object-fit: contain; margin-top: 16px; }
+.admin-original-dialog img[hidden], .admin-original-dialog a[hidden] { display: none; }
+.admin-original-dialog p { font-size: 15px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+.admin-original-note { color: color-mix(in srgb, var(--muted) 85%, var(--text)); margin: 16px 0 8px; }
+.admin-original-dialog a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 0; color: var(--teal); text-underline-offset: 4px; }
+.admin-original-dialog button:hover, .admin-original-dialog a:hover { background: var(--surface-soft); }
+.admin-original-dialog button:active, .admin-original-dialog a:active { background: var(--surface-muted); }
+.admin-original-dialog button:focus-visible, .admin-original-dialog a:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+@media (max-width: 1100px) { .admin-photo-review-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 860px) {
+    .admin-photo-review { padding: 16px; }
+    .admin-photo-review-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+    .admin-photo-review-filters label, .admin-photo-review button, .admin-photo-review-status, .admin-review-photo-meta, .admin-account-original, .admin-owner-photos { font-size: 15px; }
+    .admin-original-dialog { padding: 16px; }
+}
 .admin-account-bio { font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .admin-account-stats { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .admin-account-stats strong { color: var(--teal); margin-left: 4px; }

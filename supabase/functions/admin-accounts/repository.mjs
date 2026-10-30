@@ -1,3 +1,5 @@
+import { getKstDayBounds, getOwnedDerivative, getOwnedOriginal } from './photo-inspection.mjs';
+
 const checked = async query => {
     const result = await query;
     if (result.error) throw result.error;
@@ -22,6 +24,36 @@ export function createAdminAccountsRepository(client) {
         },
         async listAccounts({ page, search, status }) {
             return (await checked(client.rpc('admin_account_page', { p_page: page, p_search: search, p_status: status }))).data;
+        },
+        async listPhotos({ page, day, ownerId }) {
+            const pageSize = 12;
+            let query = client.from('photos').select('id,title,visibility,created_at,owner_id,thumbnail_path,preview_path', { count: 'exact' });
+            if (ownerId) query = query.eq('owner_id', ownerId);
+            if (day) {
+                const bounds = getKstDayBounds(day);
+                query = query.gte('created_at', bounds.start).lt('created_at', bounds.end);
+            }
+            const result = await checked(query.order('created_at', { ascending: false, nullsFirst: false })
+                .order('id', { ascending: false }).range((page - 1) * pageSize, page * pageSize - 1));
+            const rows = result.data || [], owners = [...new Set(rows.map(photo => photo.owner_id).filter(Boolean))];
+            const paths = [...new Set(rows.map(getOwnedDerivative).filter(Boolean))];
+            const [profiles, signed] = await Promise.all([
+                owners.length ? checked(client.from('profiles').select('id,nickname').in('id', owners)) : { data: [] },
+                paths.length ? checked(client.storage.from('photos').createSignedUrls(paths, 300)) : { data: [] }
+            ]);
+            const nicknames = new Map(profiles.data.map(profile => [profile.id, profile.nickname]));
+            const urls = new Map(signed.data.filter(item => item.signedUrl).map(item => [item.path, item.signedUrl]));
+            return { photos: rows.map(photo => ({ id: photo.id, title: photo.title, visibility: photo.visibility, created_at: photo.created_at,
+                owner_id: photo.owner_id, ownerNickname: nicknames.get(photo.owner_id) || '이름 없음', thumbnailUrl: urls.get(getOwnedDerivative(photo)) || '' })),
+                total: result.count || 0, page, pageSize };
+        },
+        async getPhotoOriginal(id) {
+            const result = await checked(client.from('photos').select('id,owner_id,storage_path').eq('id', id).maybeSingle());
+            const path = getOwnedOriginal(result.data);
+            if (!path) return null;
+            const signed = await checked(client.storage.from('photos').createSignedUrl(path, 60));
+            if (!signed.data?.signedUrl) throw new Error('original_unavailable');
+            return { url: signed.data.signedUrl, expiresIn: 60 };
         },
         async inspectAccount(id) {
             const user = await getAccount(id);
