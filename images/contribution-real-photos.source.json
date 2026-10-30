@@ -1,0 +1,64 @@
+{
+  "created": "2026-10-30",
+  "purpose": "기존 v2 지도 그림의 사진 프레임 세 칸만 실제 거리·카페 사진으로 교체",
+  "method": "Native DOM photo overlays on unchanged images/seoul-photo-map-v2.webp; no new image generation",
+  "map": "기존 장식 그림을 바꾸지 않는다. 실제 지리 좌표나 정확한 장소 핀을 의미하지 않는다.",
+  "photos": [
+    {
+      "id": "bukchon",
+      "asset": "images/contribution-bukchon.webp",
+      "title": "Area east of Bukchon Hanok Village A",
+      "author": "Sakaori",
+      "source": "https://commons.wikimedia.org/wiki/File:Area_east_of_Bukchon_Hanok_Village_A.JPG",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/5/58/Area_east_of_Bukchon_Hanok_Village_A.JPG",
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "frame": {
+        "x": 236,
+        "y": 143,
+        "width": 160,
+        "height": 125
+      },
+      "bytes": 3154
+    },
+    {
+      "id": "daeo",
+      "asset": "images/contribution-daeo.webp",
+      "title": "Seochon Dae-o Bookstore",
+      "author": "Luvepoli",
+      "source": "https://commons.wikimedia.org/wiki/File:Seochon_Dae-o_Bookstore.jpg",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Seochon_Dae-o_Bookstore.jpg",
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "frame": {
+        "x": 854,
+        "y": 170,
+        "width": 137,
+        "height": 119
+      },
+      "bytes": 5448
+    },
+    {
+      "id": "ihwa",
+      "asset": "images/contribution-ihwa.webp",
+      "title": "Ihwa Mural Village, Ihwa-dong",
+      "author": "Stephen Kelly",
+      "source": "https://commons.wikimedia.org/wiki/File:Ihwa_Mural_Village,_Ihwa-dong.jpg",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Ihwa_Mural_Village%2C_Ihwa-dong.jpg",
+      "licence": "CC BY 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "camera": "iPhone 15 Pro",
+      "frame": {
+        "x": 639,
+        "y": 351,
+        "width": 166,
+        "height": 134
+      },
+      "bytes": 4704
+    }
+  ],
+  "processing": "Sharp auto-orient, contain entire original inside160x120 white canvas, WebP quality76/effort6. No crop, recolour, generative edit or watermark removal. A subpixel aspect difference can produce a1px white letterbox. DOM uses contain on opaque white frames.",
+  "combinedArtworkBytes": 240380,
+  "budgetBytes": 256000,
+  "visibleCredits": "/artwork/photo-credits.html"
+}

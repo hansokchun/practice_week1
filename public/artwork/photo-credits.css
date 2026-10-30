@@ -1,0 +1,18 @@
+.artwork-credits .legal-main {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+.artwork-credits .artwork-license {
+    white-space: nowrap;
+}
+
+.artwork-credits a:hover {
+    color: var(--ink);
+    text-decoration-thickness: 2px;
+}
+
+.artwork-credits a:active {
+    color: var(--ink);
+    background: var(--line);
+}
