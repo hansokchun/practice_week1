@@ -390,16 +390,14 @@ test('site footer provides global archive information after the app pages', () =
     assert.ok(footerIndex > mainEndIndex);
     assert.match(markup, /<footer class="site-footer" aria-labelledby="site-footer-title">/);
     assert.match(markup, /<h2 id="site-footer-title">이끼 <span>장소 저장소<\/span><\/h2>/);
-    assert.match(markup, /사진 속 장소를 지도에 차곡차곡 모으고/);
+    assert.match(markup, /장소를 발견하고, 저장하고, 나눠요\./);
     assert.match(markup, /href="#\/">메인<\/a>/);
     assert.match(markup, /href="#\/explore">지도<\/a>/);
     assert.match(markup, /개인정보 처리방침/);
-    assert.match(markup, /내 사진은 기본 비공개로 안전하게 보관됩니다\./);
-    assert.match(markup, /정확한 위치 또는 대략적인 위치/);
     assert.match(styles, /body\[data-page="home"\]:not\(\.modal-open\) \.toast\s*\{[^}]*bottom:\s*calc\(92px \+ env\(safe-area-inset-bottom,\s*0px\)\);/s);
-    assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*0;[^}]*radial-gradient\(circle at 12% 18%,\s*rgba\(255,\s*255,\s*255,\s*0\.14\),\s*transparent 34%\),[\s\S]*linear-gradient\(135deg,\s*var\(--teal-dark\)\s*0%,\s*var\(--teal\)\s*100%\);/s);
+    assert.match(styles, /\.site-footer\s*\{[^}]*border-top:\s*1px solid var\(--line\);[^}]*background:\s*var\(--bg\);/s);
     assert.match(styles, /\.site-footer__inner\s*\{[^}]*grid-template-columns:/s);
-    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*color:\s*#fff;[^}]*text-decoration:\s*underline;/s);
+    assert.match(styles, /\.site-footer__nav a:hover,[\s\S]*\.site-footer__nav a:focus-visible\s*\{[^}]*color:\s*var\(--teal\);[^}]*text-decoration:\s*underline;/s);
 });
 
 test('photo detail modal keeps the right information panel inside the viewport', () => {

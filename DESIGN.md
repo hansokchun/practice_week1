@@ -161,6 +161,12 @@ All spacing derives from a base of 4px.
 - **Accessibility**: Use visible text, not icon-only labels, unless a tooltip or accessible name exists.
 - **Motion**: Keep button motion to transform and opacity.
 
+### Site Footer
+
+- **Structure and copy**: A compact global footer follows the app pages. Keep the `site-footer-title` brand heading, one short discovery/save/share tagline and a copyright line. Group the seven existing destinations into named `둘러보기` and `안내 및 정책` navigation landmarks with native lists. Privacy guidance lives at the existing policy destination instead of repeating three sentences in the footer.
+- **Surface and type**: Use the warm `--bg` canvas with one thin `--line` top divider, `--teal` brand heading and `--text` links. Supporting text mixes 85% `--muted` with `--text` for readable small copy. Keep Pretendard: heading 24px/600, descriptor and other copy 14px desktop/15px mobile; links use 500 weight and copy uses 1.7 line height. No new images, shadows, gradients or motion.
+- **Layout and access**: Desktop places the brand beside two wrapping link rows with a 24px column gap; copyright spans the full width below with a 16px row gap. Use 32px top and 24px bottom padding with existing container-aligned gutters. At 860px and below, stack the brand and navigation with a 20px gap and 24px/16px outer padding. Links keep 44px minimum width/height, 24px horizontal separation, underline on hover/focus and a 2px teal keyboard focus ring with 4px offset. A press uses the soft surface and deep-teal ink. Preserve Korean word groups, the existing Explore exclusion and Home's 104px plus safe-area bottom clearance for the floating map action. No accepted footer accessibility debt.
+
 ### White Landing Band
 
 - **Structure**: Full-width section with `.white-band`.
@@ -254,4 +260,4 @@ Ikkyee uses a mixed but restrained strategy: tonal-shift surfaces for app struct
 
 Borders use `--line` or a low-alpha color derived from the relevant section text color.
 
-The site footer is the one allowed full-width dark teal surface on the landing flow, using `--teal-dark` to `--teal` with light text so it reads as global site information rather than another intro section.
+The site footer uses the warm `--bg` canvas and a thin `--line` divider. Restrained typography and grouped text links distinguish global site information without adding another promotional band.

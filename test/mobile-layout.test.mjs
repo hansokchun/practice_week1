@@ -60,7 +60,7 @@ test('mobile Home keeps the legacy reference layout stable without restoring the
     assert.match(mobile, /\.home-houses-reference__photo figcaption\s*\{[^}]*font-size:\s*11px;[^}]*padding:\s*6px 8px;/s);
     assert.doesNotMatch(mobile, /\.home-houses-reference__divider\s*\{/);
     assert.match(mobile, /\.home-section-divider\s*\{[^}]*height:\s*104px;[^}]*margin-top:\s*0;[^}]*margin-bottom:\s*-16px;/s);
-    assert.match(mobile, /\.site-footer\s*\{[^}]*padding:\s*38px 16px calc\(34px \+ env\(safe-area-inset-bottom\)\);/s);
+    assert.match(mobile, /\.site-footer\s*\{[^}]*padding:\s*24px 16px calc\(24px \+ env\(safe-area-inset-bottom, 0px\)\);/s);
 });
 
 test('mobile app shell uses a compact header without fixed bottom navigation', () => {
