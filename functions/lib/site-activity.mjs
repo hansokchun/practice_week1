@@ -64,7 +64,7 @@ export async function collectSiteActivity({ request, env, allowed }, fetchImpl =
             method: 'POST',
             headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
             body: JSON.stringify({ p_seconds: body.seconds, p_ingest_key: key }),
-            signal: AbortSignal.timeout(3000), cache: 'no-store', redirect: 'error'
+            signal: AbortSignal.timeout(3000), cache: 'no-store', redirect: 'manual'
         });
         if (!response.ok) {
             await response.body?.cancel();

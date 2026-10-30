@@ -28,7 +28,7 @@ test('allowed same-origin collection sends only seconds and the server secret to
     assert.equal(url, 'https://example.supabase.co/rest/v1/rpc/record_site_activity');
     assert.equal(options.method, 'POST');
     assert.equal(options.cache, 'no-store');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.headers.apikey, env.SUPABASE_PUBLISHABLE_KEY);
     assert.equal(options.headers.authorization, undefined);
     assert.deepEqual(JSON.parse(options.body), { p_seconds: 25, p_ingest_key: env.SITE_ANALYTICS_INGEST_KEY });
@@ -134,6 +134,19 @@ test('capped false is successful; network, nonboolean and upstream errors reveal
         assert.equal(response.status, 503);
         assert.doesNotMatch(await response.text(), /server secret/);
     }
+});
+
+test('Workers-compatible manual redirects reject redirects without forwarding the ingestion secret', async () => {
+    const calls = [];
+    const response = await collectSiteActivity({ request: request(), env, allowed: true }, async (...args) => {
+        calls.push(args);
+        if (!['follow', 'manual'].includes(args[1].redirect)) throw new TypeError('Invalid redirect value');
+        return new Response(null, { status: 302, headers: { Location: 'https://untrusted.example' } });
+    });
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0][1].redirect, 'manual');
+    assert.equal(response.status, 503);
+    assert.equal(await response.text(), '');
 });
 
 test('Pages wrapper consumes the existing runtime-config policy and handles every method', () => {
