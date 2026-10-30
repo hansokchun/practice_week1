@@ -13,7 +13,8 @@ export async function onRequestGet({ env, request }) {
     return Response.json({
         googleMapsApiKey: env.VITE_GOOGLE_MAPS_API_KEY || env.GOOGLE_MAPS_API_KEY || '',
         googleMapsMapId: env.VITE_GOOGLE_MAPS_MAP_ID || env.GOOGLE_MAPS_MAP_ID || '',
-        cloudflareAnalyticsToken: analyticsAllowed ? ANALYTICS_SITE_TOKEN : ''
+        cloudflareAnalyticsToken: analyticsAllowed ? ANALYTICS_SITE_TOKEN : '',
+        siteActivityEnabled: Boolean(analyticsAllowed && env.SITE_ANALYTICS_INGEST_KEY && env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY)
     }, {
         headers: {
             'Cache-Control': 'no-store'

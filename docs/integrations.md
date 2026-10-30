@@ -93,6 +93,10 @@ Workers AI integration:
 - Cloudflare Web Analytics uses its official beacon in manual mode, with one
   public document entry rather than every SPA navigation; no visitor cookies.
 - Production HTTPS only, with server-side EEA/EU/UK/CH/unknown-country exclusion.
+- First-party visible duration uses the same production/country gate, one bounded
+  sample per document and daily-only private Supabase rows. Server-only ingestion
+  credentials are encrypted Pages bindings; no provider service key is shipped to
+  the browser. See [site-analytics.md](site-analytics.md) for definitions/operations.
 - See [cloudflare-web-analytics.md](cloudflare-web-analytics.md) for scope,
   verification and limitations. The GA property remains historical only:
   [google-analytics.md](google-analytics.md).

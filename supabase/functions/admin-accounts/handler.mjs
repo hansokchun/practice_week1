@@ -21,6 +21,7 @@ export function createAdminAccountsHandler(operations) {
             let body;
             try { body = JSON.parse(raw); } catch { return json({ error: 'invalid_request' }, 400); }
             if (!body || Array.isArray(body) || typeof body !== 'object') return json({ error: 'invalid_request' }, 400);
+            if (body.action === 'overview') return json(await operations.getOverview());
             if (body.action === 'list') {
                 const page = body.page ?? 1, search = String(body.search || '').trim(), status = body.status || 'all';
                 if (!Number.isInteger(page) || page < 1 || page > 100000 || search.length > 100 || !['all', 'active', 'banned'].includes(status)) return json({ error: 'invalid_request' }, 400);

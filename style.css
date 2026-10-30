@@ -2498,14 +2498,59 @@ body.is-logged-in[data-page="landing"] .page-home > .landing-discovery {
 .admin-account-facts > div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
 .admin-account-facts dt { color: var(--muted); }
 .admin-account-facts dd { margin: 0; overflow-wrap: anywhere; }
+.admin-site-overview { margin: 24px 0; padding: 24px; border: 1px solid var(--line); border-radius: var(--thumbnail-radius); background: var(--surface); }
+.admin-overview-heading, .admin-overview-traffic { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.admin-overview-heading h2 { margin: 0; font-size: 24px; line-height: 1.3; }
+.admin-overview-heading button:hover { background: var(--surface-soft); }
+.admin-overview-heading button:active { background: var(--surface-muted); }
+.admin-site-overview .admin-empty, #admin-overview-status { color: color-mix(in srgb, var(--muted) 85%, var(--text)); word-break: keep-all; overflow-wrap: anywhere; }
+.admin-overview-phrase { white-space: nowrap; }
+.admin-overview-heading p, .admin-overview-traffic p, .admin-overview-duration p, .admin-overview-trend > p, .admin-account-help { margin: 8px 0 0; color: color-mix(in srgb, var(--muted) 85%, var(--text)); font-size: 14px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+.admin-overview-heading button, .admin-overview-traffic a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; flex-shrink: 0; padding: 8px 12px; font-size: 14px; }
+.admin-overview-traffic { margin: 24px 0; padding: 16px; background: var(--bg); border-radius: var(--thumbnail-radius); }
+.admin-overview-traffic h3, .admin-overview-duration h3, .admin-overview-trend h3 { margin: 0; font-size: 16px; line-height: 1.5; }
+.admin-overview-traffic a { color: var(--teal); text-underline-offset: 4px; }
+.admin-overview-traffic a:hover { background: var(--surface-soft); color: var(--teal-dark); }
+.admin-overview-traffic a:active { background: var(--surface-muted); }
+.admin-overview-traffic a:focus-visible, .admin-overview-heading button:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+.admin-overview-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin: 24px 0; }
+.admin-overview-metrics > div { min-width: 0; }
+.admin-overview-metrics dt { font-size: 14px; color: color-mix(in srgb, var(--muted) 85%, var(--text)); }
+.admin-overview-metrics dd { margin: 8px 0; font-size: 26px; font-weight: 700; line-height: 1.3; color: var(--teal-dark); overflow-wrap: anywhere; }
+.admin-overview-metrics .admin-overview-note { min-height: 3.2em; margin: 0; font-size: 14px; font-weight: 400; line-height: 1.6; color: color-mix(in srgb, var(--muted) 85%, var(--text)); word-break: keep-all; }
+.admin-overview-note span { display: inline-block; white-space: nowrap; }
+.admin-overview-duration { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.admin-overview-duration strong { display: block; margin-top: 8px; font-size: 26px; line-height: 1.4; color: var(--teal-dark); word-break: keep-all; }
+.admin-overview-trend { margin-top: 24px; }
+.admin-overview-trend table { width: 100%; table-layout: fixed; margin-top: 16px; border-collapse: collapse; font-size: 14px; }
+.admin-overview-trend thead th:first-child { width: 50%; }
+.admin-overview-trend th, .admin-overview-trend td { height: 44px; padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+.admin-overview-trend th:first-child { text-align: left; }
+.admin-overview-trend thead { color: color-mix(in srgb, var(--muted) 85%, var(--text)); }
+@media (max-width: 860px) {
+    .admin-site-overview { padding: 16px; }
+    .admin-overview-heading, .admin-overview-traffic { align-items: flex-start; flex-direction: column; gap: 16px; }
+    .admin-overview-heading h2 { font-size: 20px; }
+    .admin-overview-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+    .admin-overview-duration { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .admin-overview-heading p, .admin-overview-traffic p, .admin-overview-duration p, .admin-overview-trend > p,
+    .admin-overview-metrics dt, .admin-site-overview .admin-overview-note, .admin-overview-trend table,
+    .admin-site-overview .admin-empty, .admin-account-help, .admin-overview-heading button, .admin-overview-traffic a,
+    .admin-account-photos .admin-tiny-photos figcaption { font-size: 15px; }
+}
 .admin-account-id { font-size: 11px; }
 .admin-account-bio { font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .admin-account-stats { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .admin-account-stats strong { color: var(--teal); margin-left: 4px; }
 .admin-account-photos h3, .admin-moderation-history h3 { font-size: 15px; margin: 24px 0 12px; }
-.admin-tiny-photos { display: grid; grid-template-columns: repeat(auto-fill, 48px); gap: 8px; }
-.admin-tiny-photos figure { display: grid; place-items: center; width: 48px; height: 48px; margin: 0; border-radius: 4px; overflow: hidden; background: var(--surface-muted); color: var(--muted); }
-.admin-tiny-photos img { display: block; width: 48px; height: 48px; object-fit: cover; }
+.admin-tiny-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(96px, 100%), 96px)); gap: 12px; }
+.admin-tiny-photos figure { min-width: 0; margin: 0; }
+.admin-tiny-photos .admin-account-photo-preview { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: var(--thumbnail-radius); overflow: hidden; background: var(--surface-muted); color: var(--text); }
+.admin-tiny-photos img { display: block; width: 100%; height: 100%; object-fit: cover; font-size: 14px; }
+.admin-tiny-photos figcaption { display: grid; gap: 4px; margin-top: 8px; color: var(--text); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.admin-tiny-photos .admin-account-photo-title { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-weight: 600; word-break: keep-all; }
+.admin-tiny-photos .admin-account-photo-visibility { font-weight: 500; }
+.admin-tiny-photos time, .admin-tiny-photos .admin-account-photo-date { color: var(--text); }
 .admin-moderation-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .admin-moderation-actions button { min-height: 44px; font-size: 13px; padding: 8px 12px; }
 .admin-moderation-actions .is-destructive { color: #a83e32; border-color: rgba(168, 62, 50, .3); }

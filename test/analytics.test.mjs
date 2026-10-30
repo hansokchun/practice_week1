@@ -28,7 +28,7 @@ test('retired analytics cannot reload Google even with the old runtime binding',
     const source = await readFile(new URL('../functions/api/config.js', import.meta.url), 'utf8');
     const { onRequestGet } = await import(`data:text/javascript,${encodeURIComponent(source)}`);
     const response = await onRequestGet({ env: { GOOGLE_ANALYTICS_MEASUREMENT_ID: 'G-Y86DQ6ZVHR', GOOGLE_MAPS_API_KEY: 'maps-key' } });
-    assert.deepEqual(await response.json(), { googleMapsApiKey: 'maps-key', googleMapsMapId: '', cloudflareAnalyticsToken: '' });
+    assert.deepEqual(await response.json(), { googleMapsApiKey: 'maps-key', googleMapsMapId: '', cloudflareAnalyticsToken: '', siteActivityEnabled: false });
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
     const ui = await readFile(new URL('../js/analytics-ui.mjs', import.meta.url), 'utf8');
     const helper = await readFile(new URL('../js/analytics.mjs', import.meta.url), 'utf8');
@@ -63,6 +63,22 @@ test('edge config excludes EEA, UK and Switzerland and never enables preview col
     assert.match(await config('ikkyee.com', 'KR'), /^[a-f0-9]{32}$/);
     for (const country of ['DE', 'FR', 'GB', 'CH', 'NO', undefined, 'XX', 'T1']) assert.equal(await config('ikkyee.com', country), '');
     assert.equal(await config('dev.practice-week1-cws.pages.dev', 'KR'), '');
+});
+
+test('visible-time collection requires every server binding and exposes no ingestion credential', async () => {
+    const source = await readFile(new URL('../functions/api/config.js', import.meta.url), 'utf8');
+    const { onRequestGet } = await import(`data:text/javascript,${encodeURIComponent(source)}`);
+    const request = { url: 'https://ikkyee.com/api/config', cf: { country: 'KR' } };
+    const env = { SITE_ANALYTICS_INGEST_KEY: 'server-only-key', SUPABASE_URL: 'https://project.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'public-key' };
+    const response = await onRequestGet({ env, request });
+    const config = await response.json();
+    assert.equal(config.siteActivityEnabled, true);
+    assert.doesNotMatch(JSON.stringify(config), /server-only-key|public-key|SUPABASE/);
+    for (const key of Object.keys(env)) {
+        const missing = { ...env }; delete missing[key];
+        assert.equal((await (await onRequestGet({ env: missing, request })).json()).siteActivityEnabled, false);
+    }
+    assert.equal((await (await onRequestGet({ env, request: { ...request, cf: { country: 'DE' } } })).json()).siteActivityEnabled, false);
 });
 
 test('visitors have an analytics notice without a consent banner or toggle', async () => {

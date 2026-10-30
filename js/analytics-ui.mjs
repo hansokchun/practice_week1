@@ -1,4 +1,5 @@
 import { retireGoogleAnalytics, isAnalyticsEntry, getCloudflareAnalyticsOptions, loadCloudflareAnalytics } from './analytics.mjs';
+import { bindVisibleTimeMeasurement } from './site-activity.mjs';
 
 function initializeAnalytics() {
     let storage;
@@ -23,7 +24,10 @@ function initializeAnalytics() {
                 // A navigation during config loading must not start collection on a private screen.
                 if (document.body.dataset.page !== page) return;
                 const options = getCloudflareAnalyticsOptions({ location: window.location, page, token: config?.cloudflareAnalyticsToken });
-                if (options) loadCloudflareAnalytics(document, options);
+                if (options) {
+                    loadCloudflareAnalytics(document, options);
+                    if (config.siteActivityEnabled === true) bindVisibleTimeMeasurement({ document, window });
+                }
             })
             .catch(() => {});
     }

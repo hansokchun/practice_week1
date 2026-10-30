@@ -1,0 +1,8 @@
+.legal-main {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+#analytics a {
+    white-space: nowrap;
+}

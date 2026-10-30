@@ -17,6 +17,9 @@ export function createAdminAccountsRepository(client) {
             return getAccount(data.user.id);
         },
         getAccount,
+        async getOverview() {
+            return (await checked(client.rpc('admin_site_overview'))).data;
+        },
         async listAccounts({ page, search, status }) {
             return (await checked(client.rpc('admin_account_page', { p_page: page, p_search: search, p_status: status }))).data;
         },

@@ -57,6 +57,11 @@ Beta feedback is tracked separately from behavioral metrics and labeled `bug`, `
 
 ## Change Rules
 
+The site owner authorized a first-party public-screen visible-duration aggregate
+and an administrator account/photo overview on 2026-10-31. The implementation,
+privacy review and operating limits are recorded in `docs/site-analytics.md`.
+This adds no per-visitor identifiers or third-party behavioral analytics.
+
 A future analytics tool, new event, longer retention period, or user-level dashboard requires a separate privacy review, documented purpose, deletion rule, and operator approval before implementation. This v1 definition does not authorize third-party analytics or client-side tracking.
 
 ## Related Files
