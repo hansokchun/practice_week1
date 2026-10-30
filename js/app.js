@@ -198,7 +198,7 @@ import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import defaultProfileAvatarUrl from '../images/default-profile-avatar.png';
-import contributionPhotoMapUrl from '../images/seoul-photo-map-v1.webp';
+import contributionPhotoMapUrl from '../images/seoul-photo-map-v2.webp';
 import {
     MAIN_BG_1_URL,
     MAIN_BG_2_URL,

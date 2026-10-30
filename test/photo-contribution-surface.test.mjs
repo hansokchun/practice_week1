@@ -31,7 +31,7 @@ test('the inline invitation leads with its title and a concise sharing subtitle'
     const invitation = app.slice(app.indexOf('function renderLandingContributionInvitation()'), app.indexOf('function renderLandingSections()'));
     assert.match(invitation, /<h2 id="landing-contribution-title">당신의 장소도 들려주세요<\/h2>\s*<p class="photo-contribution-description">사진 한 장으로, 나만의 장소를 공유해요\.<\/p>/);
     assert.doesNotMatch(invitation, /photo-contribution-eyebrow|사진 한 장, 나만의 장소 기록|좋아하는 풍경부터 익숙한 골목까지/);
-    assert.match(app, /import contributionPhotoMapUrl from '\.\.\/images\/seoul-photo-map-v1\.webp';/);
+    assert.match(app, /import contributionPhotoMapUrl from '\.\.\/images\/seoul-photo-map-v2\.webp';/);
     assert.match(invitation, /<img class="photo-contribution-art"[^>]*aria-hidden="true"[^>]*src="\$\{contributionPhotoMapUrl\}"[^>]*alt=""[^>]*width="1152"[^>]*height="768"[^>]*loading="lazy"[^>]*decoding="async"/);
     assert.doesNotMatch(invitation, /<svg class="photo-contribution-art"/);
 });
