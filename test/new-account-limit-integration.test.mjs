@@ -30,7 +30,7 @@ test('upload status never renders Infinity and preserves privacy and blocked-acc
     const renderStart = source.indexOf('function renderStagedPhotos()');
     const renderEnd = source.indexOf('function renderAlbumComposePage()', renderStart);
     const renderBody = source.slice(renderStart, renderEnd);
-    const statusExpression = renderBody.match(/uploadStorageStatus\.textContent = ([\s\S]*?);\n/)?.[1];
+    const statusExpression = renderBody.match(/uploadStorageStatus\.textContent = ([\s\S]*?);\r?\n/)?.[1];
     assert.ok(statusExpression, 'the upload status assignment must remain available');
     const statusText = new Function('isUploadLimitBlocked', 'uploadLimitStatus', 'state', 'getAccountUploadLimitMessage', `return ${statusExpression};`);
     const user = { id: 'member' };
