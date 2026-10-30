@@ -3,6 +3,7 @@
     overflow-wrap: anywhere;
 }
 
-#analytics a {
+#analytics a,
+.privacy-phrase {
     white-space: nowrap;
 }

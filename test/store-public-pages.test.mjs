@@ -17,14 +17,15 @@ test('store-facing public URLs are stable and keep unapproved contact details bl
 
 test('privacy, support, and deletion pages expose truthful user controls', () => {
     const privacy = readFileSync('public/privacy/index.html', 'utf8');
+    const privacyText = privacy.replace(/<[^>]*>/g, '');
     const support = readFileSync('public/support/index.html', 'utf8');
     const deletion = readFileSync('public/account-deletion/index.html', 'utf8');
 
-    assert.match(privacy, /이끼 개인정보 처리방침/u);
-    assert.match(privacy, /자동으로 업로드하지 않/u);
-    assert.match(privacy, /Supabase/u);
-    assert.match(privacy, /Google Maps/u);
-    assert.match(privacy, /판매하지 않/u);
+    assert.match(privacyText, /이끼 개인정보 처리방침/u);
+    assert.match(privacyText, /자동으로 업로드하지 않/u);
+    assert.match(privacyText, /Supabase/u);
+    assert.match(privacyText, /Google Maps/u);
+    assert.match(privacyText, /판매하지 않/u);
     assert.match(privacy, /href="\/account-deletion\/"/u);
 
     assert.match(support, /이끼 지원/u);
