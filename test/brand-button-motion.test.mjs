@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { build } from 'vite';
-import { renderContributionArtwork } from '../js/photo-contribution-art.mjs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
@@ -34,9 +33,7 @@ test('landing and contribution actions share the drawn mark without changing the
     for (const part of ['landing-mark-trail', 'landing-mark-pin', 'landing-mark-leaf', 'landing-mark-vein']) {
         assert.ok(invitation.includes(part));
     }
-    assert.match(invitation, /renderContributionArtwork\(/);
-    const artwork = renderContributionArtwork({ mapUrl: '/map.svg', namsanUrl: '/hill.webp', photoUrls: { daeo: '/daeo.webp', bukchon: '/bukchon.webp', ihwa: '/ihwa.webp' } });
-    assert.match(artwork, /photo-contribution-art[^>]*aria-hidden="true"/);
+    assert.match(invitation, /photo-contribution-art[^>]*aria-hidden="true"/);
     assert.match(app, /closest\('\[data-contribution-upload\]'\)[\s\S]*?routeTo\('upload'\)/);
 });
 
