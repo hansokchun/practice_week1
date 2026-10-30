@@ -198,7 +198,12 @@ import { getTravelDaySummaries } from './travel-days.mjs';
 import { getTravelSummary } from './travel-summary.mjs';
 import { getUploadNextRoute } from './upload-flow-action.mjs';
 import defaultProfileAvatarUrl from '../images/default-profile-avatar.png';
-import contributionPhotoMapUrl from '../images/seoul-photo-map-v2.webp';
+import contributionPhotoMapUrl from '../images/seoul-photo-map-v3.svg';
+import contributionNamsanUrl from '../images/seoul-namsan-sprite-v1.webp';
+import contributionDaeoUrl from '../images/contribution-daeo.webp';
+import contributionBukchonUrl from '../images/contribution-bukchon.webp';
+import contributionIhwaUrl from '../images/contribution-ihwa.webp';
+import { renderContributionArtwork } from './photo-contribution-art.mjs';
 import {
     MAIN_BG_1_URL,
     MAIN_BG_2_URL,
@@ -1612,7 +1617,14 @@ function renderLandingContributionInvitation() {
                     <svg class="landing-hero-enter-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
                 </button>
             </div>
-            <img class="photo-contribution-art" aria-hidden="true" src="${contributionPhotoMapUrl}" alt="" width="1152" height="768" loading="lazy" decoding="async">
+            <div class="photo-contribution-visual">
+                ${renderContributionArtwork({
+                    mapUrl: contributionPhotoMapUrl,
+                    namsanUrl: contributionNamsanUrl,
+                    photoUrls: { daeo: contributionDaeoUrl, bukchon: contributionBukchonUrl, ihwa: contributionIhwaUrl }
+                })}
+                <p class="photo-contribution-attribution"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">지도 © OpenStreetMap</a> · <a href="/artwork/credits.html">사진 출처</a></p>
+            </div>
         </aside>
     `;
 }
