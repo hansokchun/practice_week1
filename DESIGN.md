@@ -208,6 +208,8 @@ All spacing derives from a base of 4px.
 
 ### Quiet Explore Map
 
+- **Selected leaf marker**: Render the existing selected SVG at 42×51px with its coordinate anchor at (21,46.5), a proportional 25% reduction from 56×68px. Keep the coral selection color, silhouette, pulse and one-time lift. Normal 36×44px photo markers, 48×48px clusters and existing responsive transforms retain their sizes. Explore, photo detail and trip review share this selected-marker primitive.
+
 ### Landing Admin Photo Dock
 
 - Hero slides also accept local image files through an admin-only multi-file picker (maximum seven slides, existing 15MB validation and optimized original/thumbnail/preview uploads). The image preview sits above an editable location label. Adding files keeps drafts; saving publishes slide assignments and captions. Uploaded photos are stored as public photos with no inferred coordinates. Upload errors clean newly created storage objects; successful files remain available when a later file fails. The site owner's account alone is exempt from the 100-photo quota; other accounts, including other admins, retain the limit in both client and database.

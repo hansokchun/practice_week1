@@ -84,12 +84,14 @@ test('Explore selected photo keeps the leaf silhouette and adds a restrained pul
 
     assert.ok(selectedIcon.scaledSize.width > photoIcon.scaledSize.width);
     assert.ok(selectedIcon.scaledSize.height > photoIcon.scaledSize.height);
+    assert.equal(selectedIcon.scaledSize.width, 42);
+    assert.equal(selectedIcon.scaledSize.height, 51);
     assert.equal(selectedIcon.strokeWeight, 0);
     assert.equal(selectedIcon.strokeColor, EXPLORE_SELECTED_PIN_COLOR);
     assert.notEqual(selectedIcon.fillColor, photoIcon.fillColor);
     assert.equal(selectedIcon.fillColor, EXPLORE_SELECTED_PIN_COLOR);
-    assert.equal(selectedIcon.anchor.x, 28);
-    assert.equal(selectedIcon.anchor.y, 62);
+    assert.equal(selectedIcon.anchor.x, 21);
+    assert.equal(selectedIcon.anchor.y, 46.5);
     assert.match(svg, /id="ikkyee-leaf-selected"/);
     assert.equal((svg.match(/class="leaf-shape"/g) || []).length, 1);
     assert.match(svg, /<ellipse cx="28" cy="62" rx="4" ry="1\.5"/);

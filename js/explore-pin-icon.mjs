@@ -81,10 +81,10 @@ export function getExplorePinSymbolIcon(maps, { type = 'photo', selected = false
     if (selected) {
         return getSvgIcon(maps, {
             svg: getSelectedLeafSvg(),
-            width: 56,
-            height: 68,
-            anchorX: 28,
-            anchorY: 62,
+            width: 42,
+            height: 51,
+            anchorX: 21,
+            anchorY: 46.5,
             color: EXPLORE_SELECTED_PIN_COLOR
         });
     }
