@@ -79,6 +79,15 @@ test('quota migration uses invoker functions, RLS and no visitor grants', () => 
     assert.match(migration, /pg_database_size/);
     assert.match(migration, /storage\.objects/);
 });
+
+test('DB quota measures the full Postgres cluster including template databases, matching Supabase reporting', () => {
+    const dir = new URL('../supabase/migrations/', import.meta.url);
+    const file = readdirSync(dir).find(name=>name.endsWith('_admin_quota_cluster_database_size.sql'));
+    assert.ok(file);
+    const sql=readFileSync(new URL(file,dir),'utf8');
+    assert.match(sql,/sum\(pg_database_size\(datname\)\) from pg_database/i);
+    assert.doesNotMatch(sql,/current_database\(\)|where not datistemplate|security definer/i);
+});
 test('controller ignores late responses after logout and shows failure without fake measurements', async () => {
     let user = admin, resolve;
     const nodes = Object.fromEntries(['content', 'status', 'form', 'save'].map(key => [key, { innerHTML:'', textContent:'', disabled:false, reset(){}, setAttribute(){}, removeAttribute(){} }]));

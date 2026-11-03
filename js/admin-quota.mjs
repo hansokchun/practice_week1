@@ -5,7 +5,7 @@ const format = value => value.toLocaleString('ko-KR', { maximumFractionDigits: 1
 const time = value => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '미확인';
 // Reviewed 2026-11-03: https://supabase.com/pricing. Fixed Free reference, not a live plan lookup.
 const METRICS = [
-    { key: 'database_bytes', label: '데이터베이스', limit: 500e6, divisor: 1e6, unit: 'MB', note: '이 프로젝트 · 현재 DB 크기' },
+    { key: 'database_bytes', label: '데이터베이스', limit: 500e6, divisor: 1e6, unit: 'MB', note: '이 프로젝트 · 기본 DB 포함 전체 크기' },
     { key: 'storage_bytes', label: '사진·파일 저장', limit: 1e9, divisor: 1e6, unit: 'MB', note: '이 프로젝트 · 원본·썸네일 포함, 조직 합산 한도' },
     { key: 'egress_gb', label: '일반 전송량', limit: 5, unit: 'GB', note: '조직 전체 · Egress (캐시 제외)', monthly: true },
     { key: 'cached_egress_gb', label: '캐시 전송량', limit: 5, unit: 'GB', note: '조직 전체 · Cached Egress', monthly: true },
@@ -43,7 +43,7 @@ export function renderQuotaUsage(data = {}, now = Date.now()) {
         : warning ? `주의 ${warning}개 · 무료 한도의 80% 이상을 사용했어요.` : '측정 가능한 항목에서 80% 이상 사용은 확인되지 않았어요.';
     return `<p class="admin-quota-summary" data-quota-state="${urgent ? 'critical' : warning ? 'warning' : unknown ? 'unknown' : 'normal'}">${alert}${unknown ? ` 재확인 필요 ${unknown}개가 있어 전체 안전 여부는 판단할 수 없어요.` : ''}</p>
         <div class="admin-quota-grid">${cards.map(card => card.html).join('')}</div>
-        <p class="admin-quota-note">${monthlyAvailable ? `수동 확인 기간: ${escape(snapshot.period_start)} ~ ${escape(snapshot.period_end)} (종료일 미포함, UTC). ` : ''}페이지 진입·새로고침 시 조회합니다. 메일·푸시 알림은 보내지 않습니다. 현재 크기는 과금 화면의 기간 평균과 다를 수 있어요. 다른 프로젝트가 있다면 저장 용량도 합산해야 합니다.</p>`;
+        <p class="admin-quota-note">${monthlyAvailable ? `수동 확인 기간: ${escape(snapshot.period_start)} ~ ${escape(snapshot.period_end)} (종료일 미포함, UTC). ` : ''}페이지 진입·새로고침 시 조회합니다. 메일·푸시 알림은 보내지 않습니다. 현재 크기는 과금 화면의 기간 평균과 다를 수 있어요. 다른 프로젝트가 있다면 DB·저장 용량을 함께 확인해야 합니다.</p>`;
 }
 
 export function createAdminQuotaController({ getUser, fetchUsage, saveSnapshot, root = () => document.getElementById('admin-quota') }) {
