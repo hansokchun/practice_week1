@@ -10,6 +10,7 @@
 import { getStorageUploadOptions } from './js/storage-upload-options.mjs';
 import { cleanupLandingUploads } from './js/landing-upload-cleanup.mjs';
 import { fetchPhotoMetadataPages } from './js/photo-metadata-pages.mjs';
+import { mutateAlbumPhotos } from './js/album-persistence.mjs';
 import { getOAuthProviderOptions } from './js/oauth-provider-options.mjs';
 import { isNativeApp } from './js/native-app-runtime.mjs';
 import { createNativeAuthStorage } from './js/native-auth-storage.mjs';
@@ -32,7 +33,6 @@ const PROFILE_SELECT_COLUMNS = 'id,nickname,bio,avatar_url,cover_path';
 const PHOTO_SELECT_COLUMNS = 'id,url,storage_path,thumbnail_path,preview_path,date,created_at,title,description,lat,lng,location_precision,location_assignment_skipped,liked,shared,owner_id,album,album_id,visibility,geo_source,ai_tags,ai_summary,ai_scene,ai_moods,ai_analysis_status,ai_analyzed_at,ai_analysis_model';
 const COMMENT_SELECT_COLUMNS = 'id,photo_id,text,date,author_id';
 const ALBUM_SELECT_COLUMNS = 'id,owner_id,title,note,visibility,cover_url,date_start,date_end,photo_count,created_at';
-const ALBUM_PHOTO_SELECT_COLUMNS = 'album_id,photo_id,sort_order';
 const LANDING_SECTION_SELECT_COLUMNS = 'id,title,description,sort_order,is_visible,created_at,updated_at';
 const LANDING_SECTION_PHOTO_SELECT_COLUMNS = 'section_id,photo_id,sort_order';
 const LANDING_HERO_PHOTO_SELECT_COLUMNS = 'photo_id,sort_order,location_label';
@@ -373,8 +373,8 @@ export async function fetchProfilesByIds(userIds) {
 
 /**
  * 사진 목록 조회
- * RLS 정책이 자동으로 "누구나 SELECT 가능"을 보장하므로,
- * 프론트에서 owner_id 필터링을 추가로 수행
+ * RLS가 공개 사진과 본인 소유 사진만 반환한다.
+ * 화면의 범위 필터는 표현용이며 접근 제어를 대신하지 않는다.
  */
 export async function fetchPhotos({ hydrateUrls = true } = {}) {
     try {
@@ -990,24 +990,7 @@ export async function updateAlbumCover(albumId, coverUrl) {
 
 export async function attachPhotosToAlbum(albumId, photoIds) {
     try {
-        const ids = [...new Set((photoIds || []).filter(Boolean))];
-        if (!albumId || ids.length === 0) return { data: [], error: null };
-        const sb = getSupabase();
-        const rows = ids.map((photoId, index) => ({
-            album_id: albumId,
-            photo_id: photoId.toString(),
-            sort_order: index
-        }));
-        const { data, error } = await sb
-            .from('album_photos')
-            .upsert(rows, { onConflict: 'album_id,photo_id' })
-            .select(ALBUM_PHOTO_SELECT_COLUMNS);
-        if (error) throw error;
-        await sb
-            .from('photos')
-            .update({ album_id: albumId })
-            .in('id', ids.map((id) => id.toString()));
-        return { data: data || [], error: null };
+        return await mutateAlbumPhotos(getSupabase(), albumId, photoIds || [], 'append');
     } catch (error) {
         return { data: [], error };
     }
@@ -1015,17 +998,7 @@ export async function attachPhotosToAlbum(albumId, photoIds) {
 
 export async function replaceAlbumPhotos(albumId, photoIds) {
     try {
-        const sb = getSupabase();
-        const ids = [...new Set((photoIds || []).filter(Boolean).map((id) => id.toString()))];
-        await sb
-            .from('album_photos')
-            .delete()
-            .eq('album_id', albumId);
-        await sb
-            .from('photos')
-            .update({ album_id: null, album: null })
-            .eq('album_id', albumId);
-        return attachPhotosToAlbum(albumId, ids);
+        return await mutateAlbumPhotos(getSupabase(), albumId, photoIds || [], 'replace');
     } catch (error) {
         return { data: [], error };
     }

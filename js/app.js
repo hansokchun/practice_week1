@@ -1,3 +1,4 @@
+import { getPhotoAccessibleLabel } from './photo-accessible-label.mjs';
 import {
     attachPhotosToAlbum,
     createAlbum,
@@ -1564,7 +1565,7 @@ function renderLandingHeroSlides() {
 }
 
 function getLandingPhotoLabel(photo) {
-    return String(photo.placeName || photo.description || photo.title || photo.album || '여행 사진').trim();
+    return getPhotoAccessibleLabel(photo);
 }
 
 function getLandingHeroLocationLabel(photo = {}) {
@@ -1579,9 +1580,9 @@ function getLandingHeroLocationLabel(photo = {}) {
     return hasPhotoLocation(photo) ? '위치가 기록된 사진' : '위치 정보 없음';
 }
 
-function renderLandingPhotoCard(photo) {
+function renderLandingPhotoCard(photo, index) {
     const photoId = String(photo.id || photo.localId || '');
-    const label = getLandingPhotoLabel(photo);
+    const label = getPhotoAccessibleLabel(photo, index);
     const prepared = Boolean(photo.thumbnail_path || photo.preview_path);
     const source = prepared && !shouldRefreshPhotoSignedUrl(photo) ? getPhotoDeliverySource(photo, 'thumbnail') : '';
     const sourceAttribute = source ? `src="${escapeHtml(source)}"` : '';

@@ -70,6 +70,7 @@ printf 'Candidate distance from production: %s commits\n' "$release_distance"
 printf 'Running automated verification...\n'
 npm test
 npm run build
+node scripts/check-performance-budget.mjs
 
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/ikkyee-release-rehearsal.XXXXXX")"
 cleanup() {

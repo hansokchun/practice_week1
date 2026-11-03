@@ -5,7 +5,7 @@ const endpoint = new URL('../functions/api/analyze-photo.js', import.meta.url);
 const source = readFileSync(endpoint, 'utf8').replace('../../js/photo-ai-analysis.mjs', new URL('../js/photo-ai-analysis.mjs', import.meta.url).href);
 const { onRequestPost } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
-function fixture(t, { photo = {}, loseClaim = false, countFailure = false, oversized = false } = {}) {
+function fixture(t, { photo = {}, loseClaim = false, claimFailure = false, quotaExceeded = false, oversized = false } = {}) {
     const previous = globalThis.fetch;
     t.after(() => { globalThis.fetch = previous; });
     const calls = [];
@@ -16,11 +16,12 @@ function fixture(t, { photo = {}, loseClaim = false, countFailure = false, overs
         if (url.includes('/auth/v1/user')) return Response.json({ id: 'owner' });
         if (options.method === 'PATCH') {
             const patch = JSON.parse(options.body);
+            if (patch.ai_analysis_status === 'processing' && quotaExceeded) return Response.json({ code: 'P0001', message: 'photo_ai_daily_limit' }, { status: 400 });
+            if (claimFailure) return new Response('', { status: 503 });
             return Response.json(loseClaim && patch.ai_analysis_status === 'processing' ? [] : [{ ...row, ...patch }]);
         }
         if (url.includes('/storage/')) return new Response(new Uint8Array(oversized ? 4 * 1024 * 1024 + 1 : 20), { headers: { 'Content-Type': 'image/jpeg' } });
-        if (options.headers?.Prefer === 'count=exact') return countFailure
-            ? new Response('', { status: 503 }) : Response.json([], { headers: { 'Content-Range': '0-0/0' } });
+        if (options.headers?.Prefer === 'count=exact') throw new Error('Quota must not depend on editable photo timestamps');
         return Response.json([row]);
     };
     const run = () => onRequestPost({
@@ -51,10 +52,20 @@ test('a request losing the atomic claim neither downloads nor analyzes nor overw
     assert.equal(calls.some((call) => call.url.pathname.includes('/storage/')), false);
 });
 
-test('quota lookup failure does not mark an unclaimed photo failed', async (t) => {
-    const { run, calls } = fixture(t, { countFailure: true });
+test('claim failure does not mark an unclaimed photo failed or invoke AI', async (t) => {
+    const { run, calls, aiCalls } = fixture(t, { claimFailure: true });
     assert.equal((await run()).status, 502);
-    assert.equal(calls.some((call) => call.method === 'PATCH'), false);
+    assert.equal(calls.filter((call) => call.method === 'PATCH').length, 1);
+    assert.equal(aiCalls.length, 0);
+});
+
+test('database-enforced quota returns 429 before any download or AI work', async (t) => {
+    const { run, calls, aiCalls } = fixture(t, { quotaExceeded: true });
+    const response = await run();
+    assert.equal(response.status, 429);
+    assert.deepEqual(await response.json(), { error: 'daily_limit', limit: 30 });
+    assert.equal(aiCalls.length, 0);
+    assert.equal(calls.some(call => call.url.pathname.includes('/storage/')), false);
 });
 
 test('legacy images still analyze and oversized images never reach AI', async (t) => {

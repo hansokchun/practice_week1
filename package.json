@@ -43,10 +43,9 @@
   "homepage": "https://github.com/hansokchun/practice_week1#readme",
   "devDependencies": {
     "@capacitor/cli": "8.4.3",
-    "vite": "^8.2.1"
+    "vite": "8.2.4"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.112.2",
     "@aparajita/capacitor-secure-storage": "8.0.1",
     "@capacitor/android": "8.5.3",
     "@capacitor/app": "8.1.2",
@@ -55,6 +54,7 @@
     "@capacitor/filesystem": "8.1.4",
     "@capacitor/ios": "8.5.3",
     "@capacitor/share": "8.0.3",
+    "@supabase/supabase-js": "2.112.2",
     "d3-geo": "3.1.1",
     "piexifjs": "1.0.6",
     "topojson-client": "3.1.0",

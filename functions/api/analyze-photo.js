@@ -93,26 +93,6 @@ async function fetchOwnedPhoto(token, userId, photoId) {
     return rows[0] || null;
 }
 
-async function getDailyAnalysisCount(token, userId) {
-    const start = new Date();
-    start.setUTCHours(0, 0, 0, 0);
-    const query = new URLSearchParams({
-        select: 'id',
-        owner_id: `eq.${userId}`,
-        ai_analyzed_at: `gte.${start.toISOString()}`,
-        limit: '1'
-    });
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/photos?${query}`, {
-        headers: getSupabaseHeaders(token, {
-            Prefer: 'count=exact',
-            Range: '0-0'
-        })
-    });
-    if (!response.ok) throw new Error('analysis_count_failed');
-    const total = response.headers.get('Content-Range')?.split('/').pop();
-    return Number.isFinite(Number(total)) ? Number(total) : 0;
-}
-
 async function updatePhotoAnalysis(token, userId, photoId, updates, expected = {}) {
     const query = new URLSearchParams({
         owner_id: `eq.${userId}`,
@@ -129,7 +109,16 @@ async function updatePhotoAnalysis(token, userId, photoId, updates, expected = {
         }),
         body: JSON.stringify(updates)
     });
-    if (!response.ok) throw new Error('analysis_update_failed');
+    if (!response.ok) {
+        const failure = await response.json().catch(() => null);
+        // DB의 비공개 사용량 원장이 선점과 같은 트랜잭션에서 한도를 강제합니다.
+        if (failure?.code === 'P0001' && failure?.message === 'photo_ai_daily_limit') {
+            const error = new Error('daily_limit');
+            error.code = 'daily_limit';
+            throw error;
+        }
+        throw new Error('analysis_update_failed');
+    }
     const rows = await response.json();
     return rows[0] || null;
 }
@@ -279,11 +268,6 @@ export async function onRequestPost({ request, env }) {
 
     let claim = null;
     try {
-        const dailyCount = await getDailyAnalysisCount(token, user.id);
-        if (dailyCount >= DAILY_ANALYSIS_LIMIT) {
-            return json({ error: 'daily_limit', limit: DAILY_ANALYSIS_LIMIT }, 429);
-        }
-
         const claimedPhoto = await updatePhotoAnalysis(token, user.id, photoId, {
             ai_analysis_status: 'processing',
             ai_analyzed_at: new Date().toISOString()
@@ -311,6 +295,7 @@ export async function onRequestPost({ request, env }) {
         if (!updatedPhoto) return json({ error: 'analysis_in_progress' }, 409);
         return json({ cached: false, analysis, photo: updatedPhoto });
     } catch (error) {
+        if (error?.code === 'daily_limit') return json({ error: 'daily_limit', limit: DAILY_ANALYSIS_LIMIT }, 429);
         if (claim) await updatePhotoAnalysis(token, user.id, photoId, {
             ai_analysis_status: 'failed'
         }, claim).catch(() => null);

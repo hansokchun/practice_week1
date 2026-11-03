@@ -54,7 +54,9 @@ test('private Storage cutover evidence and launch gates stay recorded', () => {
   assert.match(cutoverQa, /Anonymous private signed URL:\s*HTTP 400/i);
   assert.match(cutoverQa, /Other authenticated user[\s\S]*private rows:\s*0/i);
   assert.match(cutoverQa, /Logged-out Production Explore[\s\S]*public photos visible/i);
-  assert.match(launchChecklist, /\*\*P0 상태:\*\* 활성 기술 관문은 모두 완료/);
+  // 과거 Storage 전환 증거와 현재 전체 출시 판정은 별개다.
+  assert.match(launchChecklist, /\*\*현재 운영 판정:\*\* 재검증 중/);
+  assert.match(launchChecklist, /- \[ \] 로그인한 실제 화면에서 업로드부터 비공개 전환·삭제까지 검수/);
   assert.match(launchChecklist, /- \[x\] 로그아웃 사용자와 소유자가 아닌 계정의 비공개 파일 접근은 실패/);
   assert.match(launchChecklist, /- \[x\] 소유자·다른 로그인 사용자·로그아웃 사용자의 3계정 RLS·Storage QA/);
 });
