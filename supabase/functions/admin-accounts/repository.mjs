@@ -19,6 +19,12 @@ export function createAdminAccountsRepository(client) {
             return getAccount(data.user.id);
         },
         getAccount,
+        async getQuotaUsage() {
+            return (await checked(client.rpc('admin_quota_usage'))).data;
+        },
+        async saveQuotaSnapshot(snapshot, actorId) {
+            return (await checked(client.rpc('admin_quota_snapshot_save', { p_snapshot: snapshot, p_actor_id: actorId }))).data;
+        },
         async getOverview() {
             return (await checked(client.rpc('admin_site_overview'))).data;
         },

@@ -1,4 +1,5 @@
 import { getAdminPhotoFilters, isAdminPhotoId } from './photo-inspection.mjs';
+import { validateQuotaSnapshot } from './quota.mjs';
 
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const origins = new Set(['https://ikkyee.com', 'https://www.ikkyee.com', 'https://practice-week1-cws.pages.dev', 'https://dev.practice-week1-cws.pages.dev']);
@@ -24,6 +25,11 @@ export function createAdminAccountsHandler(operations) {
             try { body = JSON.parse(raw); } catch { return json({ error: 'invalid_request' }, 400); }
             if (!body || Array.isArray(body) || typeof body !== 'object') return json({ error: 'invalid_request' }, 400);
             if (body.action === 'overview') return json(await operations.getOverview());
+            if (body.action === 'quota') return json(await operations.getQuotaUsage());
+            if (body.action === 'quota-save') {
+                const snapshot = validateQuotaSnapshot(body.snapshot);
+                return snapshot ? json(await operations.saveQuotaSnapshot(snapshot, actor.id)) : json({ error: 'invalid_request' }, 400);
+            }
             if (body.action === 'photos') {
                 const filters = getAdminPhotoFilters(body);
                 return filters ? json(await operations.listPhotos(filters)) : json({ error: 'invalid_request' }, 400);

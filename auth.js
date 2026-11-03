@@ -598,6 +598,8 @@ async function callAdminAccounts(body) {
 }
 export const fetchAdminAccounts = options => callAdminAccounts({ ...options, action: 'list' });
 export const fetchAdminSiteOverview = () => callAdminAccounts({ action: 'overview' });
+export const fetchAdminQuotaUsage = () => callAdminAccounts({ action: 'quota' });
+export const saveAdminQuotaSnapshot = snapshot => callAdminAccounts({ action: 'quota-save', snapshot });
 export const fetchAdminPhotos = options => callAdminAccounts({ ...options, action: 'photos' });
 export const fetchAdminPhotoOriginal = photoId => callAdminAccounts({ action: 'photo-original', photoId });
 export const fetchAdminAccountDetail = userId => callAdminAccounts({ action: 'detail', userId });

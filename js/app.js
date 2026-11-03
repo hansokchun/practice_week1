@@ -10,6 +10,8 @@ import {
     fetchProductFeedback,
     fetchAdminAccounts,
     fetchAdminSiteOverview,
+    fetchAdminQuotaUsage,
+    saveAdminQuotaSnapshot,
     fetchAdminPhotos,
     fetchAdminPhotoOriginal,
     fetchAdminAccountDetail,
@@ -69,6 +71,7 @@ import { fetchApi } from './native-api-fetch.mjs';
 import { getAccountDeletionControlState } from './account-deletion.mjs';
 import { createAdminAccountsController } from './admin-accounts-controller.mjs';
 import { createAdminOverviewController } from './admin-overview.mjs';
+import { createAdminQuotaController } from './admin-quota.mjs';
 import { createAdminPhotoReviewController } from './admin-photo-review.mjs';
 import { getAlbumCoverCandidates, getAlbumCoverSelection } from './album-cover-picker.mjs';
 import {
@@ -507,6 +510,8 @@ const adminAccountsController = createAdminAccountsController({ getUser: () => s
     inspectAccount: fetchAdminAccountDetail, moderateAccount: moderateAdminAccount, openModal, closeModals, showToast });
 const adminOverviewController = createAdminOverviewController({ getUser: () => state.currentUser, fetchOverview: fetchAdminSiteOverview,
     statusNode: () => $('#admin-overview-status') });
+const adminQuotaController = createAdminQuotaController({ getUser: () => state.currentUser,
+    fetchUsage: fetchAdminQuotaUsage, saveSnapshot: saveAdminQuotaSnapshot });
 const adminPhotoReviewController = createAdminPhotoReviewController({ getUser: () => state.currentUser,
     fetchPhotos: fetchAdminPhotos, fetchOriginal: fetchAdminPhotoOriginal, selectAccount: async id => {
         await adminAccountsController.select(id);
@@ -1246,7 +1251,7 @@ function renderRoute(section) {
     }
     const renderedRoute = getRenderedRoute(normalized);
     const previousRoute = document.body.dataset.page || null;
-    if (previousRoute === 'admin-accounts' && normalized !== 'admin-accounts') { adminAccountsController.clear(); adminOverviewController.clear(); adminPhotoReviewController.clear(); }
+    if (previousRoute === 'admin-accounts' && normalized !== 'admin-accounts') { adminAccountsController.clear(); adminOverviewController.clear(); adminQuotaController.clear(); adminPhotoReviewController.clear(); }
     const routeSharedState = getSharedRouteState(window.location.hash);
     if (shouldClearUploadQueue(previousRoute, normalized) && state.stagedPhotos.length) {
         clearUploadQueue();
@@ -1302,7 +1307,7 @@ function renderRoute(section) {
     if (normalized === 'admin-landing') {
         renderLandingAdminForm();
     }
-    if (normalized === 'admin-accounts') { void adminAccountsController.load(); void adminOverviewController.load(); void adminPhotoReviewController.load(); }
+    if (normalized === 'admin-accounts') { void adminAccountsController.load(); void adminOverviewController.load(); void adminQuotaController.load(); void adminPhotoReviewController.load(); }
     if (normalized === 'admin-feedback') {
         renderLandingAdminFeedback();
         void loadLandingAdminFeedback();
@@ -4426,6 +4431,7 @@ function updateAccountUI() {
     if (!isLandingAdmin(state.currentUser)) {
         adminAccountsController.clear();
         adminOverviewController.clear();
+        adminQuotaController.clear();
         adminPhotoReviewController.clear();
         state.productFeedbackLoadId++;
         state.productFeedback = []; state.hasLoadedProductFeedback = false; state.isProductFeedbackLoading = false;
@@ -4622,6 +4628,7 @@ async function handleLogout() {
 function resetAccountState() {
     adminAccountsController.clear();
     adminOverviewController.clear();
+    adminQuotaController.clear();
     adminPhotoReviewController.clear();
     state.accountWarnings = []; state.selectedAccountWarningId = null;
     state.receivedLikes = null;
@@ -9134,6 +9141,7 @@ function bindEvents() {
     adminAccountsController.bind();
     adminPhotoReviewController.bind();
     $('#admin-overview-refresh')?.addEventListener('click', () => { void adminOverviewController.load(); });
+    adminQuotaController.bind();
     $('#admin-account-refresh')?.addEventListener('click', () => { void adminOverviewController.load(); });
     $('#admin-account-refresh')?.addEventListener('click', () => { void adminPhotoReviewController.load(); });
     $('#btn-header-upload')?.addEventListener('click', openHeaderUpload);
